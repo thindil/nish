@@ -25,7 +25,9 @@ The second goal can be expanded to:
 
 ### How to install
 
-[TBD]
+At this moment, the only option is to build it from the source. You will need a
+[Nim compiler](https://nim-lang.org/install.html). After installing it, enter
+*src* directory and type there `nim c nish.nim`.
 
 ### Design goals
 
