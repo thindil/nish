@@ -29,12 +29,16 @@ var
   userInput: OptParser
   commandName, path: string = ""
 
+proc getPrompt(): string =
+  ## Get the command shell prompt
+  getCurrentDir() & "# "
+
 # Start the shell
 while true:
   # Reset name of the command to execute
   commandName = ""
   # Write prompt
-  write(stdout, getCurrentDir() & "# ")
+  write(stdout, getPrompt())
   # Get the user input and parse it
   userInput = initOptParser(readLine(stdin))
   # Go to the first token
@@ -52,7 +56,7 @@ while true:
     break
   # Show help screen
   of "help":
-    echo getCurrentDir() & "# Available commands are: cd, exit, help"
+    echo getPrompt() & "Available commands are: cd, exit, help"
   # Change current directory
   of "cd":
     userInput.next()
@@ -65,7 +69,7 @@ while true:
       if dirExists(path):
         setCurrentDir(path)
       else:
-        echo getCurrentDir() & "# directory '" & path & "' doesn't exist."
+        echo getPrompt() & "Directory '" & path & "' doesn't exist."
   # Do nothing
   else:
     discard
