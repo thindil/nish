@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[os, parseopt]
+import std/[os, osproc, parseopt, strutils]
 
 var
   userInput: OptParser
@@ -70,6 +70,6 @@ while true:
         setCurrentDir(path)
       else:
         echo getPrompt() & "Directory '" & path & "' doesn't exist."
-  # Do nothing
+  # Execute external command
   else:
-    discard
+    discard execCmd(commandName & " " & join(userInput.remainingArgs, " "))
