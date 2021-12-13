@@ -26,8 +26,10 @@ The second goal can be expanded to:
 ### How to install
 
 At this moment, the only option is to build it from the source. You will need a
-[Nim compiler](https://nim-lang.org/install.html). After installing it, enter
-*src* directory and type there `nim c nish.nim`.
+[Nim compiler](https://nim-lang.org/install.html). After installing it, type
+in the root directory of the project (where this file is) `nim debug` for build
+the program in debug mode or `nim release` to build it in release (optimized)
+mode.
 
 ### Design goals
 
