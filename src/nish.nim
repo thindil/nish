@@ -66,9 +66,9 @@ while true:
         path = expandTilde(path)
       else:
         path = absolutePath(path)
-      if dirExists(path):
+      try:
         setCurrentDir(path)
-      else:
+      except OSError:
         echo getPrompt() & "Directory '" & path & "' doesn't exist."
   # Execute external command
   else:
