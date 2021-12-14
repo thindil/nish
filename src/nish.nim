@@ -69,7 +69,11 @@ while true:
       try:
         setCurrentDir(path)
       except OSError:
-        echo getPrompt() & "Directory '" & path & "' doesn't exist."
+        if not dirExists(path):
+          echo getPrompt() & "Directory '" & path & "' doesn't exist."
+        else:
+          echo getPrompt() & "You don't have permission to enter directory '" &
+            path & "'."
   # Execute external command
   else:
     discard execCmd(commandName & " " & join(userInput.remainingArgs, " "))
