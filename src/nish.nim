@@ -27,7 +27,7 @@ import std/[os, osproc, parseopt, strutils]
 
 var
   userInput: OptParser
-  commandName, path: string = ""
+  commandName: string = ""
 
 proc getPrompt(): string =
   ## Get the command shell prompt
@@ -61,7 +61,7 @@ while true:
   of "cd":
     userInput.next()
     if userInput.kind != cmdEnd:
-      path = userInput.key
+      var path: string = userInput.key
       if path[0] == '~':
         path = expandTilde(path)
       else:
