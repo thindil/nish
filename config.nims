@@ -3,7 +3,7 @@ import os
 task debug, "builds the project in debug mode":
   switch("define", "debug")
   switch("styleCheck", "error")
-  switch("spellSuggest")
+  switch("spellSuggest", "auto")
   switch("outdir", "bin")
   setCommand("c", "src" & DirSep & "nish.nim")
 
