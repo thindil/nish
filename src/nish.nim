@@ -56,7 +56,34 @@ while true:
     break
   # Show help screen
   of "help":
-    echo getPrompt() & "Available commands are: cd, exit, help"
+    userInput.next()
+    # If user entered only "help", show the main help screen
+    if userInput.kind == cmdEnd:
+      echo getPrompt() & """Available commands are: cd, exit, help
+
+      To see more information about the command, type help [command], for
+      example: help cd.
+      """
+    elif userInput.key == "cd":
+      echo getPrompt() & """Usage: cd [directory]
+
+      You must have permissions to enter the directory and directory
+      need to exists.
+      """
+    elif userInput.key == "exit":
+      echo getPrompt() & """Usage: exit
+
+      Exit from the shell.
+      """
+    elif userInput.key == "help":
+      echo getPrompt() & """Usage help ?command?
+
+      If entered only as help, show the list of available commands,
+      when also command entered, show the information about the selected
+      command.
+      """
+    else:
+      echo getPrompt() & "Uknown command '" & userInput.key & "'"
   # Change current directory
   of "cd":
     userInput.next()
