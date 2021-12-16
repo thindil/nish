@@ -36,6 +36,7 @@ for kind, key, value in options.getopt():
   if kind == cmdShortOption and key == "c":
     oneTimeCommand = true
   if oneTimeCommand and kind == cmdArgument:
+    # Set the command to execute in shell
     userInput = initOptParser(key)
     break
 
@@ -49,6 +50,7 @@ while true:
   try:
     # Reset name of the command to execute
     commandName = ""
+    # Run only one command, don't show prompt and wait for the user input
     if not oneTimeCommand:
       # Write prompt
       write(stdout, getPrompt())
