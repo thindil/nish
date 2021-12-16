@@ -28,19 +28,31 @@ import std/[os, osproc, parseopt, strutils]
 var
   userInput: OptParser
   commandName: string = ""
+  oneTimeCommand: bool = false
+  options: OptParser = initOptParser(commandLineParams())
+
+# Check if run only one command, by command line argument "-c [command]"
+for kind, key, value in options.getopt():
+  if kind == cmdShortOption and key == "c":
+    oneTimeCommand = true
+  if oneTimeCommand and kind == cmdArgument:
+    userInput = initOptParser(key)
+    break
 
 proc getPrompt(): string =
   ## Get the command shell prompt
-  getCurrentDir() & "# "
+  if not oneTimeCommand:
+    result = getCurrentDir() & "# "
 
 # Start the shell
 while true:
   # Reset name of the command to execute
   commandName = ""
-  # Write prompt
-  write(stdout, getPrompt())
-  # Get the user input and parse it
-  userInput = initOptParser(readLine(stdin))
+  if not oneTimeCommand:
+    # Write prompt
+    write(stdout, getPrompt())
+    # Get the user input and parse it
+    userInput = initOptParser(readLine(stdin))
   # Go to the first token
   userInput.next()
   # If it looks like an argument, it must be command name
@@ -100,3 +112,6 @@ while true:
   # Execute external command
   else:
     discard execCmd(commandName & " " & join(userInput.remainingArgs, " "))
+  # Run only one command, quit from the shell
+  if oneTimeCommand:
+    break
