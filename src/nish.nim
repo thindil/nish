@@ -46,72 +46,75 @@ proc getPrompt(): string =
 
 # Start the shell
 while true:
-  # Reset name of the command to execute
-  commandName = ""
-  if not oneTimeCommand:
-    # Write prompt
-    write(stdout, getPrompt())
-    # Get the user input and parse it
-    userInput = initOptParser(readLine(stdin))
-  # Go to the first token
-  userInput.next()
-  # If it looks like an argument, it must be command name
-  if userInput.kind == cmdArgument:
-    commandName = userInput.key
-  # No command name, back to beginning
-  if commandName == "":
-    continue
-  # Parse commands
-  case commandName
-  # Quit from shell
-  of "exit":
-    break
-  # Show help screen
-  of "help":
+  try:
+    # Reset name of the command to execute
+    commandName = ""
+    if not oneTimeCommand:
+      # Write prompt
+      write(stdout, getPrompt())
+      # Get the user input and parse it
+      userInput = initOptParser(readLine(stdin))
+    # Go to the first token
     userInput.next()
-    # If user entered only "help", show the main help screen
-    if userInput.kind == cmdEnd:
-      echo getPrompt() & """Available commands are: cd, exit, help
+    # If it looks like an argument, it must be command name
+    if userInput.kind == cmdArgument:
+      commandName = userInput.key
+    # No command name, back to beginning
+    if commandName == "":
+      continue
+    # Parse commands
+    case commandName
+    # Quit from shell
+    of "exit":
+      break
+    # Show help screen
+    of "help":
+      userInput.next()
+      # If user entered only "help", show the main help screen
+      if userInput.kind == cmdEnd:
+        echo getPrompt() & """Available commands are: cd, exit, help
 
       To see more information about the command, type help [command], for
       example: help cd.
       """
-    elif userInput.key == "cd":
-      echo getPrompt() & """Usage: cd [directory]
+      elif userInput.key == "cd":
+        echo getPrompt() & """Usage: cd [directory]
 
       You must have permissions to enter the directory and directory
       need to exists.
       """
-    elif userInput.key == "exit":
-      echo getPrompt() & """Usage: exit
+      elif userInput.key == "exit":
+        echo getPrompt() & """Usage: exit
 
       Exit from the shell.
       """
-    elif userInput.key == "help":
-      echo getPrompt() & """Usage help ?command?
+      elif userInput.key == "help":
+        echo getPrompt() & """Usage help ?command?
 
       If entered only as help, show the list of available commands,
       when also command entered, show the information about the selected
       command.
       """
-    else:
-      echo getPrompt() & "Uknown command '" & userInput.key & "'"
-  # Change current directory
-  of "cd":
-    userInput.next()
-    if userInput.kind != cmdEnd:
-      var path: string = userInput.key
-      if path[0] == '~':
-        path = expandTilde(path)
       else:
-        path = absolutePath(path)
-      try:
-        setCurrentDir(path)
-      except OSError:
-        echo getPrompt() & getCurrentExceptionMsg()
-  # Execute external command
-  else:
-    discard execCmd(commandName & " " & join(userInput.remainingArgs, " "))
-  # Run only one command, quit from the shell
-  if oneTimeCommand:
-    break
+        echo getPrompt() & "Uknown command '" & userInput.key & "'"
+    # Change current directory
+    of "cd":
+      userInput.next()
+      if userInput.kind != cmdEnd:
+        var path: string = userInput.key
+        if path[0] == '~':
+          path = expandTilde(path)
+        else:
+          path = absolutePath(path)
+          try:
+            setCurrentDir(path)
+          except OSError:
+            echo getPrompt() & getCurrentExceptionMsg()
+    # Execute external command
+    else:
+      discard execCmd(commandName & " " & join(userInput.remainingArgs, " "))
+    # Run only one command, quit from the shell
+    if oneTimeCommand:
+      break
+  except:
+    discard
