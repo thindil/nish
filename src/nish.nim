@@ -129,6 +129,16 @@ while true:
                 "' set to '" & varValues[1] & "'"
           except OSError:
             echo getPrompt() & getCurrentExceptionMsg()
+    # Delete environment variable
+    of "unset":
+      userInput.next()
+      if userInput.kind != cmdEnd:
+        try:
+          delEnv(userInput.key)
+          echo getPrompt() & "Environment variable '" & userInput.key &
+              "' removed"
+        except OSError:
+          echo getPrompt() & getCurrentExceptionMsg()
     # Execute external command
     else:
       discard execCmd(commandName & " " & join(userInput.remainingArgs, " "))
