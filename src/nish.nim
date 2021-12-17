@@ -74,7 +74,7 @@ while true:
       userInput.next()
       # If user entered only "help", show the main help screen
       if userInput.kind == cmdEnd:
-        echo getPrompt() & """Available commands are: cd, exit, help
+        echo getPrompt() & """Available commands are: cd, exit, help, set
 
       To see more information about the command, type help [command], for
       example: help cd.
@@ -97,6 +97,11 @@ while true:
       when also command entered, show the information about the selected
       command.
       """
+      elif userInput.key == "set":
+        echo getPrompt() & """Usage set [name=value]
+
+      Set the environment variable with the selected name and value.
+        """
       else:
         echo getPrompt() & "Uknown command '" & userInput.key & "'"
     # Change current directory
@@ -110,6 +115,18 @@ while true:
           path = absolutePath(path)
           try:
             setCurrentDir(path)
+          except OSError:
+            echo getPrompt() & getCurrentExceptionMsg()
+    # Set the environment variable
+    of "set":
+      userInput.next()
+      if userInput.kind != cmdEnd:
+        let varValues = userInput.key.split("=")
+        if varValues.len > 1:
+          try:
+            putEnv(varValues[0], varValues[1])
+            echo getPrompt() & "Environment variable '" & varValues[0] &
+                "' set to '" & varValues[1] & "'"
           except OSError:
             echo getPrompt() & getCurrentExceptionMsg()
     # Execute external command
