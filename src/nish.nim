@@ -74,7 +74,7 @@ while true:
       userInput.next()
       # If user entered only "help", show the main help screen
       if userInput.kind == cmdEnd:
-        echo getPrompt() & """Available commands are: cd, exit, help, set
+        echo getPrompt() & """Available commands are: cd, exit, help, set, unset
 
       To see more information about the command, type help [command], for
       example: help cd.
@@ -101,6 +101,11 @@ while true:
         echo getPrompt() & """Usage set [name=value]
 
       Set the environment variable with the selected name and value.
+        """
+      elif userInput.key == "unset":
+        echo getPrompt() & """Usage unset [name]
+
+      Remove the environment variable with the selected name.
         """
       else:
         echo getPrompt() & "Uknown command '" & userInput.key & "'"
