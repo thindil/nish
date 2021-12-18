@@ -146,4 +146,6 @@ while true:
     if oneTimeCommand:
       break
   except:
-    discard
+    echo getPrompt() & getCurrentExceptionMsg()
+    if oneTimeCommand:
+      quit QuitFailure
