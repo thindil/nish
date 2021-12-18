@@ -30,6 +30,7 @@ var
   commandName: string = ""
   oneTimeCommand: bool = false
   options: OptParser = initOptParser(commandLineParams())
+  returnCode: int = QuitSuccess
 
 # Check if run only one command, by command line argument "-c [command]"
 for kind, key, value in options.getopt():
@@ -43,19 +44,24 @@ for kind, key, value in options.getopt():
 proc getPrompt(): string =
   ## Get the command shell prompt
   if not oneTimeCommand:
-    result = getCurrentDir() & "# "
+    result = getCurrentDir()
+    if commandName != "" and returnCode != QuitSuccess:
+      result.add(" [Error: " & $returnCode & "] ")
+    result.add("# ");
 
 # Start the shell
 while true:
   try:
-    # Reset name of the command to execute
-    commandName = ""
     # Run only one command, don't show prompt and wait for the user input
     if not oneTimeCommand:
       # Write prompt
       write(stdout, getPrompt())
       # Get the user input and parse it
       userInput = initOptParser(readLine(stdin))
+      # Reset name of the command to execute
+      commandName = ""
+      # Reset the return code of the program
+      returnCode = QuitSuccess
     # Go to the first token
     userInput.next()
     # If it looks like an argument, it must be command name
@@ -109,6 +115,7 @@ while true:
         """
       else:
         echo getPrompt() & "Uknown command '" & userInput.key & "'"
+        returnCode = QuitFailure
     # Change current directory
     of "cd":
       userInput.next()
@@ -122,6 +129,7 @@ while true:
             setCurrentDir(path)
           except OSError:
             echo getPrompt() & getCurrentExceptionMsg()
+            returnCode = QuitFailure
     # Set the environment variable
     of "set":
       userInput.next()
@@ -134,6 +142,7 @@ while true:
                 "' set to '" & varValues[1] & "'"
           except OSError:
             echo getPrompt() & getCurrentExceptionMsg()
+            returnCode = QuitFailure
     # Delete environment variable
     of "unset":
       userInput.next()
@@ -144,13 +153,15 @@ while true:
               "' removed"
         except OSError:
           echo getPrompt() & getCurrentExceptionMsg()
+          returnCode = QuitFailure
     # Execute external command
     else:
-      discard execCmd(commandName & " " & join(userInput.remainingArgs, " "))
-    # Run only one command, quit from the shell
-    if oneTimeCommand:
-      break
+      returnCode = execCmd(commandName & " " &
+        join(userInput.remainingArgs, " "))
   except:
     echo getPrompt() & getCurrentExceptionMsg()
+    returnCode = QuitFailure
+  finally:
+    # Run only one command, quit from the shell
     if oneTimeCommand:
-      quit QuitFailure
+      quit returnCode
