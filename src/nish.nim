@@ -46,7 +46,7 @@ proc getPrompt(): string =
   if not oneTimeCommand:
     result = getCurrentDir()
     if commandName != "" and returnCode != QuitSuccess:
-      result.add(" [Error: " & $returnCode & "] ")
+      result.add("[" & $returnCode & "]")
     result.add("# ");
 
 # Start the shell
@@ -128,7 +128,7 @@ while true:
           try:
             setCurrentDir(path)
           except OSError:
-            echo getPrompt() & getCurrentExceptionMsg()
+            echo getCurrentExceptionMsg()
             returnCode = QuitFailure
     # Set the environment variable
     of "set":
@@ -141,7 +141,7 @@ while true:
             echo getPrompt() & "Environment variable '" & varValues[0] &
                 "' set to '" & varValues[1] & "'"
           except OSError:
-            echo getPrompt() & getCurrentExceptionMsg()
+            echo getCurrentExceptionMsg()
             returnCode = QuitFailure
     # Delete environment variable
     of "unset":
@@ -152,14 +152,14 @@ while true:
           echo getPrompt() & "Environment variable '" & userInput.key &
               "' removed"
         except OSError:
-          echo getPrompt() & getCurrentExceptionMsg()
+          echo getCurrentExceptionMsg()
           returnCode = QuitFailure
     # Execute external command
     else:
       returnCode = execCmd(commandName & " " &
         join(userInput.remainingArgs, " "))
   except:
-    echo getPrompt() & getCurrentExceptionMsg()
+    echo getCurrentExceptionMsg()
     returnCode = QuitFailure
   finally:
     # Run only one command, quit from the shell
