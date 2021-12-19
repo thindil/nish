@@ -32,14 +32,31 @@ var
   options: OptParser = initOptParser(commandLineParams())
   returnCode: int = QuitSuccess
 
+proc showCommandLineHelp() =
+  ## Show the program arguments help
+  echo """Available arguments are:
+    -c [command] - Run the selected command in shell and quit
+    -h, --help   - Show this help and quit"""
+  quit returnCode
+
 # Check if run only one command, by command line argument "-c [command]"
 for kind, key, value in options.getopt():
-  if kind == cmdShortOption and key == "c":
-    oneTimeCommand = true
-  if oneTimeCommand and kind == cmdArgument:
-    # Set the command to execute in shell
-    userInput = initOptParser(key)
-    break
+  case kind
+  of cmdShortOption:
+    case key
+    of "c":
+      oneTimeCommand = true
+    of "h":
+      showCommandLineHelp()
+  of cmdLongOption:
+    if key == "help":
+      showCommandLineHelp()
+  of cmdArgument:
+    if oneTimeCommand:
+      # Set the command to execute in shell
+      userInput = initOptParser(key)
+      break
+  else: discard
 
 proc getPrompt(): string =
   ## Get the command shell prompt
