@@ -39,7 +39,9 @@ proc showCommandLineHelp() =
     -h, --help   - Show this help and quit"""
   quit returnCode
 
-# Check if run only one command, by command line argument "-c [command]"
+# Check the command line parameters entered by the user. Available options
+# are "-c [command]" to run only one command and "-h" or "--help" to show
+# help about the shell's command line arguments
 for kind, key, value in options.getopt():
   case kind
   of cmdShortOption:
