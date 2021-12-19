@@ -63,7 +63,11 @@ for kind, key, value in options.getopt():
 proc getPrompt(): string =
   ## Get the command shell prompt
   if not oneTimeCommand:
-    result = getCurrentDir()
+    if getCurrentDir() & "/" == getHomeDir():
+      result = "~"
+    else:
+      result = getCurrentDir()
+      result = replace(result, getHomeDir(), "~/")
     if commandName != "" and returnCode != QuitSuccess:
       result.add("[" & $returnCode & "]")
     result.add("# ");
