@@ -29,7 +29,7 @@ var
   userInput: OptParser
   commandName: string = ""
   oneTimeCommand: bool = false
-  options: OptParser = initOptParser(commandLineParams())
+  options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
   returnCode: int = QuitSuccess
 
 proc showCommandLineHelp() =
