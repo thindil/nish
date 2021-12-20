@@ -167,8 +167,7 @@ while true:
       if userInput.kind != cmdEnd:
         try:
           delEnv(userInput.key)
-          showOutput("Environment variable '" & userInput.key &
-              "' removed")
+          showOutput("Environment variable '" & userInput.key & "' removed")
         except OSError:
           styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
           returnCode = QuitFailure
