@@ -60,17 +60,16 @@ for kind, key, value in options.getopt():
       break
   else: discard
 
-proc getPrompt(): string =
-  ## Get the command shell prompt
+proc showOutput(message: string) =
+  ## Show the selected message and prompt to the user
   if not oneTimeCommand:
     if getCurrentDir() & "/" == getHomeDir():
-      result = "~"
+      write(stdout, "~")
     else:
-      result = getCurrentDir()
-      result = replace(result, getHomeDir(), "~/")
+      write(stdout, replace(getCurrentDir(), getHomeDir(), "~/"))
     if commandName != "" and returnCode != QuitSuccess:
-      result.add("[" & $returnCode & "]")
-    result.add("# ");
+      styledWrite(stdout, fgRed, "[" & $returnCode & "]")
+    write(stdout, "# " & message)
 
 # Start the shell
 while true:
@@ -78,7 +77,7 @@ while true:
     # Run only one command, don't show prompt and wait for the user input
     if not oneTimeCommand:
       # Write prompt
-      write(stdout, getPrompt())
+      showOutput("")
       # Get the user input and parse it
       userInput = initOptParser(readLine(stdin))
       # Reset name of the command to execute
@@ -103,41 +102,41 @@ while true:
       userInput.next()
       # If user entered only "help", show the main help screen
       if userInput.kind == cmdEnd:
-        echo getPrompt() & """Available commands are: cd, exit, help, set, unset
+        showOutput("""Available commands are: cd, exit, help, set, unset
 
       To see more information about the command, type help [command], for
       example: help cd.
-      """
+      """)
       elif userInput.key == "cd":
-        echo getPrompt() & """Usage: cd [directory]
+        showOutput("""Usage: cd [directory]
 
       You must have permissions to enter the directory and directory
       need to exists.
-      """
+      """)
       elif userInput.key == "exit":
-        echo getPrompt() & """Usage: exit
+        showOutput("""Usage: exit
 
       Exit from the shell.
-      """
+      """)
       elif userInput.key == "help":
-        echo getPrompt() & """Usage help ?command?
+        showOutput("""Usage help ?command?
 
       If entered only as help, show the list of available commands,
       when also command entered, show the information about the selected
       command.
-      """
+      """)
       elif userInput.key == "set":
-        echo getPrompt() & """Usage set [name=value]
+        showOutput("""Usage set [name=value]
 
       Set the environment variable with the selected name and value.
-        """
+        """)
       elif userInput.key == "unset":
-        echo getPrompt() & """Usage unset [name]
+        showOutput("""Usage unset [name]
 
       Remove the environment variable with the selected name.
-        """
+        """)
       else:
-        echo getPrompt() & "Uknown command '" & userInput.key & "'"
+        showOutput("Uknown command '" & userInput.key & "'")
         returnCode = QuitFailure
     # Change current directory
     of "cd":
@@ -157,8 +156,8 @@ while true:
         if varValues.len > 1:
           try:
             putEnv(varValues[0], varValues[1])
-            echo getPrompt() & "Environment variable '" & varValues[0] &
-                "' set to '" & varValues[1] & "'"
+            showOutput("Environment variable '" & varValues[0] &
+                "' set to '" & varValues[1] & "'")
           except OSError:
             styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
             returnCode = QuitFailure
@@ -168,8 +167,8 @@ while true:
       if userInput.kind != cmdEnd:
         try:
           delEnv(userInput.key)
-          echo getPrompt() & "Environment variable '" & userInput.key &
-              "' removed"
+          showOutput("Environment variable '" & userInput.key &
+              "' removed")
         except OSError:
           styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
           returnCode = QuitFailure
