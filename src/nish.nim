@@ -143,16 +143,12 @@ while true:
     of "cd":
       userInput.next()
       if userInput.kind != cmdEnd:
-        var path: string = userInput.key
-        if path[0] == '~':
-          path = expandTilde(path)
-        else:
-          path = absolutePath(path)
-          try:
-            setCurrentDir(path)
-          except OSError:
-            echo getCurrentExceptionMsg()
-            returnCode = QuitFailure
+        let path: string = absolutePath(expandTilde(userInput.key))
+        try:
+          setCurrentDir(path)
+        except OSError:
+          echo getCurrentExceptionMsg()
+          returnCode = QuitFailure
     # Set the environment variable
     of "set":
       userInput.next()
