@@ -72,6 +72,12 @@ proc showOutput(message: string) =
     styledWrite(stdout, fgBlue, "# ")
   write(stdout, message)
 
+proc showError() =
+  ## Print the exception message to standard error and set the shell return
+  ## code to error
+  styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
+  returnCode = QuitFailure
+
 # Start the shell
 while true:
   try:
@@ -147,8 +153,7 @@ while true:
         try:
           setCurrentDir(path)
         except OSError:
-          styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
-          returnCode = QuitFailure
+          showError()
     # Set the environment variable
     of "set":
       userInput.next()
@@ -170,15 +175,13 @@ while true:
           delEnv(userInput.key)
           showOutput("Environment variable '" & userInput.key & "' removed")
         except OSError:
-          styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
-          returnCode = QuitFailure
+          showError()
     # Execute external command
     else:
       returnCode = execCmd(commandName & " " &
         join(userInput.remainingArgs, " "))
   except:
-    styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
-    returnCode = QuitFailure
+    showError()
   finally:
     # Run only one command, quit from the shell
     if oneTimeCommand:
