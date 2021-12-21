@@ -78,6 +78,14 @@ proc showError() =
   styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
   returnCode = QuitFailure
 
+proc noControlC() {.noconv.} =
+  ## Block quitting from the shell with Control-C key, show info how to
+  ## quit from the program
+  echo "If you want to exit the shell, type 'exit' and press Enter"
+  showOutput("")
+
+setControlCHook(noControlC)
+
 # Start the shell
 while true:
   try:
