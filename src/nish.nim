@@ -64,12 +64,13 @@ proc showOutput(message: string) =
   ## Show the selected message and prompt to the user
   if not oneTimeCommand:
     if getCurrentDir() & "/" == getHomeDir():
-      write(stdout, "~")
+      styledWrite(stdout, fgBlue, "~")
     else:
-      write(stdout, replace(getCurrentDir(), getHomeDir(), "~/"))
+      styledWrite(stdout, fgBlue, replace(getCurrentDir(), getHomeDir(), "~/"))
     if commandName != "" and returnCode != QuitSuccess:
       styledWrite(stdout, fgRed, "[" & $returnCode & "]")
-    write(stdout, "# " & message)
+    styledWrite(stdout, fgBlue, "# ")
+  write(stdout, message)
 
 # Start the shell
 while true:
