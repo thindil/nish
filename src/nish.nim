@@ -71,6 +71,7 @@ proc showOutput(message: string) =
       styledWrite(stdout, fgRed, "[" & $returnCode & "]")
     styledWrite(stdout, fgBlue, "# ")
   write(stdout, message)
+  flushFile(stdout)
 
 proc showError() =
   ## Print the exception message to standard error and set the shell return
