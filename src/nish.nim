@@ -113,7 +113,7 @@ while true:
     case commandName
     # Quit from shell
     of "exit":
-      break
+      quit returnCode
     # Show help screen
     of "help":
       userInput.next()
