@@ -82,6 +82,7 @@ proc showError() =
 proc noControlC() {.noconv.} =
   ## Block quitting from the shell with Control-C key, show info how to
   ## quit from the program
+  cursorBackward(stdout, 2)
   echo "If you want to exit the shell, type 'exit' and press Enter"
   showOutput("")
 
