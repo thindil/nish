@@ -70,7 +70,7 @@ proc showOutput(message: string) =
     if commandName != "" and returnCode != QuitSuccess:
       styledWrite(stdout, fgRed, "[" & $returnCode & "]")
     styledWrite(stdout, fgBlue, "# ")
-  write(stdout, message)
+  if message != "": writeLine(stdout, message)
   flushFile(stdout)
 
 proc showError() =
