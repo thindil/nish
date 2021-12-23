@@ -25,6 +25,8 @@
 
 import std/[os, osproc, parseopt, strutils, terminal]
 
+const maxInputLength = 4096
+
 var
   userInput: OptParser
   commandName: string = ""
@@ -103,10 +105,9 @@ while true:
       setLen(inputString, 0)
       inputChar = readChar(stdin)
       if inputChar != '\n':
-        while inputChar != '\n':
+        while inputChar != '\n' and inputString.len() < maxInputLength:
           inputString.add(inputChar)
           inputChar = readChar(stdin)
-      echo $inputString
       userInput = initOptParser(inputString)
       # Reset the return code of the program
       returnCode = QuitSuccess
