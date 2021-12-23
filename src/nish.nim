@@ -32,6 +32,7 @@ var
   options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
   returnCode: int = QuitSuccess
   history: seq[string]
+  inputString: string
 
 proc showCommandLineHelp() =
   ## Show the program arguments help
@@ -98,9 +99,15 @@ while true:
       # Write prompt
       showOutput("")
       # Get the user input and parse it
-      userInput = initOptParser(readLine(stdin))
-      # Reset name of the command to execute
-      commandName = ""
+      var inputChar: char
+      setLen(inputString, 0)
+      inputChar = readChar(stdin)
+      if inputChar != '\n':
+        while inputChar != '\n':
+          inputString.add(inputChar)
+          inputChar = readChar(stdin)
+      echo $inputString
+      userInput = initOptParser(inputString)
       # Reset the return code of the program
       returnCode = QuitSuccess
     # Go to the first token
