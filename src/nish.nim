@@ -31,6 +31,7 @@ var
   oneTimeCommand: bool = false
   options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
   returnCode: int = QuitSuccess
+  history: seq[string]
 
 proc showCommandLineHelp() =
   ## Show the program arguments help
@@ -70,7 +71,8 @@ proc showOutput(message: string) =
     if commandName != "" and returnCode != QuitSuccess:
       styledWrite(stdout, fgRed, "[" & $returnCode & "]")
     styledWrite(stdout, fgBlue, "# ")
-  if message != "": writeLine(stdout, message)
+  if message != "":
+    writeLine(stdout, message)
   flushFile(stdout)
 
 proc showError() =
@@ -124,17 +126,20 @@ while true:
       To see more information about the command, type help [command], for
       example: help cd.
       """)
+        history.add("help")
       elif userInput.key == "cd":
         showOutput("""Usage: cd [directory]
 
       You must have permissions to enter the directory and directory
       need to exists.
       """)
+        history.add("help cd")
       elif userInput.key == "exit":
         showOutput("""Usage: exit
 
       Exit from the shell.
       """)
+        history.add("help exit")
       elif userInput.key == "help":
         showOutput("""Usage help ?command?
 
@@ -142,16 +147,19 @@ while true:
       when also command entered, show the information about the selected
       command.
       """)
+        history.add("help help")
       elif userInput.key == "set":
         showOutput("""Usage set [name=value]
 
       Set the environment variable with the selected name and value.
         """)
+        history.add("help set")
       elif userInput.key == "unset":
         showOutput("""Usage unset [name]
 
       Remove the environment variable with the selected name.
         """)
+        history.add("help unset")
       else:
         showOutput("Uknown command '" & userInput.key & "'")
         returnCode = QuitFailure
@@ -162,6 +170,7 @@ while true:
         let path: string = absolutePath(expandTilde(userInput.key))
         try:
           setCurrentDir(path)
+          history.add("cd " & userInput.key)
         except OSError:
           showError()
     # Set the environment variable
@@ -174,6 +183,7 @@ while true:
             putEnv(varValues[0], varValues[1])
             showOutput("Environment variable '" & varValues[0] &
                 "' set to '" & varValues[1] & "'")
+            history.add("set " & userInput.key)
           except OSError:
             styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
             returnCode = QuitFailure
@@ -184,12 +194,16 @@ while true:
         try:
           delEnv(userInput.key)
           showOutput("Environment variable '" & userInput.key & "' removed")
+          history.add("unset " & userInput.key)
         except OSError:
           showError()
     # Execute external command
     else:
-      returnCode = execCmd(commandName & " " &
-        join(userInput.remainingArgs, " "))
+      let commandToExecute = commandName & " " &
+        join(userInput.remainingArgs, " ")
+      returnCode = execCmd(commandToExecute)
+      if returnCode == QuitSuccess:
+        history.add(commandToExecute)
   except:
     showError()
   finally:
