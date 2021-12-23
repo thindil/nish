@@ -102,9 +102,14 @@ while true:
       showOutput("")
       # Get the user input and parse it
       var inputChar: char
+      # Reset previous input
       setLen(inputString, 0)
+      # Read the first character from the standard input
       inputChar = readChar(stdin)
+      # If it isn't a new line character, add it to the input string
       if inputChar != '\n':
+        # Continue adding characters until a new line character or input reach
+        # its maximum length
         while inputChar != '\n' and inputString.len() < maxInputLength:
           inputString.add(inputChar)
           inputChar = readChar(stdin)
