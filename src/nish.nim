@@ -81,13 +81,6 @@ proc showOutput(message: string; newLine: bool = true) =
       writeLine(stdout, "")
   flushFile(stdout)
 
-proc deleteCharacter(inputString: var string) =
-  ## Delete the last character from the user input
-  if inputString.len() > 0:
-    inputString = inputString[0..inputString.len() - 2]
-    eraseLine(stdout)
-    showOutput(inputString, false)
-
 proc showError() =
   ## Print the exception message to standard error and set the shell return
   ## code to error
@@ -119,7 +112,10 @@ while true:
       # reach the maximum length
       while ord(inputChar) != 13 and inputString.len() < maxInputLength:
         if ord(inputChar) == 127:
-          deleteCharacter(inputString)
+          if inputString.len() > 0:
+            inputString = inputString[0..inputString.len() - 2]
+            eraseLine(stdout)
+            showOutput(inputString, false)
         elif inputChar != '\0':
           write(stdout, inputChar)
           inputString.add(inputChar)
