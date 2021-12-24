@@ -64,8 +64,9 @@ for kind, key, value in options.getopt():
       break
   else: discard
 
-proc showOutput(message: string) =
-  ## Show the selected message and prompt to the user
+proc showOutput(message: string; newLine: bool = true) =
+  ## Show the selected message and prompt to the user. If newLine is true
+  ## (default), add a new line after message
   if not oneTimeCommand:
     if getCurrentDir() & "/" == getHomeDir():
       styledWrite(stdout, fgBlue, "~")
@@ -75,8 +76,17 @@ proc showOutput(message: string) =
       styledWrite(stdout, fgRed, "[" & $returnCode & "]")
     styledWrite(stdout, fgBlue, "# ")
   if message != "":
-    writeLine(stdout, message)
+    write(stdout, message)
+    if newLine:
+      writeLine(stdout, "")
   flushFile(stdout)
+
+proc deleteCharacter(inputString: var string) =
+  ## Delete the last character from the user input
+  if inputString.len() > 0:
+    inputString = inputString[0..inputString.len() - 2]
+    eraseLine(stdout)
+    showOutput(inputString, false)
 
 proc showError() =
   ## Print the exception message to standard error and set the shell return
@@ -106,13 +116,18 @@ while true:
       setLen(inputString, 0)
       # Read the first character from the standard input
       inputChar = getch()
+      if ord(inputChar) == 127:
+        deleteCharacter(inputString)
       # If it isn't a new line character, add it to the input string
       if ord(inputChar) != 13:
         # Continue adding characters until a new line character or input reach
         # its maximum length
         while ord(inputChar) != 13 and inputString.len() < maxInputLength:
-          write(stdout, inputChar)
-          inputString.add(inputChar)
+          if ord(inputChar) == 127:
+            deleteCharacter(inputString)
+          else:
+            write(stdout, inputChar)
+            inputString.add(inputChar)
           inputChar = getch()
         writeLine(stdout, "")
       userInput = initOptParser(inputString)
