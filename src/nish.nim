@@ -114,22 +114,17 @@ while true:
       var inputChar: char
       # Reset previous input
       setLen(inputString, 0)
-      # Read the first character from the standard input
-      inputChar = getch()
-      if ord(inputChar) == 127:
-        deleteCharacter(inputString)
-      # If it isn't a new line character, add it to the input string
-      if ord(inputChar) != 13:
-        # Continue adding characters until a new line character or input reach
-        # its maximum length
-        while ord(inputChar) != 13 and inputString.len() < maxInputLength:
-          if ord(inputChar) == 127:
-            deleteCharacter(inputString)
-          else:
-            write(stdout, inputChar)
-            inputString.add(inputChar)
-          inputChar = getch()
-        writeLine(stdout, "")
+      inputChar = '\0'
+      # Read the user input until not meet new line character or the input
+      # reach the maximum length
+      while ord(inputChar) != 13 and inputString.len() < maxInputLength:
+        if ord(inputChar) == 127:
+          deleteCharacter(inputString)
+        elif inputChar != '\0':
+          write(stdout, inputChar)
+          inputString.add(inputChar)
+        inputChar = getch()
+      writeLine(stdout, "")
       userInput = initOptParser(inputString)
       # Reset the return code of the program
       returnCode = QuitSuccess
