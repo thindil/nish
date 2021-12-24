@@ -34,7 +34,7 @@ var
   options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
   returnCode: int = QuitSuccess
   history: seq[string]
-  inputString: string
+  inputString: string = ""
 
 proc showCommandLineHelp() =
   ## Show the program arguments help
@@ -105,14 +105,16 @@ while true:
       # Reset previous input
       setLen(inputString, 0)
       # Read the first character from the standard input
-      inputChar = readChar(stdin)
+      inputChar = getch()
       # If it isn't a new line character, add it to the input string
-      if inputChar != '\n':
+      if ord(inputChar) != 13:
         # Continue adding characters until a new line character or input reach
         # its maximum length
-        while inputChar != '\n' and inputString.len() < maxInputLength:
+        while ord(inputChar) != 13 and inputString.len() < maxInputLength:
+          write(stdout, inputChar)
           inputString.add(inputChar)
-          inputChar = readChar(stdin)
+          inputChar = getch()
+        writeLine(stdout, "")
       userInput = initOptParser(inputString)
       # Reset the return code of the program
       returnCode = QuitSuccess
