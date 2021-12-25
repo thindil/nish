@@ -126,8 +126,9 @@ while true:
         if ord(inputChar) == 127:
           if inputString.len() > 0:
             inputString = inputString[0..^2]
-            eraseLine(stdout)
-            showOutput(inputString, false)
+            cursorBackward(stdout)
+            write(stdout, " ")
+            cursorBackward(stdout)
         elif inputChar != '\0':
           write(stdout, inputChar)
           inputString.add(inputChar)
