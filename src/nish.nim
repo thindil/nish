@@ -25,7 +25,9 @@
 
 import std/[os, osproc, parseopt, strutils, terminal]
 
-const maxInputLength = 4096
+const
+  maxInputLength = 4096
+  maxHistoryLength = 500
 
 var
   userInput: OptParser
@@ -34,6 +36,7 @@ var
   options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
   returnCode: int = QuitSuccess
   history: seq[string]
+  historyIndex: int = 0
   inputString: string = ""
 
 proc showCommandLineHelp() =
@@ -87,6 +90,14 @@ proc showError() =
   styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
   returnCode = QuitFailure
 
+proc updateHistory(commandToAdd: string) =
+  ## Add the selected command to the shell history and increase the current
+  ## history index
+  if history.len() == maxHistoryLength:
+    history = history[0..^1]
+  history.add(commandToAdd)
+  historyIndex = history.len()
+
 proc noControlC() {.noconv.} =
   ## Block quitting from the shell with Control-C key, show info how to
   ## quit from the program
@@ -106,14 +117,15 @@ while true:
       # Get the user input and parse it
       var inputChar: char
       # Reset previous input
-      setLen(inputString, 0)
+      inputString = ""
       inputChar = '\0'
       # Read the user input until not meet new line character or the input
       # reach the maximum length
       while ord(inputChar) != 13 and inputString.len() < maxInputLength:
+        # Backspace was pressed, delete the last character from the user input
         if ord(inputChar) == 127:
           if inputString.len() > 0:
-            inputString = inputString[0..inputString.len() - 2]
+            inputString = inputString[0..^2]
             eraseLine(stdout)
             showOutput(inputString, false)
         elif inputChar != '\0':
@@ -147,20 +159,20 @@ while true:
       To see more information about the command, type help [command], for
       example: help cd.
       """)
-        history.add("help")
+        updateHistory("help")
       elif userInput.key == "cd":
         showOutput("""Usage: cd [directory]
 
       You must have permissions to enter the directory and directory
       need to exists.
       """)
-        history.add("help cd")
+        updateHistory("help cd")
       elif userInput.key == "exit":
         showOutput("""Usage: exit
 
       Exit from the shell.
       """)
-        history.add("help exit")
+        updateHistory("help exit")
       elif userInput.key == "help":
         showOutput("""Usage help ?command?
 
@@ -168,19 +180,19 @@ while true:
       when also command entered, show the information about the selected
       command.
       """)
-        history.add("help help")
+        updateHistory("help help")
       elif userInput.key == "set":
         showOutput("""Usage set [name=value]
 
       Set the environment variable with the selected name and value.
         """)
-        history.add("help set")
+        updateHistory("help set")
       elif userInput.key == "unset":
         showOutput("""Usage unset [name]
 
       Remove the environment variable with the selected name.
         """)
-        history.add("help unset")
+        updateHistory("help unset")
       else:
         showOutput("Uknown command '" & userInput.key & "'")
         returnCode = QuitFailure
@@ -191,7 +203,7 @@ while true:
         let path: string = absolutePath(expandTilde(userInput.key))
         try:
           setCurrentDir(path)
-          history.add("cd " & userInput.key)
+          updateHistory("cd " & userInput.key)
         except OSError:
           showError()
     # Set the environment variable
@@ -204,7 +216,7 @@ while true:
             putEnv(varValues[0], varValues[1])
             showOutput("Environment variable '" & varValues[0] &
                 "' set to '" & varValues[1] & "'")
-            history.add("set " & userInput.key)
+            updateHistory("set " & userInput.key)
           except OSError:
             styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
             returnCode = QuitFailure
@@ -215,7 +227,7 @@ while true:
         try:
           delEnv(userInput.key)
           showOutput("Environment variable '" & userInput.key & "' removed")
-          history.add("unset " & userInput.key)
+          updateHistory("unset " & userInput.key)
         except OSError:
           showError()
     # Execute external command
@@ -224,7 +236,7 @@ while true:
         join(userInput.remainingArgs, " ")
       returnCode = execCmd(commandToExecute)
       if returnCode == QuitSuccess:
-        history.add(commandToExecute)
+        updateHistory(commandToExecute)
   except:
     showError()
   finally:
