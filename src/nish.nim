@@ -96,7 +96,7 @@ proc updateHistory(commandToAdd: string) =
   if history.len() == maxHistoryLength:
     history.delete(1)
   history.add(commandToAdd)
-  historyIndex = history.len()
+  historyIndex = history.len() - 1
 
 proc noControlC() {.noconv.} =
   ## Block quitting from the shell with Control-C key, show info how to
@@ -122,13 +122,34 @@ while true:
       # Read the user input until not meet new line character or the input
       # reach the maximum length
       while ord(inputChar) != 13 and inputString.len() < maxInputLength:
-        # Backspace was pressed, delete the last character from the user input
+        # Backspace pressed, delete the last character from the user input
         if ord(inputChar) == 127:
           if inputString.len() > 0:
             inputString = inputString[0..^2]
             cursorBackward(stdout)
             write(stdout, " ")
             cursorBackward(stdout)
+        # Escape or arrows keys pressed
+        elif ord(inputChar) == 27:
+          # Arrow key pressed
+          if getch() == '[':
+            # Arrow up key pressed
+            inputChar = getch()
+            if inputChar == 'A':
+              eraseLine(stdout)
+              showOutput(history[historyIndex], false)
+              inputString = history[historyIndex]
+              dec(historyIndex)
+              if historyIndex < 0:
+                historyIndex = 0;
+            # Arrow down key pressed
+            elif inputChar == 'B':
+              inc(historyIndex)
+              if historyIndex >= history.len():
+                historyIndex = history.len() - 1
+              eraseLine(stdout)
+              showOutput(history[historyIndex], false)
+              inputString = history[historyIndex]
         elif inputChar != '\0':
           write(stdout, inputChar)
           inputString.add(inputChar)
