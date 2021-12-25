@@ -94,7 +94,7 @@ proc updateHistory(commandToAdd: string) =
   ## Add the selected command to the shell history and increase the current
   ## history index
   if history.len() == maxHistoryLength:
-    history = history[0..^1]
+    history.delete(1)
   history.add(commandToAdd)
   historyIndex = history.len()
 
