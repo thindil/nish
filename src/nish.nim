@@ -44,7 +44,7 @@ proc showCommandLineHelp() =
   echo """Available arguments are:
     -c [command] - Run the selected command in shell and quit
     -h, --help   - Show this help and quit"""
-  quit returnCode
+  quit QuitSuccess
 
 # Check the command line parameters entered by the user. Available options
 # are "-c [command]" to run only one command and "-h" or "--help" to show
