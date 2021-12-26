@@ -135,7 +135,7 @@ while true:
           if getch() == '[':
             # Arrow up key pressed
             inputChar = getch()
-            if inputChar == 'A':
+            if inputChar == 'A' and history.len() > 0:
               eraseLine(stdout)
               showOutput(history[historyIndex], false)
               inputString = history[historyIndex]
@@ -143,7 +143,7 @@ while true:
               if historyIndex < 0:
                 historyIndex = 0;
             # Arrow down key pressed
-            elif inputChar == 'B':
+            elif inputChar == 'B' and history.len() > 0:
               inc(historyIndex)
               if historyIndex >= history.len():
                 historyIndex = history.len() - 1
