@@ -155,7 +155,7 @@ while true:
               eraseLine(stdout)
               showOutput(history[historyIndex], false)
               inputString = history[historyIndex]
-        elif inputChar != '\0':
+        elif ord(inputChar) > 31:
           write(stdout, inputChar)
           inputString.add(inputChar)
         inputChar = getch()
