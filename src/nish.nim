@@ -68,22 +68,23 @@ for kind, key, value in options.getopt():
       break
   else: discard
 
-proc showPrompt() =
+proc showPrompt(promptEnabled: bool; previousCommand: string;
+    resultCode: int) {.gcsafe.} =
   ## Show the shell prompt if the shell wasn't started in one command mode
-  if oneTimeCommand:
+  if promptEnabled:
     return
   if getCurrentDir() & "/" == getHomeDir():
     styledWrite(stdout, fgBlue, "~")
   else:
     styledWrite(stdout, fgBlue, replace(getCurrentDir(), getHomeDir(), "~/"))
-  if commandName != "" and returnCode != QuitSuccess:
-    styledWrite(stdout, fgRed, "[" & $returnCode & "]")
+  if previousCommand != "" and resultCode != QuitSuccess:
+    styledWrite(stdout, fgRed, "[" & $resultCode & "]")
   styledWrite(stdout, fgBlue, "# ")
 
 proc showOutput(message: string; newLine: bool = true) =
   ## Show the selected message and prompt to the user. If newLine is true
   ## (default), add a new line after message
-  showPrompt()
+  showPrompt(oneTimeCommand, commandName, returnCode)
   if message != "":
     write(stdout, message)
     if newLine:
@@ -109,7 +110,7 @@ proc noControlC() {.noconv.} =
   ## quit from the program
   cursorBackward(stdout, 2)
   echo "If you want to exit the shell, type 'exit' and press Enter"
-  showPrompt()
+  showPrompt(oneTimeCommand, "", QuitSuccess)
 
 setControlCHook(noControlC)
 
@@ -119,7 +120,7 @@ while true:
     # Run only one command, don't show prompt and wait for the user input
     if not oneTimeCommand:
       # Write prompt
-      showPrompt()
+      showPrompt(oneTimeCommand, commandName, returnCode)
       # Get the user input and parse it
       var inputChar: char
       # Reset previous input
