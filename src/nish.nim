@@ -39,7 +39,8 @@ var
   historyIndex: int = 0
   inputString: string = ""
 
-proc showCommandLineHelp() =
+proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
+                            tags: [].} =
   ## Show the program arguments help
   echo """Available arguments are:
     -c [command] - Run the selected command in shell and quit
