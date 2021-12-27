@@ -69,7 +69,8 @@ for kind, key, value in options.getopt():
   else: discard
 
 proc showPrompt(promptEnabled: bool; previousCommand: string;
-    resultCode: int) {.gcsafe.} =
+    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [OSError, IOError,
+        ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show the shell prompt if the shell wasn't started in one command mode
   if promptEnabled:
     return
