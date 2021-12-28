@@ -82,10 +82,11 @@ proc showPrompt(promptEnabled: bool; previousCommand: string;
     styledWrite(stdout, fgRed, "[" & $resultCode & "]")
   styledWrite(stdout, fgBlue, "# ")
 
-proc showOutput(message: string; newLine: bool = true) =
-  ## Show the selected message and prompt to the user. If newLine is true
-  ## (default), add a new line after message
-  showPrompt(oneTimeCommand, commandName, returnCode)
+proc showOutput(message: string; newLine: bool;
+    promptEnabled: bool; previousCommand: string) =
+  ## Show the selected message and prompt (if enabled, default) to the user.
+  ## If newLine is true, add a new line after message.
+  showPrompt(promptEnabled, previousCommand, returnCode)
   if message != "":
     write(stdout, message)
     if newLine:
@@ -145,7 +146,7 @@ while true:
             inputChar = getch()
             if inputChar == 'A' and history.len() > 0:
               eraseLine(stdout)
-              showOutput(history[historyIndex], false)
+              showOutput(history[historyIndex], false, oneTimeCommand, commandName)
               inputString = history[historyIndex]
               dec(historyIndex)
               if historyIndex < 0:
@@ -156,7 +157,7 @@ while true:
               if historyIndex >= history.len():
                 historyIndex = history.len() - 1
               eraseLine(stdout)
-              showOutput(history[historyIndex], false)
+              showOutput(history[historyIndex], false, oneTimeCommand, commandName)
               inputString = history[historyIndex]
         elif ord(inputChar) > 31:
           write(stdout, inputChar)
@@ -188,20 +189,20 @@ while true:
 
       To see more information about the command, type help [command], for
       example: help cd.
-      """)
+      """, true, oneTimeCommand, commandName)
         updateHistory("help")
       elif userInput.key == "cd":
         showOutput("""Usage: cd [directory]
 
       You must have permissions to enter the directory and directory
       need to exists.
-      """)
+      """, true, oneTimeCommand, commandName)
         updateHistory("help cd")
       elif userInput.key == "exit":
         showOutput("""Usage: exit
 
       Exit from the shell.
-      """)
+      """, true, oneTimeCommand, commandName)
         updateHistory("help exit")
       elif userInput.key == "help":
         showOutput("""Usage help ?command?
@@ -209,22 +210,23 @@ while true:
       If entered only as help, show the list of available commands,
       when also command entered, show the information about the selected
       command.
-      """)
+      """, true, oneTimeCommand, commandName)
         updateHistory("help help")
       elif userInput.key == "set":
         showOutput("""Usage set [name=value]
 
       Set the environment variable with the selected name and value.
-        """)
+        """, true, oneTimeCommand, commandName)
         updateHistory("help set")
       elif userInput.key == "unset":
         showOutput("""Usage unset [name]
 
       Remove the environment variable with the selected name.
-        """)
+        """, true, oneTimeCommand, commandName)
         updateHistory("help unset")
       else:
-        showOutput("Uknown command '" & userInput.key & "'")
+        showOutput("Uknown command '" & userInput.key & "'", true,
+            oneTimeCommand, commandName)
         returnCode = QuitFailure
     # Change current directory
     of "cd":
@@ -245,7 +247,7 @@ while true:
           try:
             putEnv(varValues[0], varValues[1])
             showOutput("Environment variable '" & varValues[0] &
-                "' set to '" & varValues[1] & "'")
+                "' set to '" & varValues[1] & "'", true, oneTimeCommand, commandName)
             updateHistory("set " & userInput.key)
           except OSError:
             styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
@@ -256,7 +258,8 @@ while true:
       if userInput.kind != cmdEnd:
         try:
           delEnv(userInput.key)
-          showOutput("Environment variable '" & userInput.key & "' removed")
+          showOutput("Environment variable '" & userInput.key & "' removed",
+              true, oneTimeCommand, commandName)
           updateHistory("unset " & userInput.key)
         except OSError:
           showError()
