@@ -252,8 +252,7 @@ while true:
                 "' set to '" & varValues[1] & "'", true, oneTimeCommand, commandName)
             updateHistory("set " & userInput.key)
           except OSError:
-            styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
-            returnCode = QuitFailure
+            returnCode = showError()
     # Delete environment variable
     of "unset":
       userInput.next()
