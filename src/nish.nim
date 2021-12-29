@@ -95,11 +95,11 @@ proc showOutput(message: string; newLine: bool;
       writeLine(stdout, "")
   flushFile(stdout)
 
-proc showError() =
+proc showError(): int =
   ## Print the exception message to standard error and set the shell return
   ## code to error
   styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
-  returnCode = QuitFailure
+  result = QuitFailure
 
 proc updateHistory(commandToAdd: string) =
   ## Add the selected command to the shell history and increase the current
@@ -239,7 +239,7 @@ while true:
           setCurrentDir(path)
           updateHistory("cd " & userInput.key)
         except OSError:
-          showError()
+          returnCode = showError()
     # Set the environment variable
     of "set":
       userInput.next()
@@ -264,7 +264,7 @@ while true:
               true, oneTimeCommand, commandName)
           updateHistory("unset " & userInput.key)
         except OSError:
-          showError()
+          returnCode = showError()
     # Execute external command
     else:
       let commandToExecute = commandName & " " &
@@ -273,7 +273,7 @@ while true:
       if returnCode == QuitSuccess:
         updateHistory(commandToExecute)
   except:
-    showError()
+    returnCode = showError()
   finally:
     # Run only one command, quit from the shell
     if oneTimeCommand:
