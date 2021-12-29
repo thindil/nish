@@ -95,7 +95,8 @@ proc showOutput(message: string; newLine: bool;
       writeLine(stdout, "")
   flushFile(stdout)
 
-proc showError(): int =
+proc showError(): int {.gcsafe, locks: 0, sideEffect, raises: [IOError,
+    ValueError], tags: [WriteIOEffect].} =
   ## Print the exception message to standard error and set the shell return
   ## code to error
   styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
