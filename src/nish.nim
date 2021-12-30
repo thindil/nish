@@ -30,14 +30,8 @@ const
   maxHistoryLength = 500
 
 var
-  userInput: OptParser
-  commandName: string = ""
   oneTimeCommand: bool = false
-  options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
   returnCode: int = QuitSuccess
-  history: seq[string]
-  historyIndex: int = 0
-  inputString: string = ""
 
 proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
@@ -46,27 +40,6 @@ proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
     -c [command] - Run the selected command in shell and quit
     -h, --help   - Show this help and quit"""
   quit QuitSuccess
-
-# Check the command line parameters entered by the user. Available options
-# are "-c [command]" to run only one command and "-h" or "--help" to show
-# help about the shell's command line arguments
-for kind, key, value in options.getopt():
-  case kind
-  of cmdShortOption:
-    case key
-    of "c":
-      oneTimeCommand = true
-    of "h":
-      showCommandLineHelp()
-  of cmdLongOption:
-    if key == "help":
-      showCommandLineHelp()
-  of cmdArgument:
-    if oneTimeCommand:
-      # Set the command to execute in shell
-      userInput = initOptParser(key)
-      break
-  else: discard
 
 proc showPrompt(promptEnabled: bool; previousCommand: string;
     resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [OSError, IOError,
@@ -119,164 +92,198 @@ proc noControlC() {.noconv, gcsafe, locks: 0, raises: [IOError, ValueError,
   echo "If you want to exit the shell, type 'exit' and press Enter"
   showPrompt(oneTimeCommand, "", QuitSuccess)
 
-setControlCHook(noControlC)
+proc main() =
+  ## The main procedure of the shell
 
-# Start the shell
-while true:
-  try:
-    # Run only one command, don't show prompt and wait for the user input
-    if not oneTimeCommand:
-      # Write prompt
-      showPrompt(oneTimeCommand, commandName, returnCode)
-      # Get the user input and parse it
-      var inputChar: char
-      # Reset previous input
-      inputString = ""
-      inputChar = '\0'
-      # Read the user input until not meet new line character or the input
-      # reach the maximum length
-      while ord(inputChar) != 13 and inputString.len() < maxInputLength:
-        # Backspace pressed, delete the last character from the user input
-        if ord(inputChar) == 127:
-          if inputString.len() > 0:
-            inputString = inputString[0..^2]
-            cursorBackward(stdout)
-            write(stdout, " ")
-            cursorBackward(stdout)
-        # Escape or arrows keys pressed
-        elif ord(inputChar) == 27:
-          # Arrow key pressed
-          if getch() == '[':
-            # Arrow up key pressed
-            inputChar = getch()
-            if inputChar == 'A' and history.len() > 0:
-              eraseLine(stdout)
-              showOutput(history[historyIndex], false, oneTimeCommand, commandName)
-              inputString = history[historyIndex]
-              dec(historyIndex)
-              if historyIndex < 0:
-                historyIndex = 0;
-            # Arrow down key pressed
-            elif inputChar == 'B' and history.len() > 0:
-              inc(historyIndex)
-              if historyIndex >= history.len():
-                historyIndex = history.len() - 1
-              eraseLine(stdout)
-              showOutput(history[historyIndex], false, oneTimeCommand, commandName)
-              inputString = history[historyIndex]
-        elif ord(inputChar) > 31:
-          write(stdout, inputChar)
-          inputString.add(inputChar)
-        inputChar = getch()
-      writeLine(stdout, "")
-      userInput = initOptParser(inputString)
-      # Reset the return code of the program
-      returnCode = QuitSuccess
-    # Go to the first token
-    userInput.next()
-    # If it looks like an argument, it must be command name
-    if userInput.kind == cmdArgument:
-      commandName = userInput.key
-    # No command name, back to beginning
-    if commandName == "":
-      continue
-    # Parse commands
-    case commandName
-    # Quit from shell
-    of "exit":
-      quit returnCode
-    # Show help screen
-    of "help":
+  var
+    userInput: OptParser
+    commandName: string = ""
+    options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
+    history: seq[string]
+    historyIndex: int = 0
+    inputString: string = ""
+
+  # Check the command line parameters entered by the user. Available options
+  # are "-c [command]" to run only one command and "-h" or "--help" to show
+  # help about the shell's command line arguments
+  for kind, key, value in options.getopt():
+    case kind
+    of cmdShortOption:
+      case key
+      of "c":
+        oneTimeCommand = true
+      of "h":
+        showCommandLineHelp()
+    of cmdLongOption:
+      if key == "help":
+        showCommandLineHelp()
+    of cmdArgument:
+      if oneTimeCommand:
+        # Set the command to execute in shell
+        userInput = initOptParser(key)
+        break
+    else: discard
+
+  setControlCHook(noControlC)
+
+  # Start the shell
+  while true:
+    try:
+      # Run only one command, don't show prompt and wait for the user input
+      if not oneTimeCommand:
+        # Write prompt
+        showPrompt(oneTimeCommand, commandName, returnCode)
+        # Get the user input and parse it
+        var inputChar: char
+        # Reset previous input
+        inputString = ""
+        inputChar = '\0'
+        # Read the user input until not meet new line character or the input
+        # reach the maximum length
+        while ord(inputChar) != 13 and inputString.len() < maxInputLength:
+          # Backspace pressed, delete the last character from the user input
+          if ord(inputChar) == 127:
+            if inputString.len() > 0:
+              inputString = inputString[0..^2]
+              cursorBackward(stdout)
+              write(stdout, " ")
+              cursorBackward(stdout)
+          # Escape or arrows keys pressed
+          elif ord(inputChar) == 27:
+            # Arrow key pressed
+            if getch() == '[':
+              # Arrow up key pressed
+              inputChar = getch()
+              if inputChar == 'A' and history.len() > 0:
+                eraseLine(stdout)
+                showOutput(history[historyIndex], false, oneTimeCommand, commandName)
+                inputString = history[historyIndex]
+                dec(historyIndex)
+                if historyIndex < 0:
+                  historyIndex = 0;
+              # Arrow down key pressed
+              elif inputChar == 'B' and history.len() > 0:
+                inc(historyIndex)
+                if historyIndex >= history.len():
+                  historyIndex = history.len() - 1
+                eraseLine(stdout)
+                showOutput(history[historyIndex], false, oneTimeCommand, commandName)
+                inputString = history[historyIndex]
+          elif ord(inputChar) > 31:
+            write(stdout, inputChar)
+            inputString.add(inputChar)
+          inputChar = getch()
+        writeLine(stdout, "")
+        userInput = initOptParser(inputString)
+        # Reset the return code of the program
+        returnCode = QuitSuccess
+      # Go to the first token
       userInput.next()
-      # If user entered only "help", show the main help screen
-      if userInput.kind == cmdEnd:
-        showOutput("""Available commands are: cd, exit, help, set, unset
+      # If it looks like an argument, it must be command name
+      if userInput.kind == cmdArgument:
+        commandName = userInput.key
+      # No command name, back to beginning
+      if commandName == "":
+        continue
+      # Parse commands
+      case commandName
+      # Quit from shell
+      of "exit":
+        quit returnCode
+      # Show help screen
+      of "help":
+        userInput.next()
+        # If user entered only "help", show the main help screen
+        if userInput.kind == cmdEnd:
+          showOutput("""Available commands are: cd, exit, help, set, unset
 
-      To see more information about the command, type help [command], for
-      example: help cd.
-      """, true, oneTimeCommand, commandName)
-        historyIndex = updateHistory("help", history)
-      elif userInput.key == "cd":
-        showOutput("""Usage: cd [directory]
-
-      You must have permissions to enter the directory and directory
-      need to exists.
-      """, true, oneTimeCommand, commandName)
-        historyIndex = updateHistory("help cd", history)
-      elif userInput.key == "exit":
-        showOutput("""Usage: exit
-
-      Exit from the shell.
-      """, true, oneTimeCommand, commandName)
-        historyIndex = updateHistory("help exit", history)
-      elif userInput.key == "help":
-        showOutput("""Usage help ?command?
-
-      If entered only as help, show the list of available commands,
-      when also command entered, show the information about the selected
-      command.
-      """, true, oneTimeCommand, commandName)
-        historyIndex = updateHistory("help help", history)
-      elif userInput.key == "set":
-        showOutput("""Usage set [name=value]
-
-      Set the environment variable with the selected name and value.
+        To see more information about the command, type help [command], for
+        example: help cd.
         """, true, oneTimeCommand, commandName)
-        historyIndex = updateHistory("help set", history)
-      elif userInput.key == "unset":
-        showOutput("""Usage unset [name]
+          historyIndex = updateHistory("help", history)
+        elif userInput.key == "cd":
+          showOutput("""Usage: cd [directory]
 
-      Remove the environment variable with the selected name.
+        You must have permissions to enter the directory and directory
+        need to exists.
         """, true, oneTimeCommand, commandName)
-        historyIndex = updateHistory("help unset", history)
-      else:
-        showOutput("Uknown command '" & userInput.key & "'", true,
-            oneTimeCommand, commandName)
-        returnCode = QuitFailure
-    # Change current directory
-    of "cd":
-      userInput.next()
-      if userInput.kind != cmdEnd:
-        let path: string = absolutePath(expandTilde(userInput.key))
-        try:
-          setCurrentDir(path)
-          historyIndex = updateHistory("cd " & userInput.key, history)
-        except OSError:
-          returnCode = showError()
-    # Set the environment variable
-    of "set":
-      userInput.next()
-      if userInput.kind != cmdEnd:
-        let varValues = userInput.key.split("=")
-        if varValues.len > 1:
+          historyIndex = updateHistory("help cd", history)
+        elif userInput.key == "exit":
+          showOutput("""Usage: exit
+
+        Exit from the shell.
+        """, true, oneTimeCommand, commandName)
+          historyIndex = updateHistory("help exit", history)
+        elif userInput.key == "help":
+          showOutput("""Usage help ?command?
+
+        If entered only as help, show the list of available commands,
+        when also command entered, show the information about the selected
+        command.
+        """, true, oneTimeCommand, commandName)
+          historyIndex = updateHistory("help help", history)
+        elif userInput.key == "set":
+          showOutput("""Usage set [name=value]
+
+        Set the environment variable with the selected name and value.
+          """, true, oneTimeCommand, commandName)
+          historyIndex = updateHistory("help set", history)
+        elif userInput.key == "unset":
+          showOutput("""Usage unset [name]
+
+        Remove the environment variable with the selected name.
+          """, true, oneTimeCommand, commandName)
+          historyIndex = updateHistory("help unset", history)
+        else:
+          showOutput("Uknown command '" & userInput.key & "'", true,
+              oneTimeCommand, commandName)
+          returnCode = QuitFailure
+      # Change current directory
+      of "cd":
+        userInput.next()
+        if userInput.kind != cmdEnd:
+          let path: string = absolutePath(expandTilde(userInput.key))
           try:
-            putEnv(varValues[0], varValues[1])
-            showOutput("Environment variable '" & varValues[0] &
-                "' set to '" & varValues[1] & "'", true, oneTimeCommand, commandName)
-            historyIndex = updateHistory("set " & userInput.key, history)
+            setCurrentDir(path)
+            historyIndex = updateHistory("cd " & userInput.key, history)
           except OSError:
             returnCode = showError()
-    # Delete environment variable
-    of "unset":
-      userInput.next()
-      if userInput.kind != cmdEnd:
-        try:
-          delEnv(userInput.key)
-          showOutput("Environment variable '" & userInput.key & "' removed",
-              true, oneTimeCommand, commandName)
-          historyIndex = updateHistory("unset " & userInput.key, history)
-        except OSError:
-          returnCode = showError()
-    # Execute external command
-    else:
-      let commandToExecute = commandName & " " &
-        join(userInput.remainingArgs, " ")
-      returnCode = execCmd(commandToExecute)
-      if returnCode == QuitSuccess:
-        historyIndex = updateHistory(commandToExecute, history)
-  except:
-    returnCode = showError()
-  finally:
-    # Run only one command, quit from the shell
-    if oneTimeCommand:
-      quit returnCode
+      # Set the environment variable
+      of "set":
+        userInput.next()
+        if userInput.kind != cmdEnd:
+          let varValues = userInput.key.split("=")
+          if varValues.len > 1:
+            try:
+              putEnv(varValues[0], varValues[1])
+              showOutput("Environment variable '" & varValues[0] &
+                  "' set to '" & varValues[1] & "'", true, oneTimeCommand, commandName)
+              historyIndex = updateHistory("set " & userInput.key, history)
+            except OSError:
+              returnCode = showError()
+      # Delete environment variable
+      of "unset":
+        userInput.next()
+        if userInput.kind != cmdEnd:
+          try:
+            delEnv(userInput.key)
+            showOutput("Environment variable '" & userInput.key & "' removed",
+                true, oneTimeCommand, commandName)
+            historyIndex = updateHistory("unset " & userInput.key, history)
+          except OSError:
+            returnCode = showError()
+      # Execute external command
+      else:
+        let commandToExecute = commandName & " " &
+          join(userInput.remainingArgs, " ")
+        returnCode = execCmd(commandToExecute)
+        if returnCode == QuitSuccess:
+          historyIndex = updateHistory(commandToExecute, history)
+    except:
+      returnCode = showError()
+    finally:
+      # Run only one command, quit from the shell
+      if oneTimeCommand:
+        quit returnCode
+
+main()
