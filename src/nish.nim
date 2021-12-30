@@ -111,7 +111,8 @@ func updateHistory(commandToAdd: string; historyList: var seq[
   historyList.add(commandToAdd)
   result = historyList.len() - 1
 
-proc noControlC() {.noconv.} =
+proc noControlC() {.noconv, gcsafe, locks: 0, raises: [IOError, ValueError,
+    OSError], tags: [ReadIOEffect, WriteIOEffect].} =
   ## Block quitting from the shell with Control-C key, show info how to
   ## quit from the program
   cursorBackward(stdout, 2)
