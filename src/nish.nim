@@ -102,13 +102,14 @@ proc showError(): int {.gcsafe, locks: 0, sideEffect, raises: [IOError,
   styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
   result = QuitFailure
 
-proc updateHistory(commandToAdd: string) =
+proc updateHistory(commandToAdd: string; historyList: var seq[
+    string]): int {.gcsafe.} =
   ## Add the selected command to the shell history and increase the current
   ## history index
-  if history.len() == maxHistoryLength:
-    history.delete(1)
-  history.add(commandToAdd)
-  historyIndex = history.len() - 1
+  if historyList.len() == maxHistoryLength:
+    historyList.delete(1)
+  historyList.add(commandToAdd)
+  result = historyList.len() - 1
 
 proc noControlC() {.noconv.} =
   ## Block quitting from the shell with Control-C key, show info how to
@@ -193,20 +194,20 @@ while true:
       To see more information about the command, type help [command], for
       example: help cd.
       """, true, oneTimeCommand, commandName)
-        updateHistory("help")
+        historyIndex = updateHistory("help", history)
       elif userInput.key == "cd":
         showOutput("""Usage: cd [directory]
 
       You must have permissions to enter the directory and directory
       need to exists.
       """, true, oneTimeCommand, commandName)
-        updateHistory("help cd")
+        historyIndex = updateHistory("help cd", history)
       elif userInput.key == "exit":
         showOutput("""Usage: exit
 
       Exit from the shell.
       """, true, oneTimeCommand, commandName)
-        updateHistory("help exit")
+        historyIndex = updateHistory("help exit", history)
       elif userInput.key == "help":
         showOutput("""Usage help ?command?
 
@@ -214,19 +215,19 @@ while true:
       when also command entered, show the information about the selected
       command.
       """, true, oneTimeCommand, commandName)
-        updateHistory("help help")
+        historyIndex = updateHistory("help help", history)
       elif userInput.key == "set":
         showOutput("""Usage set [name=value]
 
       Set the environment variable with the selected name and value.
         """, true, oneTimeCommand, commandName)
-        updateHistory("help set")
+        historyIndex = updateHistory("help set", history)
       elif userInput.key == "unset":
         showOutput("""Usage unset [name]
 
       Remove the environment variable with the selected name.
         """, true, oneTimeCommand, commandName)
-        updateHistory("help unset")
+        historyIndex = updateHistory("help unset", history)
       else:
         showOutput("Uknown command '" & userInput.key & "'", true,
             oneTimeCommand, commandName)
@@ -238,7 +239,7 @@ while true:
         let path: string = absolutePath(expandTilde(userInput.key))
         try:
           setCurrentDir(path)
-          updateHistory("cd " & userInput.key)
+          historyIndex = updateHistory("cd " & userInput.key, history)
         except OSError:
           returnCode = showError()
     # Set the environment variable
@@ -251,7 +252,7 @@ while true:
             putEnv(varValues[0], varValues[1])
             showOutput("Environment variable '" & varValues[0] &
                 "' set to '" & varValues[1] & "'", true, oneTimeCommand, commandName)
-            updateHistory("set " & userInput.key)
+            historyIndex = updateHistory("set " & userInput.key, history)
           except OSError:
             returnCode = showError()
     # Delete environment variable
@@ -262,7 +263,7 @@ while true:
           delEnv(userInput.key)
           showOutput("Environment variable '" & userInput.key & "' removed",
               true, oneTimeCommand, commandName)
-          updateHistory("unset " & userInput.key)
+          historyIndex = updateHistory("unset " & userInput.key, history)
         except OSError:
           returnCode = showError()
     # Execute external command
@@ -271,7 +272,7 @@ while true:
         join(userInput.remainingArgs, " ")
       returnCode = execCmd(commandToExecute)
       if returnCode == QuitSuccess:
-        updateHistory(commandToExecute)
+        historyIndex = updateHistory(commandToExecute, history)
   except:
     returnCode = showError()
   finally:
