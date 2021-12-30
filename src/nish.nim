@@ -102,8 +102,8 @@ proc showError(): int {.gcsafe, locks: 0, sideEffect, raises: [IOError,
   styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
   result = QuitFailure
 
-proc updateHistory(commandToAdd: string; historyList: var seq[
-    string]): int {.gcsafe.} =
+func updateHistory(commandToAdd: string; historyList: var seq[
+    string]): int {.gcsafe, locks: 0, raises: [], tags: [].} =
   ## Add the selected command to the shell history and increase the current
   ## history index
   if historyList.len() == maxHistoryLength:
