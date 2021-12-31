@@ -101,7 +101,6 @@ proc main() =
     options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
     history: seq[string]
     historyIndex: int = 0
-    inputString: string = ""
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command and "-h" or "--help" to show
@@ -134,10 +133,9 @@ proc main() =
         # Write prompt
         showPrompt(oneTimeCommand, commandName, returnCode)
         # Get the user input and parse it
-        var inputChar: char
-        # Reset previous input
-        inputString = ""
-        inputChar = '\0'
+        var
+          inputString = ""
+          inputChar = '\0'
         # Read the user input until not meet new line character or the input
         # reach the maximum length
         while ord(inputChar) != 13 and inputString.len() < maxInputLength:
