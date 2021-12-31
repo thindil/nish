@@ -29,9 +29,6 @@ const
   maxInputLength = 4096
   maxHistoryLength = 500
 
-var
-  returnCode: int = QuitSuccess
-
 proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
   ## Show the program arguments help
@@ -55,9 +52,9 @@ proc showPrompt(promptEnabled: bool; previousCommand: string;
   styledWrite(stdout, fgBlue, "# ")
 
 proc showOutput(message: string; newLine: bool;
-    promptEnabled: bool; previousCommand: string) {.gcsafe, locks: 0,
-        sideEffect, raises: [OSError, IOError, ValueError], tags: [ReadIOEffect,
-            WriteIOEffect].} =
+    promptEnabled: bool; previousCommand: string; returnCode: int) {.gcsafe,
+        locks: 0, sideEffect, raises: [OSError, IOError, ValueError], tags: [
+            ReadIOEffect, WriteIOEffect].} =
   ## Show the selected message and prompt (if enabled, default) to the user.
   ## If newLine is true, add a new line after message.
   showPrompt(promptEnabled, previousCommand, returnCode)
@@ -101,6 +98,7 @@ proc main() =
     history: seq[string]
     historyIndex: int = 0
     oneTimeCommand: bool = false
+    returnCode: int = QuitSuccess
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command and "-h" or "--help" to show
@@ -154,7 +152,8 @@ proc main() =
               inputChar = getch()
               if inputChar == 'A' and history.len() > 0:
                 eraseLine(stdout)
-                showOutput(history[historyIndex], false, oneTimeCommand, commandName)
+                showOutput(history[historyIndex], false, oneTimeCommand,
+                    commandName, returnCode)
                 inputString = history[historyIndex]
                 dec(historyIndex)
                 if historyIndex < 0:
@@ -165,7 +164,8 @@ proc main() =
                 if historyIndex >= history.len():
                   historyIndex = history.len() - 1
                 eraseLine(stdout)
-                showOutput(history[historyIndex], false, oneTimeCommand, commandName)
+                showOutput(history[historyIndex], false, oneTimeCommand,
+                    commandName, returnCode)
                 inputString = history[historyIndex]
           elif ord(inputChar) > 31:
             write(stdout, inputChar)
@@ -197,20 +197,20 @@ proc main() =
 
         To see more information about the command, type help [command], for
         example: help cd.
-        """, true, oneTimeCommand, commandName)
+        """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help", history)
         elif userInput.key == "cd":
           showOutput("""Usage: cd [directory]
 
         You must have permissions to enter the directory and directory
         need to exists.
-        """, true, oneTimeCommand, commandName)
+        """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help cd", history)
         elif userInput.key == "exit":
           showOutput("""Usage: exit
 
         Exit from the shell.
-        """, true, oneTimeCommand, commandName)
+        """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help exit", history)
         elif userInput.key == "help":
           showOutput("""Usage help ?command?
@@ -218,23 +218,23 @@ proc main() =
         If entered only as help, show the list of available commands,
         when also command entered, show the information about the selected
         command.
-        """, true, oneTimeCommand, commandName)
+        """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help help", history)
         elif userInput.key == "set":
           showOutput("""Usage set [name=value]
 
         Set the environment variable with the selected name and value.
-          """, true, oneTimeCommand, commandName)
+          """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help set", history)
         elif userInput.key == "unset":
           showOutput("""Usage unset [name]
 
         Remove the environment variable with the selected name.
-          """, true, oneTimeCommand, commandName)
+          """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help unset", history)
         else:
           showOutput("Uknown command '" & userInput.key & "'", true,
-              oneTimeCommand, commandName)
+              oneTimeCommand, commandName, returnCode)
           returnCode = QuitFailure
       # Change current directory
       of "cd":
@@ -255,7 +255,8 @@ proc main() =
             try:
               putEnv(varValues[0], varValues[1])
               showOutput("Environment variable '" & varValues[0] &
-                  "' set to '" & varValues[1] & "'", true, oneTimeCommand, commandName)
+                  "' set to '" & varValues[1] & "'", true, oneTimeCommand,
+                      commandName, returnCode)
               historyIndex = updateHistory("set " & userInput.key, history)
             except OSError:
               returnCode = showError()
@@ -266,7 +267,7 @@ proc main() =
           try:
             delEnv(userInput.key)
             showOutput("Environment variable '" & userInput.key & "' removed",
-                true, oneTimeCommand, commandName)
+                true, oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("unset " & userInput.key, history)
           except OSError:
             returnCode = showError()
