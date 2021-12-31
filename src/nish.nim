@@ -30,7 +30,6 @@ const
   maxHistoryLength = 500
 
 var
-  oneTimeCommand: bool = false
   returnCode: int = QuitSuccess
 
 proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
@@ -90,7 +89,7 @@ proc noControlC() {.noconv, gcsafe, locks: 0, raises: [IOError, ValueError,
   ## quit from the program
   cursorBackward(stdout, 2)
   echo "If you want to exit the shell, type 'exit' and press Enter"
-  showPrompt(oneTimeCommand, "", QuitSuccess)
+  showPrompt(false, "", QuitSuccess)
 
 proc main() =
   ## The main procedure of the shell
@@ -101,6 +100,7 @@ proc main() =
     options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
     history: seq[string]
     historyIndex: int = 0
+    oneTimeCommand: bool = false
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command and "-h" or "--help" to show
