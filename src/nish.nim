@@ -88,7 +88,8 @@ proc noControlC() {.noconv, gcsafe, locks: 0, raises: [IOError, ValueError,
   echo "If you want to exit the shell, type 'exit' and press Enter"
   showPrompt(false, "", QuitSuccess)
 
-proc main() =
+proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError,
+    OSError], tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## The main procedure of the shell
 
   var
