@@ -80,16 +80,8 @@ func updateHistory(commandToAdd: string; historyList: var seq[
   historyList.add(commandToAdd)
   result = historyList.len() - 1
 
-proc noControlC() {.noconv, gcsafe, locks: 0, raises: [IOError, ValueError,
-    OSError], tags: [ReadIOEffect, WriteIOEffect].} =
-  ## Block quitting from the shell with Control-C key, show info how to
-  ## quit from the program
-  cursorBackward(stdout, 2)
-  echo "If you want to exit the shell, type 'exit' and press Enter"
-  showPrompt(false, "", QuitSuccess)
-
-proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError,
-    OSError], tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
+proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
+    ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## The main procedure of the shell
 
   var
@@ -121,8 +113,6 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError,
         userInput = initOptParser(key)
         break
     else: discard
-
-  setControlCHook(noControlC)
 
   # Start the shell
   while true:
