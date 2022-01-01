@@ -43,10 +43,18 @@ proc showPrompt(promptEnabled: bool; previousCommand: string;
   ## Show the shell prompt if the shell wasn't started in one command mode
   if promptEnabled:
     return
-  if getCurrentDir() & "/" == getHomeDir():
+  let
+    currentDirectory: string = getCurrentDir()
+    homeDirectory: string = getHomeDir()
+  if endsWith(currentDirectory & "/", homeDirectory):
     styledWrite(stdout, fgBlue, "~")
   else:
-    styledWrite(stdout, fgBlue, replace(getCurrentDir(), getHomeDir(), "~/"))
+    let homeIndex: int = find(currentDirectory, homeDirectory)
+    if homeIndex > -1:
+      styledWrite(stdout, fgBlue, "~/" & currentDirectory[homeIndex +
+          homeDirectory.len()..^1])
+    else:
+      styledWrite(stdout, fgBlue, currentDirectory)
   if previousCommand != "" and resultCode != QuitSuccess:
     styledWrite(stdout, fgRed, "[" & $resultCode & "]")
   styledWrite(stdout, fgBlue, "# ")
