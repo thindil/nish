@@ -1,4 +1,4 @@
-# Copyright © 2021 Bartek Jasicki
+# Copyright © 2021-2022 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,18 @@ proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
   ## Show the program arguments help
   echo """Available arguments are:
-    -c [command] - Run the selected command in shell and quit
-    -h, --help   - Show this help and quit"""
+    -c [command]  - Run the selected command in shell and quit
+    -h, --help    - Show this help and quit
+    -v, --version - Show the shell version info"""
+  quit QuitSuccess
+
+proc showProgramVersion() {.gcsafe, locks: 0, sideEffect, raises: [],
+                            tags: [].} =
+  ## Show the program version
+  echo """
+    Nish version 0.1.0
+    Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
+    License: 3-Clause BSD"""
   quit QuitSuccess
 
 proc showPrompt(promptEnabled: bool; previousCommand: string;
@@ -95,7 +105,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
   var
     userInput: OptParser
     commandName: string = ""
-    options: OptParser = initOptParser(shortNoVal = {'h'}, longNoVal = @["help"])
+    options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @["help", "version"])
     history: seq[string]
     historyIndex: int = 0
     oneTimeCommand: bool = false
@@ -112,9 +122,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
         oneTimeCommand = true
       of "h":
         showCommandLineHelp()
+      of "v":
+        showProgramVersion()
     of cmdLongOption:
-      if key == "help":
+      case key
+      of "help":
         showCommandLineHelp()
+      of "version":
+        showProgramVersion()
     of cmdArgument:
       if oneTimeCommand:
         # Set the command to execute in shell
