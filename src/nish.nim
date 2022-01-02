@@ -175,18 +175,18 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
                   historyIndex = 0;
               # Arrow down key pressed
               elif inputChar == 'B' and history.len() > 0:
-                inc(historyIndex)
+                historyIndex.inc()
                 if historyIndex >= history.len():
                   historyIndex = history.len() - 1
-                eraseLine(stdout)
+                stdout.eraseLine()
                 showOutput(history[historyIndex], false, oneTimeCommand,
                     commandName, returnCode)
                 inputString = history[historyIndex]
-          elif ord(inputChar) > 31:
-            write(stdout, inputChar)
+          elif inputChar.ord() > 31:
+            stdout.write(inputChar)
             inputString.add(inputChar)
           inputChar = getch()
-        writeLine(stdout, "")
+        stdout.writeLine("")
         userInput = initOptParser(inputString)
         # Reset the return code of the program
         returnCode = QuitSuccess
@@ -266,7 +266,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
         userInput.next()
         if userInput.kind != cmdEnd:
           let varValues = userInput.key.split("=")
-          if varValues.len > 1:
+          if varValues.len() > 1:
             try:
               putEnv(varValues[0], varValues[1])
               showOutput("Environment variable '" & varValues[0] &
