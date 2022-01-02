@@ -1,4 +1,4 @@
-# Copyright © 2021-2022 Bartek Jasicki
+# Copyright © 2021-2022 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -57,17 +57,17 @@ proc showPrompt(promptEnabled: bool; previousCommand: string;
     currentDirectory: string = getCurrentDir()
     homeDirectory: string = getHomeDir()
   if endsWith(currentDirectory & "/", homeDirectory):
-    styledWrite(stdout, fgBlue, "~")
+    stdout.styledWrite(fgBlue, "~")
   else:
-    let homeIndex: int = find(currentDirectory, homeDirectory)
+    let homeIndex: int = currentDirectory.find(homeDirectory)
     if homeIndex > -1:
-      styledWrite(stdout, fgBlue, "~/" & currentDirectory[homeIndex +
+      stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
           homeDirectory.len()..^1])
     else:
-      styledWrite(stdout, fgBlue, currentDirectory)
+      stdout.styledWrite(fgBlue, currentDirectory)
   if previousCommand != "" and resultCode != QuitSuccess:
-    styledWrite(stdout, fgRed, "[" & $resultCode & "]")
-  styledWrite(stdout, fgBlue, "# ")
+    stdout.styledWrite(fgRed, "[" & $resultCode & "]")
+  stdout.styledWrite(fgBlue, "# ")
 
 proc showOutput(message: string; newLine: bool;
     promptEnabled: bool; previousCommand: string; returnCode: int) {.gcsafe,
@@ -77,16 +77,16 @@ proc showOutput(message: string; newLine: bool;
   ## If newLine is true, add a new line after message.
   showPrompt(promptEnabled, previousCommand, returnCode)
   if message != "":
-    write(stdout, message)
+    stdout.write(message)
     if newLine:
-      writeLine(stdout, "")
-  flushFile(stdout)
+      stdout.writeLine("")
+  stdout.flushFile()
 
 proc showError(): int {.gcsafe, locks: 0, sideEffect, raises: [IOError,
     ValueError], tags: [WriteIOEffect].} =
   ## Print the exception message to standard error and set the shell return
   ## code to error
-  styledWriteLine(stderr, fgRed, getCurrentExceptionMsg())
+  stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
   result = QuitFailure
 
 func updateHistory(commandToAdd: string; historyList: var seq[
@@ -105,7 +105,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
   var
     userInput: OptParser
     commandName: string = ""
-    options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @["help", "version"])
+    options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
+        "help", "version"])
     history: seq[string]
     historyIndex: int = 0
     oneTimeCommand: bool = false
@@ -150,26 +151,26 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
           inputChar = '\0'
         # Read the user input until not meet new line character or the input
         # reach the maximum length
-        while ord(inputChar) != 13 and inputString.len() < maxInputLength:
+        while inputChar.ord() != 13 and inputString.len() < maxInputLength:
           # Backspace pressed, delete the last character from the user input
-          if ord(inputChar) == 127:
+          if inputChar.ord() == 127:
             if inputString.len() > 0:
               inputString = inputString[0..^2]
-              cursorBackward(stdout)
-              write(stdout, " ")
-              cursorBackward(stdout)
+              stdout.cursorBackward()
+              stdout.write(" ")
+              stdout.cursorBackward()
           # Escape or arrows keys pressed
-          elif ord(inputChar) == 27:
+          elif inputChar.ord() == 27:
             # Arrow key pressed
             if getch() == '[':
               # Arrow up key pressed
               inputChar = getch()
               if inputChar == 'A' and history.len() > 0:
-                eraseLine(stdout)
+                stdout.eraseLine()
                 showOutput(history[historyIndex], false, oneTimeCommand,
                     commandName, returnCode)
                 inputString = history[historyIndex]
-                dec(historyIndex)
+                historyIndex.dec()
                 if historyIndex < 0:
                   historyIndex = 0;
               # Arrow down key pressed
