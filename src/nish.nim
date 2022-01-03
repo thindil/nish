@@ -107,8 +107,17 @@ func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
 proc startDb(): DbConn {.gcsafe, locks: 0, raises: [OSError, IOError], tags: [
     ReadIOEffect, WriteDirEffect, DbEffect].} =
   ## Open connection to the shell database. Create database if not exists
-  discard existsOrCreateDir(getHomeDir() & ".config/nish")
+  let dirExists: bool = existsOrCreateDir(getHomeDir() & ".config/nish")
   result = open(getHomeDir() & ".config/nish/nish.db", "", "", "")
+  # Create a new database
+  if not dirExists:
+    result.exec(sql"""CREATE TABLE aliases (
+                 id        INTEGER PRIMARY KEY,
+                 name      VARCHAR(50)   NOT NULL,
+                 path      TEXT          NOT NULL,
+                 recursive BOOLEAN       NOT NULL,
+                 commands  VARCHAR(4096) NOT NULL
+              )""")
 
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
