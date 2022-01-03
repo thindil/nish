@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[os, osproc, parseopt, strutils, terminal]
+import std/[db_sqlite, os, osproc, parseopt, strutils, terminal]
 
 const
   maxInputLength = 4096
@@ -98,12 +98,20 @@ func updateHistory(commandToAdd: string; historyList: var seq[
   historyList.add(commandToAdd)
   result = historyList.len() - 1
 
-func quitShell(returnCode: int) {.gcsafe, locks: 0, raises: [], tags: [].} =
-  ## Quit from the program with the selected return code
+func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
+    DbError], tags: [DbEffect].} =
+  ## Close the shell database and quit from the program with the selected return code
+  db.close()
   quit returnCode
 
-proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
-    ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
+proc startDb(): DbConn {.gcsafe, locks: 0, raises: [OSError, IOError], tags: [
+    ReadIOEffect, WriteDirEffect, DbEffect].} =
+  ## Open connection to the shell database. Create database if not exists
+  discard existsOrCreateDir(getHomeDir() & ".config/nish")
+  result = open(getHomeDir() & ".config/nish/nish.db", "", "", "")
+
+proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
+    tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## The main procedure of the shell
 
   var
@@ -115,6 +123,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
     historyIndex: int = 0
     oneTimeCommand: bool = false
     returnCode: int = QuitSuccess
+
+  let db = startDb()
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command and "-h" or "--help" to show
@@ -206,7 +216,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
       case commandName
       # Quit from shell
       of "exit":
-        quitShell(returnCode)
+        quitShell(returnCode, db)
       # Show help screen
       of "help":
         userInput.next()
@@ -302,6 +312,6 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
     finally:
       # Run only one command, quit from the shell
       if oneTimeCommand:
-        quitShell(returnCode)
+        quitShell(returnCode, db)
 
 main()
