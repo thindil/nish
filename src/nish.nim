@@ -98,6 +98,10 @@ func updateHistory(commandToAdd: string; historyList: var seq[
   historyList.add(commandToAdd)
   result = historyList.len() - 1
 
+func quitShell(returnCode: int) {.gcsafe, locks: 0, raises: [], tags: [].} =
+  ## Quit from the program with the selected return code
+  quit returnCode
+
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
     ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## The main procedure of the shell
@@ -202,7 +206,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
       case commandName
       # Quit from shell
       of "exit":
-        quit returnCode
+        quitShell(returnCode)
       # Show help screen
       of "help":
         userInput.next()
@@ -298,6 +302,6 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
     finally:
       # Run only one command, quit from the shell
       if oneTimeCommand:
-        quit returnCode
+        quitShell(returnCode)
 
 main()
