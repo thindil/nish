@@ -112,8 +112,7 @@ proc startDb(): DbConn {.gcsafe, locks: 0, raises: [OSError, IOError], tags: [
   # Create a new database
   if not dirExists:
     result.exec(sql"""CREATE TABLE aliases (
-                 id        INTEGER PRIMARY KEY,
-                 name      VARCHAR(50)   NOT NULL,
+                 name      VARCHAR(50)   PRIMARY KEY,
                  path      TEXT          NOT NULL,
                  recursive BOOLEAN       NOT NULL,
                  commands  VARCHAR(4096) NOT NULL
