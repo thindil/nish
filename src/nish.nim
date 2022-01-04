@@ -328,7 +328,13 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         if commandName in aliases:
           for command in splitLines(db.getValue(
               sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])):
-            echo command
+            returnCode = execCmd(command)
+            if returnCode != QuitSuccess:
+              break
+          if returnCode == QuitSuccess:
+            historyIndex = updateHistory(commandName, history)
+          continue
+        # Execute external command
         let commandToExecute = commandName & " " &
           join(userInput.remainingArgs, " ")
         returnCode = execCmd(commandToExecute)
