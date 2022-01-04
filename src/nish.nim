@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, osproc, parseopt, strutils, terminal]
+import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 
 const
   maxInputLength = 4096
@@ -119,6 +119,13 @@ proc startDb(): DbConn {.gcsafe, locks: 0, raises: [OSError, IOError], tags: [
                  commands  VARCHAR(4096) NOT NULL
               )""")
 
+proc setAliases(aliases: var Table[string, int]; directory: string; db: DbConn) =
+  ## Set the available aliases in the selected directory
+  aliases.clear()
+  for dbResult in db.fastRows(sql"SELECT id, name FROM aliases"):
+    aliases[dbResult[1]] = dbResult[0]
+
+
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## The main procedure of the shell
@@ -132,8 +139,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     historyIndex: int = 0
     oneTimeCommand: bool = false
     returnCode: int = QuitSuccess
-
-  let db = startDb()
+    aliases = initTable[string, int]()
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command and "-h" or "--help" to show
@@ -160,6 +166,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput = initOptParser(key)
         break
     else: discard
+
+  # Connect to the shell database
+  let db = startDb()
+
+  # Set available command aliases for the current directory
+  setAliases(aliases, getCurrentDir(), db)
 
   # Start the shell
   while true:
@@ -281,6 +293,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           let path: string = absolutePath(expandTilde(userInput.key))
           try:
             setCurrentDir(path)
+            aliases = setAliases(path, db)
             historyIndex = updateHistory("cd " & userInput.key, history)
           except OSError:
             returnCode = showError()
@@ -309,7 +322,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             historyIndex = updateHistory("unset " & userInput.key, history)
           except OSError:
             returnCode = showError()
-      # Execute external command
+      # Execute external command or alias
       else:
         let commandToExecute = commandName & " " &
           join(userInput.remainingArgs, " ")
