@@ -123,7 +123,7 @@ proc setAliases(aliases: var Table[string, int]; directory: string; db: DbConn) 
   ## Set the available aliases in the selected directory
   aliases.clear()
   for dbResult in db.fastRows(sql"SELECT id, name FROM aliases"):
-    aliases[dbResult[1]] = dbResult[0]
+    aliases[dbResult[1]] = parseInt(dbResult[0])
 
 
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
@@ -171,7 +171,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   let db = startDb()
 
   # Set available command aliases for the current directory
-  setAliases(aliases, getCurrentDir(), db)
+  aliases.setAliases(getCurrentDir(), db)
 
   # Start the shell
   while true:
@@ -293,7 +293,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           let path: string = absolutePath(expandTilde(userInput.key))
           try:
             setCurrentDir(path)
-            aliases = setAliases(path, db)
+            aliases.setAliases(path, db)
             historyIndex = updateHistory("cd " & userInput.key, history)
           except OSError:
             returnCode = showError()
@@ -324,6 +324,11 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             returnCode = showError()
       # Execute external command or alias
       else:
+        # Check if command is an alias
+        if commandName in aliases:
+          for command in splitLines(db.getValue(
+              sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])):
+            echo command
         let commandToExecute = commandName & " " &
           join(userInput.remainingArgs, " ")
         returnCode = execCmd(commandToExecute)
