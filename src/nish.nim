@@ -137,6 +137,16 @@ func setAliases(aliases: var Table[string, int]; directory: string;
   for dbResult in db.fastRows(sql(dbQuery)):
     aliases[dbResult[1]] = parseInt(dbResult[0])
 
+proc changeDirectory(newDirectory: string; aliases: var Table[string, int];
+    db: DbConn): int =
+  ## Change the current directory for the shell
+  let path: string = absolutePath(expandTilde(newDirectory))
+  try:
+    setCurrentDir(path)
+    aliases.setAliases(path, db)
+    result = QuitSuccess
+  except OSError:
+    result = showError()
 
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
@@ -302,13 +312,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       of "cd":
         userInput.next()
         if userInput.kind != cmdEnd:
-          let path: string = absolutePath(expandTilde(userInput.key))
-          try:
-            setCurrentDir(path)
-            aliases.setAliases(path, db)
+          returnCode = changeDirectory(userInput.key, aliases, db)
+          if returnCode == QuitSuccess:
             historyIndex = updateHistory("cd " & userInput.key, history)
-          except OSError:
-            returnCode = showError()
       # Set the environment variable
       of "set":
         userInput.next()
@@ -336,7 +342,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             returnCode = showError()
       # Execute external command or alias
       else:
-        # Check if command is an alias
+        # Check if command is an alias, if yes, execute it
         if commandName in aliases:
           for command in splitLines(db.getValue(
               sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])):
