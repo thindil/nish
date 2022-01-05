@@ -119,7 +119,9 @@ proc startDb(): DbConn {.gcsafe, locks: 0, raises: [OSError, IOError], tags: [
                  commands  VARCHAR(4096) NOT NULL
               )""")
 
-proc setAliases(aliases: var Table[string, int]; directory: string; db: DbConn) =
+func setAliases(aliases: var Table[string, int]; directory: string;
+    db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
+    ReadDbEffect].} =
   ## Set the available aliases in the selected directory
   aliases.clear()
   var
