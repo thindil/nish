@@ -122,7 +122,17 @@ proc startDb(): DbConn {.gcsafe, locks: 0, raises: [OSError, IOError], tags: [
 proc setAliases(aliases: var Table[string, int]; directory: string; db: DbConn) =
   ## Set the available aliases in the selected directory
   aliases.clear()
-  for dbResult in db.fastRows(sql"SELECT id, name FROM aliases"):
+  var
+    dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
+    remainingDirectory: string = parentDir(directory)
+
+  # Construct SQL querry, search for aliases also defined in parent directories
+  # if they are recursive
+  while remainingDirectory != "":
+    dbQuery.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
+    remainingDirectory = parentDir(remainingDirectory)
+
+  for dbResult in db.fastRows(sql(dbQuery)):
     aliases[dbResult[1]] = parseInt(dbResult[0])
 
 
