@@ -138,7 +138,9 @@ func setAliases(aliases: var Table[string, int]; directory: string;
     aliases[dbResult[1]] = parseInt(dbResult[0])
 
 proc changeDirectory(newDirectory: string; aliases: var Table[string, int];
-    db: DbConn): int =
+    db: DbConn): int {.gcsafe, raises: [DbError, ValueError, IOError,
+        OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+        WriteIOEffect].} =
   ## Change the current directory for the shell
   let path: string = absolutePath(expandTilde(newDirectory))
   try:
