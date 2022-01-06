@@ -346,11 +346,20 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       else:
         # Check if command is an alias, if yes, execute it
         if commandName in aliases:
+          let currentDirectory = getCurrentDir()
           for command in splitLines(db.getValue(
               sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])):
+            # Threat cd command specially, it should just change the current directory
+            # for the alias
+            if command[0..2] == "cd ":
+              returnCode = changeDirectory(command[3..^1], aliases, db)
+              if returnCode != QuitSuccess:
+                break
+              continue
             returnCode = execCmd(command)
             if returnCode != QuitSuccess:
               break
+          discard changeDirectory(currentDirectory, aliases, db)
           if returnCode == QuitSuccess:
             historyIndex = updateHistory(commandName, history)
           continue
