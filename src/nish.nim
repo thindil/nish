@@ -34,6 +34,7 @@ proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
   ## Show the program arguments help
   echo """Available arguments are:
     -c [command]  - Run the selected command in shell and quit
+    -db [path]    - Set the shell database to the selected file
     -h, --help    - Show this help and quit
     -v, --version - Show the shell version info"""
   quit QuitSuccess
@@ -104,11 +105,11 @@ func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
   db.close()
   quit returnCode
 
-proc startDb(): DbConn {.gcsafe, locks: 0, raises: [OSError, IOError], tags: [
-    ReadIOEffect, WriteDirEffect, DbEffect].} =
+proc startDb(dbpath: string): DbConn {.gcsafe, raises: [OSError, IOError],
+    tags: [ReadIOEffect, WriteDirEffect, DbEffect].} =
   ## Open connection to the shell database. Create database if not exists
-  let dirExists: bool = existsOrCreateDir(getHomeDir() & ".config/nish")
-  result = open(getHomeDir() & ".config/nish/nish.db", "", "", "")
+  let dirExists: bool = existsOrCreateDir(parentDir(dbpath))
+  result = open(dbpath, "", "", "")
   # Create a new database
   if not dirExists:
     result.exec(sql"""CREATE TABLE aliases (
@@ -165,6 +166,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     oneTimeCommand: bool = false
     returnCode: int = QuitSuccess
     aliases = initTable[string, int]()
+    dbpath: string = getHomeDir() & ".config/nish/nish.db"
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command and "-h" or "--help" to show
@@ -189,11 +191,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       if oneTimeCommand:
         # Set the command to execute in shell
         userInput = initOptParser(key)
-        break
+      else:
+        # Set the path to the shell database
+        dbpath = key
+      break
     else: discard
 
   # Connect to the shell database
-  let db = startDb()
+  let db = startDb(dbpath)
 
   # Set available command aliases for the current directory
   aliases.setAliases(getCurrentDir(), db)
