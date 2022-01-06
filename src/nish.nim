@@ -118,7 +118,7 @@ proc startDb(dbpath: string): DbConn {.gcsafe, raises: [OSError, IOError],
                  path        TEXT          NOT NULL,
                  recursive   BOOLEAN       NOT NULL,
                  commands    VARCHAR(4096) NOT NULL,
-                 description VARCHAR(4096) NOT NULL,
+                 description VARCHAR(4096) NOT NULL
               )""")
 
 func setAliases(aliases: var Table[string, int]; directory: string;
