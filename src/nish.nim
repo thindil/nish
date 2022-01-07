@@ -318,9 +318,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help unset", history)
         else:
-          showOutput("Uknown command '" & userInput.key & "'", true,
-              oneTimeCommand, commandName, returnCode)
-          returnCode = QuitFailure
+          returnCode = showError("Uknown command '" & userInput.key & "'")
       # Change current directory
       of "cd":
         userInput.next()
