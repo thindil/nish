@@ -83,11 +83,14 @@ proc showOutput(message: string; newLine: bool;
       stdout.writeLine("")
   stdout.flushFile()
 
-proc showError(): int {.gcsafe, locks: 0, sideEffect, raises: [IOError,
+proc showError(message: string = ""): int {.gcsafe, locks: 0, sideEffect, raises: [IOError,
     ValueError], tags: [WriteIOEffect].} =
-  ## Print the exception message to standard error and set the shell return
-  ## code to error
-  stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+  ## Print the message to standard error and set the shell return
+  ## code to error. If message is empty, print the current exception message
+  if message == "":
+    stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+  else:
+    stderr.styledWriteLine(fgRed, message)
   result = QuitFailure
 
 func updateHistory(commandToAdd: string; historyList: var seq[
