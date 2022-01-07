@@ -356,15 +356,31 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         if commandName in aliases:
           let currentDirectory = getCurrentDir()
           for command in splitLines(db.getValue(
-              sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])):
-            # Threat cd command specially, it should just change the current directory
-            # for the alias
-            if command[0..2] == "cd ":
-              returnCode = changeDirectory(command[3..^1], aliases, db)
+              sql"SELECT commands FROM aliases WHERE id=?",
+              aliases[commandName])):
+            # Convert all $number in command to arguments taken from the user
+            # input
+            var
+              argumentPosition: int = command.find('$', 0)
+              newCommand: string = command
+            while argumentPosition > -1:
+              userInput.next()
+              # Not enough argument entered by the user, quit with error
+              if userInput.kind == cmdEnd:
+                returnCode = QuitFailure
+                break
+              newCommand = command.replace(command[
+                  argumentPosition..argumentPosition + 1], userInput.key)
+            if returnCode == QuitFailure:
+              break;
+            # Threat cd command specially, it should just change the current
+            # directory for the alias
+            if newCommand[0..2] == "cd ":
+              returnCode = changeDirectory(newCommand[3..^1], aliases, db)
               if returnCode != QuitSuccess:
                 break
               continue
-            returnCode = execCmd(command)
+            returnCode = execCmd(newCommand)
             if returnCode != QuitSuccess:
               break
           discard changeDirectory(currentDirectory, aliases, db)
