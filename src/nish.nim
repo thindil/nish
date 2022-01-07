@@ -108,11 +108,13 @@ func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
 proc startDb(dbpath: string): DbConn {.gcsafe, raises: [OSError, IOError],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect].} =
   ## Open connection to the shell database. Create database if not exists
-  let dirExists: bool = existsOrCreateDir(parentDir(dbpath))
+  let dbExists = fileExists(dbpath)
+  if not dbExists:
+    createDir(parentDir(dbpath))
   result = open(dbpath, "", "", "")
-  # Create a new database
-  if not dirExists:
-    result.exec(sql"""CREATE TABLE aliases (
+  # Create a new database if not exists
+  if not dbExists:
+    result.exec(sql"""CREATE TABLE IF NOT EXISTS aliases (
                  id          INTEGER       PRIMARY KEY,
                  name        VARCHAR(50)   NOT NULL,
                  path        TEXT          NOT NULL,
