@@ -370,6 +370,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         example: help alias list.
         """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("alias", history)
+        # Show the list of available aliases
+        elif userInput.key == "list":
+          showOutput("Available aliases are:", true, false, "", QuitSuccess)
+          showOutput("ID Name Description", true, false, "",
+            QuitSuccess)
+          for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
+            showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
+              QuitSuccess)
       # Execute external command or alias
       else:
         let commandToExecute = commandName & " " &
