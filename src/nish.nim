@@ -317,6 +317,13 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         Remove the environment variable with the selected name.
           """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help unset", history)
+        elif userInput.key == "alias":
+          showOutput("""Usage: alias ?subcommand?
+
+        If entered without subcommand, show the list of available subcommands
+        for aliases. Otherwise, execute the selected subcommand.
+        """, true, oneTimeCommand, commandName, returnCode)
+          historyIndex = updateHistory("help alias", history)
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
       # Change current directory
@@ -351,6 +358,18 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             historyIndex = updateHistory("unset " & userInput.key, history)
           except OSError:
             returnCode = showError()
+      # Various commands related to the aliases (like show list of available
+      # aliases, add, delete, edit them)
+      of "alias":
+        userInput.next()
+        # No subcommand entered, show available options
+        if userInput.kind == cmdEnd:
+          showOutput("""Available subcommands are: list
+
+        To see more information about the subcommand, type help [command], for
+        example: help alias list.
+        """, true, oneTimeCommand, commandName, returnCode)
+          historyIndex = updateHistory("alias", history)
       # Execute external command or alias
       else:
         let commandToExecute = commandName & " " &
