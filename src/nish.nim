@@ -318,12 +318,21 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help unset", history)
         elif userInput.key == "alias":
-          showOutput("""Usage: alias ?subcommand?
+          userInput.next()
+          # If user entered only "alias", show the help for it
+          if userInput.kind == cmdEnd:
+            showOutput("""Usage: alias ?subcommand?
 
         If entered without subcommand, show the list of available subcommands
         for aliases. Otherwise, execute the selected subcommand.
         """, true, oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("help alias", history)
+            historyIndex = updateHistory("help alias", history)
+          elif userInput.key == "list":
+            showOutput("""Usage: alias list
+
+        Show the list of all available aliases in the current directory.
+        """, true, oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help alias list", history)
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
       # Change current directory
