@@ -83,8 +83,8 @@ proc showOutput(message: string; newLine: bool;
       stdout.writeLine("")
   stdout.flushFile()
 
-proc showError(message: string = ""): int {.gcsafe, locks: 0, sideEffect, raises: [IOError,
-    ValueError], tags: [WriteIOEffect].} =
+proc showError(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
+    raises: [IOError, ValueError], tags: [WriteIOEffect].} =
   ## Print the message to standard error and set the shell return
   ## code to error. If message is empty, print the current exception message
   if message == "":
@@ -353,25 +353,31 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             returnCode = showError()
       # Execute external command or alias
       else:
+        let commandToExecute = commandName & " " &
+          join(userInput.remainingArgs(), " ")
         # Check if command is an alias, if yes, execute it
         if commandName in aliases:
-          let currentDirectory = getCurrentDir()
+          let
+            currentDirectory = getCurrentDir()
+            commandArguments: seq[string] = userInput.remainingArgs()
           for command in splitLines(db.getValue(
               sql"SELECT commands FROM aliases WHERE id=?",
               aliases[commandName])):
             # Convert all $number in command to arguments taken from the user
             # input
             var
-              argumentPosition: int = command.find('$', 0)
+              argumentPosition: int = command.find('$')
               newCommand: string = command
             while argumentPosition > -1:
-              userInput.next()
+              var argumentNumber: int = parseInt(command[argumentPosition + 1] & "")
               # Not enough argument entered by the user, quit with error
-              if userInput.kind == cmdEnd:
-                returnCode = QuitFailure
+              if argumentNumber > commandArguments.len():
+                returnCode = showError("Not enough arguments entered")
                 break
               newCommand = command.replace(command[
-                  argumentPosition..argumentPosition + 1], userInput.key)
+                  argumentPosition..argumentPosition + 1], commandArguments[
+                      argumentNumber - 1])
+              argumentPosition = newCommand.find('$')
             if returnCode == QuitFailure:
               break;
             # Threat cd command specially, it should just change the current
@@ -386,11 +392,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               break
           discard changeDirectory(currentDirectory, aliases, db)
           if returnCode == QuitSuccess:
-            historyIndex = updateHistory(commandName, history)
+            historyIndex = updateHistory(commandToExecute, history)
           continue
         # Execute external command
-        let commandToExecute = commandName & " " &
-          join(userInput.remainingArgs, " ")
         returnCode = execCmd(commandToExecute)
         if returnCode == QuitSuccess:
           historyIndex = updateHistory(commandToExecute, history)
