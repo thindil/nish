@@ -384,7 +384,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           showOutput("Available aliases are:", true, false, "", QuitSuccess)
           showOutput("ID Name Description", true, false, "",
             QuitSuccess)
-          for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
+          for alias in aliases.values:
+            let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
+              alias)
             showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
               QuitSuccess)
       # Execute external command or alias
