@@ -278,7 +278,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # If user entered only "help", show the main help screen
         if userInput.kind == cmdEnd:
-          showOutput("""Available commands are: cd, exit, help, set, unset
+          showOutput("""Available commands are: cd, exit, help, set, unset, alias, alias list
 
         To see more information about the command, type help [command], for
         example: help cd.
@@ -375,8 +375,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         if userInput.kind == cmdEnd:
           showOutput("""Available subcommands are: list
 
-        To see more information about the subcommand, type help [command], for
-        example: help alias list.
+        To see more information about the subcommand, type help alias [command],
+        for example: help alias list.
         """, true, oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("alias", history)
         # Show the list of available aliases
