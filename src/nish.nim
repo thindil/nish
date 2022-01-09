@@ -329,9 +329,10 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help alias", history)
           elif userInput.key == "list":
-            showOutput("""Usage: alias list
+            showOutput("""Usage: alias list ?all?
 
-        Show the list of all available aliases in the current directory.
+        Show the list of all available aliases in the current directory. If parameter
+        all added, show all declared aliases.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help alias list", history)
         else:
