@@ -126,7 +126,7 @@ proc startDb(dbpath: string): DbConn {.gcsafe, raises: [OSError, IOError],
                  description VARCHAR(4096) NOT NULL
               )""")
 
-func setAliases(aliases: var Table[string, int]; directory: string;
+func setAliases(aliases: var OrderedTable[string, int]; directory: string;
     db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
     ReadDbEffect].} =
   ## Set the available aliases in the selected directory
@@ -141,10 +141,11 @@ func setAliases(aliases: var Table[string, int]; directory: string;
     dbQuery.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
     remainingDirectory = parentDir(remainingDirectory)
 
+  dbQuery.add(" ORDER BY id ASC");
   for dbResult in db.fastRows(sql(dbQuery)):
     aliases[dbResult[1]] = parseInt(dbResult[0])
 
-proc changeDirectory(newDirectory: string; aliases: var Table[string, int];
+proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string, int];
     db: DbConn): int {.gcsafe, raises: [DbError, ValueError, IOError,
         OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect].} =
@@ -170,7 +171,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     historyIndex: int = 0
     oneTimeCommand: bool = false
     returnCode: int = QuitSuccess
-    aliases = initTable[string, int]()
+    aliases = initOrderedTable[string, int]()
     dbpath: string = getHomeDir() & ".config/nish/nish.db"
 
   # Check the command line parameters entered by the user. Available options
