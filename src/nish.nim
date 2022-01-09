@@ -52,7 +52,7 @@ proc showPrompt(promptEnabled: bool; previousCommand: string;
     resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [OSError, IOError,
         ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show the shell prompt if the shell wasn't started in one command mode
-  if promptEnabled:
+  if not promptEnabled:
     return
   let
     currentDirectory: string = getCurrentDir()
@@ -141,12 +141,12 @@ func setAliases(aliases: var OrderedTable[string, int]; directory: string;
     dbQuery.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
     remainingDirectory = parentDir(remainingDirectory)
 
-  dbQuery.add(" ORDER BY id ASC");
+  dbQuery.add(" ORDER BY id ASC")
   for dbResult in db.fastRows(sql(dbQuery)):
     aliases[dbResult[1]] = parseInt(dbResult[0])
 
-proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string, int];
-    db: DbConn): int {.gcsafe, raises: [DbError, ValueError, IOError,
+proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
+    int];db: DbConn): int {.gcsafe, raises: [DbError, ValueError, IOError,
         OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect].} =
   ## Change the current directory for the shell
@@ -215,7 +215,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       # Run only one command, don't show prompt and wait for the user input
       if not oneTimeCommand:
         # Write prompt
-        showPrompt(oneTimeCommand, commandName, returnCode)
+        showPrompt(not oneTimeCommand, commandName, returnCode)
         # Get the user input and parse it
         var
           inputString = ""
@@ -238,7 +238,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               inputChar = getch()
               if inputChar == 'A' and history.len() > 0:
                 stdout.eraseLine()
-                showOutput(history[historyIndex], false, oneTimeCommand,
+                showOutput(history[historyIndex], false, not oneTimeCommand,
                     commandName, returnCode)
                 inputString = history[historyIndex]
                 historyIndex.dec()
@@ -250,7 +250,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
                 if historyIndex >= history.len():
                   historyIndex = history.len() - 1
                 stdout.eraseLine()
-                showOutput(history[historyIndex], false, oneTimeCommand,
+                showOutput(history[historyIndex], false, not oneTimeCommand,
                     commandName, returnCode)
                 inputString = history[historyIndex]
           elif inputChar.ord() > 31:
@@ -283,20 +283,20 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
 
         To see more information about the command, type help [command], for
         example: help cd.
-        """, true, oneTimeCommand, commandName, returnCode)
+        """, true, not oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help", history)
         elif userInput.key == "cd":
           showOutput("""Usage: cd [directory]
 
         You must have permissions to enter the directory and directory
         need to exists.
-        """, true, oneTimeCommand, commandName, returnCode)
+        """, true, not oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help cd", history)
         elif userInput.key == "exit":
           showOutput("""Usage: exit
 
         Exit from the shell.
-        """, true, oneTimeCommand, commandName, returnCode)
+        """, true, not oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help exit", history)
         elif userInput.key == "help":
           showOutput("""Usage help ?command?
@@ -304,7 +304,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         If entered only as help, show the list of available commands,
         when also command entered, show the information about the selected
         command.
-        """, true, oneTimeCommand, commandName, returnCode)
+        """, true, not oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help help", history)
         elif userInput.key == "set":
           showOutput("""Usage set [name=value]
@@ -316,7 +316,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           showOutput("""Usage unset [name]
 
         Remove the environment variable with the selected name.
-          """, true, oneTimeCommand, commandName, returnCode)
+          """, true, not oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help unset", history)
         elif userInput.key == "alias":
           userInput.next()
@@ -326,13 +326,13 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
 
         If entered without subcommand, show the list of available subcommands
         for aliases. Otherwise, execute the selected subcommand.
-        """, true, oneTimeCommand, commandName, returnCode)
+        """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help alias", history)
           elif userInput.key == "list":
             showOutput("""Usage: alias list
 
         Show the list of all available aliases in the current directory.
-        """, true, oneTimeCommand, commandName, returnCode)
+        """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help alias list", history)
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
@@ -352,7 +352,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             try:
               putEnv(varValues[0], varValues[1])
               showOutput("Environment variable '" & varValues[0] &
-                  "' set to '" & varValues[1] & "'", true, oneTimeCommand,
+                  "' set to '" & varValues[1] & "'", true, not oneTimeCommand,
                       commandName, returnCode)
               historyIndex = updateHistory("set " & userInput.key, history)
             except OSError:
@@ -364,7 +364,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           try:
             delEnv(userInput.key)
             showOutput("Environment variable '" & userInput.key & "' removed",
-                true, oneTimeCommand, commandName, returnCode)
+                true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("unset " & userInput.key, history)
           except OSError:
             returnCode = showError()
@@ -378,7 +378,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
 
         To see more information about the subcommand, type help alias [command],
         for example: help alias list.
-        """, true, oneTimeCommand, commandName, returnCode)
+        """, true, not oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("alias", history)
         # Show the list of available aliases
         elif userInput.key == "list":
