@@ -279,7 +279,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # If user entered only "help", show the main help screen
         if userInput.kind == cmdEnd:
-          showOutput("""Available commands are: cd, exit, help, set, unset, alias, alias list
+          showOutput("""Available commands are: cd, exit, help, set, unset, alias, alias list, alias
+  delete
 
         To see more information about the command, type help [command], for
         example: help cd.
@@ -335,6 +336,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         all added, show all declared aliases.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help alias list", history)
+          elif userInput.key == "delete":
+            showOutput("""Usage: alias delete [index]
+
+        Delete the alias with the selected index.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help alias list", history)
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
       # Change current directory
@@ -375,7 +382,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # No subcommand entered, show available options
         if userInput.kind == cmdEnd:
-          showOutput("""Available subcommands are: list
+          showOutput("""Available subcommands are: list, delete
 
         To see more information about the subcommand, type help alias [command],
         for example: help alias list.
