@@ -150,7 +150,7 @@ proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
         OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect].} =
   ## Change the current directory for the shell
-  let path: string = absolutePath(expandTilde(newDirectory))
+  let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
   try:
     setCurrentDir(path)
     aliases.setAliases(path, db)
