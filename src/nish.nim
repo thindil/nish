@@ -388,12 +388,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             QuitSuccess)
           userInput.next()
           if userInput.kind == cmdEnd:
+            historyIndex = updateHistory("alias list", history)
             for alias in aliases.values:
               let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
                 alias)
               showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
                 QuitSuccess)
           elif userInput.key == "all":
+            historyIndex = updateHistory("alias list all", history)
             for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
               showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
                 QuitSuccess)
