@@ -382,7 +382,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # No subcommand entered, show available options
         if userInput.kind == cmdEnd:
-          showOutput("""Available subcommands are: list, delete
+          showOutput("""Available subcommands are: list, delete, show
 
         To see more information about the subcommand, type help alias [command],
         for example: help alias list.
@@ -420,6 +420,23 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               aliases.setAliases(getCurrentDir(), db)
               showOutput("Deleted the alias with Id: " & userInput.key, true,
                   false, "", QuitSuccess)
+        # Show the selected alias
+        elif userInput.key == "show":
+          userInput.next()
+          if userInput.kind == cmdEnd:
+            returnCode = showError("Enter the Id of the alias to show.")
+          else:
+            let row = db.getRow(sql"SELECT name, commands, description FROM aliases WHERE id=?",
+                userInput.key)
+            if row[0] == "":
+              returnCode = showError("The alias with the Id: " & userInput.key & " doesn't exists.")
+            else:
+              historyIndex = updateHistory("alias delete", history)
+              showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
+              showOutput("Name: " & row[0], true, false, "", QuitSuccess)
+              showOutput("Description: " & row[2], true, false, "", QuitSuccess)
+              showOutput("Commands: ", true, false, "", QuitSuccess)
+              showOutput(row[1], true, false, "", QuitSuccess)
       # Execute external command or alias
       else:
         let commandToExecute = commandName & " " &
