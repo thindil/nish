@@ -431,7 +431,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             if row[0] == "":
               returnCode = showError("The alias with the Id: " & userInput.key & " doesn't exists.")
             else:
-              historyIndex = updateHistory("alias delete", history)
+              historyIndex = updateHistory("alias show", history)
               showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
               showOutput("Name: " & row[0], true, false, "", QuitSuccess)
               showOutput("Description: " & row[2], true, false, "", QuitSuccess)
