@@ -410,13 +410,16 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif userInput.key == "delete":
           userInput.next()
           if userInput.kind == cmdEnd:
-            returnCode = showError("Enter Id of alias to delete.")
+            returnCode = showError("Enter the Id of the alias to delete.")
           else:
-            if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?", userInput.key) == 0:
-              returnCode = showError("Alias with Id: " & userInput.key & " doesn't exists.")
+            if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?",
+                userInput.key) == 0:
+              returnCode = showError("The alias with the Id: " & userInput.key & " doesn't exists.")
             else:
+              historyIndex = updateHistory("alias delete", history)
               aliases.setAliases(getCurrentDir(), db)
-              showOutput("Deleted alias Id: " & userInput.key, true, false, "", QuitSuccess)
+              showOutput("Deleted the alias with Id: " & userInput.key, true,
+                  false, "", QuitSuccess)
       # Execute external command or alias
       else:
         let commandToExecute = commandName & " " &
