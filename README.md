@@ -44,6 +44,38 @@ The alias will be executed when the user enters `mc` in the shell. The alias is
 the global alias, it is available for the main directory `/` and all
 subdirectories. It executes command `mc --nosubshell`.
 
+The definition of the local alias can looks that:
+
+    Id: 2
+    Name: listdocs
+    Path: /home/user
+    Recursive: 0
+    Commands: cd docs
+              ls -lh
+    Description: Enter docs directory and list all files
+
+The alias will be executed when the user enters `listdocs` in the shell in the
+home directory. It doesn't work in any of its subdirectory. It enters `docs`
+directory and then runs the command `ls -lh`.
+
+You can also pass arguments to the commands of the alias. The substitutes for
+arguments are start with `$` and have numbers from 1 to 9. Example: `$1`, `$5`.
+The definition of alias which uses arguments can looks that:
+
+    Id: 3
+    Name: fossopen
+    Path: /home/user/Projects
+    Recursive: 0
+    Commands: fossil open fossil/$1.fossil --workdir $1
+    Description: Open fossil repo. Required parameter is the name of fossil repo.
+
+The alias will be executed when the user enters `fossopen [reponame]` in the
+shell. If the user enter only `fossopen` the shell will report a problem. The
+alias is the local alias, which means it doesn't work in subdirectories. It run
+command `fossil open fossil/$1.fossil --workdir [reponame]`. For example,
+entering in the shell command: `fossopen myrepo` will execute command:
+`fossil open fossil/myrepo.fossil --workdir myrepo`
+
 ### The project's goals
 
 At this moment the project has two goals:
