@@ -7,6 +7,43 @@ file on GitHub: **please don't send pull requests here**. All will be
 automatically closed. Any code propositions should go to the
 [Fossil](https://www.laeran.pl/repositories/nish) repository.
 
+### Features
+
+#### Global and local aliases
+
+The shell allows to declare not only standard aliases, which are available
+everywhere, but also aliases which available only in the selected directories.
+For example you can declare alias `build` which in one directory will be
+executing `make -j5` and in another `nim release`. Aliases can be declared for
+just one directory or for each subdirectory of the selected directory too. At
+this moment, available options for aliases are:
+
+* Id: The id of the alias, used mostly for deleting the selected alias
+* Name: The name of the alias. The text which have to be entered to execute the
+  alias. It doesn't need to be unique, but if two aliases in the same directory
+  have the same name, then the first one will be executed.
+* Path: The main directory in which the alias works.
+* Recursive: If set to 1, the alias is available for all subdirectories of the
+  main directory. If set to 0, is available only in the selected directory.
+* Commands: The list of commands which will be executed as alias. The alias can
+  execute a few commands, but then, each entry on the list have to be separated
+  with new line.
+* Description: The alias description. Showed on the aliases list.
+
+For example, the definition of the alias can looks that:
+
+
+    Id: 1
+    Name: mc
+    Path: /
+    Recursive: 1
+    Commands: mc --nosubshell
+    Description: Run MC without subshell
+
+The alias will be executed when the user enters `mc` in the shell. The alias is
+the global alias, it is available for the main directory `/` and all
+subdirectories. It executes command `mc --nosubshell`.
+
 ### The project's goals
 
 At this moment the project has two goals:
