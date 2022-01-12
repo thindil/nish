@@ -348,6 +348,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         Show details (description, commands, etc) for the alias with the selected index.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help alias show", history)
+          else:
+            returnCode = showError("Unknown subcommand `" & userInput.key &
+              "` for `alias`. To see all available aliases commands, type `alias`.")
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
       # Change current directory
@@ -420,7 +423,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           else:
             if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?",
                 userInput.key) == 0:
-              returnCode = showError("The alias with the Id: " & userInput.key & " doesn't exists.")
+              returnCode = showError("The alias with the Id: " & userInput.key &
+                " doesn't exists.")
             else:
               historyIndex = updateHistory("alias delete", history)
               aliases.setAliases(getCurrentDir(), db)
@@ -435,7 +439,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             let row = db.getRow(sql"SELECT name, commands, description FROM aliases WHERE id=?",
                 userInput.key)
             if row[0] == "":
-              returnCode = showError("The alias with the Id: " & userInput.key & " doesn't exists.")
+              returnCode = showError("The alias with the Id: " & userInput.key &
+                " doesn't exists.")
             else:
               historyIndex = updateHistory("alias show", history)
               showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
@@ -443,6 +448,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               showOutput("Description: " & row[2], true, false, "", QuitSuccess)
               showOutput("Commands: ", true, false, "", QuitSuccess)
               showOutput(row[1], true, false, "", QuitSuccess)
+        else:
+          returnCode = showError("Unknown subcommand `" & userInput.key &
+            "` for `alias`. To see all available aliases commands, type `alias`.")
       # Execute external command or alias
       else:
         let commandToExecute = commandName & " " &
