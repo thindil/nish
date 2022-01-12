@@ -11,14 +11,14 @@ automatically closed. Any code propositions should go to the
 
 #### Global and local aliases
 
-The shell allows to declare not only standard aliases, which are available
+The shell allows declaring not only standard aliases, which are available
 everywhere, but also aliases which available only in the selected directories.
-For example you can declare alias `build` which in one directory will be
+For example, you can declare alias `build` which in one directory will be
 executing `make -j5` and in another `nim release`. Aliases can be declared for
 just one directory or for each subdirectory of the selected directory too. At
 this moment, available options for aliases are:
 
-* Id: The id of the alias, used mostly for deleting the selected alias
+* ID: The ID of the alias, used mostly for deleting the selected alias
 * Name: The name of the alias. The text which have to be entered to execute the
   alias. It doesn't need to be unique, but if two aliases in the same directory
   have the same name, then the first one will be executed.
@@ -30,10 +30,10 @@ this moment, available options for aliases are:
   with new line.
 * Description: The alias description. Showed on the aliases list.
 
-For example, the definition of the alias can looks that:
+For example, the definition of the alias can look that:
 
 
-    Id: 1
+    ID: 1
     Name: mc
     Path: /
     Recursive: 1
@@ -44,9 +44,9 @@ The alias will be executed when the user enters `mc` in the shell. The alias is
 the global alias, it is available for the main directory `/` and all
 subdirectories. It executes command `mc --nosubshell`.
 
-The definition of the local alias can looks that:
+The definition of the local alias can look that:
 
-    Id: 2
+    ID: 2
     Name: listdocs
     Path: /home/user
     Recursive: 0
@@ -60,9 +60,9 @@ directory and then runs the command `ls -lh`.
 
 You can also pass arguments to the commands of the alias. The substitutes for
 arguments are start with `$` and have numbers from 1 to 9. Example: `$1`, `$5`.
-The definition of alias which uses arguments can looks that:
+The definition of alias which uses arguments can look that:
 
-    Id: 3
+    ID: 3
     Name: fossopen
     Path: /home/user/Projects
     Recursive: 0
@@ -71,9 +71,9 @@ The definition of alias which uses arguments can looks that:
 
 The alias will be executed when the user enters `fossopen [reponame]` in the
 shell. If the user enter only `fossopen` the shell will report a problem. The
-alias is the local alias, which means it doesn't work in subdirectories. It run
-command `fossil open fossil/$1.fossil --workdir [reponame]`. For example,
-entering in the shell command: `fossopen myrepo` will execute command:
+alias is the local alias, which means it doesn't work in subdirectories. It
+runs command `fossil open fossil/$1.fossil --workdir [reponame]`. For example,
+entering the shell's command: `fossopen myrepo` will execute command:
 `fossil open fossil/myrepo.fossil --workdir myrepo`
 
 ### The project's goals
@@ -81,7 +81,7 @@ entering in the shell command: `fossopen myrepo` will execute command:
 At this moment the project has two goals:
 
 * Allow me to learn Nim language. ;)
-* Test a few features and solutions to various problems related to my daily
+* Test a few features and solutions to various issues related to my daily
   work with different shells.
 
 The second goal can be expanded to:
