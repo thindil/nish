@@ -7,7 +7,30 @@ file on GitHub: **please don't send pull requests here**. All will be
 automatically closed. Any code propositions should go to the
 [Fossil](https://www.laeran.pl/repositories/nish) repository.
 
+### The project's goals
+
+At this moment the project has two goals:
+
+* Allow me to learn Nim language. ;)
+* Test a few features and solutions to various issues related to my daily
+  work with different shells.
+
+The second goal can be expanded to:
+
+* User defined global but also a directory related commands.
+* Interactive mode for the shell's commands.
+* Ability to edit, add, delete, enable or disable commands via shell.
+* And probably many more which will be added during the development of the
+  project.
+
 ### Features
+
+#### Use database for store all data related to the shell
+
+This may look like overkill, but the shell uses sqlite for store all its data.
+For now, it is only the shell's aliases, but with time there will be more. At
+this moment it is very experimental feature. If it doesn't work, it will be
+replaced.
 
 #### Global and local aliases
 
@@ -75,22 +98,6 @@ alias is the local alias, which means it doesn't work in subdirectories. It
 runs command `fossil open fossil/$1.fossil --workdir [reponame]`. For example,
 entering the shell's command: `fossopen myrepo` will execute command:
 `fossil open fossil/myrepo.fossil --workdir myrepo`
-
-### The project's goals
-
-At this moment the project has two goals:
-
-* Allow me to learn Nim language. ;)
-* Test a few features and solutions to various issues related to my daily
-  work with different shells.
-
-The second goal can be expanded to:
-
-* User defined global but also a directory related commands.
-* Interactive mode for the shell's commands.
-* Ability to edit, add, delete, enable or disable commands via shell.
-* And probably many more which will be added during the development of the
-  project.
 
 ### How to install
 
