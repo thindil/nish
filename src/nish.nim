@@ -125,6 +125,9 @@ proc startDb(dbpath: string): DbConn {.gcsafe, raises: [OSError, IOError],
                  commands    VARCHAR(4096) NOT NULL,
                  description VARCHAR(4096) NOT NULL
               )""")
+    result.exec(sql"""CREATE TABLE IF NOT EXISTS "history" (
+                 "command"	VARCHAR(4096) NOT NULL
+              )""")
 
 func setAliases(aliases: var OrderedTable[string, int]; directory: string;
     db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
