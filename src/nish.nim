@@ -93,14 +93,16 @@ proc showError(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
     stderr.styledWriteLine(fgRed, message)
   result = QuitFailure
 
-func updateHistory(commandToAdd: string; historyList: var seq[
-    string]): int {.gcsafe, locks: 0, raises: [], tags: [].} =
+func updateHistory(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
+    ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index
-  if historyList.len() == maxHistoryLength:
-    historyList.delete(1)
-  historyList.add(commandToAdd)
-  result = historyList.len() - 1
+  result = parseInt(db.getValue(sql"SELECT COUNT(command) FROM history"))
+  if result == maxHistoryLength:
+    db.exec(sql"DELETE FROM history ORDER BY command ASC LIMIT(1)");
+    result.dec()
+  db.exec(sql"INSERT INTO history (command) VALUES (?)", commandToAdd)
+  result.inc()
 
 func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
     DbError], tags: [DbEffect].} =
@@ -288,20 +290,20 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         To see more information about the command, type help [command], for
         example: help cd.
         """, true, not oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("help", history)
+          historyIndex = updateHistory("help", db)
         elif userInput.key == "cd":
           showOutput("""Usage: cd [directory]
 
         You must have permissions to enter the directory and directory
         need to exists.
         """, true, not oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("help cd", history)
+          historyIndex = updateHistory("help cd", db)
         elif userInput.key == "exit":
           showOutput("""Usage: exit
 
         Exit from the shell.
         """, true, not oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("help exit", history)
+          historyIndex = updateHistory("help exit", db)
         elif userInput.key == "help":
           showOutput("""Usage help ?command?
 
@@ -309,19 +311,19 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         when also command entered, show the information about the selected
         command.
         """, true, not oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("help help", history)
+          historyIndex = updateHistory("help help", db)
         elif userInput.key == "set":
           showOutput("""Usage set [name=value]
 
         Set the environment variable with the selected name and value.
           """, true, oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("help set", history)
+          historyIndex = updateHistory("help set", db)
         elif userInput.key == "unset":
           showOutput("""Usage unset [name]
 
         Remove the environment variable with the selected name.
           """, true, not oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("help unset", history)
+          historyIndex = updateHistory("help unset", db)
         elif userInput.key == "alias":
           userInput.next()
           # If user entered only "alias", show the help for it
@@ -331,26 +333,26 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         If entered without subcommand, show the list of available subcommands
         for aliases. Otherwise, execute the selected subcommand.
         """, true, not oneTimeCommand, commandName, returnCode)
-            historyIndex = updateHistory("help alias", history)
+            historyIndex = updateHistory("help alias", db)
           elif userInput.key == "list":
             showOutput("""Usage: alias list ?all?
 
         Show the list of all available aliases in the current directory. If parameter
         all added, show all declared aliases.
         """, true, not oneTimeCommand, commandName, returnCode)
-            historyIndex = updateHistory("help alias list", history)
+            historyIndex = updateHistory("help alias list", db)
           elif userInput.key == "delete":
             showOutput("""Usage: alias delete [index]
 
         Delete the alias with the selected index.
         """, true, not oneTimeCommand, commandName, returnCode)
-            historyIndex = updateHistory("help alias delete", history)
+            historyIndex = updateHistory("help alias delete", db)
           elif userInput.key == "show":
             showOutput("""Usage: alias show [index]
 
         Show details (description, commands, etc) for the alias with the selected index.
         """, true, not oneTimeCommand, commandName, returnCode)
-            historyIndex = updateHistory("help alias show", history)
+            historyIndex = updateHistory("help alias show", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `alias`. To see all available aliases commands, type `alias`.")
@@ -362,7 +364,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         if userInput.kind != cmdEnd:
           returnCode = changeDirectory(userInput.key, aliases, db)
           if returnCode == QuitSuccess:
-            historyIndex = updateHistory("cd " & userInput.key, history)
+            historyIndex = updateHistory("cd " & userInput.key, db)
       # Set the environment variable
       of "set":
         userInput.next()
@@ -374,7 +376,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               showOutput("Environment variable '" & varValues[0] &
                   "' set to '" & varValues[1] & "'", true, not oneTimeCommand,
                       commandName, returnCode)
-              historyIndex = updateHistory("set " & userInput.key, history)
+              historyIndex = updateHistory("set " & userInput.key, db)
             except OSError:
               returnCode = showError()
       # Delete environment variable
@@ -385,7 +387,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             delEnv(userInput.key)
             showOutput("Environment variable '" & userInput.key & "' removed",
                 true, not oneTimeCommand, commandName, returnCode)
-            historyIndex = updateHistory("unset " & userInput.key, history)
+            historyIndex = updateHistory("unset " & userInput.key, db)
           except OSError:
             returnCode = showError()
       # Various commands related to the aliases (like show list of available
@@ -399,7 +401,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         To see more information about the subcommand, type help alias [command],
         for example: help alias list.
         """, true, not oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("alias", history)
+          historyIndex = updateHistory("alias", db)
         # Show the list of available aliases
         elif userInput.key == "list":
           showOutput("Available aliases are:", true, false, "", QuitSuccess)
@@ -407,14 +409,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             QuitSuccess)
           userInput.next()
           if userInput.kind == cmdEnd:
-            historyIndex = updateHistory("alias list", history)
+            historyIndex = updateHistory("alias list", db)
             for alias in aliases.values:
               let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
                 alias)
               showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
                 QuitSuccess)
           elif userInput.key == "all":
-            historyIndex = updateHistory("alias list all", history)
+            historyIndex = updateHistory("alias list all", db)
             for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
               showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
                 QuitSuccess)
@@ -429,7 +431,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               returnCode = showError("The alias with the Id: " & userInput.key &
                 " doesn't exists.")
             else:
-              historyIndex = updateHistory("alias delete", history)
+              historyIndex = updateHistory("alias delete", db)
               aliases.setAliases(getCurrentDir(), db)
               showOutput("Deleted the alias with Id: " & userInput.key, true,
                   false, "", QuitSuccess)
@@ -445,7 +447,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               returnCode = showError("The alias with the Id: " & userInput.key &
                 " doesn't exists.")
             else:
-              historyIndex = updateHistory("alias show", history)
+              historyIndex = updateHistory("alias show", db)
               showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
               showOutput("Name: " & row[0], true, false, "", QuitSuccess)
               showOutput("Description: " & row[2], true, false, "", QuitSuccess)
@@ -495,12 +497,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               break
           discard changeDirectory(currentDirectory, aliases, db)
           if returnCode == QuitSuccess:
-            historyIndex = updateHistory(commandToExecute, history)
+            historyIndex = updateHistory(commandToExecute, db)
           continue
         # Execute external command
         returnCode = execCmd(commandToExecute)
         if returnCode == QuitSuccess:
-          historyIndex = updateHistory(commandToExecute, history)
+          historyIndex = updateHistory(commandToExecute, db)
     except:
       returnCode = showError()
     finally:
