@@ -110,8 +110,8 @@ func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
   db.close()
   quit returnCode
 
-proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe, raises: [OSError, IOError, ValueError],
-    tags: [ReadIOEffect, WriteDirEffect, DbEffect].} =
+proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe, raises: [
+    OSError, IOError, ValueError], tags: [ReadIOEffect, WriteDirEffect, DbEffect].} =
   ## Open connection to the shell database. Create database if not exists.
   ## Set the historyIndex to the last command
   discard existsOrCreateDir(parentDir(dbpath))
@@ -161,6 +161,11 @@ proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
     result = QuitSuccess
   except OSError:
     result = showError()
+
+proc getHistory(historyIndex: int; db: DbConn): string =
+  ## Get the command with the selected index from the shell history
+  result = db.getValue(sql"SELECT command FROM history LIMIT 1 OFFSET ?",
+      $(historyIndex - 1));
 
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
@@ -241,10 +246,10 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               # Arrow up key pressed
               inputChar = getch()
               if inputChar == 'A' and history.len() > 0:
+                inputString = getHistory(historyIndex, db)
                 stdout.eraseLine()
-                showOutput(history[historyIndex], false, not oneTimeCommand,
+                showOutput(inputString, false, not oneTimeCommand,
                     commandName, returnCode)
-                inputString = history[historyIndex]
                 historyIndex.dec()
                 if historyIndex < 0:
                   historyIndex = 0;
@@ -253,10 +258,10 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
                 historyIndex.inc()
                 if historyIndex >= history.len():
                   historyIndex = history.len() - 1
+                inputString = getHistory(historyIndex, db)
                 stdout.eraseLine()
-                showOutput(history[historyIndex], false, not oneTimeCommand,
+                showOutput(inputString, false, not oneTimeCommand,
                     commandName, returnCode)
-                inputString = history[historyIndex]
           elif inputChar.ord() > 31:
             stdout.write(inputChar)
             inputString.add(inputChar)
