@@ -110,8 +110,9 @@ func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
   db.close()
   quit returnCode
 
-proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe, raises: [
-    OSError, IOError, ValueError], tags: [ReadIOEffect, WriteDirEffect, DbEffect].} =
+proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
+    sideEffect, raises: [OSError, IOError, ValueError], tags: [ReadIOEffect,
+        WriteDirEffect, DbEffect].} =
   ## Open connection to the shell database. Create database if not exists.
   ## Set the historyIndex to the last command
   discard existsOrCreateDir(parentDir(dbpath))
@@ -150,8 +151,8 @@ func setAliases(aliases: var OrderedTable[string, int]; directory: string;
     aliases[dbResult[1]] = parseInt(dbResult[0])
 
 proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
-    int]; db: DbConn): int {.gcsafe, raises: [DbError, ValueError, IOError,
-        OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
+        IOError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect].} =
   ## Change the current directory for the shell
   let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
