@@ -245,7 +245,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             if getch() == '[':
               # Arrow up key pressed
               inputChar = getch()
-              if inputChar == 'A' and history.len() > 0:
+              if inputChar == 'A' and historyIndex > 0:
                 inputString = getHistory(historyIndex, db)
                 stdout.eraseLine()
                 showOutput(inputString, false, not oneTimeCommand,
@@ -254,7 +254,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
                 if historyIndex < 0:
                   historyIndex = 0;
               # Arrow down key pressed
-              elif inputChar == 'B' and history.len() > 0:
+              elif inputChar == 'B' and historyIndex > 0:
                 historyIndex.inc()
                 if historyIndex >= history.len():
                   historyIndex = history.len() - 1
