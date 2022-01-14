@@ -97,7 +97,7 @@ func updateHistory(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
     ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index
-  result = parseInt(db.getValue(sql"SELECT COUNT(command) FROM history"))
+  result = parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
   if result == maxHistoryLength:
     db.exec(sql"DELETE FROM history ORDER BY command ASC LIMIT(1)");
     result.dec()
@@ -110,9 +110,10 @@ func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
   db.close()
   quit returnCode
 
-proc startDb(dbpath: string): DbConn {.gcsafe, raises: [OSError, IOError],
+proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe, raises: [OSError, IOError, ValueError],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect].} =
-  ## Open connection to the shell database. Create database if not exists
+  ## Open connection to the shell database. Create database if not exists.
+  ## Set the historyIndex to the last command
   discard existsOrCreateDir(parentDir(dbpath))
   result = open(dbpath, "", "", "")
   # Create a new database if not exists
@@ -127,6 +128,7 @@ proc startDb(dbpath: string): DbConn {.gcsafe, raises: [OSError, IOError],
   result.exec(sql"""CREATE TABLE IF NOT EXISTS "history" (
                "command"	VARCHAR(4096) NOT NULL
             )""")
+  historyIndex = parseInt(result.getValue(sql"SELECT COUNT(*) FROM history"))
 
 func setAliases(aliases: var OrderedTable[string, int]; directory: string;
     db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
@@ -170,7 +172,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     history: seq[string]
-    historyIndex: int = 0
+    historyIndex: int
     oneTimeCommand: bool = false
     returnCode: int = QuitSuccess
     aliases = initOrderedTable[string, int]()
@@ -206,7 +208,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     else: discard
 
   # Connect to the shell database
-  let db = startDb(dbpath)
+  let db = startDb(dbpath, historyIndex)
 
   # Set available command aliases for the current directory
   aliases.setAliases(getCurrentDir(), db)
