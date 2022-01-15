@@ -163,7 +163,7 @@ proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
   except OSError:
     result = showError()
 
-proc getHistory(historyIndex: int; db: DbConn): string =
+func getHistory(historyIndex: int; db: DbConn): string =
   ## Get the command with the selected index from the shell history
   result = db.getValue(sql"SELECT command FROM history LIMIT 1 OFFSET ?",
       $(historyIndex - 1));
