@@ -284,6 +284,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       case commandName
       # Quit from shell
       of "exit":
+        historyIndex = updateHistory("exit", db)
         quitShell(returnCode, db)
       # Show help screen
       of "help":
