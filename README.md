@@ -95,8 +95,8 @@ The definition of alias which uses arguments can look that:
 The alias will be executed when the user enters `fossopen [reponame]` in the
 shell. If the user enter only `fossopen` the shell will report a problem. The
 alias is the local alias, which means it doesn't work in subdirectories. It
-runs command `fossil open fossil/$1.fossil --workdir [reponame]`. For example,
-entering the shell's command: `fossopen myrepo` will execute command:
+runs command `fossil open fossil/[reponame].fossil --workdir [reponame]`. For
+example, entering the shell's command: `fossopen myrepo` will execute command:
 `fossil open fossil/myrepo.fossil --workdir myrepo`
 
 ### How to install
