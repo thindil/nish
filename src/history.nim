@@ -27,11 +27,15 @@ import std/[db_sqlite, strutils]
 
 const maxHistoryLength = 500
 
+proc historyLength*(db: DbConn): int =
+  ## Get the current length of the shell's commmand's history
+  result = parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
+
 func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
     ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index
-  result = parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
+  result = historyLength(db)
   if result == maxHistoryLength:
     db.exec(sql"DELETE FROM history ORDER BY command ASC LIMIT(1)");
     result.dec()
