@@ -24,11 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases, output
+import aliases, history, output
 
-const
-  maxInputLength = 4096
-  maxHistoryLength = 500
+const maxInputLength = 4096
 
 proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
@@ -48,17 +46,6 @@ proc showProgramVersion() {.gcsafe, locks: 0, sideEffect, raises: [],
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
     License: 3-Clause BSD"""
   quit QuitSuccess
-
-func updateHistory(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
-    ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
-  ## Add the selected command to the shell history and increase the current
-  ## history index
-  result = parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
-  if result == maxHistoryLength:
-    db.exec(sql"DELETE FROM history ORDER BY command ASC LIMIT(1)");
-    result.dec()
-  db.exec(sql"INSERT INTO history (command) VALUES (?)", commandToAdd)
-  result.inc()
 
 func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
     DbError], tags: [DbEffect].} =
@@ -99,12 +86,6 @@ proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
     result = QuitSuccess
   except OSError:
     result = showError()
-
-func getHistory(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
-    raises: [DbError], tags: [ReadDbEffect].} =
-  ## Get the command with the selected index from the shell history
-  result = db.getValue(sql"SELECT command FROM history LIMIT 1 OFFSET ?",
-      $(historyIndex - 1));
 
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
