@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
+import aliases
 
 const
   maxInputLength = 4096
@@ -130,25 +131,6 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
                "command"	VARCHAR(4096) NOT NULL
             )""")
   historyIndex = parseInt(result.getValue(sql"SELECT COUNT(*) FROM history"))
-
-func setAliases(aliases: var OrderedTable[string, int]; directory: string;
-    db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
-    ReadDbEffect].} =
-  ## Set the available aliases in the selected directory
-  aliases.clear()
-  var
-    dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
-    remainingDirectory: string = parentDir(directory)
-
-  # Construct SQL querry, search for aliases also defined in parent directories
-  # if they are recursive
-  while remainingDirectory != "":
-    dbQuery.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
-    remainingDirectory = parentDir(remainingDirectory)
-
-  dbQuery.add(" ORDER BY id ASC")
-  for dbResult in db.fastRows(sql(dbQuery)):
-    aliases[dbResult[1]] = parseInt(dbResult[0])
 
 proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
     int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
