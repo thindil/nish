@@ -27,7 +27,8 @@ import std/[db_sqlite, strutils]
 
 const maxHistoryLength = 500
 
-proc historyLength*(db: DbConn): int =
+func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
+    DbError], tags: [ReadDbEffect].} =
   ## Get the current length of the shell's commmand's history
   result = parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
 
