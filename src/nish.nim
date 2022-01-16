@@ -465,8 +465,10 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             "` for `alias`. To see all available aliases commands, type `alias`.")
       # Execute external command or alias
       else:
-        let commandToExecute = commandName & " " &
-          join(userInput.remainingArgs(), " ")
+        let
+          arguments = if userInput.remainingArgs().len() > 0: " " & join(
+            userInput.remainingArgs(), " ") else: ""
+          commandToExecute = commandName & arguments
         # Check if command is an alias, if yes, execute it
         if commandName in aliases:
           let
