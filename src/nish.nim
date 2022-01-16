@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases
+import aliases, output
 
 const
   maxInputLength = 4096
@@ -48,51 +48,6 @@ proc showProgramVersion() {.gcsafe, locks: 0, sideEffect, raises: [],
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
     License: 3-Clause BSD"""
   quit QuitSuccess
-
-proc showPrompt(promptEnabled: bool; previousCommand: string;
-    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [OSError, IOError,
-        ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
-  ## Show the shell prompt if the shell wasn't started in one command mode
-  if not promptEnabled:
-    return
-  let
-    currentDirectory: string = getCurrentDir()
-    homeDirectory: string = getHomeDir()
-  if endsWith(currentDirectory & "/", homeDirectory):
-    stdout.styledWrite(fgBlue, "~")
-  else:
-    let homeIndex: int = currentDirectory.find(homeDirectory)
-    if homeIndex > -1:
-      stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
-          homeDirectory.len()..^1])
-    else:
-      stdout.styledWrite(fgBlue, currentDirectory)
-  if previousCommand != "" and resultCode != QuitSuccess:
-    stdout.styledWrite(fgRed, "[" & $resultCode & "]")
-  stdout.styledWrite(fgBlue, "# ")
-
-proc showOutput(message: string; newLine: bool;
-    promptEnabled: bool; previousCommand: string; returnCode: int) {.gcsafe,
-        locks: 0, sideEffect, raises: [OSError, IOError, ValueError], tags: [
-            ReadIOEffect, WriteIOEffect].} =
-  ## Show the selected message and prompt (if enabled, default) to the user.
-  ## If newLine is true, add a new line after message.
-  showPrompt(promptEnabled, previousCommand, returnCode)
-  if message != "":
-    stdout.write(message)
-    if newLine:
-      stdout.writeLine("")
-  stdout.flushFile()
-
-proc showError(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
-    raises: [IOError, ValueError], tags: [WriteIOEffect].} =
-  ## Print the message to standard error and set the shell return
-  ## code to error. If message is empty, print the current exception message
-  if message == "":
-    stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
-  else:
-    stderr.styledWriteLine(fgRed, message)
-  result = QuitFailure
 
 func updateHistory(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
     ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
