@@ -96,7 +96,6 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     commandName: string = ""
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
-    history: seq[string]
     historyIndex: int
     oneTimeCommand: bool = false
     returnCode: int = QuitSuccess
@@ -176,8 +175,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               # Arrow down key pressed
               elif inputChar == 'B' and historyIndex > 0:
                 historyIndex.inc()
-                if historyIndex >= history.len():
-                  historyIndex = history.len() - 1
+                let currentHistoryLength = historyLength(db)
+                if historyIndex > currentHistoryLength:
+                  historyIndex = currentHistoryLength
                 inputString = getHistory(historyIndex, db)
                 stdout.eraseLine()
                 showOutput(inputString, false, not oneTimeCommand,
