@@ -329,22 +329,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           historyIndex = updateHistory("alias", db)
         # Show the list of available aliases
         elif userInput.key == "list":
-          showOutput("Available aliases are:", true, false, "", QuitSuccess)
-          showOutput("ID Name Description", true, false, "",
-            QuitSuccess)
-          userInput.next()
-          if userInput.kind == cmdEnd:
-            historyIndex = updateHistory("alias list", db)
-            for alias in aliases.values:
-              let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
-                alias)
-              showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
-                QuitSuccess)
-          elif userInput.key == "all":
-            historyIndex = updateHistory("alias list all", db)
-            for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
-              showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
-                QuitSuccess)
+          listAliases(userInput, historyIndex, aliases, db)
         # Delete the selected alias
         elif userInput.key == "delete":
           userInput.next()
