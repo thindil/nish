@@ -46,7 +46,9 @@ func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
     aliases[dbResult[1]] = parseInt(dbResult[0])
 
 proc listAliases*(userInput: var OptParser; historyIndex: var int;
-    aliases: OrderedTable[string, int]; db: DbConn) =
+    aliases: OrderedTable[string, int]; db: DbConn) {.gcsafe, sideEffect,
+        locks: 0, raises: [IOError, OSError, ValueError], tags: [ReadIOEffect,
+        WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
   showOutput("Available aliases are:", true, false, "", QuitSuccess)
   showOutput("ID Name Description", true, false, "",
     QuitSuccess)
