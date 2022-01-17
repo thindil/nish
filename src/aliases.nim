@@ -23,7 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, strutils, tables]
+import std/[db_sqlite, os, parseopt, strutils, tables]
+import history, output
 
 func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
     db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
@@ -43,4 +44,23 @@ func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
   dbQuery.add(" ORDER BY id ASC")
   for dbResult in db.fastRows(sql(dbQuery)):
     aliases[dbResult[1]] = parseInt(dbResult[0])
+
+proc listAliases*(userInput: var OptParser; historyIndex: var int;
+    aliases: OrderedTable[string, int]; db: DbConn) =
+  showOutput("Available aliases are:", true, false, "", QuitSuccess)
+  showOutput("ID Name Description", true, false, "",
+    QuitSuccess)
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    historyIndex = updateHistory("alias list", db)
+    for alias in aliases.values:
+      let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
+        alias)
+      showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
+        QuitSuccess)
+  elif userInput.key == "all":
+    historyIndex = updateHistory("alias list all", db)
+    for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
+      showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
+        QuitSuccess)
 
