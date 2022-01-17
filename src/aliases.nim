@@ -49,6 +49,8 @@ proc listAliases*(userInput: var OptParser; historyIndex: var int;
     aliases: OrderedTable[string, int]; db: DbConn) {.gcsafe, sideEffect,
         locks: 0, raises: [IOError, OSError, ValueError], tags: [ReadIOEffect,
         WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
+  ## List available aliases, if entered command was "alias list all" list all
+  ## declared aliases then
   showOutput("Available aliases are:", true, false, "", QuitSuccess)
   showOutput("ID Name Description", true, false, "",
     QuitSuccess)
