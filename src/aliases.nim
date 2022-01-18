@@ -72,6 +72,7 @@ proc deleteAlias*(userInput: var OptParser; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
+  ## Delete the selected alias from the shell's database
   userInput.next()
   if userInput.kind == cmdEnd:
     result = showError("Enter the Id of the alias to delete.")
