@@ -87,3 +87,22 @@ proc deleteAlias*(userInput: var OptParser; historyIndex: var int;
       showOutput("Deleted the alias with Id: " & userInput.key, true,
           false, "", QuitSuccess)
       result = QuitSuccess
+
+proc showAlias*(userInput: var OptParser; historyIndex: var int;
+    aliases: var OrderedTable[string, int]; db: DbConn): int =
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    result = showError("Enter the Id of the alias to show.")
+  else:
+    let row = db.getRow(sql"SELECT name, commands, description FROM aliases WHERE id=?",
+        userInput.key)
+    if row[0] == "":
+      result = showError("The alias with the Id: " & userInput.key &
+        " doesn't exists.")
+    else:
+      historyIndex = updateHistory("alias show", db)
+      showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
+      showOutput("Name: " & row[0], true, false, "", QuitSuccess)
+      showOutput("Description: " & row[2], true, false, "", QuitSuccess)
+      showOutput("Commands: ", true, false, "", QuitSuccess)
+      showOutput(row[1], true, false, "", QuitSuccess)

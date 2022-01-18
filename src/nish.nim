@@ -335,22 +335,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           returnCode = deleteAlias(userInput, historyIndex, aliases, db)
         # Show the selected alias
         elif userInput.key == "show":
-          userInput.next()
-          if userInput.kind == cmdEnd:
-            returnCode = showError("Enter the Id of the alias to show.")
-          else:
-            let row = db.getRow(sql"SELECT name, commands, description FROM aliases WHERE id=?",
-                userInput.key)
-            if row[0] == "":
-              returnCode = showError("The alias with the Id: " & userInput.key &
-                " doesn't exists.")
-            else:
-              historyIndex = updateHistory("alias show", db)
-              showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
-              showOutput("Name: " & row[0], true, false, "", QuitSuccess)
-              showOutput("Description: " & row[2], true, false, "", QuitSuccess)
-              showOutput("Commands: ", true, false, "", QuitSuccess)
-              showOutput(row[1], true, false, "", QuitSuccess)
+          returnCode = showAlias(userInput, historyIndex, aliases, db)
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `alias`. To see all available aliases commands, type `alias`.")
