@@ -68,3 +68,19 @@ proc listAliases*(userInput: var OptParser; historyIndex: var int;
       showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
         QuitSuccess)
 
+proc deleteAlias*(userInput: var OptParser; historyIndex: var int;
+    aliases: var OrderedTable[string, int]; db: DbConn): int =
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    result = showError("Enter the Id of the alias to delete.")
+  else:
+    if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?",
+        userInput.key) == 0:
+      result = showError("The alias with the Id: " & userInput.key &
+        " doesn't exists.")
+    else:
+      historyIndex = updateHistory("alias delete", db)
+      aliases.setAliases(getCurrentDir(), db)
+      showOutput("Deleted the alias with Id: " & userInput.key, true,
+          false, "", QuitSuccess)
+      result = QuitSuccess
