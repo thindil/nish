@@ -332,19 +332,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           listAliases(userInput, historyIndex, aliases, db)
         # Delete the selected alias
         elif userInput.key == "delete":
-          userInput.next()
-          if userInput.kind == cmdEnd:
-            returnCode = showError("Enter the Id of the alias to delete.")
-          else:
-            if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?",
-                userInput.key) == 0:
-              returnCode = showError("The alias with the Id: " & userInput.key &
-                " doesn't exists.")
-            else:
-              historyIndex = updateHistory("alias delete", db)
-              aliases.setAliases(getCurrentDir(), db)
-              showOutput("Deleted the alias with Id: " & userInput.key, true,
-                  false, "", QuitSuccess)
+          returnCode = deleteAlias(userInput, historyIndex, aliases, db)
         # Show the selected alias
         elif userInput.key == "show":
           userInput.next()
