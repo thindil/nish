@@ -321,12 +321,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # No subcommand entered, show available options
         if userInput.kind == cmdEnd:
-          showOutput("""Available subcommands are: list, delete, show
-
-        To see more information about the subcommand, type help alias [command],
-        for example: help alias list.
-        """, true, not oneTimeCommand, commandName, returnCode)
-          historyIndex = updateHistory("alias", db)
+          historyIndex = helpAliases(db)
         # Show the list of available aliases
         elif userInput.key == "list":
           listAliases(userInput, historyIndex, aliases, db)
