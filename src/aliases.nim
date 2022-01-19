@@ -110,3 +110,11 @@ proc showAlias*(userInput: var OptParser; historyIndex: var int;
       showOutput("Description: " & row[2], true, false, "", QuitSuccess)
       showOutput("Commands: ", true, false, "", QuitSuccess)
       showOutput(row[1], true, false, "", QuitSuccess)
+
+proc helpAliases*(db: DbConn): int =
+  showOutput("""Available subcommands are: list, delete, show
+
+        To see more information about the subcommand, type help alias [command],
+        for example: help alias list.
+""", true, false, "", QuitSuccess)
+  result = updateHistory("alias", db)
