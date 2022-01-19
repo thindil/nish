@@ -92,6 +92,8 @@ proc showAlias*(userInput: var OptParser; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
+  ## Show details about the selected alias, its ID, name, description and
+  ## commands which will be executed
   userInput.next()
   if userInput.kind == cmdEnd:
     result = showError("Enter the Id of the alias to show.")
