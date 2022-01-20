@@ -142,7 +142,8 @@ proc readInput(): string =
     inputChar = getch()
   stdout.writeLine("")
 
-proc addAlias*(db: DbConn): int =
+proc addAlias*(historyIndex: var int;
+    aliases: var OrderedTable[string, int]; db: DbConn): int =
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
   showOutput("Name: ", false, false, "", QuitSuccess)
@@ -155,8 +156,11 @@ proc addAlias*(db: DbConn): int =
   let recursive = readInput()
   showOutput("Commands: ", false, false, "", QuitSuccess)
   let commands = replace(readInput(), "; ", "\\n")
+  # Save the alias to the database
   if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
       name, path, recursive, commands, description) == -1:
-    result = showError("Can't add alias.")
-  else:
-    result = QuitSuccess
+    return showError("Can't add alias.")
+  # Update history index and refresh the list of available aliases
+  result = QuitSuccess
+  historyIndex = updateHistory("alias add", db)
+  aliases.setAliases(getCurrentDir(), db)
