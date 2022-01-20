@@ -23,8 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, parseopt, strutils, tables]
-import history, output
+import std/[db_sqlite, os, parseopt, strutils, tables, terminal]
+import constants, history, output
 
 func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
     db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
@@ -121,3 +121,42 @@ proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
         for example: help alias list.
 """, true, false, "", QuitSuccess)
   result = updateHistory("alias", db)
+
+proc readInput(): string =
+  ## Read the user input. Used in adding a new alias or editing an existing
+  # Get the user input and parse it
+  var inputChar = '\0'
+  # Read the user input until not meet new line character or the input
+  # reach the maximum length
+  while inputChar.ord() != 13 and result.len() < maxInputLength:
+    # Backspace pressed, delete the last character from the user input
+    if inputChar.ord() == 127:
+      if result.len() > 0:
+        result = result[0..^2]
+        stdout.cursorBackward()
+        stdout.write(" ")
+        stdout.cursorBackward()
+    elif inputChar.ord() > 31:
+      stdout.write(inputChar)
+      result.add(inputChar)
+    inputChar = getch()
+  stdout.writeLine("")
+
+proc addAlias*(db: DbConn): int =
+  ## Add a new alias to the shell. Ask the user a few questions and fill the
+  ## alias values with answers
+  showOutput("Name: ", false, false, "", QuitSuccess)
+  let name = readInput()
+  showOutput("Description: ", false, false, "", QuitSuccess)
+  let description = readInput()
+  showOutput("Path: ", false, false, "", QuitSuccess)
+  let path = readInput()
+  showOutput("Recursive: ", false, false, "", QuitSuccess)
+  let recursive = readInput()
+  showOutput("Commands: ", false, false, "", QuitSuccess)
+  let commands = replace(readInput(), "; ", "\\n")
+  if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
+      name, path, recursive, commands, description) == -1:
+    result = showError("Can't add alias.")
+  else:
+    result = QuitSuccess
