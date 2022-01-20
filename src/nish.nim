@@ -329,6 +329,11 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         # Show the selected alias
         elif userInput.key == "show":
           returnCode = showAlias(userInput, historyIndex, aliases, db)
+        # Add a new alias
+        elif userInput.key == "add":
+          returnCode = addAlias(db)
+          if returnCode == QuitSuccess:
+            aliases.setAliases(getCurrentDir(), db)
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `alias`. To see all available aliases commands, type `alias`.")
