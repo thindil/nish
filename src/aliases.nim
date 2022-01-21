@@ -166,8 +166,13 @@ proc addAlias*(historyIndex: var int;
   let path = readInput()
   if path == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("Recursive: ", false, false, "", QuitSuccess)
-  let recursive = readInput()
+  showOutput("Recursive (y/n): ", false, false, "", QuitSuccess)
+  var inputChar: char = getch()
+  while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
+      inputChar != 'Y':
+    inputChar = getch()
+  let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  stdout.writeLine("")
   showOutput("Commands: ", false, false, "", QuitSuccess)
   let commands = replace(readInput(), "; ", "\\n")
   if commands == "exit":
