@@ -136,6 +136,8 @@ proc readInput(): string =
         stdout.cursorBackward()
         stdout.write(" ")
         stdout.cursorBackward()
+    # Visible character, add it to the user input string and show it in the
+    # console
     elif inputChar.ord() > 31:
       stdout.write(inputChar)
       result.add(inputChar)
