@@ -98,7 +98,7 @@ proc showAlias*(userInput: var OptParser; historyIndex: var int;
   if userInput.kind == cmdEnd:
     result = showError("Enter the Id of the alias to show.")
   else:
-    let row = db.getRow(sql"SELECT name, commands, description FROM aliases WHERE id=?",
+    let row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
         userInput.key)
     if row[0] == "":
       result = showError("The alias with the Id: " & userInput.key &
@@ -108,6 +108,10 @@ proc showAlias*(userInput: var OptParser; historyIndex: var int;
       showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
       showOutput("Name: " & row[0], true, false, "", QuitSuccess)
       showOutput("Description: " & row[2], true, false, "", QuitSuccess)
+      if row[4] == "1":
+        showOutput("Path: " & row[3] & " (recursive)", true, false, "", QuitSuccess)
+      else:
+        showOutput("Path: " & row[3], true, false, "", QuitSuccess)
       showOutput("Commands: ", true, false, "", QuitSuccess)
       showOutput(row[1], true, false, "", QuitSuccess)
 
