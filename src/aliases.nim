@@ -136,6 +136,12 @@ proc readInput(): string =
         stdout.cursorBackward()
         stdout.write(" ")
         stdout.cursorBackward()
+    elif inputChar.ord() == 27:
+      inputChar = getch()
+      if inputChar.ord() == 27:
+        return "exit"
+      else:
+        continue
     # Visible character, add it to the user input string and show it in the
     # console
     elif inputChar.ord() > 31:
@@ -150,14 +156,22 @@ proc addAlias*(historyIndex: var int;
   ## alias values with answers
   showOutput("Name: ", false, false, "", QuitSuccess)
   let name = readInput()
+  if name == "exit":
+    return showError("Adding a new alias cancelled.")
   showOutput("Description: ", false, false, "", QuitSuccess)
   let description = readInput()
+  if description == "exit":
+    return showError("Adding a new alias cancelled.")
   showOutput("Path: ", false, false, "", QuitSuccess)
   let path = readInput()
+  if path == "exit":
+    return showError("Adding a new alias cancelled.")
   showOutput("Recursive: ", false, false, "", QuitSuccess)
   let recursive = readInput()
   showOutput("Commands: ", false, false, "", QuitSuccess)
   let commands = replace(readInput(), "; ", "\\n")
+  if commands == "exit":
+    return showError("Adding a new alias cancelled.")
   # Save the alias to the database
   if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
       name, path, recursive, commands, description) == -1:
