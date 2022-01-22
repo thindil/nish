@@ -59,17 +59,20 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
   discard existsOrCreateDir(parentDir(dbpath))
   result = open(dbpath, "", "", "")
   # Create a new database if not exists
-  result.exec(sql"""CREATE TABLE IF NOT EXISTS aliases (
+  var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
                id          INTEGER       PRIMARY KEY,
                name        VARCHAR(50)   NOT NULL,
                path        TEXT          NOT NULL,
                recursive   BOOLEAN       NOT NULL,
-               commands    VARCHAR(4096) NOT NULL,
-               description VARCHAR(4096) NOT NULL
-            )""")
-  result.exec(sql"""CREATE TABLE IF NOT EXISTS "history" (
-               "command"	VARCHAR(4096) NOT NULL
-            )""")
+               commands    VARCHAR(""" & $maxInputLength &
+      """) NOT NULL,
+               description VARCHAR(""" & $maxInputLength & """) NOT NULL
+            )"""
+  result.exec(sql(sqlQuery))
+  sqlQuery = """CREATE TABLE IF NOT EXISTS history (
+               command VARCHAR(""" & $maxInputLength & """) NOT NULL
+            )"""
+  result.exec(sql(sqlQuery))
   historyIndex = parseInt(result.getValue(sql"SELECT COUNT(*) FROM history"))
 
 proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
