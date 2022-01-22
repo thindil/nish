@@ -158,26 +158,33 @@ proc addAlias*(historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int =
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
-  showOutput("Name: ", false, false, "", QuitSuccess)
+  showOutput("You can cancel adding a new alias at any time by double press Escape key.",
+      true, false, "", QuitSuccess)
+  showOutput("The name of the alias. Will be used to execute it. For example: 'ls'.:",
+      true, false, "", QuitSuccess)
   let name = readInput()
   if name == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("Description: ", false, false, "", QuitSuccess)
+  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character.: ",
+      true, false, "", QuitSuccess)
   let description = readInput()
   if description == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("Path: ", false, false, "", QuitSuccess)
+  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'.: ",
+      true, false, "", QuitSuccess)
   let path = readInput()
   if path == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("Recursive (y/n): ", false, false, "", QuitSuccess)
+  showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':",
+      true, false, "", QuitSuccess)
   var inputChar: char = getch()
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
-  showOutput("Commands: ", false, false, "", QuitSuccess)
+  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. For example: 'clear; ls -a'. Commands can't contain a new line character.:",
+      true, false, "", QuitSuccess)
   let commands = replace(readInput(), "; ", "\\n")
   if commands == "exit":
     return showError("Adding a new alias cancelled.")
