@@ -155,7 +155,9 @@ proc readInput(): string =
   stdout.writeLine("")
 
 proc addAlias*(historyIndex: var int;
-    aliases: var OrderedTable[string, int]; db: DbConn): int =
+    aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
+        sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
+        ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
   showOutput("You can cancel adding a new alias at any time by double press Escape key.",
