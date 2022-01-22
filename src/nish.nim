@@ -211,7 +211,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         # If user entered only "help", show the main help screen
         if userInput.kind == cmdEnd:
           showOutput("""Available commands are: cd, exit, help, set, unset, alias, alias list, alias
-  delete, alias show
+  delete, alias show, alias add
 
         To see more information about the command, type help [command], for
         example: help cd.
@@ -279,6 +279,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         Show details (description, commands, etc) for the alias with the selected index.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help alias show", db)
+          elif userInput.key == "add":
+            showOutput("""Usage: alias add
+
+        Start adding a new alias to the shell. You will be able to set it name, description, commands, etc.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help alias add", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `alias`. To see all available aliases commands, type `alias`.")
