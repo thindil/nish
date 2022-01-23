@@ -75,18 +75,16 @@ proc deleteAlias*(userInput: var OptParser; historyIndex: var int;
   ## Delete the selected alias from the shell's database
   userInput.next()
   if userInput.kind == cmdEnd:
-    result = showError("Enter the Id of the alias to delete.")
-  else:
-    if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?",
-        userInput.key) == 0:
-      result = showError("The alias with the Id: " & userInput.key &
-        " doesn't exists.")
-    else:
-      historyIndex = updateHistory("alias delete", db)
-      aliases.setAliases(getCurrentDir(), db)
-      showOutput("Deleted the alias with Id: " & userInput.key, true,
-          false, "", QuitSuccess)
-      result = QuitSuccess
+    return showError("Enter the Id of the alias to delete.")
+  if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?",
+      userInput.key) == 0:
+    return showError("The alias with the Id: " & userInput.key &
+      " doesn't exists.")
+  historyIndex = updateHistory("alias delete", db)
+  aliases.setAliases(getCurrentDir(), db)
+  showOutput("Deleted the alias with Id: " & userInput.key, true,
+      false, "", QuitSuccess)
+  return QuitSuccess
 
 proc showAlias*(userInput: var OptParser; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
@@ -96,24 +94,23 @@ proc showAlias*(userInput: var OptParser; historyIndex: var int;
   ## commands which will be executed
   userInput.next()
   if userInput.kind == cmdEnd:
-    result = showError("Enter the Id of the alias to show.")
+    return showError("Enter the ID of the alias to show.")
+  let row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
+      userInput.key)
+  if row[0] == "":
+    return showError("The alias with the ID: " & userInput.key &
+      " doesn't exists.")
+  historyIndex = updateHistory("alias show", db)
+  showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
+  showOutput("Name: " & row[0], true, false, "", QuitSuccess)
+  showOutput("Description: " & row[2], true, false, "", QuitSuccess)
+  if row[4] == "1":
+    showOutput("Path: " & row[3] & " (recursive)", true, false, "", QuitSuccess)
   else:
-    let row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
-        userInput.key)
-    if row[0] == "":
-      result = showError("The alias with the Id: " & userInput.key &
-        " doesn't exists.")
-    else:
-      historyIndex = updateHistory("alias show", db)
-      showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
-      showOutput("Name: " & row[0], true, false, "", QuitSuccess)
-      showOutput("Description: " & row[2], true, false, "", QuitSuccess)
-      if row[4] == "1":
-        showOutput("Path: " & row[3] & " (recursive)", true, false, "", QuitSuccess)
-      else:
-        showOutput("Path: " & row[3], true, false, "", QuitSuccess)
-      showOutput("Commands: ", true, false, "", QuitSuccess)
-      showOutput(row[1], true, false, "", QuitSuccess)
+    showOutput("Path: " & row[3], true, false, "", QuitSuccess)
+  showOutput("Commands: ", true, false, "", QuitSuccess)
+  showOutput(row[1], true, false, "", QuitSuccess)
+  return QuitSuccess
 
 proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, OSError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
@@ -124,7 +121,7 @@ proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
         To see more information about the subcommand, type help alias [command],
         for example: help alias list.
 """, true, false, "", QuitSuccess)
-  result = updateHistory("alias", db)
+  return updateHistory("alias", db)
 
 proc readInput(maxLength: int = maxInputLength): string =
   ## Read the user input. Used in adding a new alias or editing an existing
@@ -195,9 +192,9 @@ proc addAlias*(historyIndex: var int;
       name, path, recursive, commands, description) == -1:
     return showError("Can't add alias.")
   # Update history index and refresh the list of available aliases
-  result = QuitSuccess
   historyIndex = updateHistory("alias add", db)
   aliases.setAliases(getCurrentDir(), db)
+  return QuitSuccess
 
 proc editAlias*(userInput: var OptParser; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int =
