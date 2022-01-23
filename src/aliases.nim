@@ -198,3 +198,16 @@ proc addAlias*(historyIndex: var int;
   result = QuitSuccess
   historyIndex = updateHistory("alias add", db)
   aliases.setAliases(getCurrentDir(), db)
+
+proc editAlias*(userInput: var OptParser; historyIndex: var int;
+    aliases: var OrderedTable[string, int]; db: DbConn): int =
+  ## Edit the selected alias
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    return showError("Enter the ID of the alias to edit.")
+  if db.getValue(sql"SELECT id FROM aliases WHERE id=?",
+      userInput.key) != userInput.key:
+    return showError("The alias with the ID: " & userInput.key &
+      " doesn't exists.")
+  return QuitSuccess
+
