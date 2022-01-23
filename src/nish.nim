@@ -61,7 +61,7 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
   # Create a new database if not exists
   var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
                id          INTEGER       PRIMARY KEY,
-               name        VARCHAR(50)   NOT NULL,
+               name        VARCHAR(""" & $aliasNameLength & """)   NOT NULL,
                path        VARCHAR(""" & $maxInputLength &
       """) NOT NULL,
                recursive   BOOLEAN       NOT NULL,
