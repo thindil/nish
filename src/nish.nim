@@ -62,7 +62,8 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
   var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
                id          INTEGER       PRIMARY KEY,
                name        VARCHAR(50)   NOT NULL,
-               path        TEXT          NOT NULL,
+               path        VARCHAR(""" & $maxInputLength &
+      """) NOT NULL,
                recursive   BOOLEAN       NOT NULL,
                commands    VARCHAR(""" & $maxInputLength &
       """) NOT NULL,
