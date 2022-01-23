@@ -126,13 +126,13 @@ proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
 """, true, false, "", QuitSuccess)
   result = updateHistory("alias", db)
 
-proc readInput(): string =
+proc readInput(maxLength: int = maxInputLength): string =
   ## Read the user input. Used in adding a new alias or editing an existing
   # Get the user input and parse it
   var inputChar = '\0'
   # Read the user input until not meet new line character or the input
   # reach the maximum length
-  while inputChar.ord() != 13 and result.len() < maxInputLength:
+  while inputChar.ord() != 13 and result.len() < maxLength:
     # Backspace pressed, delete the last character from the user input
     if inputChar.ord() == 127:
       if result.len() > 0:
@@ -164,7 +164,7 @@ proc addAlias*(historyIndex: var int;
       true, false, "", QuitSuccess)
   showOutput("The name of the alias. Will be used to execute it. For example: 'ls'.:",
       true, false, "", QuitSuccess)
-  let name = readInput()
+  let name = readInput(aliasNameLength)
   if name == "exit":
     return showError("Adding a new alias cancelled.")
   showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character.: ",
