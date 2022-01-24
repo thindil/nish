@@ -197,7 +197,9 @@ proc addAlias*(historyIndex: var int;
   return QuitSuccess
 
 proc editAlias*(userInput: var OptParser; historyIndex: var int;
-    aliases: var OrderedTable[string, int]; db: DbConn): int =
+    aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
+        sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
+        ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
   ## Edit the selected alias
   userInput.next()
   if userInput.kind == cmdEnd:
