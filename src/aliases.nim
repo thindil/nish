@@ -207,7 +207,7 @@ proc editAlias*(userInput: var OptParser; historyIndex: var int;
   if row[0] == "":
     return showError("The alias with the ID: " & userInput.key &
       " doesn't exists.")
-  showOutput("You can cancel editiing the alias at any time by double press Escape key.",
+  showOutput("You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.",
       true, false, "", QuitSuccess)
   showOutput("The name of the alias. Will be used to execute it. Current value: '" &
       row[0] & "'", true, false, "", QuitSuccess)
