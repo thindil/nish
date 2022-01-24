@@ -202,9 +202,47 @@ proc editAlias*(userInput: var OptParser; historyIndex: var int;
   userInput.next()
   if userInput.kind == cmdEnd:
     return showError("Enter the ID of the alias to edit.")
-  if db.getValue(sql"SELECT id FROM aliases WHERE id=?",
-      userInput.key) != userInput.key:
+  let row = db.getRow(sql"SELECT name, path, commands, description FROM aliases WHERE id=?",
+    userInput.key)
+  if row[0] == "":
     return showError("The alias with the ID: " & userInput.key &
       " doesn't exists.")
+  showOutput("You can cancel editiing the alias at any time by double press Escape key.",
+      true, false, "", QuitSuccess)
+  showOutput("The name of the alias. Will be used to execute it. Current value: '" & row[0] & "'",
+      true, false, "", QuitSuccess)
+  let name = readInput(aliasNameLength)
+  if name == "exit":
+    return showError("Editing the alias cancelled.")
+  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '" & row[3] & "'. Can't contains a new line character.: ",
+      true, false, "", QuitSuccess)
+  let description = readInput()
+  if description == "exit":
+    return showError("Editing the alias cancelled.")
+  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '" & row[1] & "'",
+      true, false, "", QuitSuccess)
+  let path = readInput()
+  if path == "exit":
+    return showError("Editing the alias cancelled.")
+  showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':",
+      true, false, "", QuitSuccess)
+  var inputChar: char = getch()
+  while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
+      inputChar != 'Y':
+    inputChar = getch()
+  let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  stdout.writeLine("")
+  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. Current value: '" & replace(row[2], "\\n", "; ") & "'. Commands can't contain a new line character.:",
+      true, false, "", QuitSuccess)
+  let commands = replace(readInput(), "; ", "\\n")
+  if commands == "exit":
+    return showError("Editing the alias cancelled.")
+  # Save the alias to the database
+  if db.execAffectedRows(sql"UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?",
+      name, path, recursive, commands, description, userInput.key) != 1:
+    return showError("Can't edit the alias.")
+  # Update history index and refresh the list of available aliases
+  historyIndex = updateHistory("alias edit", db)
+  aliases.setAliases(getCurrentDir(), db)
   return QuitSuccess
 
