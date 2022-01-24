@@ -209,21 +209,29 @@ proc editAlias*(userInput: var OptParser; historyIndex: var int;
       " doesn't exists.")
   showOutput("You can cancel editiing the alias at any time by double press Escape key.",
       true, false, "", QuitSuccess)
-  showOutput("The name of the alias. Will be used to execute it. Current value: '" & row[0] & "'",
-      true, false, "", QuitSuccess)
-  let name = readInput(aliasNameLength)
+  showOutput("The name of the alias. Will be used to execute it. Current value: '" &
+      row[0] & "'", true, false, "", QuitSuccess)
+  var name = readInput(aliasNameLength)
   if name == "exit":
     return showError("Editing the alias cancelled.")
-  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '" & row[3] & "'. Can't contains a new line character.: ",
-      true, false, "", QuitSuccess)
-  let description = readInput()
+  elif name == "":
+    name = row[0]
+  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '" &
+      row[3] & "'. Can't contains a new line character.: ",
+
+true, false, "", QuitSuccess)
+  var description = readInput()
   if description == "exit":
     return showError("Editing the alias cancelled.")
-  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '" & row[1] & "'",
-      true, false, "", QuitSuccess)
-  let path = readInput()
+  elif description == "":
+    description = row[3]
+  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '" &
+      row[1] & "'", true, false, "", QuitSuccess)
+  var path = readInput()
   if path == "exit":
     return showError("Editing the alias cancelled.")
+  elif path == "":
+    path = row[1]
   showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':",
       true, false, "", QuitSuccess)
   var inputChar: char = getch()
@@ -232,11 +240,16 @@ proc editAlias*(userInput: var OptParser; historyIndex: var int;
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
-  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. Current value: '" & replace(row[2], "\\n", "; ") & "'. Commands can't contain a new line character.:",
-      true, false, "", QuitSuccess)
-  let commands = replace(readInput(), "; ", "\\n")
+  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. Current value: '" &
+      replace(row[2], "\\n", "; ") &
+      "'. Commands can't contain a new line character.:",
+
+true, false, "", QuitSuccess)
+  var commands = replace(readInput(), "; ", "\\n")
   if commands == "exit":
     return showError("Editing the alias cancelled.")
+  elif commands == "":
+    commands = row[2]
   # Save the alias to the database
   if db.execAffectedRows(sql"UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?",
       name, path, recursive, commands, description, userInput.key) != 1:
