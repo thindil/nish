@@ -334,7 +334,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # No subcommand entered, show available options
         if userInput.kind == cmdEnd:
-          continue
+          historyIndex = helpHistory(db)
         # Clear the shell's commands' history
         elif userInput.key == "clear":
           historyIndex = clearHistory(db)

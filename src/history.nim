@@ -58,3 +58,14 @@ proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   showOutput("Shell's commands' history cleared.", true, false, "", QuitSuccess)
   return 0;
 
+proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+    DbError, OSError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    ReadIOEffect, WriteIOEffect].} =
+  ## Show short help about available subcommands related to the shell's
+  ## commands' history
+  showOutput("""Available subcommands are: clear
+
+        To see more information about the subcommand, type help history [command],
+        for example: help history clear.
+""", true, false, "", QuitSuccess)
+  return updateHistory("history", db)
