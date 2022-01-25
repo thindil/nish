@@ -212,7 +212,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         # If user entered only "help", show the main help screen
         if userInput.kind == cmdEnd:
           showOutput("""Available commands are: cd, exit, help, set, unset, alias, alias list, alias
-  delete, alias show, alias add, alias edit
+  delete, alias show, alias add, alias edit, history, history clear
 
         To see more information about the command, type help [command], for
         example: help cd.
@@ -295,6 +295,25 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `alias`. To see all available aliases commands, type `alias`.")
+        elif userInput.key == "history":
+          userInput.next()
+          # If user entered only "history", show the help for it
+          if userInput.kind == cmdEnd:
+            showOutput("""Usage: history ?subcommand?
+
+        If entered without subcommand, show the list of available subcommands
+        for history. Otherwise, execute the selected subcommand.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help history", db)
+          elif userInput.key == "clear":
+            showOutput("""Usage: history clear
+
+        Clear the shell's commands' history.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help history clear", db)
+          else:
+            returnCode = showError("Unknown subcommand `" & userInput.key &
+              "` for `history`. To see all available aliases commands, type `history`.")
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
       # Change current directory
