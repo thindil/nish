@@ -30,7 +30,7 @@ const maxHistoryLength = 500
 func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
     DbError], tags: [ReadDbEffect].} =
   ## Get the current length of the shell's commmand's history
-  result = parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
+  return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
 
 func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
     ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
@@ -46,6 +46,6 @@ func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
 func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
     raises: [DbError], tags: [ReadDbEffect].} =
   ## Get the command with the selected index from the shell history
-  result = db.getValue(sql"SELECT command FROM history LIMIT 1 OFFSET ?",
+  return db.getValue(sql"SELECT command FROM history LIMIT 1 OFFSET ?",
       $(historyIndex - 1));
 
