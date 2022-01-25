@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, strutils]
+import output
 
 const maxHistoryLength = 500
 
@@ -48,4 +49,10 @@ func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
   ## Get the command with the selected index from the shell history
   return db.getValue(sql"SELECT command FROM history LIMIT 1 OFFSET ?",
       $(historyIndex - 1));
+
+proc clearHistory*(db: DbConn): int =
+  ## Clear the shell's history, don't add the command to the history
+  db.exec(sql"DELETE FROM history");
+  showOutput("Shell's commands' history cleared.", true, false, "", QuitSuccess)
+  return 0;
 

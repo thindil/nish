@@ -329,6 +329,15 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             historyIndex = updateHistory("unset " & userInput.key, db)
           except OSError:
             returnCode = showError()
+      # Various commands related to the shell's commands' history
+      of "history":
+        userInput.next()
+        # No subcommand entered, show available options
+        if userInput.kind == cmdEnd:
+          continue
+        # Clear the shell's commands' history
+        elif userInput.key == "clear":
+          historyIndex = clearHistory(db)
       # Various commands related to the aliases (like show list of available
       # aliases, add, delete, edit them)
       of "alias":
