@@ -50,7 +50,9 @@ func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
   return db.getValue(sql"SELECT command FROM history LIMIT 1 OFFSET ?",
       $(historyIndex - 1));
 
-proc clearHistory*(db: DbConn): int =
+proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+    DbError, IOError, OSError, ValueError], tags: [ReadIOEffect, WriteIOEffect,
+    ReadDbEffect, WriteDbEffect].} =
   ## Clear the shell's history, don't add the command to the history
   db.exec(sql"DELETE FROM history");
   showOutput("Shell's commands' history cleared.", true, false, "", QuitSuccess)
