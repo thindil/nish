@@ -359,6 +359,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         # Clear the shell's commands' history
         elif userInput.key == "clear":
           historyIndex = clearHistory(db)
+        elif userInput.key == "show":
+          historyIndex = showHistory(db)
       # Various commands related to the aliases (like show list of available
       # aliases, add, delete, edit them)
       of "alias":
