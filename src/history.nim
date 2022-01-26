@@ -72,3 +72,11 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
         for example: help history clear.
 """, true, false, "", QuitSuccess)
   return updateHistory("history", db)
+
+proc showHistory*(db: DbConn): int =
+  ## Show the last Amount of entries to the shell's history
+  showOutput("The last commands from the shell's history", true, false, "", QuitSuccess)
+  showOutput("Last used           Times Command", true, false, "", QuitSuccess)
+  for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused ASC LIMIT 20"):
+    showOutput(row[1] & " " & row[2] & " " & row[0], true, false, "", QuitSuccess)
+  return updateHistory("history show", db)
