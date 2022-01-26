@@ -313,6 +313,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         Clear the shell's commands' history.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help history clear", db)
+          elif userInput.key == "show":
+            showOutput("""Usage: history show
+
+        Show the last 20 commands from the shell's history.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help history clear", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `history`. To see all available aliases commands, type `history`.")

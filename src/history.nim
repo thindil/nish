@@ -66,7 +66,7 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
     ReadIOEffect, WriteIOEffect].} =
   ## Show short help about available subcommands related to the shell's
   ## commands' history
-  showOutput("""Available subcommands are: clear
+  showOutput("""Available subcommands are: clear, show
 
         To see more information about the subcommand, type help history [command],
         for example: help history clear.
