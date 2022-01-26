@@ -36,12 +36,15 @@ func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
 func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
     ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
   ## Add the selected command to the shell history and increase the current
-  ## history index
+  ## history index. If there is the command in the shell's history, only update
+  ## its amount ond last used timestamp
   result = historyLength(db)
   if result == maxHistoryLength:
     db.exec(sql"DELETE FROM history ORDER BY command ASC LIMIT(1)");
     result.dec()
-  db.exec(sql"INSERT INTO history (command) VALUES (?)", commandToAdd)
+  if db.execAffectedRows(sql"UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?",
+      commandToAdd) == 0:
+    db.exec(sql"INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))", commandToAdd)
   result.inc()
 
 func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
