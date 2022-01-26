@@ -61,7 +61,7 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
   # Create a new database if not exists
   var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
                id          INTEGER       PRIMARY KEY,
-               name        VARCHAR(""" & $aliasNameLength & """)   NOT NULL,
+               name        VARCHAR(""" & $aliasNameLength & """) NOT NULL,
                path        VARCHAR(""" & $maxInputLength &
       """) NOT NULL,
                recursive   BOOLEAN       NOT NULL,
@@ -71,7 +71,9 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
             )"""
   result.exec(sql(sqlQuery))
   sqlQuery = """CREATE TABLE IF NOT EXISTS history (
-               command VARCHAR(""" & $maxInputLength & """) NOT NULL
+               command     VARCHAR(""" & $maxInputLength & """) PRIMARY KEY,
+               lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
+               amount      INTEGER NOT NULL DEFAULT 1
             )"""
   result.exec(sql(sqlQuery))
   historyIndex = parseInt(result.getValue(sql"SELECT COUNT(*) FROM history"))
