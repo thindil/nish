@@ -73,7 +73,9 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
 """, true, false, "", QuitSuccess)
   return updateHistory("history", db)
 
-proc showHistory*(db: DbConn): int =
+proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+    DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    ReadIOEffect, WriteIOEffect].} =
   ## Show the last Amount of entries to the shell's history
   showOutput("The last commands from the shell's history", true, false, "", QuitSuccess)
   showOutput("Last used           Times Command", true, false, "", QuitSuccess)
