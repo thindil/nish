@@ -45,7 +45,7 @@ func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
   if db.execAffectedRows(sql"UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?",
       commandToAdd) == 0:
     db.exec(sql"INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))", commandToAdd)
-  result.inc()
+    result.inc()
 
 func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
     raises: [DbError], tags: [ReadDbEffect].} =
