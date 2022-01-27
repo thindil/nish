@@ -174,8 +174,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
                 showOutput(inputString, false, not oneTimeCommand,
                     commandName, returnCode)
                 historyIndex.dec()
-                if historyIndex < 0:
-                  historyIndex = 0;
+                if historyIndex < 1:
+                  historyIndex = 1;
               # Arrow down key pressed
               elif inputChar == 'B' and historyIndex > 0:
                 historyIndex.inc()
