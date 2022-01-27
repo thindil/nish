@@ -78,19 +78,6 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
   result.exec(sql(sqlQuery))
   historyIndex = parseInt(result.getValue(sql"SELECT COUNT(*) FROM history"))
 
-proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
-    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
-        IOError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-        WriteIOEffect].} =
-  ## Change the current directory for the shell
-  let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
-  try:
-    setCurrentDir(path)
-    aliases.setAliases(path, db)
-    result = QuitSuccess
-  except OSError:
-    result = showError()
-
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## The main procedure of the shell
