@@ -50,7 +50,7 @@ func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
 func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
     raises: [DbError], tags: [ReadDbEffect].} =
   ## Get the command with the selected index from the shell history
-  return db.getValue(sql"SELECT command FROM history LIMIT 1 OFFSET ?",
+  return db.getValue(sql"SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?",
       $(historyIndex - 1));
 
 proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
