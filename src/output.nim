@@ -47,10 +47,10 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     stdout.styledWrite(fgRed, "[" & $resultCode & "]")
   stdout.styledWrite(fgBlue, "# ")
 
-proc showOutput*(message: string; newLine: bool;
-    promptEnabled: bool; previousCommand: string; returnCode: int) {.gcsafe,
-        locks: 0, sideEffect, raises: [OSError, IOError, ValueError], tags: [
-            ReadIOEffect, WriteIOEffect].} =
+proc showOutput*(message: string; newLine: bool = true;
+    promptEnabled: bool = false; previousCommand: string = "";
+        returnCode: int = QuitSuccess) {.gcsafe, locks: 0, sideEffect, raises: [OSError,
+            IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show the selected message and prompt (if enabled, default) to the user.
   ## If newLine is true, add a new line after message.
   showPrompt(promptEnabled, previousCommand, returnCode)
