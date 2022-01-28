@@ -51,22 +51,19 @@ proc listAliases*(userInput: var OptParser; historyIndex: var int;
         WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## List available aliases, if entered command was "alias list all" list all
   ## declared aliases then
-  showOutput("Available aliases are:", true, false, "", QuitSuccess)
-  showOutput("ID Name Description", true, false, "",
-    QuitSuccess)
+  showOutput("Available aliases are:")
+  showOutput("ID Name Description")
   userInput.next()
   if userInput.kind == cmdEnd:
     historyIndex = updateHistory("alias list", db)
     for alias in aliases.values:
       let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
         alias)
-      showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
-        QuitSuccess)
+      showOutput(row[0] & " " & row[1] & " " & row[2])
   elif userInput.key == "all":
     historyIndex = updateHistory("alias list all", db)
     for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
-      showOutput(row[0] & " " & row[1] & " " & row[2], true, false, "",
-        QuitSuccess)
+      showOutput(row[0] & " " & row[1] & " " & row[2])
 
 proc deleteAlias*(userInput: var OptParser; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
@@ -82,8 +79,7 @@ proc deleteAlias*(userInput: var OptParser; historyIndex: var int;
       " doesn't exists.")
   historyIndex = updateHistory("alias delete", db)
   aliases.setAliases(getCurrentDir(), db)
-  showOutput("Deleted the alias with Id: " & userInput.key, true,
-      false, "", QuitSuccess)
+  showOutput("Deleted the alias with Id: " & userInput.key)
   return QuitSuccess
 
 proc showAlias*(userInput: var OptParser; historyIndex: var int;
@@ -101,15 +97,15 @@ proc showAlias*(userInput: var OptParser; historyIndex: var int;
     return showError("The alias with the ID: " & userInput.key &
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
-  showOutput("Id: " & userInput.key, true, false, "", QuitSuccess)
-  showOutput("Name: " & row[0], true, false, "", QuitSuccess)
-  showOutput("Description: " & row[2], true, false, "", QuitSuccess)
+  showOutput("Id: " & userInput.key)
+  showOutput("Name: " & row[0])
+  showOutput("Description: " & row[2])
   if row[4] == "1":
-    showOutput("Path: " & row[3] & " (recursive)", true, false, "", QuitSuccess)
+    showOutput("Path: " & row[3] & " (recursive)")
   else:
-    showOutput("Path: " & row[3], true, false, "", QuitSuccess)
-  showOutput("Commands: ", true, false, "", QuitSuccess)
-  showOutput(row[1], true, false, "", QuitSuccess)
+    showOutput("Path: " & row[3])
+  showOutput("Commands: ")
+  showOutput(row[1])
   return QuitSuccess
 
 proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
@@ -120,7 +116,7 @@ proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
 
         To see more information about the subcommand, type help alias [command],
         for example: help alias list.
-""", true, false, "", QuitSuccess)
+""")
   return updateHistory("alias", db)
 
 proc readInput(maxLength: int = maxInputLength): string =
@@ -157,33 +153,27 @@ proc addAlias*(historyIndex: var int;
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
-  showOutput("You can cancel adding a new alias at any time by double press Escape key.",
-      true, false, "", QuitSuccess)
-  showOutput("The name of the alias. Will be used to execute it. For example: 'ls'.:",
-      true, false, "", QuitSuccess)
+  showOutput("You can cancel adding a new alias at any time by double press Escape key.")
+  showOutput("The name of the alias. Will be used to execute it. For example: 'ls'.:")
   let name = readInput(aliasNameLength)
   if name == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character.: ",
-      true, false, "", QuitSuccess)
+  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character.: ")
   let description = readInput()
   if description == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'.: ",
-      true, false, "", QuitSuccess)
+  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'.: ")
   let path = readInput()
   if path == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':",
-      true, false, "", QuitSuccess)
+  showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   var inputChar: char = getch()
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
-  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. For example: 'clear; ls -a'. Commands can't contain a new line character.:",
-      true, false, "", QuitSuccess)
+  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. For example: 'clear; ls -a'. Commands can't contain a new line character.:")
   let commands = replace(readInput(), "; ", "\\n")
   if commands == "exit":
     return showError("Adding a new alias cancelled.")
@@ -209,33 +199,29 @@ proc editAlias*(userInput: var OptParser; historyIndex: var int;
   if row[0] == "":
     return showError("The alias with the ID: " & userInput.key &
       " doesn't exists.")
-  showOutput("You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.",
-      true, false, "", QuitSuccess)
+  showOutput("You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showOutput("The name of the alias. Will be used to execute it. Current value: '" &
-      row[0] & "'", true, false, "", QuitSuccess)
+      row[0] & "'")
   var name = readInput(aliasNameLength)
   if name == "exit":
     return showError("Editing the alias cancelled.")
   elif name == "":
     name = row[0]
   showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '" &
-      row[3] & "'. Can't contains a new line character.: ",
-
-true, false, "", QuitSuccess)
+      row[3] & "'. Can't contains a new line character.: ")
   var description = readInput()
   if description == "exit":
     return showError("Editing the alias cancelled.")
   elif description == "":
     description = row[3]
   showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '" &
-      row[1] & "'", true, false, "", QuitSuccess)
+      row[1] & "'")
   var path = readInput()
   if path == "exit":
     return showError("Editing the alias cancelled.")
   elif path == "":
     path = row[1]
-  showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':",
-      true, false, "", QuitSuccess)
+  showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   var inputChar: char = getch()
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
@@ -244,9 +230,7 @@ true, false, "", QuitSuccess)
   stdout.writeLine("")
   showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. Current value: '" &
       replace(row[2], "\\n", "; ") &
-      "'. Commands can't contain a new line character.:",
-
-true, false, "", QuitSuccess)
+      "'. Commands can't contain a new line character.:")
   var commands = replace(readInput(), "; ", "\\n")
   if commands == "exit":
     return showError("Editing the alias cancelled.")
