@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, parseopt, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, output
 
 func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
@@ -261,3 +261,48 @@ true, false, "", QuitSuccess)
   aliases.setAliases(getCurrentDir(), db)
   return QuitSuccess
 
+proc execAlias*(userInput: var OptParser; commandName: string;
+    aliases: var OrderedTable[string, int]; db: DbConn): int =
+
+  proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
+      int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
+          IOError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+          WriteIOEffect].} =
+    ## Change the current directory for the shell
+    let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
+    try:
+      setCurrentDir(path)
+      aliases.setAliases(path, db)
+      return QuitSuccess
+    except OSError:
+      return showError()
+
+  let
+    currentDirectory = getCurrentDir()
+    commandArguments: seq[string] = userInput.remainingArgs()
+  for command in splitLines(db.getValue(
+      sql"SELECT commands FROM aliases WHERE id=?",
+      aliases[commandName])):
+    # Convert all $number in command to arguments taken from the user
+    # input
+    var
+      argumentPosition: int = command.find('$')
+      newCommand: string = command
+    while argumentPosition > -1:
+      var argumentNumber: int = parseInt(command[argumentPosition + 1] & "")
+      # Not enough argument entered by the user, quit with error
+      if argumentNumber > commandArguments.len():
+        return showError("Not enough arguments entered")
+      newCommand = command.replace(command[
+          argumentPosition..argumentPosition + 1], commandArguments[
+              argumentNumber - 1])
+      argumentPosition = newCommand.find('$')
+    # Threat cd command specially, it should just change the current
+    # directory for the alias
+    if newCommand[0..2] == "cd ":
+      if changeDirectory(newCommand[3..^1], aliases, db) != QuitSuccess:
+        return QuitFailure
+      continue
+    if execCmd(newCommand) != QuitSuccess:
+      return QuitFailure
+  return changeDirectory(currentDirectory, aliases, db)

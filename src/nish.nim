@@ -61,9 +61,9 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
   # Create a new database if not exists
   var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
                id          INTEGER       PRIMARY KEY,
-               name        VARCHAR(""" & $aliasNameLength & """) NOT NULL,
-               path        VARCHAR(""" & $maxInputLength &
+               name        VARCHAR(""" & $aliasNameLength &
       """) NOT NULL,
+               path        VARCHAR(""" & $maxInputLength & """) NOT NULL,
                recursive   BOOLEAN       NOT NULL,
                commands    VARCHAR(""" & $maxInputLength &
       """) NOT NULL,
@@ -390,40 +390,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           commandToExecute = commandName & arguments
         # Check if command is an alias, if yes, execute it
         if commandName in aliases:
-          let
-            currentDirectory = getCurrentDir()
-            commandArguments: seq[string] = userInput.remainingArgs()
-          for command in splitLines(db.getValue(
-              sql"SELECT commands FROM aliases WHERE id=?",
-              aliases[commandName])):
-            # Convert all $number in command to arguments taken from the user
-            # input
-            var
-              argumentPosition: int = command.find('$')
-              newCommand: string = command
-            while argumentPosition > -1:
-              var argumentNumber: int = parseInt(command[argumentPosition + 1] & "")
-              # Not enough argument entered by the user, quit with error
-              if argumentNumber > commandArguments.len():
-                returnCode = showError("Not enough arguments entered")
-                break
-              newCommand = command.replace(command[
-                  argumentPosition..argumentPosition + 1], commandArguments[
-                      argumentNumber - 1])
-              argumentPosition = newCommand.find('$')
-            if returnCode == QuitFailure:
-              break;
-            # Threat cd command specially, it should just change the current
-            # directory for the alias
-            if newCommand[0..2] == "cd ":
-              returnCode = changeDirectory(newCommand[3..^1], aliases, db)
-              if returnCode != QuitSuccess:
-                break
-              continue
-            returnCode = execCmd(newCommand)
-            if returnCode != QuitSuccess:
-              break
-          discard changeDirectory(currentDirectory, aliases, db)
+          returnCode = execAlias(userInput, commandName, aliases, db)
           if returnCode == QuitSuccess:
             historyIndex = updateHistory(commandToExecute, db)
           continue
