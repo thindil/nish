@@ -58,7 +58,7 @@ proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
     ReadDbEffect, WriteDbEffect].} =
   ## Clear the shell's history, don't add the command to the history
   db.exec(sql"DELETE FROM history");
-  showOutput("Shell's commands' history cleared.", true, false, "", QuitSuccess)
+  showOutput("Shell's commands' history cleared.")
   return 0;
 
 proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
@@ -70,15 +70,15 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
 
         To see more information about the subcommand, type help history [command],
         for example: help history clear.
-""", true, false, "", QuitSuccess)
+""")
   return updateHistory("history", db)
 
 proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
   ## Show the last Amount of entries to the shell's history
-  showOutput("The last commands from the shell's history", true, false, "", QuitSuccess)
-  showOutput("Last used           Times Command", true, false, "", QuitSuccess)
+  showOutput("The last commands from the shell's history")
+  showOutput("Last used           Times Command")
   for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused ASC LIMIT 20"):
-    showOutput(row[1] & " " & row[2] & " " & row[0], true, false, "", QuitSuccess)
+    showOutput(row[1] & " " & row[2] & " " & row[0])
   return updateHistory("history show", db)
