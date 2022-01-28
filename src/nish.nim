@@ -77,6 +77,11 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
             )"""
   result.exec(sql(sqlQuery))
   historyIndex = parseInt(result.getValue(sql"SELECT COUNT(*) FROM history"))
+  sqlQuery = """CREATE TABLE IF NOT EXISTS options (
+                option VARCHAR(64) NOT NULL PRIMARY KEY,
+                value	 VARCHAR(4096) NOT NULL
+            )"""
+  result.exec(sql(sqlQuery))
 
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
