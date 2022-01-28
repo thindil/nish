@@ -99,6 +99,13 @@ runs command `fossil open fossil/[reponame].fossil --workdir [reponame]`. For
 example, entering the shell's command: `fossopen myrepo` will execute command:
 `fossil open fossil/myrepo.fossil --workdir myrepo`
 
+#### Advanced shell's commands' history
+
+The shell sorts the commands history not only by most recently used but also by
+most frequently used. Additionally, there are available a few commands to
+manipulate the shell's commands' history like show history or clear it. And
+more to come.
+
 ### How to install
 
 At this moment, the only option is to build it from the source. You will need a
