@@ -246,7 +246,10 @@ proc editAlias*(userInput: var OptParser; historyIndex: var int;
   return QuitSuccess
 
 proc execAlias*(userInput: var OptParser; commandName: string;
-    aliases: var OrderedTable[string, int]; db: DbConn): int =
+    aliases: var OrderedTable[string, int]; db: DbConn): int{.gcsafe,
+        sideEffect, raises: [DbError, ValueError, IOError, OSError], tags: [
+        ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect, ExecIOEffect,
+        RootEffect].} =
 
   proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
       int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
