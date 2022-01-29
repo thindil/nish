@@ -27,7 +27,7 @@ import std/db_sqlite
 
 proc getOption*(name: string; db: DbConn; defaultValue: string = ""): string =
   ## Get the selected option from the database. If the option doesn't exists,
-  ## insert it to the database with the defaultValue.
+  ## return the defaultValue
   result = db.getValue(sql"SELECT value FROM options WHERE option=?", name)
   if result == "":
-    db.exec(sql"INSERT INTO options (option, value) VALUES (?, ?)", name, defaultValue)
+    result = defaultValue
