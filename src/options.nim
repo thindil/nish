@@ -34,7 +34,9 @@ func getOption*(name: string; db: DbConn;
   if result == "":
     result = defaultValue
 
-proc setOption*(name: string; value, description: string = ""; db: DbConn) =
+func setOption*(name: string; value, description: string = "";
+    db: DbConn) {.gcsafe, locks: 0, raises: [DbError], tags: [ReadDbEffect,
+    WriteDbEffect].} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
   let sqlQuery = "UPDATE options SET " & (if value != "": "value='" & value &
