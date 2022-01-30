@@ -26,8 +26,6 @@
 import std/[db_sqlite, strutils]
 import constants, options, output
 
-const maxHistoryLength = 500
-
 proc initHistory*(db: DbConn): int =
   ## Initialize shell's commands history. Create history table if not exists,
   ## set the current historyIndex and options related to the history
@@ -52,7 +50,7 @@ func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
   ## history index. If there is the command in the shell's history, only update
   ## its amount ond last used timestamp
   result = historyLength(db)
-  if result == maxHistoryLength:
+  if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
     db.exec(sql"DELETE FROM history ORDER BY command ASC LIMIT(1)");
     result.dec()
   if db.execAffectedRows(sql"UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?",
