@@ -24,15 +24,22 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, strutils]
-import options, output
+import constants, options, output
 
 const maxHistoryLength = 500
 
-proc initHistory*(db: DbConn) =
-  ## Initialize shell's commands history. Mostly set the history configuration
-  ## options in database
+proc initHistory*(db: DbConn): int =
+  ## Initialize shell's commands history. Create history table if not exists,
+  ## set the current historyIndex and options related to the history
   if getOption("historyLength", db) == "":
     setOption("historyLength", "500", "Max amount of entries in shell commands history.", db)
+  db.exec(sql("""CREATE TABLE IF NOT EXISTS history (
+               command     VARCHAR(""" & $maxInputLength &
+      """) PRIMARY KEY,
+               lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
+               amount      INTEGER NOT NULL DEFAULT 1
+            )"""))
+  return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
 
 func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
     DbError], tags: [ReadDbEffect].} =
