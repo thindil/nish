@@ -51,9 +51,8 @@ func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
   db.close()
   quit returnCode
 
-proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
-    sideEffect, raises: [OSError, IOError, ValueError], tags: [ReadIOEffect,
-        WriteDirEffect, DbEffect].} =
+proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [OSError,
+    IOError], tags: [ReadIOEffect, WriteDirEffect, DbEffect].} =
   ## Open connection to the shell database. Create database if not exists.
   ## Set the historyIndex to the last command
   discard existsOrCreateDir(parentDir(dbpath))
@@ -63,23 +62,18 @@ proc startDb(dbpath: string; historyIndex: var int): DbConn {.gcsafe,
                id          INTEGER       PRIMARY KEY,
                name        VARCHAR(""" & $aliasNameLength &
       """) NOT NULL,
-               path        VARCHAR(""" & $maxInputLength & """) NOT NULL,
+               path        VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
                recursive   BOOLEAN       NOT NULL,
                commands    VARCHAR(""" & $maxInputLength &
       """) NOT NULL,
                description VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   result.exec(sql(sqlQuery))
-  sqlQuery = """CREATE TABLE IF NOT EXISTS history (
-               command     VARCHAR(""" & $maxInputLength & """) PRIMARY KEY,
-               lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
-               amount      INTEGER NOT NULL DEFAULT 1
-            )"""
-  result.exec(sql(sqlQuery))
-  historyIndex = parseInt(result.getValue(sql"SELECT COUNT(*) FROM history"))
   sqlQuery = """CREATE TABLE IF NOT EXISTS options (
                 option VARCHAR(64) NOT NULL PRIMARY KEY,
-                value	 VARCHAR(""" & $maxInputLength & """) NOT NULL,
+                value	 VARCHAR(""" & $maxInputLength &
+      """) NOT NULL,
                 description VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   result.exec(sql(sqlQuery))
@@ -129,10 +123,10 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     else: discard
 
   # Connect to the shell database
-  let db = startDb(dbpath, historyIndex)
+  let db = startDb(dbpath)
 
   # Initialize the shell's commands history
-  initHistory(db)
+  historyIndex = initHistory(db)
 
   # Set available command aliases for the current directory
   aliases.setAliases(getCurrentDir(), db)
