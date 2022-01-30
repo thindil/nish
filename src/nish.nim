@@ -131,6 +131,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   # Connect to the shell database
   let db = startDb(dbpath, historyIndex)
 
+  # Initialize the shell's commands history
+  initHistory(db)
+
   # Set available command aliases for the current directory
   aliases.setAliases(getCurrentDir(), db)
 
