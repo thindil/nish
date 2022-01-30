@@ -48,7 +48,8 @@ func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
     ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
-  ## its amount ond last used timestamp
+  ## its amount ond last used timestamp. Remove the oldest entry if there is
+  ## maximum allowed amount of history's entries
   result = historyLength(db)
   if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
     db.exec(sql"DELETE FROM history ORDER BY command ASC LIMIT(1)");
