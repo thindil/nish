@@ -25,7 +25,9 @@
 
 import std/db_sqlite
 
-proc getOption*(name: string; db: DbConn; defaultValue: string = ""): string =
+func getOption*(name: string; db: DbConn;
+    defaultValue: string = ""): string {.gcsafe, locks: 0, raises: [DbError],
+    tags: [ReadDbEffect].} =
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
   result = db.getValue(sql"SELECT value FROM options WHERE option=?", name)
