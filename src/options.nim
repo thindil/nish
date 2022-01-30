@@ -40,7 +40,8 @@ func setOption*(name: string; value, description: string = "";
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
   let sqlQuery = "UPDATE options SET " & (if value != "": "value='" & value &
-      "' " else: "") & (if description != "": "description='" & description &
+      "'" else: "") & (if value != "" and description != "": ", " else: " ") & (
+      if description != "": "description='" & description &
       "' " else: "") & "WHERE name='" & name & "'"
   if db.execAffectedRows(sql(sqlQuery)) == 0:
     db.exec(sql"INSERT INTO options (name, value, description) VALUES (?, ?, ?)",
