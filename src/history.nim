@@ -24,9 +24,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, strutils]
-import output
+import options, output
 
 const maxHistoryLength = 500
+
+proc initHistory*(db: DbConn) =
+  ## Initialize shell's commands history. Mostly set the history configuration
+  ## options in database
+  if getOption("historyLength", db) == "":
+    setOption("historyLength", "500", "Max amount of entries in shell commands history.", db)
 
 func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
     DbError], tags: [ReadDbEffect].} =
