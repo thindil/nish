@@ -42,7 +42,7 @@ func setOption*(name: string; value, description: string = "";
   let sqlQuery = "UPDATE options SET " & (if value != "": "value='" & value &
       "'" else: "") & (if value != "" and description != "": ", " else: " ") & (
       if description != "": "description='" & description &
-      "' " else: "") & "WHERE name='" & name & "'"
+      "' " else: "") & "WHERE option='" & name & "'"
   if db.execAffectedRows(sql(sqlQuery)) == 0:
-    db.exec(sql"INSERT INTO options (name, value, description) VALUES (?, ?, ?)",
+    db.exec(sql"INSERT INTO options (option, value, description) VALUES (?, ?, ?)",
         name, value, description)
