@@ -309,6 +309,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         Show the last 20 commands from the shell's history.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help history clear", db)
+          else:
+            returnCode = showError("Unknown subcommand `" & userInput.key &
+              "` for `history`. To see all available history commands, type `history`.")
         elif userInput.key == "options":
           userInput.next()
           # If user entered only "options", show the help for it
