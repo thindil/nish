@@ -327,7 +327,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             historyIndex = updateHistory("help options show", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
-              "` for `history`. To see all available aliases commands, type `history`.")
+              "` for `options`. To see all available options commands, type `options`.")
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
       # Change current directory
