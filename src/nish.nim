@@ -309,6 +309,22 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         Show the last 20 commands from the shell's history.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help history clear", db)
+        elif userInput.key == "options":
+          userInput.next()
+          # If user entered only "options", show the help for it
+          if userInput.kind == cmdEnd:
+            showOutput("""Usage: options ?subcommand?
+
+        If entered without subcommand, show the list of available subcommands
+        for options. Otherwise, execute the selected subcommand.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help options", db)
+          elif userInput.key == "show":
+            showOutput("""Usage: options show
+
+        Show the list of all available shell's options.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help options show", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `history`. To see all available aliases commands, type `history`.")
