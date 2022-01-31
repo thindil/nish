@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/db_sqlite
+import output
 
 func getOption*(name: string; db: DbConn;
     defaultValue: string = ""): string {.gcsafe, locks: 0, raises: [DbError],
@@ -46,3 +47,11 @@ func setOption*(name: string; value, description: string = "";
   if db.execAffectedRows(sql(sqlQuery)) == 0:
     db.exec(sql"INSERT INTO options (option, value, description) VALUES (?, ?, ?)",
         name, value, description)
+
+proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
+    DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    ReadIOEffect, WriteIOEffect].} =
+  ## Show the shell's options
+  showOutput("Name Value Description")
+  for row in db.fastRows(sql"SELECT option, value, description FROM options"):
+    showOutput(row[0] & " " & row[1] & " " & row[2])

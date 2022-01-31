@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases, commands, constants, history, output
+import aliases, commands, constants, history, options, output
 
 proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
@@ -360,6 +360,16 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `history`. To see all available aliases commands, type `history`.")
+      # Various commands related to the shell's options
+      of "options":
+        userInput.next()
+        # No subcommand entered, show available options
+        if userInput.kind == cmdEnd:
+          continue
+        # Show the list of available options
+        elif userInput.key == "show":
+          showOptions(db)
+          historyIndex = updateHistory("options show", db)
       # Various commands related to the aliases (like show list of available
       # aliases, add, delete, edit them)
       of "alias":
