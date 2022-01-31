@@ -55,3 +55,14 @@ proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
   showOutput("Name Value Description")
   for row in db.fastRows(sql"SELECT option, value, description FROM options"):
     showOutput(row[0] & " " & row[1] & " " & row[2])
+
+proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
+    OSError, IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
+  ## Show short help about available subcommands related to the shell's
+  ## options
+  showOutput("""Available subcommands are: show
+
+        To see more information about the subcommand, type help options [command],
+        for example: help options show.
+""")
+
