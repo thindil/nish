@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/db_sqlite
+import std/[db_sqlite, parseopt]
 import output
 
 func getOption*(name: string; db: DbConn;
@@ -67,4 +67,19 @@ proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
         To see more information about the subcommand, type help options [command],
         for example: help options show.
 """)
+
+proc setOptions*(userInput: var OptParser; db: DbConn):int =
+  ## Set the selected option's value
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    return showError("Please enter name of the option and its new value.")
+  let
+    name = userInput.key
+    newvalue = userInput.remainingArgs()
+  if newvalue.len() == 0:
+    return showError("Please enter a new value for the selected option.")
+  let valuetype = db.getValue(sql"SELECT valuetype FROM options WHERE option=?", name)
+  if valuetype == "":
+    return showError("Shell's option with name '" & name & "' doesn't exists. Please use command 'options show' to see all available shell's options.")
+  return QuitSuccess
 
