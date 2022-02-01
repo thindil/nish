@@ -30,7 +30,8 @@ proc initHistory*(db: DbConn): int =
   ## Initialize shell's commands history. Create history table if not exists,
   ## set the current historyIndex and options related to the history
   if getOption("historyLength", db) == "":
-    setOption("historyLength", "500", "Max amount of entries in shell commands history.", db)
+    setOption("historyLength", "500", "Max amount of entries in shell commands history.",
+        "integer", db)
   db.exec(sql("""CREATE TABLE IF NOT EXISTS history (
                command     VARCHAR(""" & $maxInputLength &
       """) PRIMARY KEY,
