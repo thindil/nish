@@ -75,7 +75,7 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [OSError,
                 value	 VARCHAR(""" & $maxInputLength &
       """) NOT NULL,
                 description VARCHAR(""" & $maxInputLength & """) NOT NULL,
-                type VARCHAR(""" & $maxInputLength & """) NOT NULL
+                valuetype VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   result.exec(sql(sqlQuery))
 
