@@ -35,18 +35,20 @@ func getOption*(name: string; db: DbConn;
   if result == "":
     result = defaultValue
 
-func setOption*(name: string; value, description: string = "";
+func setOption*(name: string; value, description, valuetype: string = "";
     db: DbConn) {.gcsafe, locks: 0, raises: [DbError], tags: [ReadDbEffect,
     WriteDbEffect].} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
   let sqlQuery = "UPDATE options SET " & (if value != "": "value='" & value &
-      "'" else: "") & (if value != "" and description != "": ", " else: " ") & (
-      if description != "": "description='" & description &
+      "'" else: "") & (if value != "" and description != "" and valuetype !=
+          "": ", " else: " ") & (if description != "": "description='" &
+              description & "' " else: "") & (if valuetype !=
+      "": "valuetype='" & valuetype &
       "' " else: "") & "WHERE option='" & name & "'"
   if db.execAffectedRows(sql(sqlQuery)) == 0:
-    db.exec(sql"INSERT INTO options (option, value, description) VALUES (?, ?, ?)",
-        name, value, description)
+    db.exec(sql"INSERT INTO options (option, value, description, valuetype) VALUES (?, ?, ?)",
+        name, value, description, valuetype)
 
 proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
