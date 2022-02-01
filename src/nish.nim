@@ -390,6 +390,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif userInput.key == "show":
           showOptions(db)
           historyIndex = updateHistory("options show", db)
+        else:
+          returnCode = showError("Unknown subcommand `" & userInput.key &
+            "` for `options`. To see all available aliases commands, type `options`.")
       # Various commands related to the aliases (like show list of available
       # aliases, add, delete, edit them)
       of "alias":
