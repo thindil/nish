@@ -49,8 +49,9 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
 
 proc showOutput*(message: string; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
-        returnCode: int = QuitSuccess) {.gcsafe, locks: 0, sideEffect, raises: [OSError,
-            IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
+        returnCode: int = QuitSuccess) {.gcsafe, locks: 0, sideEffect, raises: [
+            OSError, IOError, ValueError], tags: [ReadIOEffect,
+                WriteIOEffect].} =
   ## Show the selected message and prompt (if enabled, default) to the user.
   ## If newLine is true, add a new line after message.
   showPrompt(promptEnabled, previousCommand, returnCode)
@@ -66,6 +67,9 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
   ## code to error. If message is empty, print the current exception message
   if message == "":
     stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+    for traceLine in getStackTraceEntries():
+      stderr.styledWriteLine(fgRed, "file:" & $traceLine.filename & " line: " &
+          $traceLine.line)
   else:
     stderr.styledWriteLine(fgRed, message)
   result = QuitFailure
