@@ -93,7 +93,6 @@ proc setOptions*(userInput: var OptParser; db: DbConn): int =
   of "":
     return showError("Shell's option with name '" & name &
       "' doesn't exists. Please use command 'options show' to see all available shell's options.")
-  db.exec(sql"UPDATE options SET value='?' WHERE option=?", value, name)
   setOption(name = name, value = value, db = db)
   showOutput("Value for option '" & name & "' was set to '" & value & "'");
   return QuitSuccess
