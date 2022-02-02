@@ -66,10 +66,12 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
   ## Print the message to standard error and set the shell return
   ## code to error. If message is empty, print the current exception message
   if message == "":
-    stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
-    for traceLine in getStackTraceEntries():
-      stderr.styledWriteLine(fgRed, "file:" & $traceLine.filename & " line: " &
-          $traceLine.line)
+    let currentException = getCurrentException()
+    stderr.styledWriteLine(fgRed, "Type: " & $currentException.name)
+    stderr.styledWriteLine(fgRed, "Message: " & currentException.msg)
+    let stackTrace = getStackTrace(currentException)
+    if stackTrace.len() > 0:
+      stderr.styledWriteLine(fgRed, stackTrace)
   else:
     stderr.styledWriteLine(fgRed, message)
   result = QuitFailure
