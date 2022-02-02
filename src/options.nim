@@ -68,7 +68,9 @@ proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
         for example: help options show.
 """)
 
-proc setOptions*(userInput: var OptParser; db: DbConn): int =
+proc setOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
+    sideEffect, locks: 0, raises: [DbError, IOError, ValueError, OSError],
+    tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
   ## Set the selected option's value
   userInput.next()
   if userInput.kind == cmdEnd:
