@@ -54,9 +54,9 @@ proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
   ## Show the shell's options
-  showOutput("Name Value Description")
-  for row in db.fastRows(sql"SELECT option, value, description FROM options"):
-    showOutput(row[0] & " " & row[1] & " " & row[2])
+  showOutput("Name Value Type Description")
+  for row in db.fastRows(sql"SELECT option, value, valuetype, description FROM options"):
+    showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3])
 
 proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     OSError, IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
