@@ -326,9 +326,16 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           elif userInput.key == "show":
             showOutput("""Usage: options show
 
-        Show the list of all available shell's options.
+        Show the list of all available shell's options with detailed information about them.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help options show", db)
+          elif userInput.key == "set":
+            showOutput("""Usage: options set [name] [value]
+
+        Set the selected shell's option with name to the selected value. The
+        value can't contain new line character.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help options set", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `options`. To see all available options commands, type `options`.")

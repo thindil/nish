@@ -62,7 +62,7 @@ proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     OSError, IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show short help about available subcommands related to the shell's
   ## options
-  showOutput("""Available subcommands are: show
+  showOutput("""Available subcommands are: show, set
 
         To see more information about the subcommand, type help options [command],
         for example: help options show.
