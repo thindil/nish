@@ -47,8 +47,8 @@ func setOption*(name: string; value, description, valuetype: string = "";
       "": "valuetype='" & valuetype &
       "' " else: "") & "WHERE option='" & name & "'"
   if db.execAffectedRows(sql(sqlQuery)) == 0:
-    db.exec(sql"INSERT INTO options (option, value, description, valuetype) VALUES (?, ?, ?)",
-        name, value, description, valuetype)
+    db.exec(sql"INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)",
+        name, value, description, valuetype, value)
 
 proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
