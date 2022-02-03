@@ -53,7 +53,7 @@ func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
   ## maximum allowed amount of history's entries
   result = historyLength(db)
   if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
-    db.exec(sql"DELETE FROM history ORDER BY command ASC LIMIT(1)");
+    db.exec(sql"DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1");
     result.dec()
   if db.execAffectedRows(sql"UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?",
       commandToAdd) == 0:
