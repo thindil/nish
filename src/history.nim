@@ -92,6 +92,6 @@ proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   ## Show the last 20 of entries to the shell's history
   showOutput("The last commands from the shell's history")
   showOutput("Last used           Times Command")
-  for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT 20"):
+  for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT 20 OFFSET (SELECT COUNT(*)-20 from history)"):
     showOutput(row[1] & " " & row[2] & " " & row[0])
   return updateHistory("history show", db)
