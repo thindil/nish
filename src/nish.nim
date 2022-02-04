@@ -403,6 +403,10 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           returnCode = setOptions(userInput, db)
           if returnCode == QuitSuccess:
             historyIndex = updateHistory("options set", db)
+        elif userInput.key == "reset":
+          returnCode = resetOptions(userInput, db)
+          if returnCode == QuitSuccess:
+            historyIndex = updateHistory("options reset", db)
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `options`. To see all available aliases commands, type `options`.")
