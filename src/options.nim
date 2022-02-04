@@ -99,3 +99,21 @@ proc setOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
   showOutput("Value for option '" & name & "' was set to '" & value & "'");
   return QuitSuccess
 
+proc resetOptions*(userInput: var OptParser; db: DbConn): int =
+  ## Reset the selected option's value to default value. If name of the option
+  ## is set to "all", reset all options to their default values
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    return showError("Please enter name of the option to reset or 'all' to reset all options.")
+  if userInput.key == "all":
+    db.exec(sql"UPDATE options SET value=defaultvalue")
+    showOutput("All shell's options are reseted to their default values.")
+  else:
+    if db.getValue(sql"SELECT value FROM options WHERE option=?",
+        userInput.key) == "":
+      return showError("Shell's option with name '" & userInput.key &
+        "' doesn't exists. Please use command 'options show' to see all available shell's options.")
+    db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", userInput.key)
+    showOutput("The shell's option '" & userInput.key & "' reseted to its default value.")
+  return QuitSuccess
+
