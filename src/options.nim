@@ -40,12 +40,18 @@ func setOption*(name: string; value, description, valuetype: string = "";
     WriteDbEffect].} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
-  let sqlQuery = "UPDATE options SET " & (if value != "": "value='" & value &
-      "'" else: "") & (if value != "" and description != "" and valuetype !=
-          "": ", " else: " ") & (if description != "": "description='" &
-              description & "' " else: "") & (if valuetype !=
-      "": "valuetype='" & valuetype &
-      "' " else: "") & "WHERE option='" & name & "'"
+  var sqlQuery = "UPDATE options SET "
+  if value != "":
+    sqlQuery = sqlQuery & "value='" & value & "'"
+  if description != "":
+    if sqlQuery.len() > 21:
+      sqlQuery = sqlQuery & ", "
+    sqlQuery = sqlQuery & "description='" & description & "'"
+  if valuetype != "":
+    if sqlQuery.len() > 21:
+      sqlQuery = sqlQuery & ", "
+    sqlQuery = sqlQuery & "valuetype='" & valuetype & "'"
+  sqlQuery = sqlQuery & "WHERE option='" & name & "'"
   if db.execAffectedRows(sql(sqlQuery)) == 0:
     db.exec(sql"INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)",
         name, value, description, valuetype, value)
