@@ -99,7 +99,9 @@ proc setOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
   showOutput("Value for option '" & name & "' was set to '" & value & "'");
   return QuitSuccess
 
-proc resetOptions*(userInput: var OptParser; db: DbConn): int =
+proc resetOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
+    sideEffect, locks: 0, raises: [DbError, IOError, ValueError, OSError],
+    tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
   userInput.next()
