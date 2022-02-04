@@ -51,7 +51,7 @@ func setOption*(name: string; value, description, valuetype: string = "";
     if sqlQuery.len() > 21:
       sqlQuery = sqlQuery & ", "
     sqlQuery = sqlQuery & "valuetype='" & valuetype & "'"
-  sqlQuery = sqlQuery & "WHERE option='" & name & "'"
+  sqlQuery = sqlQuery & " WHERE option='" & name & "'"
   if db.execAffectedRows(sql(sqlQuery)) == 0:
     db.exec(sql"INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)",
         name, value, description, valuetype, value)
