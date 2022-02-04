@@ -337,6 +337,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         value can't contain new line character.
         """, true, not oneTimeCommand, commandName, returnCode)
             historyIndex = updateHistory("help options set", db)
+          elif userInput.key == "reset":
+            showOutput("""Usage: options reset [name or all]
+
+        Reset the selected shell's option with name to the default value. If the name
+        parameter is set to 'all', reset all shell's options to their default
+        values.
+        """, true, not oneTimeCommand, commandName, returnCode)
+            historyIndex = updateHistory("help options reset", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `options`. To see all available options commands, type `options`.")
