@@ -42,16 +42,16 @@ func setOption*(name: string; value, description, valuetype: string = "";
   ## doesn't exist, insert it to the database
   var sqlQuery = "UPDATE options SET "
   if value != "":
-    sqlQuery = sqlQuery & "value='" & value & "'"
+    sqlQuery.add("value='" & value & "'")
   if description != "":
     if sqlQuery.len() > 21:
-      sqlQuery = sqlQuery & ", "
-    sqlQuery = sqlQuery & "description='" & description & "'"
+      sqlQuery.add(", ")
+    sqlQuery.add("description='" & description & "'")
   if valuetype != "":
     if sqlQuery.len() > 21:
-      sqlQuery = sqlQuery & ", "
-    sqlQuery = sqlQuery & "valuetype='" & valuetype & "'"
-  sqlQuery = sqlQuery & " WHERE option='" & name & "'"
+      sqlQuery.add(", ")
+    sqlQuery.add("valuetype='" & valuetype & "'")
+  sqlQuery.add(" WHERE option='" & name & "'")
   if db.execAffectedRows(sql(sqlQuery)) == 0:
     db.exec(sql"INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)",
         name, value, description, valuetype, value)
