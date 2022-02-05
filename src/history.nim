@@ -60,7 +60,7 @@ ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
   ## maximum allowed amount of history's entries
   result = historyLength(db)
   if returnCode != QuitSuccess and db.getValue(
-      sql"SELECT value FROM options WHERE option='historySaveInvalid'") != "false":
+      sql"SELECT value FROM options WHERE option='historySaveInvalid'") == "false":
     return
   if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
     db.exec(sql"DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1");
