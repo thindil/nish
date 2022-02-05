@@ -52,8 +52,7 @@ func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
   return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
 
 func updateHistory*(commandToAdd: string; db: DbConn;
-    returnCode: int): int {.gcsafe, raises: [
-
+    returnCode: int = QuitSuccess): int {.gcsafe, raises: [
 ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
@@ -95,7 +94,7 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
         To see more information about the subcommand, type help history [command],
         for example: help history clear.
 """)
-  return updateHistory("history", db, QuitSuccess)
+  return updateHistory("history", db)
 
 proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
@@ -108,4 +107,4 @@ proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
       amount, amount):
     showOutput(row[1] & " " & row[2] & " " & row[0])
-  return updateHistory("history show", db, QuitSuccess)
+  return updateHistory("history show", db)
