@@ -81,9 +81,8 @@ proc setOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
   userInput.next()
   if userInput.kind == cmdEnd:
     return showError("Please enter name of the option and its new value.")
-  let
-    name = userInput.key
-    value = join(userInput.remainingArgs(), " ")
+  let name = userInput.key
+  var value = join(userInput.remainingArgs(), " ")
   if value.len() == 0:
     return showError("Please enter a new value for the selected option.")
   case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", name)
@@ -92,12 +91,16 @@ proc setOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
       discard parseInt(value)
     except:
       return showError("Value for option '" & name &
-          "' should be integer type.");
+          "' should be integer type.")
   of "float":
     try:
       discard parseFloat(value)
     except:
-      return showError("Value for option '" & name & "' should be float type.");
+      return showError("Value for option '" & name & "' should be float type.")
+  of "boolean":
+    value = toLowerAscii(value)
+    if value != "true" and value != "false":
+      return showError("Value for option '" & name & "' should be true or false (case insensitive).")
   of "":
     return showError("Shell's option with name '" & name &
       "' doesn't exists. Please use command 'options show' to see all available shell's options.")
