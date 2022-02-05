@@ -32,6 +32,9 @@ proc initHistory*(db: DbConn): int =
   if getOption("historyLength", db) == "":
     setOption("historyLength", "500", "Max amount of entries in shell commands history.",
         "integer", db)
+  if getOption("historyAmount", db) == "":
+    setOption("historyAmount", "20", "Amount of entries in shell commands history to show with history show command.",
+        "integer", db)
   db.exec(sql("""CREATE TABLE IF NOT EXISTS history (
                command     VARCHAR(""" & $maxInputLength &
       """) PRIMARY KEY,
@@ -89,9 +92,12 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
 proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
-  ## Show the last 20 of entries to the shell's history
+  ## Show the last X entries to the shell's history. X can be set in the shell's
+  ## options as 'historyAmount' option.
+  let amount = getOption("historyAmount", db)
   showOutput("The last commands from the shell's history")
   showOutput("Last used           Times Command")
-  for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT 20 OFFSET (SELECT COUNT(*)-20 from history)"):
+  for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
+      amount, amount):
     showOutput(row[1] & " " & row[2] & " " & row[0])
   return updateHistory("history show", db)
