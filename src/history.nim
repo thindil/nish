@@ -35,6 +35,9 @@ proc initHistory*(db: DbConn): int =
   if getOption("historyAmount", db) == "":
     setOption("historyAmount", "20", "Amount of entries in shell commands history to show with history show command.",
         "integer", db)
+  if getOption("historySaveInvalid", db) == "":
+    setOption("historySaveInvalid", "false",
+        "Save in shell command history also invalid commands.", "boolean", db)
   db.exec(sql("""CREATE TABLE IF NOT EXISTS history (
                command     VARCHAR(""" & $maxInputLength &
       """) PRIMARY KEY,
@@ -48,13 +51,18 @@ func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
   ## Get the current length of the shell's commmand's history
   return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
 
-func updateHistory*(commandToAdd: string; db: DbConn): int {.gcsafe, raises: [
-    ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
+func updateHistory*(commandToAdd: string; db: DbConn;
+    returnCode: int): int {.gcsafe, raises: [
+
+ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
   ## its amount ond last used timestamp. Remove the oldest entry if there is
   ## maximum allowed amount of history's entries
   result = historyLength(db)
+  if returnCode != QuitSuccess and db.getValue(
+      sql"SELECT value FROM options WHERE option='historySaveInvalid'") != "false":
+    return
   if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
     db.exec(sql"DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1");
     result.dec()
@@ -87,7 +95,7 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
         To see more information about the subcommand, type help history [command],
         for example: help history clear.
 """)
-  return updateHistory("history", db)
+  return updateHistory("history", db, QuitSuccess)
 
 proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
@@ -100,4 +108,4 @@ proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
       amount, amount):
     showOutput(row[1] & " " & row[2] & " " & row[0])
-  return updateHistory("history show", db)
+  return updateHistory("history show", db, QuitSuccess)
