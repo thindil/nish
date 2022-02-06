@@ -40,7 +40,9 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
     return showError()
 
 proc cdCommand*(userInput: var OptParser, aliases: var OrderedTable[string,
-    int]; db: DbConn): int =
+    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
+        IOError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+        WriteIOEffect, WriteDbEffect].} =
   ## Build-in command to enter the selected by the user directory
   userInput.next()
   if userInput.kind == cmdEnd:
