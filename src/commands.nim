@@ -44,7 +44,8 @@ proc cdCommand*(userInput: var OptParser, aliases: var OrderedTable[string,
   ## Build-in command to enter the selected by the user directory
   userInput.next()
   if userInput.kind == cmdEnd:
-    return showError("Please enter the name of the directory to enter.")
-  result = changeDirectory(userInput.key, aliases, db)
+    result = changeDirectory("~", aliases, db)
+  else:
+    result = changeDirectory(userInput.key, aliases, db)
   discard updateHistory("cd " & userInput.key, db, result)
 
