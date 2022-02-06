@@ -74,8 +74,10 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [OSError,
                 option VARCHAR(64) NOT NULL PRIMARY KEY,
                 value	 VARCHAR(""" & $maxInputLength &
       """) NOT NULL,
-                description VARCHAR(""" & $maxInputLength & """) NOT NULL,
-                valuetype VARCHAR(""" & $maxInputLength & """) NOT NULL,
+                description VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+                valuetype VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
                 defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   result.exec(sql(sqlQuery))
@@ -289,6 +291,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `alias`. To see all available aliases commands, type `alias`.")
+            historyIndex = updateHistory("help alias " & userInput.key, db, returnCode)
         elif userInput.key == "history":
           userInput.next()
           # If user entered only "history", show the help for it
@@ -314,6 +317,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `history`. To see all available history commands, type `history`.")
+            historyIndex = updateHistory("help history " & userInput.key, db, returnCode)
         elif userInput.key == "options":
           userInput.next()
           # If user entered only "options", show the help for it
@@ -348,15 +352,16 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `options`. To see all available options commands, type `options`.")
+            historyIndex = updateHistory("help options " & userInput.key, db, returnCode)
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
+          historyIndex = updateHistory("help " & userInput.key, db, returnCode)
       # Change current directory
       of "cd":
         userInput.next()
         if userInput.kind != cmdEnd:
           returnCode = changeDirectory(userInput.key, aliases, db)
-          if returnCode == QuitSuccess:
-            historyIndex = updateHistory("cd " & userInput.key, db)
+          historyIndex = updateHistory("cd " & userInput.key, db, returnCode)
       # Set the environment variable
       of "set":
         userInput.next()
@@ -368,9 +373,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
               showOutput("Environment variable '" & varValues[0] &
                   "' set to '" & varValues[1] & "'", true, not oneTimeCommand,
                       commandName, returnCode)
-              historyIndex = updateHistory("set " & userInput.key, db)
             except OSError:
               returnCode = showError()
+            historyIndex = updateHistory("set " & userInput.key, db, returnCode)
       # Delete environment variable
       of "unset":
         userInput.next()
@@ -379,9 +384,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             delEnv(userInput.key)
             showOutput("Environment variable '" & userInput.key & "' removed",
                 true, not oneTimeCommand, commandName, returnCode)
-            historyIndex = updateHistory("unset " & userInput.key, db)
           except OSError:
             returnCode = showError()
+          historyIndex = updateHistory("unset " & userInput.key, db, returnCode)
       # Various commands related to the shell's commands' history
       of "history":
         userInput.next()
@@ -409,15 +414,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           historyIndex = updateHistory("options show", db)
         elif userInput.key == "set":
           returnCode = setOptions(userInput, db)
-          if returnCode == QuitSuccess:
-            historyIndex = updateHistory("options set", db)
+          historyIndex = updateHistory("options set", db, returnCode)
         elif userInput.key == "reset":
           returnCode = resetOptions(userInput, db)
-          if returnCode == QuitSuccess:
-            historyIndex = updateHistory("options reset", db)
+          historyIndex = updateHistory("options reset", db, returnCode)
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `options`. To see all available aliases commands, type `options`.")
+          historyIndex = updateHistory("options " & userInput.key, db, returnCode)
       # Various commands related to the aliases (like show list of available
       # aliases, add, delete, edit them)
       of "alias":
@@ -443,6 +447,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `alias`. To see all available aliases commands, type `alias`.")
+          historyIndex = updateHistory("alias " & userInput.key, db, returnCode)
       # Execute external command or alias
       else:
         let
@@ -452,13 +457,11 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         # Check if command is an alias, if yes, execute it
         if commandName in aliases:
           returnCode = execAlias(userInput, commandName, aliases, db)
-          if returnCode == QuitSuccess:
-            historyIndex = updateHistory(commandToExecute, db)
+          historyIndex = updateHistory(commandToExecute, db, returnCode)
           continue
         # Execute external command
         returnCode = execCmd(commandToExecute)
-        if returnCode == QuitSuccess:
-          historyIndex = updateHistory(commandToExecute, db)
+        historyIndex = updateHistory(commandToExecute, db, returnCode)
     except:
       returnCode = showError()
     finally:
