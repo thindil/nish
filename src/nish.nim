@@ -219,7 +219,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           showOutput("""Usage: cd [directory]
 
         You must have permissions to enter the directory and directory
-        need to exists.
+        need to exists. If you enter just 'cd' without the name of the
+        directory to enter, the current directory will be switched to
+        your home directory.
         """, true, not oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help cd", db)
         elif userInput.key == "exit":
