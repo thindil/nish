@@ -23,8 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, tables]
-import aliases, output
+import std/[db_sqlite, os, parseopt, tables]
+import aliases, history, output
 
 proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
     int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
@@ -38,4 +38,13 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
     return QuitSuccess
   except OSError:
     return showError()
+
+proc cdCommand*(userInput: var OptParser, aliases: var OrderedTable[string,
+    int]; db: DbConn): int =
+  ## Build-in command to enter the selected by the user directory
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    return showError("Please enter the name of the directory to enter.")
+  result = changeDirectory(userInput.key, aliases, db)
+  discard updateHistory("cd " & userInput.key, db, result)
 

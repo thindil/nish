@@ -359,10 +359,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           historyIndex = updateHistory("help " & userInput.key, db, returnCode)
       # Change current directory
       of "cd":
-        userInput.next()
-        if userInput.kind != cmdEnd:
-          returnCode = changeDirectory(userInput.key, aliases, db)
-          historyIndex = updateHistory("cd " & userInput.key, db, returnCode)
+        returnCode = cdCommand(userInput, aliases, db)
+        historyIndex = historyLength(db)
       # Set the environment variable
       of "set":
         userInput.next()
