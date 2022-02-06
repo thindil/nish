@@ -101,10 +101,18 @@ example, entering the shell's command: `fossopen myrepo` will execute command:
 
 #### Advanced shell's commands' history
 
-The shell sorts the commands history not only by most recently used but also by
+The shell sorts the commands' history not only by most recently used but also by
 most frequently used. Additionally, there are available a few commands to
-manipulate the shell's commands' history like show history or clear it. And
-more to come.
+manipulate the shell's commands' history like show history or clear it. It is
+also possible to set the amount of commands to store in the shell's history
+or do the shell should store also invalid commands or not.
+
+#### Advanced shell's configuration
+
+All shell's options can be previewed from the shell. Additionally, it is
+possible to set them inside the shell and reset options' values to the default
+values. At this moment, all options are related to the shell's commands'
+history, but with time there will be more things to set.
 
 ### How to install
 
