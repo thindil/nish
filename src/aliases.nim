@@ -72,9 +72,11 @@ proc deleteAlias*(userInput: var OptParser; historyIndex: var int;
   ## Delete the selected alias from the shell's database
   userInput.next()
   if userInput.kind == cmdEnd:
+    historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("Enter the Id of the alias to delete.")
   if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?",
       userInput.key) == 0:
+    historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("The alias with the Id: " & userInput.key &
       " doesn't exists.")
   historyIndex = updateHistory("alias delete", db)
@@ -90,10 +92,12 @@ proc showAlias*(userInput: var OptParser; historyIndex: var int;
   ## commands which will be executed
   userInput.next()
   if userInput.kind == cmdEnd:
+    historyIndex = updateHistory("alias show", db, QuitFailure)
     return showError("Enter the ID of the alias to show.")
   let row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
       userInput.key)
   if row[0] == "":
+    historyIndex = updateHistory("alias show", db, QuitFailure)
     return showError("The alias with the ID: " & userInput.key &
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
