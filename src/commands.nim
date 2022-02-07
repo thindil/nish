@@ -28,11 +28,11 @@ import aliases, history, output
 
 proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
     int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
-        IOError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+        IOError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect].} =
   ## Change the current directory for the shell
-  let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
   try:
+    let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
     setCurrentDir(path)
     aliases.setAliases(path, db)
     return QuitSuccess
@@ -41,7 +41,7 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
 
 proc cdCommand*(userInput: var OptParser, aliases: var OrderedTable[string,
     int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
-        IOError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+        IOError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect, WriteDbEffect].} =
   ## Build-in command to enter the selected by the user directory
   userInput.next()
