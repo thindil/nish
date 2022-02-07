@@ -73,7 +73,8 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [OSError,
   sqlQuery = """CREATE TABLE IF NOT EXISTS options (
                 option VARCHAR(""" & $aliasNameLength &
           """) NOT NULL PRIMARY KEY,
-                value	 VARCHAR(""" & $maxInputLength & """) NOT NULL,
+                value	 VARCHAR(""" & $maxInputLength &
+              """) NOT NULL,
                 description VARCHAR(""" & $maxInputLength &
           """) NOT NULL,
                 valuetype VARCHAR(""" & $maxInputLength &
@@ -96,6 +97,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     returnCode: int = QuitSuccess
     aliases = initOrderedTable[string, int]()
     dbpath: string = getHomeDir() & ".config/nish/nish.db"
+    helpContent = initTable[string, string]()
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command and "-h" or "--help" to show
@@ -134,6 +136,15 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
 
   # Set available command aliases for the current directory
   aliases.setAliases(getCurrentDir(), db)
+
+  # Set the main content for help if user enters only help command
+  helpContent["main"] = """Available commands are: cd, exit, help, set, unset, alias, alias list, alias
+  delete, alias show, alias add, alias edit, history, history clear, options, options show, options
+  set, options reset
+
+        To see more information about the command, type help [command], for
+        example: help cd.
+        """
 
   # Start the shell
   while true:
@@ -207,13 +218,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # If user entered only "help", show the main help screen
         if userInput.kind == cmdEnd:
-          showOutput("""Available commands are: cd, exit, help, set, unset, alias, alias list, alias
-  delete, alias show, alias add, alias edit, history, history clear, options, options show, options
-  set, options reset
-
-        To see more information about the command, type help [command], for
-        example: help cd.
-        """, true, not oneTimeCommand, commandName, returnCode)
+          showOutput(helpContent["main"], true, not oneTimeCommand, commandName, returnCode)
           historyIndex = updateHistory("help", db)
         elif userInput.key == "cd":
           showOutput("""Usage: cd [directory]
