@@ -32,7 +32,10 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
         WriteIOEffect].} =
   ## Change the current directory for the shell
   try:
-    let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
+    var path: string = absolutePath(expandTilde(newDirectory))
+    if not dirExists(path):
+      return showError("Directory '" & path & "' doesn't exist.")
+    path = expandFilename(path)
     setCurrentDir(path)
     aliases.setAliases(path, db)
     return QuitSuccess
