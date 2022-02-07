@@ -50,7 +50,8 @@ proc cdCommand*(userInput: var OptParser, aliases: var OrderedTable[string,
   userInput.next()
   if userInput.kind == cmdEnd:
     result = changeDirectory("~", aliases, db)
+    discard updateHistory("cd ~", db, result)
   else:
     result = changeDirectory(userInput.key, aliases, db)
-  discard updateHistory("cd " & userInput.key, db, result)
+    discard updateHistory("cd " & userInput.key, db, result)
 
