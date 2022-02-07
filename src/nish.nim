@@ -138,13 +138,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   aliases.setAliases(getCurrentDir(), db)
 
   # Set the main content for help if user enters only help command
-  helpContent["main"] = """Available commands are: cd, exit, help, set, unset, alias, alias list, alias
+  helpContent["main"] = """
+  Available commands are: cd, exit, help, set, unset, alias, alias list, alias
   delete, alias show, alias add, alias edit, history, history clear, options, options show, options
   set, options reset
 
-        To see more information about the command, type help [command], for
-        example: help cd.
-        """
+  To see more information about the command, type help [command], for
+  example: help cd.
+  """
 
   # Start the shell
   while true:
@@ -218,83 +219,94 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # If user entered only "help", show the main help screen
         if userInput.kind == cmdEnd:
-          showOutput(helpContent["main"], true, not oneTimeCommand, commandName, returnCode)
+          showOutput(helpContent["main"])
           historyIndex = updateHistory("help", db)
         elif userInput.key == "cd":
-          showOutput("""Usage: cd [directory]
+          showOutput("""
+        Usage: cd [directory]
 
         You must have permissions to enter the directory and directory
         need to exists. If you enter just 'cd' without the name of the
         directory to enter, the current directory will be switched to
         your home directory.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
           historyIndex = updateHistory("help cd", db)
         elif userInput.key == "exit":
-          showOutput("""Usage: exit
+          showOutput("""
+        Usage: exit
 
         Exit from the shell.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
           historyIndex = updateHistory("help exit", db)
         elif userInput.key == "help":
-          showOutput("""Usage help ?command?
+          showOutput("""
+        Usage help ?command?
 
         If entered only as help, show the list of available commands,
         when also command entered, show the information about the selected
         command.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
           historyIndex = updateHistory("help help", db)
         elif userInput.key == "set":
-          showOutput("""Usage set [name=value]
+          showOutput("""
+        Usage set [name=value]
 
         Set the environment variable with the selected name and value.
-          """, true, oneTimeCommand, commandName, returnCode)
+          """)
           historyIndex = updateHistory("help set", db)
         elif userInput.key == "unset":
-          showOutput("""Usage unset [name]
+          showOutput("""
+        Usage unset [name]
 
         Remove the environment variable with the selected name.
-          """, true, not oneTimeCommand, commandName, returnCode)
+          """)
           historyIndex = updateHistory("help unset", db)
         elif userInput.key == "alias":
           userInput.next()
           # If user entered only "alias", show the help for it
           if userInput.kind == cmdEnd:
-            showOutput("""Usage: alias ?subcommand?
+            showOutput("""
+        Usage: alias ?subcommand?
 
         If entered without subcommand, show the list of available subcommands
         for aliases. Otherwise, execute the selected subcommand.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help alias", db)
           elif userInput.key == "list":
-            showOutput("""Usage: alias list ?all?
+            showOutput("""
+        Usage: alias list ?all?
 
         Show the list of all available aliases in the current directory. If parameter
         all added, show all declared aliases.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help alias list", db)
           elif userInput.key == "delete":
-            showOutput("""Usage: alias delete [index]
+            showOutput("""
+        Usage: alias delete [index]
 
         Delete the alias with the selected index.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help alias delete", db)
           elif userInput.key == "show":
-            showOutput("""Usage: alias show [index]
+            showOutput("""
+        Usage: alias show [index]
 
         Show details (description, commands, etc) for the alias with the selected index.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help alias show", db)
           elif userInput.key == "add":
-            showOutput("""Usage: alias add
+            showOutput("""
+        Usage: alias add
 
         Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help alias add", db)
           elif userInput.key == "edit":
-            showOutput("""Usage: alias edit [index]
+            showOutput("""
+        Usage: alias edit [index]
 
         Start editing the alias with the selected index. You will be able to set again its all parameters.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help alias edit", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
@@ -304,23 +316,26 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           userInput.next()
           # If user entered only "history", show the help for it
           if userInput.kind == cmdEnd:
-            showOutput("""Usage: history ?subcommand?
+            showOutput("""
+        Usage: history ?subcommand?
 
         If entered without subcommand, show the list of available subcommands
         for history. Otherwise, execute the selected subcommand.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help history", db)
           elif userInput.key == "clear":
-            showOutput("""Usage: history clear
+            showOutput("""
+        Usage: history clear
 
         Clear the shell's commands' history.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help history clear", db)
           elif userInput.key == "show":
-            showOutput("""Usage: history show
+            showOutput("""
+        Usage: history show
 
         Show the last 20 commands from the shell's history.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help history clear", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
@@ -330,32 +345,36 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           userInput.next()
           # If user entered only "options", show the help for it
           if userInput.kind == cmdEnd:
-            showOutput("""Usage: options ?subcommand?
+            showOutput("""
+        Usage: options ?subcommand?
 
         If entered without subcommand, show the list of available subcommands
         for options. Otherwise, execute the selected subcommand.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help options", db)
           elif userInput.key == "show":
-            showOutput("""Usage: options show
+            showOutput("""
+        Usage: options show
 
         Show the list of all available shell's options with detailed information about them.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help options show", db)
           elif userInput.key == "set":
-            showOutput("""Usage: options set [name] [value]
+            showOutput("""
+        Usage: options set [name] [value]
 
         Set the selected shell's option with name to the selected value. The
         value can't contain new line character.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help options set", db)
           elif userInput.key == "reset":
-            showOutput("""Usage: options reset [name or all]
+            showOutput("""
+        Usage: options reset [name or all]
 
         Reset the selected shell's option with name to the default value. If the name
         parameter is set to 'all', reset all shell's options to their default
         values.
-        """, true, not oneTimeCommand, commandName, returnCode)
+        """)
             historyIndex = updateHistory("help options reset", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
