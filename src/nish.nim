@@ -71,9 +71,9 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [OSError,
             )"""
   result.exec(sql(sqlQuery))
   sqlQuery = """CREATE TABLE IF NOT EXISTS options (
-                option VARCHAR(64) NOT NULL PRIMARY KEY,
-                value	 VARCHAR(""" & $maxInputLength &
-      """) NOT NULL,
+                option VARCHAR(""" & $aliasNameLength &
+          """) NOT NULL PRIMARY KEY,
+                value	 VARCHAR(""" & $maxInputLength & """) NOT NULL,
                 description VARCHAR(""" & $maxInputLength &
           """) NOT NULL,
                 valuetype VARCHAR(""" & $maxInputLength &
