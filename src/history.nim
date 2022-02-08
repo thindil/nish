@@ -23,12 +23,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, strutils]
+import std/[db_sqlite, strutils, tables]
 import constants, options, output
 
-proc initHistory*(db: DbConn): int =
+proc initHistory*(db: DbConn; helpContent: var Table[string, string]): int =
   ## Initialize shell's commands history. Create history table if not exists,
-  ## set the current historyIndex and options related to the history
+  ## set the current historyIndex, options related to the history and help
+  ## related to the history commands
+  # Set the history related options
   if getOption("historyLength", db) == "":
     setOption("historyLength", "500", "Max amount of entries in shell commands history.",
         "integer", db)
@@ -38,12 +40,31 @@ proc initHistory*(db: DbConn): int =
   if getOption("historySaveInvalid", db) == "":
     setOption("historySaveInvalid", "false",
         "Save in shell command history also invalid commands.", "boolean", db)
+  # Create history table if not exists
   db.exec(sql("""CREATE TABLE IF NOT EXISTS history (
                command     VARCHAR(""" & $maxInputLength &
       """) PRIMARY KEY,
                lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
                amount      INTEGER NOT NULL DEFAULT 1
             )"""))
+  # Set the history related help content
+  helpContent["history"] = """
+        Usage: history ?subcommand?
+
+        If entered without subcommand, show the list of available subcommands
+        for history. Otherwise, execute the selected subcommand.
+        """
+  helpContent["history clear"] = """
+        Usage: history clear
+
+        Clear the shell's commands' history.
+        """
+  helpContent["history show"] = """
+        Usage: history show
+
+        Show the last """ & getOption("historyAmount", db) &  """ commands from the shell's history.
+        """
+  # Return the current help index set on the last command in the shell's history
   return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
 
 func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,

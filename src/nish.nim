@@ -132,7 +132,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   let db = startDb(dbpath)
 
   # Initialize the shell's commands history
-  historyIndex = initHistory(db)
+  historyIndex = initHistory(db, helpContent)
 
   # Set available command aliases for the current directory
   aliases.setAliases(getCurrentDir(), db)
@@ -316,26 +316,13 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           userInput.next()
           # If user entered only "history", show the help for it
           if userInput.kind == cmdEnd:
-            showOutput("""
-        Usage: history ?subcommand?
-
-        If entered without subcommand, show the list of available subcommands
-        for history. Otherwise, execute the selected subcommand.
-        """)
+            showOutput(helpContent["history"])
             historyIndex = updateHistory("help history", db)
           elif userInput.key == "clear":
-            showOutput("""
-        Usage: history clear
-
-        Clear the shell's commands' history.
-        """)
+            showOutput(helpContent["history clear"])
             historyIndex = updateHistory("help history clear", db)
           elif userInput.key == "show":
-            showOutput("""
-        Usage: history show
-
-        Show the last """ & getOption("historyAmount", db) &  """ commands from the shell's history.
-        """)
+            showOutput(helpContent["history show"])
             historyIndex = updateHistory("help history clear", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
