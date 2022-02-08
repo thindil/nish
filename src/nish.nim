@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases, commands, constants, history, options, output
+import aliases, commands, constants, help, history, options, output
 
 proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
@@ -427,9 +427,11 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif userInput.key == "set":
           returnCode = setOptions(userInput, db)
           historyIndex = updateHistory("options set", db, returnCode)
+          updateHelp(helpContent, db)
         elif userInput.key == "reset":
           returnCode = resetOptions(userInput, db)
           historyIndex = updateHistory("options reset", db, returnCode)
+          updateHelp(helpContent, db)
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `options`. To see all available aliases commands, type `options`.")
