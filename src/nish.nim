@@ -334,7 +334,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             showOutput("""
         Usage: history show
 
-        Show the last 20 commands from the shell's history.
+        Show the last """ & getOption("historyAmount", db) &  """ commands from the shell's history.
         """)
             historyIndex = updateHistory("help history clear", db)
           else:
