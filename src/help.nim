@@ -27,6 +27,8 @@ import std/[db_sqlite, tables]
 import options
 
 proc updateHelp*(helpContent: var Table[string, string], db: DbConn) =
+  ## Update the part of the shell's help content which depends on dynamic
+  ## data, like the shell's options' values
   helpContent["history show"] = """
         Usage: history show
 
