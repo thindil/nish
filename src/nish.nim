@@ -323,7 +323,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             historyIndex = updateHistory("help history clear", db)
           elif userInput.key == "show":
             showOutput(helpContent["history show"])
-            historyIndex = updateHistory("help history clear", db)
+            historyIndex = updateHistory("help history show", db)
           else:
             returnCode = showError("Unknown subcommand `" & userInput.key &
               "` for `history`. To see all available history commands, type `history`.")
