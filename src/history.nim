@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, strutils, tables]
-import constants, help, options, output
+import constants, options, output
 
 proc initHistory*(db: DbConn; helpContent: var Table[string, string]): int =
   ## Initialize shell's commands history. Create history table if not exists,
@@ -59,7 +59,6 @@ proc initHistory*(db: DbConn; helpContent: var Table[string, string]): int =
 
         Clear the shell's commands' history.
         """
-  updateHelp(helpContent, db)
   # Return the current help index set on the last command in the shell's history
   return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
 
