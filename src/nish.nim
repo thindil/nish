@@ -138,6 +138,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   aliases.setAliases(getCurrentDir(), db)
 
   # Set the main content for help if user enters only help command
+  updateHelp(helpContent, db)
   helpContent["main"] = """
   Available commands are: cd, exit, help, set, unset, alias, alias list, alias
   delete, alias show, alias add, alias edit, history, history clear, options, options show, options
