@@ -326,8 +326,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             showOutput(helpContent["history show"])
             historyIndex = updateHistory("help history show", db)
           else:
-            returnCode = showError("Unknown subcommand `" & userInput.key &
-              "` for `history`. To see all available history commands, type `history`.")
+            returnCode = showUnknownHelp(userInput.key, "history", "history")
             historyIndex = updateHistory("help history " & userInput.key, db, returnCode)
         elif userInput.key == "options":
           userInput.next()
