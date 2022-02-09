@@ -36,7 +36,8 @@ func updateHelp*(helpContent: var Table[string, string], db: DbConn) {.gcsafe,
         Show the last """ & getOption("historyAmount", db) & """ commands from the shell's history.
         """
 
-proc showUnknownHelp*(subCommand, Command, helpType: string): int =
+proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
+    sideEffect, raises: [IOError, ValueError], tags: [WriteIOEffect].} =
   return showError("Unknown subcommand `" & subCommand &
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
