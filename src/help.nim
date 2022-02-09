@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, tables]
-import options
+import options, output
 
 func updateHelp*(helpContent: var Table[string, string], db: DbConn) {.gcsafe,
     raises: [DbError], tags: [ReadDbEffect].} =
@@ -35,3 +35,8 @@ func updateHelp*(helpContent: var Table[string, string], db: DbConn) {.gcsafe,
 
         Show the last """ & getOption("historyAmount", db) & """ commands from the shell's history.
         """
+
+proc showUnknownHelp*(subCommand, Command, helpType: string): int =
+  return showError("Unknown subcommand `" & subCommand &
+              "` for `" & Command & "`. To see all available " & helpType &
+              " commands, type `" & Command & "`.")
