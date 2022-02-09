@@ -26,6 +26,11 @@
 import std/[db_sqlite, strutils, tables]
 import constants, options, output
 
+func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
+    DbError], tags: [ReadDbEffect].} =
+  ## Get the current length of the shell's commmand's history
+  return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
+
 proc initHistory*(db: DbConn; helpContent: var Table[string, string]): int =
   ## Initialize shell's commands history. Create history table if not exists,
   ## set the current historyIndex, options related to the history and help
@@ -60,12 +65,7 @@ proc initHistory*(db: DbConn; helpContent: var Table[string, string]): int =
         Clear the shell's commands' history.
         """
   # Return the current help index set on the last command in the shell's history
-  return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
-
-func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
-    DbError], tags: [ReadDbEffect].} =
-  ## Get the current length of the shell's commmand's history
-  return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
+  return historyLength(db)
 
 func updateHistory*(commandToAdd: string; db: DbConn;
     returnCode: int = QuitSuccess): int {.gcsafe, raises: [
