@@ -134,6 +134,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   # Initialize the shell's commands history
   historyIndex = initHistory(db, helpContent)
 
+  # Initialize the shell's options system
+  initOptions(helpContent)
+
   # Set available command aliases for the current directory
   aliases.setAliases(getCurrentDir(), db)
 
@@ -332,40 +335,19 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           userInput.next()
           # If user entered only "options", show the help for it
           if userInput.kind == cmdEnd:
-            showOutput("""
-        Usage: options ?subcommand?
-
-        If entered without subcommand, show the list of available subcommands
-        for options. Otherwise, execute the selected subcommand.
-        """)
+            showOutput(helpContent["options"])
             historyIndex = updateHistory("help options", db)
           elif userInput.key == "show":
-            showOutput("""
-        Usage: options show
-
-        Show the list of all available shell's options with detailed information about them.
-        """)
+            showOutput(helpContent["options show"])
             historyIndex = updateHistory("help options show", db)
           elif userInput.key == "set":
-            showOutput("""
-        Usage: options set [name] [value]
-
-        Set the selected shell's option with name to the selected value. The
-        value can't contain new line character.
-        """)
+            showOutput(helpContent["options set"])
             historyIndex = updateHistory("help options set", db)
           elif userInput.key == "reset":
-            showOutput("""
-        Usage: options reset [name or all]
-
-        Reset the selected shell's option with name to the default value. If the name
-        parameter is set to 'all', reset all shell's options to their default
-        values.
-        """)
+            showOutput(helpContent["options reset"])
             historyIndex = updateHistory("help options reset", db)
           else:
-            returnCode = showError("Unknown subcommand `" & userInput.key &
-              "` for `options`. To see all available options commands, type `options`.")
+            returnCode = showUnknownHelp(userInput.key, "options", "options")
             historyIndex = updateHistory("help options " & userInput.key, db, returnCode)
         else:
           returnCode = showError("Uknown command '" & userInput.key & "'")
