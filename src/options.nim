@@ -128,7 +128,8 @@ proc resetOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
     showOutput("The shell's option '" & userInput.key & "' reseted to its default value.")
   return QuitSuccess
 
-proc initOptions*(helpContent: var Table[string, string]) =
+func initOptions*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
+    raises: [], tags: [].} =
   ## Initialize the shell's options. At this moment only set help related to
   ## the options
   helpContent["options"] = """
