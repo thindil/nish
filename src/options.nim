@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, parseopt, strutils]
+import std/[db_sqlite, parseopt, strutils, tables]
 import output
 
 func getOption*(name: string; db: DbConn;
@@ -128,3 +128,30 @@ proc resetOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
     showOutput("The shell's option '" & userInput.key & "' reseted to its default value.")
   return QuitSuccess
 
+proc initOptions*(helpContent: var Table[string, string]) =
+  ## Initialize the shell's options. At this moment only set help related to
+  ## the options
+  helpContent["options"] = """
+        Usage: options ?subcommand?
+
+        If entered without subcommand, show the list of available subcommands
+        for options. Otherwise, execute the selected subcommand.
+        """
+  helpContent["options show"] = """
+        Usage: options show
+
+        Show the list of all available shell's options with detailed information about them.
+        """
+  helpContent["options set"] = """
+        Usage: options set [name] [value]
+
+        Set the selected shell's option with name to the selected value. The
+        value can't contain new line character.
+        """
+  helpContent["options reset"] = """
+        Usage: options reset [name or all]
+
+        Reset the selected shell's option with name to the default value. If the name
+        parameter is set to 'all', reset all shell's options to their default
+        values.
+        """
