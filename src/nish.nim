@@ -138,10 +138,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   initOptions(helpContent)
 
   # Initialize the shell's aliases system
-  initAliases(helpContent)
-
-  # Set available command aliases for the current directory
-  aliases.setAliases(getCurrentDir(), db)
+  aliases = initAliases(helpContent, db)
 
   # Set the main content for help if user enters only help command
   updateHelp(helpContent, db)

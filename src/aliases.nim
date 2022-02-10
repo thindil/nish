@@ -300,10 +300,11 @@ proc execAlias*(userInput: var OptParser; commandName: string;
       return QuitFailure
   return changeDirectory(currentDirectory, aliases, db)
 
-func initAliases*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
-    raises: [], tags: [].} =
-  ## Initialize the shell's aliases. At this moment only set help related to
-  ## the aliases
+proc initAliases*(helpContent: var Table[string, string];
+    db: DbConn): OrderedTable[string, int] {.gcsafe, sideEffect, raises: [
+    OSError, ValueError, DbError], tags: [ReadDbEffect].} =
+  ## Initialize the shell's aliases. Set help related to the aliases and
+  ## load aliases available in the current directory
   helpContent["alias"] = """
         Usage: alias ?subcommand?
 
@@ -336,3 +337,4 @@ func initAliases*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
 
         Start editing the alias with the selected index. You will be able to set again its all parameters.
         """
+  result.setAliases(getCurrentDir(), db)
