@@ -254,6 +254,8 @@ proc execAlias*(userInput: var OptParser; commandName: string;
         sideEffect, raises: [DbError, ValueError, IOError, OSError], tags: [
         ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect, ExecIOEffect,
         RootEffect].} =
+  ## Execute the selected by the user alias. If it is impossible due to lack
+  ## of needed arguments or other errors, print information about it.
 
   proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
       int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
