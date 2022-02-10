@@ -299,3 +299,40 @@ proc execAlias*(userInput: var OptParser; commandName: string;
     if execCmd(newCommand) != QuitSuccess:
       return QuitFailure
   return changeDirectory(currentDirectory, aliases, db)
+
+func initAliases*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
+    raises: [], tags: [].} =
+  ## Initialize the shell's aliases. At this moment only set help related to
+  ## the aliases
+  helpContent["alias"] = """
+        Usage: alias ?subcommand?
+
+        If entered without subcommand, show the list of available subcommands
+        for aliases. Otherwise, execute the selected subcommand.
+        """
+  helpContent["alias list"] = """
+        Usage: alias list ?all?
+
+        Show the list of all available aliases in the current directory. If parameter
+        all added, show all declared aliases.
+        """
+  helpContent["alias delete"] = """
+        Usage: alias delete [index]
+
+        Delete the alias with the selected index.
+        """
+  helpContent["alias show"] = """
+        Usage: alias show [index]
+
+        Show details (description, commands, etc) for the alias with the selected index.
+        """
+  helpContent["alias add"] = """
+        Usage: alias add
+
+        Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.
+        """
+  helpContent["alias edit"] = """
+        Usage: alias edit [index]
+
+        Start editing the alias with the selected index. You will be able to set again its all parameters.
+        """
