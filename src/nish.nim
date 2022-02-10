@@ -137,6 +137,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   # Initialize the shell's options system
   initOptions(helpContent)
 
+  # Initialize the shell's aliases system
+  initAliases(helpContent)
+
   # Set available command aliases for the current directory
   aliases.setAliases(getCurrentDir(), db)
 
@@ -269,52 +272,25 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           userInput.next()
           # If user entered only "alias", show the help for it
           if userInput.kind == cmdEnd:
-            showOutput("""
-        Usage: alias ?subcommand?
-
-        If entered without subcommand, show the list of available subcommands
-        for aliases. Otherwise, execute the selected subcommand.
-        """)
+            showOutput(helpContent["alias"])
             historyIndex = updateHistory("help alias", db)
           elif userInput.key == "list":
-            showOutput("""
-        Usage: alias list ?all?
-
-        Show the list of all available aliases in the current directory. If parameter
-        all added, show all declared aliases.
-        """)
+            showOutput(helpContent["alias list"])
             historyIndex = updateHistory("help alias list", db)
           elif userInput.key == "delete":
-            showOutput("""
-        Usage: alias delete [index]
-
-        Delete the alias with the selected index.
-        """)
+            showOutput(helpContent["alias delete"])
             historyIndex = updateHistory("help alias delete", db)
           elif userInput.key == "show":
-            showOutput("""
-        Usage: alias show [index]
-
-        Show details (description, commands, etc) for the alias with the selected index.
-        """)
+            showOutput(helpContent["alias show"])
             historyIndex = updateHistory("help alias show", db)
           elif userInput.key == "add":
-            showOutput("""
-        Usage: alias add
-
-        Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.
-        """)
+            showOutput(helpContent["alias add"])
             historyIndex = updateHistory("help alias add", db)
           elif userInput.key == "edit":
-            showOutput("""
-        Usage: alias edit [index]
-
-        Start editing the alias with the selected index. You will be able to set again its all parameters.
-        """)
+            showOutput(helpContent["alias edit"])
             historyIndex = updateHistory("help alias edit", db)
           else:
-            returnCode = showError("Unknown subcommand `" & userInput.key &
-              "` for `alias`. To see all available aliases commands, type `alias`.")
+            returnCode = showUnknownHelp(userInput.key, "alias", "aliases")
             historyIndex = updateHistory("help alias " & userInput.key, db, returnCode)
         elif userInput.key == "history":
           userInput.next()
