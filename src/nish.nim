@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases, commands, constants, help, history, options, output
+import aliases, commands, constants, help, history, options, output, variables
 
 proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
@@ -143,6 +143,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   # Initialize the shell's build-in commands
   initCommands(helpContent)
 
+  # Initialize the shell's environment variables system
+  initVariables(helpContent)
+
   # Set the main content for help if user enters only help command
   updateHelp(helpContent, db)
   helpContent["main"] = """
@@ -238,18 +241,10 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           showOutput(helpContent["help"])
           historyIndex = updateHistory("help help", db)
         elif userInput.key == "set":
-          showOutput("""
-        Usage set [name=value]
-
-        Set the environment variable with the selected name and value.
-          """)
+          showOutput(helpContent["set"])
           historyIndex = updateHistory("help set", db)
         elif userInput.key == "unset":
-          showOutput("""
-        Usage unset [name]
-
-        Remove the environment variable with the selected name.
-          """)
+          showOutput(helpContent["unset"])
           historyIndex = updateHistory("help unset", db)
         elif userInput.key == "alias":
           userInput.next()
