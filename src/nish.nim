@@ -140,6 +140,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   # Initialize the shell's aliases system
   aliases = initAliases(helpContent, db)
 
+  # Initialize the shell's build-in commands
+  initCommands(helpContent)
+
   # Set the main content for help if user enters only help command
   updateHelp(helpContent, db)
   helpContent["main"] = """
@@ -226,30 +229,13 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           showOutput(helpContent["main"])
           historyIndex = updateHistory("help", db)
         elif userInput.key == "cd":
-          showOutput("""
-        Usage: cd [directory]
-
-        You must have permissions to enter the directory and directory
-        need to exists. If you enter just 'cd' without the name of the
-        directory to enter, the current directory will be switched to
-        your home directory.
-        """)
+          showOutput(helpContent["cd"])
           historyIndex = updateHistory("help cd", db)
         elif userInput.key == "exit":
-          showOutput("""
-        Usage: exit
-
-        Exit from the shell.
-        """)
+          showOutput(helpContent["exit"])
           historyIndex = updateHistory("help exit", db)
         elif userInput.key == "help":
-          showOutput("""
-        Usage help ?command?
-
-        If entered only as help, show the list of available commands,
-        when also command entered, show the information about the selected
-        command.
-        """)
+          showOutput(helpContent["help"])
           historyIndex = updateHistory("help help", db)
         elif userInput.key == "set":
           showOutput("""

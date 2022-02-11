@@ -55,3 +55,27 @@ proc cdCommand*(userInput: var OptParser, aliases: var OrderedTable[string,
     result = changeDirectory(userInput.key, aliases, db)
     discard updateHistory("cd " & userInput.key, db, result)
 
+func initCommands*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
+    raises: [], tags: [].} =
+  ## Initialize the shell's build-in commands. At this moment only set help
+  ## related to the commands
+  helpContent["cd"] = """
+        Usage: cd [directory]
+
+        You must have permissions to enter the directory and directory
+        need to exists. If you enter just 'cd' without the name of the
+        directory to enter, the current directory will be switched to
+        your home directory.
+        """
+  helpContent["exit"] = """
+        Usage: exit
+
+        Exit from the shell.
+        """
+  helpContent["help"] = """
+        Usage help ?command?
+
+        If entered only as help, show the list of available commands,
+        when also command entered, show the information about the selected
+        command.
+        """
