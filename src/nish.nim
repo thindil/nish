@@ -148,7 +148,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
 
   # Set the main content for help if user enters only help command
   updateHelp(helpContent, db)
-  helpContent["main"] = """
+  helpContent["help"] = """
   Available commands are: cd, exit, help, set, unset, alias, alias list, alias
   delete, alias show, alias add, alias edit, history, history clear, options, options show, options
   set, options reset
@@ -229,7 +229,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         userInput.next()
         # If user entered only "help", show the main help screen
         if userInput.kind == cmdEnd:
-          showOutput(helpContent["main"])
+          showOutput(helpContent["help"])
           historyIndex = updateHistory("help", db)
         elif userInput.key == "cd":
           showOutput(helpContent["cd"])
