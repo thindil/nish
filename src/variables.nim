@@ -23,11 +23,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/tables
+import std/[db_sqlite, os, parseopt, strutils, tables]
+import history, output
 
 func initVariables*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
     raises: [], tags: [].} =
-  ## Initialize enviromental variables. At this moment only set help related
+  ## Initialize enviroment variables. At this moment only set help related
   ## to the variables
   helpContent["set"] = """
         Usage set [name=value]
@@ -39,3 +40,23 @@ func initVariables*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
 
         Remove the environment variable with the selected name.
           """
+
+proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
+    sideEffect, raises: [DbError, ValueError, IOError], tags: [ReadIOEffect,
+    ReadDbEffect, WriteIOEffect, WriteDbEffect].} =
+  ## Build-in command to set the selected environment variable
+  userInput.next()
+  if userInput.kind != cmdEnd:
+    let varValues = userInput.key.split("=")
+    if varValues.len() > 1:
+      try:
+        putEnv(varValues[0], varValues[1])
+        showOutput("Environment variable '" & varValues[0] &
+            "' set to '" & varValues[1] & "'", true)
+      except OSError:
+        result = showError()
+    else:
+      result = showError("You have to enter the name of the variable and its value.")
+  else:
+    result = showError("You have to enter the name of the variable and its value.")
+  discard updateHistory("set " & userInput.key, db, result)
