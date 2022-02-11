@@ -42,7 +42,7 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
   except OSError:
     return showError()
 
-proc cdCommand*(userInput: var OptParser, aliases: var OrderedTable[string,
+proc cdCommand*(userInput: var OptParser; aliases: var OrderedTable[string,
     int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
         IOError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect, WriteDbEffect].} =
