@@ -53,6 +53,7 @@ proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
         putEnv(varValues[0], varValues[1])
         showOutput("Environment variable '" & varValues[0] &
             "' set to '" & varValues[1] & "'", true)
+        result = QuitSuccess
       except OSError:
         result = showError()
     else:
@@ -60,3 +61,19 @@ proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
   else:
     result = showError("You have to enter the name of the variable and its value.")
   discard updateHistory("set " & userInput.key, db, result)
+
+proc unsetCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
+    sideEffect, raises: [DbError, ValueError, IOError], tags: [ReadIOEffect,
+    ReadDbEffect, WriteIOEffect, WriteDbEffect].} =
+  ## Build-in command to unset the selected environment variable
+  userInput.next()
+  if userInput.kind != cmdEnd:
+    try:
+      delEnv(userInput.key)
+      showOutput("Environment variable '" & userInput.key & "' removed")
+      result = QuitSuccess
+    except OSError:
+      result = showError()
+  else:
+    result = showError("You have to enter the name of the variable to unset.")
+  discard updateHistory("unset " & userInput.key, db, result)

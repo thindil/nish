@@ -316,15 +316,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         historyIndex = historyLength(db)
       # Delete environment variable
       of "unset":
-        userInput.next()
-        if userInput.kind != cmdEnd:
-          try:
-            delEnv(userInput.key)
-            showOutput("Environment variable '" & userInput.key & "' removed",
-                true, not oneTimeCommand, commandName, returnCode)
-          except OSError:
-            returnCode = showError()
-          historyIndex = updateHistory("unset " & userInput.key, db, returnCode)
+        returnCode = unsetCommand(userInput, db)
+        historyIndex = historyLength(db)
       # Various commands related to the shell's commands' history
       of "history":
         userInput.next()
