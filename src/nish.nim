@@ -312,18 +312,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         historyIndex = historyLength(db)
       # Set the environment variable
       of "set":
-        userInput.next()
-        if userInput.kind != cmdEnd:
-          let varValues = userInput.key.split("=")
-          if varValues.len() > 1:
-            try:
-              putEnv(varValues[0], varValues[1])
-              showOutput("Environment variable '" & varValues[0] &
-                  "' set to '" & varValues[1] & "'", true, not oneTimeCommand,
-                      commandName, returnCode)
-            except OSError:
-              returnCode = showError()
-            historyIndex = updateHistory("set " & userInput.key, db, returnCode)
+        returnCode = setCommand(userInput, db)
+        historyIndex = historyLength(db)
       # Delete environment variable
       of "unset":
         userInput.next()
