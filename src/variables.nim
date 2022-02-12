@@ -31,20 +31,28 @@ proc setVariables*(newDirectory: string; db: DbConn;
     tags: [ReadDbEffect, WriteEnvEffect].} =
   ## Set the environment variables in the selected directory and remove the
   ## old ones
-  # Set the new environment variables
-  var
-    dbQuery: string = "SELECT name, value FROM variables WHERE path='" &
-        newDirectory & "'"
-    remainingDirectory: string = parentDir(newDirectory)
+
+  proc buildQuery(directory: string): string {.gcsafe, sideEffect, raises: [],
+      tags: [ReadDbEffect].} =
+    ## Build database query for get environment variables for the selected
+    ## directory
+    result = "SELECT name, value FROM variables WHERE path='" & directory & "'"
+    var remainingDirectory: string = parentDir(directory)
 
   # Construct SQL querry, search for variables also defined in parent directories
-  # if they are recursive
-  while remainingDirectory != "":
-    dbQuery.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
-    remainingDirectory = parentDir(remainingDirectory)
+    # if they are recursive
+    while remainingDirectory != "":
+      result.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
+      remainingDirectory = parentDir(remainingDirectory)
 
-  dbQuery.add(" ORDER BY id ASC")
-  for dbResult in db.fastRows(sql(dbQuery)):
+    result.add(" ORDER BY id ASC")
+
+  # Remove the old environment variables if needed
+  if oldDirectory.len() > 0:
+    for dbResult in db.fastRows(sql(buildQuery(oldDirectory))):
+      delEnv(dbResult[0])
+  # Set the new environment variables
+  for dbResult in db.fastRows(sql(buildQuery(newDirectory))):
     putEnv(dbResult[0], dbResult[1])
 
 proc initVariables*(helpContent: var Table[string, string];
