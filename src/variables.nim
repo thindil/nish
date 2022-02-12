@@ -26,33 +26,33 @@
 import std/[db_sqlite, os, parseopt, strutils, tables]
 import history, output
 
+proc buildQuery(directory, fields: string): string {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect].} =
+  ## Build database query for get environment variables for the selected
+  ## directory
+  result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
+  var remainingDirectory: string = parentDir(directory)
+
+# Construct SQL querry, search for variables also defined in parent directories
+  # if they are recursive
+  while remainingDirectory != "":
+    result.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
+    remainingDirectory = parentDir(remainingDirectory)
+
+  result.add(" ORDER BY id ASC")
+
 proc setVariables*(newDirectory: string; db: DbConn;
     oldDirectory: string = "") {.gcsafe, sideEffect, raises: [DbError, OSError],
     tags: [ReadDbEffect, WriteEnvEffect].} =
   ## Set the environment variables in the selected directory and remove the
   ## old ones
 
-  proc buildQuery(directory: string): string {.gcsafe, sideEffect, raises: [],
-      tags: [ReadDbEffect].} =
-    ## Build database query for get environment variables for the selected
-    ## directory
-    result = "SELECT name, value FROM variables WHERE path='" & directory & "'"
-    var remainingDirectory: string = parentDir(directory)
-
-  # Construct SQL querry, search for variables also defined in parent directories
-    # if they are recursive
-    while remainingDirectory != "":
-      result.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
-      remainingDirectory = parentDir(remainingDirectory)
-
-    result.add(" ORDER BY id ASC")
-
   # Remove the old environment variables if needed
   if oldDirectory.len() > 0:
-    for dbResult in db.fastRows(sql(buildQuery(oldDirectory))):
+    for dbResult in db.fastRows(sql(buildQuery(oldDirectory, "name"))):
       delEnv(dbResult[0])
   # Set the new environment variables
-  for dbResult in db.fastRows(sql(buildQuery(newDirectory))):
+  for dbResult in db.fastRows(sql(buildQuery(newDirectory, "name, value"))):
     putEnv(dbResult[0], dbResult[1])
 
 proc initVariables*(helpContent: var Table[string, string];
@@ -108,3 +108,21 @@ proc unsetCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
   else:
     result = showError("You have to enter the name of the variable to unset.")
   discard updateHistory("unset " & userInput.key, db, result)
+
+proc listVariables*(userInput: var OptParser; historyIndex: var int;
+    db: DbConn) {.gcsafe, sideEffect, raises: [IOError, OSError, ValueError],
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
+  ## List available variables, if entered command was "variables list all" list all
+  ## declared variables then
+  showOutput("Declared environent variables are:")
+  showOutput("ID Name Value Description")
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    historyIndex = updateHistory("variable list", db)
+    for row in db.fastRows(sql(buildQuery(getCurrentDir(),
+        "id, name, value, description"))):
+      showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3])
+  elif userInput.key == "all":
+    historyIndex = updateHistory("variable list all", db)
+    for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
+      showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3])
