@@ -82,6 +82,18 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [OSError,
                 defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   result.exec(sql(sqlQuery))
+  sqlQuery = """CREATE TABLE IF NOT EXISTS variables (
+               id          INTEGER       PRIMARY KEY,
+               name        VARCHAR(""" & $aliasNameLength &
+          """) NOT NULL,
+               path        VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+               recursive   BOOLEAN       NOT NULL,
+               value       VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+               description VARCHAR(""" & $maxInputLength & """) NOT NULL
+            )"""
+  result.exec(sql(sqlQuery))
 
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
