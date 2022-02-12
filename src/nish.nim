@@ -251,6 +251,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       of "unset":
         returnCode = unsetCommand(userInput, db)
         historyIndex = historyLength(db)
+      # Various commands related to environment variables
+      of "variable":
+        userInput.next()
+        # Show the list of declared environment variables
+        if userInput.key == "list":
+          listVariables(userInput, historyIndex, db)
       # Various commands related to the shell's commands' history
       of "history":
         userInput.next()
