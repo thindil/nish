@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, parseopt, tables]
-import aliases, history, output
+import aliases, history, output, variables
 
 proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
     int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
@@ -36,6 +36,7 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
     if not dirExists(path):
       return showError("Directory '" & path & "' doesn't exist.")
     path = expandFilename(path)
+    setVariables(path, db, getCurrentDir())
     setCurrentDir(path)
     aliases.setAliases(path, db)
     return QuitSuccess
