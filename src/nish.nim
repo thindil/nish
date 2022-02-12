@@ -156,7 +156,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   initCommands(helpContent)
 
   # Initialize the shell's environment variables system
-  initVariables(helpContent)
+  initVariables(helpContent, db)
 
   # Set the main content for help if user enters only help command
   updateHelp(helpContent, db)
