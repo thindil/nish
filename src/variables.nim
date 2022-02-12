@@ -26,10 +26,32 @@
 import std/[db_sqlite, os, parseopt, strutils, tables]
 import history, output
 
-func initVariables*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
-    raises: [], tags: [].} =
-  ## Initialize enviroment variables. At this moment only set help related
-  ## to the variables
+proc setVariables*(newDirectory: string; db: DbConn;
+    oldDirectory: string = "") {.gcsafe, sideEffect, raises: [DbError, OSError],
+    tags: [ReadDbEffect, WriteEnvEffect].} =
+  ## Set the environment variables in the selected directory and remove the
+  ## old ones
+  # Set the new environment variables
+  var
+    dbQuery: string = "SELECT name, value FROM variables WHERE path='" &
+        newDirectory & "'"
+    remainingDirectory: string = parentDir(newDirectory)
+
+  # Construct SQL querry, search for variables also defined in parent directories
+  # if they are recursive
+  while remainingDirectory != "":
+    dbQuery.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
+    remainingDirectory = parentDir(remainingDirectory)
+
+  dbQuery.add(" ORDER BY id ASC")
+  for dbResult in db.fastRows(sql(dbQuery)):
+    putEnv(dbResult[0], dbResult[1])
+
+proc initVariables*(helpContent: var Table[string, string];
+    db: DbConn) {.gcsafe, sideEffect, raises: [DbError, OSError], tags: [
+    ReadDbEffect, WriteEnvEffect].} =
+  ## Initialize enviroment variables. Set help related to the variables and
+  ## load the local environment variables
   helpContent["set"] = """
         Usage set [name=value]
 
@@ -40,6 +62,7 @@ func initVariables*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
 
         Remove the environment variable with the selected name.
           """
+  setVariables(getCurrentDir(), db)
 
 proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
     sideEffect, raises: [DbError, ValueError, IOError], tags: [ReadIOEffect,
