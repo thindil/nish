@@ -70,6 +70,12 @@ proc initVariables*(helpContent: var Table[string, string];
 
         Remove the environment variable with the selected name.
           """
+  helpContent["variable"] = """
+        Usage: variable ?subcommand?
+
+        If entered without subcommand, show the list of available subcommands
+        for variables. Otherwise, execute the selected subcommand.
+        """
   helpContent["variable list"] = """
         Usage: variable list ?all?
 
