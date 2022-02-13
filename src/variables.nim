@@ -70,6 +70,13 @@ proc initVariables*(helpContent: var Table[string, string];
 
         Remove the environment variable with the selected name.
           """
+  helpContent["variable list"] = """
+        Usage: variable list ?all?
+
+        Show the list of all declared in shell environment variables in
+        the current directory. If parameter all added, show all declared
+        environment variables.
+        """
   setVariables(getCurrentDir(), db)
 
 proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
