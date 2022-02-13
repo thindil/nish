@@ -260,6 +260,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         # Show the list of declared environment variables
         elif userInput.key == "list":
           listVariables(userInput, historyIndex, db)
+        # Delete the selected environment variable
+        elif userInput.key == "delete":
+          returnCode = deleteVariable(userInput, historyIndex, db)
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `variable`. To see all available variables commands, type `variable`.")
