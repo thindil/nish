@@ -83,6 +83,12 @@ proc initVariables*(helpContent: var Table[string, string];
         the current directory. If parameter all added, show all declared
         environment variables.
         """
+  helpContent["variable delete"] = """
+        Usage: variable delete [index]
+
+        Delete the declared in shell environment variable with the selected
+        index.
+        """
   setVariables(getCurrentDir(), db)
 
 proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
