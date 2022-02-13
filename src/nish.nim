@@ -254,9 +254,16 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       # Various commands related to environment variables
       of "variable":
         userInput.next()
+        # No subcommand entered, show available options
+        if userInput.kind == cmdEnd:
+          historyIndex = helpVariables(db)
         # Show the list of declared environment variables
-        if userInput.key == "list":
+        elif userInput.key == "list":
           listVariables(userInput, historyIndex, db)
+        else:
+          returnCode = showError("Unknown subcommand `" & userInput.key &
+            "` for `variable`. To see all available variables commands, type `variable`.")
+          historyIndex = updateHistory("alias " & userInput.key, db, returnCode)
       # Various commands related to the shell's commands' history
       of "history":
         userInput.next()

@@ -126,3 +126,15 @@ proc listVariables*(userInput: var OptParser; historyIndex: var int;
     historyIndex = updateHistory("variable list all", db)
     for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
       showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3])
+
+proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+    DbError, OSError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    ReadIOEffect, WriteIOEffect].} =
+  ## Show short help about available subcommands related to the environment variables
+  showOutput("""Available subcommands are: list
+
+        To see more information about the subcommand, type help variable [command],
+        for example: help variable list.
+""")
+  return updateHistory("variable", db)
+
