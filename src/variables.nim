@@ -23,8 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, parseopt, strutils, tables]
-import history, output
+import std/[db_sqlite, os, parseopt, strutils, tables, terminal]
+import constants, history, input, output
 
 proc buildQuery(directory, fields: string): string {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect].} =
@@ -174,5 +174,43 @@ proc deleteVariable*(userInput: var OptParser; historyIndex: var int;
   historyIndex = updateHistory("variable delete", db)
   setVariables(getCurrentDir(), db, getCurrentDir())
   showOutput("Deleted the variable with Id: " & userInput.key)
+  return QuitSuccess
+
+proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
+    raises: [EOFError, OSError, IOError, ValueError], tags: [ReadDbEffect,
+    ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
+  ## Add a new variable to the shell. Ask the user a few questions and fill the
+  ## variable values with answers
+  showOutput("You can cancel adding a new variable at any time by double press Escape key.")
+  showOutput("The name of the variable. For example: 'MY_KEY'.:")
+  let name = readInput(aliasNameLength)
+  if name == "exit":
+    return showError("Adding a new variable cancelled.")
+  showOutput("The description of the variable. It will be show on the list of available variables and in the variable details. For example: 'My key to database.'. Can't contains a new line character.: ")
+  let description = readInput()
+  if description == "exit":
+    return showError("Adding a new variable cancelled.")
+  showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'.: ")
+  let path = readInput()
+  if path == "exit":
+    return showError("Adding a new variable cancelled.")
+  showOutput("Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+  var inputChar: char = getch()
+  while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
+      inputChar != 'Y':
+    inputChar = getch()
+  let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  stdout.writeLine("")
+  showOutput("The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character.:")
+  let value = readInput()
+  if value == "exit":
+    return showError("Adding a new variable cancelled.")
+  # Save the variable to the database
+  if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
+      name, path, recursive, value, description) == -1:
+    return showError("Can't add variable.")
+  # Update history index and refresh the list of available variables
+  historyIndex = updateHistory("variable add", db)
+  setVariables(getCurrentDir(), db, getCurrentDir())
   return QuitSuccess
 
