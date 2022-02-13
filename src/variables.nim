@@ -89,6 +89,12 @@ proc initVariables*(helpContent: var Table[string, string];
         Delete the declared in shell environment variable with the selected
         index.
         """
+  helpContent["variable add"] = """
+        Usage: variable add
+
+        Start adding a new variable to the shell. You will be able to set its
+        name, description, value, etc.
+        """
   setVariables(getCurrentDir(), db)
 
 proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
