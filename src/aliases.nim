@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import constants, history, output
+import constants, history, input, output
 
 func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
     db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
@@ -122,34 +122,6 @@ proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
         for example: help alias list.
 """)
   return updateHistory("alias", db)
-
-proc readInput(maxLength: int = maxInputLength): string =
-  ## Read the user input. Used in adding a new alias or editing an existing
-  # Get the user input and parse it
-  var inputChar = '\0'
-  # Read the user input until not meet new line character or the input
-  # reach the maximum length
-  while inputChar.ord() != 13 and result.len() < maxLength:
-    # Backspace pressed, delete the last character from the user input
-    if inputChar.ord() == 127:
-      if result.len() > 0:
-        result = result[0..^2]
-        stdout.cursorBackward()
-        stdout.write(" ")
-        stdout.cursorBackward()
-    elif inputChar.ord() == 27:
-      inputChar = getch()
-      if inputChar.ord() == 27:
-        return "exit"
-      else:
-        continue
-    # Visible character, add it to the user input string and show it in the
-    # console
-    elif inputChar.ord() > 31:
-      stdout.write(inputChar)
-      result.add(inputChar)
-    inputChar = getch()
-  stdout.writeLine("")
 
 proc addAlias*(historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
