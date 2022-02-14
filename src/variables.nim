@@ -192,7 +192,7 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   let name = readInput(aliasNameLength)
   if name == "exit":
     return showError("Adding a new variable cancelled.")
-  showOutput("The description of the variable. It will be show on the list of available variables and in the variable details. For example: 'My key to database.'. Can't contains a new line character.: ")
+  showOutput("The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
   let description = readInput()
   if description == "exit":
     return showError("Adding a new variable cancelled.")
@@ -220,3 +220,59 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   setVariables(getCurrentDir(), db, getCurrentDir())
   return QuitSuccess
 
+proc editVariable*(userInput: var OptParser; historyIndex: var int;
+    db: DbConn): int {.gcsafe, sideEffect, raises: [EOFError, OSError, IOError,
+    ValueError], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
+    WriteDbEffect].} =
+  ## Edit the selected variable
+  userInput.next()
+  if userInput.kind == cmdEnd:
+    return showError("Enter the ID of the variable to edit.")
+  let row = db.getRow(sql"SELECT name, path, value, description FROM variables WHERE id=?",
+    userInput.key)
+  if row[0] == "":
+    return showError("The variable with the ID: " & userInput.key &
+      " doesn't exists.")
+  showOutput("You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
+  showOutput("The name of the variable. Current value: '" & row[0] & "'")
+  var name = readInput(aliasNameLength)
+  if name == "exit":
+    return showError("Editing the variable cancelled.")
+  elif name == "":
+    name = row[0]
+  showOutput("The description of the variable. It will be show on the list of available variable. Current value: '" &
+      row[3] & "'. Can't contains a new line character.: ")
+  var description = readInput()
+  if description == "exit":
+    return showError("Editing the variable cancelled.")
+  elif description == "":
+    description = row[3]
+  showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
+      row[1] & "'")
+  var path = readInput()
+  if path == "exit":
+    return showError("Editing the variable cancelled.")
+  elif path == "":
+    path = row[1]
+  showOutput("Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+  var inputChar: char = getch()
+  while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
+      inputChar != 'Y':
+    inputChar = getch()
+  let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  stdout.writeLine("")
+  showOutput("The value of the variable. Current value: '" & row[2] &
+      "'. Value can't contain a new line character.:")
+  var value = readInput()
+  if value == "exit":
+    return showError("Editing the variable cancelled.")
+  elif value == "":
+    value = row[2]
+  # Save the variable to the database
+  if db.execAffectedRows(sql"UPDATE variables SET name=?, path=?, recursive=?, value=?, description=? where id=?",
+      name, path, recursive, value, description, userInput.key) != 1:
+    return showError("Can't edit the variable.")
+  # Update history index and refresh the list of available variables
+  historyIndex = updateHistory("variable edit", db)
+  setVariables(getCurrentDir(), db, getCurrentDir())
+  return QuitSuccess

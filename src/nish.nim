@@ -263,9 +263,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         # Delete the selected environment variable
         elif userInput.key == "delete":
           returnCode = deleteVariable(userInput, historyIndex, db)
-        # Add a new alias
+        # Add a new variable
         elif userInput.key == "add":
           returnCode = addVariable(historyIndex, db)
+        # Edit an existing variable
+        elif userInput.key == "edit":
+          returnCode = editVariable(userInput, historyIndex, db)
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `variable`. To see all available variables commands, type `variable`.")
