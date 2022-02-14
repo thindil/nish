@@ -95,6 +95,12 @@ proc initVariables*(helpContent: var Table[string, string];
         Start adding a new variable to the shell. You will be able to set its
         name, description, value, etc.
         """
+  helpContent["variable edit"] = """
+        Usage: variable edit [index]
+
+        Start editing the variable with the selected index. You will be able to set
+        again its all parameters.
+        """
   setVariables(getCurrentDir(), db)
 
 proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
