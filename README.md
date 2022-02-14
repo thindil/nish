@@ -41,13 +41,14 @@ executing `make -j5` and in another `nim release`. Aliases can be declared for
 just one directory or for each subdirectory of the selected directory too. At
 this moment, available options for aliases are:
 
-* ID: The ID of the alias, used mostly for deleting the selected alias
+* ID: The ID of the alias, used mostly for deleting or editing the selected
+  alias.
 * Name: The name of the alias. The text which have to be entered to execute the
   alias. It doesn't need to be unique, but if two aliases in the same directory
   have the same name, then the first one will be executed.
 * Path: The main directory in which the alias works.
 * Recursive: If set to 1, the alias is available for all subdirectories of the
-  main directory. If set to 0, is available only in the selected directory.
+  path. If set to 0, is available only in the selected directory.
 * Commands: The list of commands which will be executed as alias. The alias can
   execute a few commands, but then, each entry on the list have to be separated
   with new line.
@@ -113,6 +114,51 @@ All shell's options can be previewed from the shell. Additionally, it is
 possible to set them inside the shell and reset options' values to the default
 values. At this moment, all options are related to the shell's commands'
 history, but with time there will be more things to set.
+
+#### Global and local environment variables
+
+Beside standard support for environment variables, with `set` and `unset`
+commands, the shell offers also ability to set environment variables only for
+the selected directories, in the same way how aliases set. At this moment,
+available options for variables are:
+
+* ID: The ID of the variable, used mostly for deleting or editing the selected
+  variable
+* Name: The name of the variable. It doesn't need to be unique, but if two
+  variables in the same directory have the same name, then the last one value
+  will be set as current value of the variable.
+* Path: The main directory in which the variable set.
+* Recursive: If set to 1, the variable is available for all subdirectories of
+  the path. If set to 0, is available only in the selected directory.
+* Value: The value of the variable.
+* Description: The variable description. Showed on the variables list.
+
+For example, the definition of the variable can look that:
+
+
+    ID: 1
+    Name: MY_VAR
+    Path: /
+    Recursive: 1
+    Value: someval
+    Description: Test variable
+
+The definition of the local variable can look that:
+
+    ID: 2
+    Name: MY_VAR2
+    Path: /home/user
+    Recursive: 0
+    Value: anotherval
+    Description: The second test variable
+
+The variable will be available only in the user's home directory. It doesn't
+work in any of its subdirectory.
+
+**IMPORTANT:** Commands `set` and `unset` doesn't work with the shell's
+specific environment variables presented above. They work only with the
+standard environment variables. To manage the shell's specific environment
+variables use subcommands of the `variable` command.
 
 ### How to install
 
