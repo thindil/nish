@@ -158,16 +158,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   # Initialize the shell's environment variables system
   initVariables(helpContent, db)
 
-  # Set the main content for help if user enters only help command
+  # Set the shell's help
   updateHelp(helpContent, db)
-  helpContent["help"] = """
-  Available commands are: cd, exit, help, set, unset, alias, alias list, alias
-  delete, alias show, alias add, alias edit, history, history clear, options, options show, options
-  set, options reset
-
-  To see more information about the command, type help [command], for
-  example: help cd.
-  """
+  setMainHelp(helpContent)
 
   # Start the shell
   while true:
