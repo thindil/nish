@@ -69,3 +69,16 @@ proc showHelp*(userInput: var OptParser; helpContent: var Table[string, string],
     else:
       result = showError("Uknown command '" & key & "'")
       discard updateHistory("help " & key, db, result)
+
+proc setMainHelp*(helpContent: var Table[string, string]) =
+  ## Set the content of the main help screen
+  helpContent["help"] = "         Available commands are: "
+  for key in helpContent.keys:
+    helpContent["help"].add(key & ", ")
+  helpContent["help"].removeSuffix(", ")
+  helpContent["help"].add("""
+
+
+        To see more information about the command, type help [command], for
+        example: help cd.
+  """)
