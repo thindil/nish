@@ -10,11 +10,14 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    container: ghcr.io/thindil/nim:latest
-
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
+    - name: Setup Nim
+      uses: jiro4989/setup-nim-action@v1
+      with:
+        nim-version: '1.6.2'
 
     - name: Debug build
       run: nim debug
