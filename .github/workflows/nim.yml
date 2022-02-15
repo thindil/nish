@@ -14,6 +14,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Cache nimble
+      id: cache-nimble
+      uses: actions/cache@v2
+      with:
+        path: ~/.nimble
+        key: ${{ runner.os }}-nimble
+
     - name: Setup Nim
       uses: jiro4989/setup-nim-action@v1
       with:
