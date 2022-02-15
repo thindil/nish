@@ -247,7 +247,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         returnCode = showHelp(arguments, helpContent, db)
       # Change current directory
       of "cd":
-        returnCode = cdCommand(userInput, aliases, db)
+        returnCode = cdCommand(arguments, aliases, db)
         historyIndex = historyLength(db)
       # Set the environment variable
       of "set":

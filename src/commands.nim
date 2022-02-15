@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, parseopt, tables]
+import std/[db_sqlite, os, tables]
 import aliases, history, output, variables
 
 proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
@@ -43,18 +43,17 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
   except OSError:
     return showError()
 
-proc cdCommand*(userInput: var OptParser; aliases: var OrderedTable[string,
+proc cdCommand*(newDirectory: string; aliases: var OrderedTable[string,
     int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
         IOError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect, WriteDbEffect].} =
   ## Build-in command to enter the selected by the user directory
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if newDirectory.len() == 0:
     result = changeDirectory("~", aliases, db)
     discard updateHistory("cd ~", db, result)
   else:
-    result = changeDirectory(userInput.key, aliases, db)
-    discard updateHistory("cd " & userInput.key, db, result)
+    result = changeDirectory(newDirectory, aliases, db)
+    discard updateHistory("cd " & newDirectory, db, result)
 
 func initCommands*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
     raises: [], tags: [].} =
