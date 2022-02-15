@@ -43,7 +43,9 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
               " commands, type `" & Command & "`.")
 
 proc showHelp*(topic: string; helpContent: var Table[string, string],
-    db: DbConn): int =
+    db: DbConn): int {.gcsafe, sideEffect, raises: [IOError, OSError,
+        ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
+        WriteDbEffect].} =
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
   result = QuitSuccess
