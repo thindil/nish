@@ -244,7 +244,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         quitShell(returnCode, db)
       # Show help screen
       of "help":
-        returnCode = showHelp(userInput, helpContent, db)
+        returnCode = showHelp(arguments, helpContent, db)
       # Change current directory
       of "cd":
         returnCode = cdCommand(userInput, aliases, db)

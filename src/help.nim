@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, parseopt, strutils, tables]
+import std/[db_sqlite, strutils, tables]
 import history, options, output
 
 func updateHelp*(helpContent: var Table[string, string], db: DbConn) {.gcsafe,
@@ -42,29 +42,30 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
 
-proc showHelp*(userInput: var OptParser; helpContent: var Table[string, string],
+proc showHelp*(topic: string; helpContent: var Table[string, string],
     db: DbConn): int =
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
   result = QuitSuccess
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if topic.len == 0:
     showOutput(helpContent["help"])
     discard updateHistory("help", db)
   else:
     let
-      args = join(userInput.remainingArgs(), " ")
-      key = userInput.key & (if args.len() > 0: " " & args else: "")
+      tokens = split(topic)
+      args = join(tokens[1 .. ^1], " ")
+      command = tokens[0]
+      key = command & (if args.len() > 0: " " & args else: "")
     if helpContent.hasKey(key):
       showOutput(helpContent[key])
       discard updateHistory("help " & key, db)
-    elif helpContent.hasKey(userInput.key):
-      if key == userInput.key:
-        showOutput(helpContent[userInput.key])
-        discard updateHistory("help " & userInput.key, db)
+    elif helpContent.hasKey(command):
+      if key == command:
+        showOutput(helpContent[command])
+        discard updateHistory("help " & command, db)
       else:
-        result = showUnknownHelp(args, userInput.key, (if userInput.key ==
-            "alias": "aliases" else: userInput.key))
+        result = showUnknownHelp(args, command, (if command ==
+            "alias": "aliases" else: command))
         discard updateHistory("help " & key, db, result)
     else:
       result = showError("Uknown command '" & key & "'")
