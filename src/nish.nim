@@ -225,6 +225,17 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       # No command name, back to beginning
       if commandName == "":
         continue
+      # Set the command arguments
+      var arguments: string = ""
+      userInput.next()
+      while userInput.kind != cmdEnd:
+        if userInput.key == "&&":
+          userInput.next()
+          break
+        arguments.add(userInput.key)
+        arguments.add(" ")
+        userInput.next()
+      arguments = strip(arguments)
       # Parse commands
       case commandName
       # Quit from shell
