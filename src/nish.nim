@@ -272,7 +272,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         if arguments.len() == 0:
           historyIndex = helpVariables(db)
         # Show the list of declared environment variables
-        elif arguments == "list":
+        elif arguments.startsWith("list"):
           listVariables(arguments, historyIndex, db)
         # Delete the selected environment variable
         elif userInput.key == "delete":
