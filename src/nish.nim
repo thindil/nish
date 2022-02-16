@@ -232,7 +232,15 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         if userInput.key == "&&":
           userInput.next()
           break
-        arguments.add(userInput.key)
+        case userInput.kind
+        of cmdLongOption:
+          arguments.add("--" & userInput.key & "=" & userInput.val)
+        of cmdShortOption:
+          arguments.add("-" & userInput.key)
+        of cmdArgument:
+          arguments.add(userInput.key)
+        of cmdEnd:
+          discard
         arguments.add(" ")
         userInput.next()
       arguments = strip(arguments)
