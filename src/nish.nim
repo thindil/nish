@@ -251,7 +251,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         historyIndex = historyLength(db)
       # Set the environment variable
       of "set":
-        returnCode = setCommand(userInput, db)
+        returnCode = setCommand(arguments, db)
         historyIndex = historyLength(db)
       # Delete environment variable
       of "unset":
