@@ -145,15 +145,14 @@ proc listVariables*(arguments: string; historyIndex: var int;
   ## declared variables then
   showOutput("Declared environent variables are:")
   showOutput("ID Name Value Description")
-  if arguments.len() == 0:
-    historyIndex = updateHistory("variable list", db)
+  if arguments == "list":
     for row in db.fastRows(sql(buildQuery(getCurrentDir(),
         "id, name, value, description"))):
       showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3])
-  elif arguments == "all":
-    historyIndex = updateHistory("variable list all", db)
+  elif arguments == "list all":
     for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
       showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3])
+  historyIndex = updateHistory("variable " & arguments, db)
 
 proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, OSError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
