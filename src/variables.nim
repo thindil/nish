@@ -103,13 +103,12 @@ proc initVariables*(helpContent: var Table[string, string];
         """
   setVariables(getCurrentDir(), db)
 
-proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
+proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
     sideEffect, raises: [DbError, ValueError, IOError], tags: [ReadIOEffect,
     ReadDbEffect, WriteIOEffect, WriteDbEffect].} =
   ## Build-in command to set the selected environment variable
-  userInput.next()
-  if userInput.kind != cmdEnd:
-    let varValues = userInput.key.split("=")
+  if arguments.len() > 0:
+    let varValues = arguments.split("=")
     if varValues.len() > 1:
       try:
         putEnv(varValues[0], varValues[1])
@@ -122,7 +121,7 @@ proc setCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
       result = showError("You have to enter the name of the variable and its value.")
   else:
     result = showError("You have to enter the name of the variable and its value.")
-  discard updateHistory("set " & userInput.key, db, result)
+  discard updateHistory("set " & arguments, db, result)
 
 proc unsetCommand*(userInput: var OptParser; db: DbConn): int {.gcsafe,
     sideEffect, raises: [DbError, ValueError, IOError], tags: [ReadIOEffect,
