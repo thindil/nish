@@ -288,18 +288,18 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           historyIndex = updateHistory("variable " & arguments, db, returnCode)
       # Various commands related to the shell's commands' history
       of "history":
-        userInput.next()
         # No subcommand entered, show available options
         if arguments.len() == 0:
           historyIndex = helpHistory(db)
         # Clear the shell's commands' history
-        elif userInput.key == "clear":
+        elif arguments == "clear":
           historyIndex = clearHistory(db)
-        elif userInput.key == "show":
+        # Show the last executed shell's commands
+        elif arguments == "show":
           historyIndex = showHistory(db)
         else:
-          returnCode = showError("Unknown subcommand `" & userInput.key &
-            "` for `history`. To see all available aliases commands, type `history`.")
+          returnCode = showError("Unknown subcommand `" & arguments &
+            "` for `history`. To see all available history commands, type `history`.")
       # Various commands related to the shell's options
       of "options":
         userInput.next()
