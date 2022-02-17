@@ -277,7 +277,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif arguments.startsWith("delete"):
           returnCode = deleteVariable(arguments, historyIndex, db)
         # Add a new variable
-        elif arguments.startsWith("add"):
+        elif arguments == "add":
           returnCode = addVariable(historyIndex, db)
         # Edit an existing variable
         elif arguments.startsWith("edit"):
