@@ -278,11 +278,11 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif arguments.startsWith("delete"):
           returnCode = deleteVariable(arguments, historyIndex, db)
         # Add a new variable
-        elif userInput.key == "add":
+        elif arguments.startsWith("add"):
           returnCode = addVariable(historyIndex, db)
         # Edit an existing variable
-        elif userInput.key == "edit":
-          returnCode = editVariable(userInput, historyIndex, db)
+        elif arguments.startsWith("edit"):
+          returnCode = editVariable(arguments, historyIndex, db)
         else:
           returnCode = showError("Unknown subcommand `" & userInput.key &
             "` for `variable`. To see all available variables commands, type `variable`.")

@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, parseopt, strutils, tables, terminal]
+import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, history, input, output
 
 proc buildQuery(directory, fields: string): string {.gcsafe, sideEffect,
@@ -222,18 +222,19 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   setVariables(getCurrentDir(), db, getCurrentDir())
   return QuitSuccess
 
-proc editVariable*(userInput: var OptParser; historyIndex: var int;
+proc editVariable*(arguments: string; historyIndex: var int;
     db: DbConn): int {.gcsafe, sideEffect, raises: [EOFError, OSError, IOError,
     ValueError], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
     WriteDbEffect].} =
   ## Edit the selected variable
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if arguments.len() < 6:
     return showError("Enter the ID of the variable to edit.")
-  let row = db.getRow(sql"SELECT name, path, value, description FROM variables WHERE id=?",
-    userInput.key)
+  let
+    varId = arguments[5 .. ^1]
+    row = db.getRow(sql"SELECT name, path, value, description FROM variables WHERE id=?",
+    varId)
   if row[0] == "":
-    return showError("The variable with the ID: " & userInput.key &
+    return showError("The variable with the ID: " & varId &
       " doesn't exists.")
   showOutput("You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showOutput("The name of the variable. Current value: '" & row[0] & "'")
@@ -272,7 +273,7 @@ proc editVariable*(userInput: var OptParser; historyIndex: var int;
     value = row[2]
   # Save the variable to the database
   if db.execAffectedRows(sql"UPDATE variables SET name=?, path=?, recursive=?, value=?, description=? where id=?",
-      name, path, recursive, value, description, userInput.key) != 1:
+      name, path, recursive, value, description, varId) != 1:
     return showError("Can't edit the variable.")
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory("variable edit", db)
