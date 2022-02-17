@@ -267,7 +267,6 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         historyIndex = historyLength(db)
       # Various commands related to environment variables
       of "variable":
-        userInput.next()
         # No subcommand entered, show available options
         if arguments.len() == 0:
           historyIndex = helpVariables(db)
@@ -284,9 +283,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif arguments.startsWith("edit"):
           returnCode = editVariable(arguments, historyIndex, db)
         else:
-          returnCode = showError("Unknown subcommand `" & userInput.key &
+          returnCode = showError("Unknown subcommand `" & arguments &
             "` for `variable`. To see all available variables commands, type `variable`.")
-          historyIndex = updateHistory("alias " & userInput.key, db, returnCode)
+          historyIndex = updateHistory("variable " & arguments, db, returnCode)
       # Various commands related to the shell's commands' history
       of "history":
         userInput.next()
