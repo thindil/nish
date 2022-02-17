@@ -165,23 +165,23 @@ proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
 """)
   return updateHistory("variable", db)
 
-proc deleteVariable*(userInput: var OptParser; historyIndex: var int;
+proc deleteVariable*(arguments: string; historyIndex: var int;
     db: DbConn): int {.gcsafe, sideEffect, raises: [IOError, ValueError,
     OSError], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
     WriteDbEffect].} =
   ## Delete the selected variable from the shell's database
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if arguments.len() < 8:
     historyIndex = updateHistory("variable delete", db, QuitFailure)
     return showError("Enter the Id of the variable to delete.")
+  let varName = arguments[7 .. ^1]
   if db.execAffectedRows(sql"DELETE FROM variables WHERE id=?",
-      userInput.key) == 0:
+      varName) == 0:
     historyIndex = updateHistory("variable delete", db, QuitFailure)
-    return showError("The variable with the Id: " & userInput.key &
-      " doesn't exists.")
+    return showError("The variable with the Id: " & varName &
+      " doesn't exist.")
   historyIndex = updateHistory("variable delete", db)
   setVariables(getCurrentDir(), db, getCurrentDir())
-  showOutput("Deleted the variable with Id: " & userInput.key)
+  showOutput("Deleted the variable with Id: " & varName)
   return QuitSuccess
 
 proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
