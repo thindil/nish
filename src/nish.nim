@@ -304,11 +304,11 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       of "options":
         userInput.next()
         # No subcommand entered, show available options
-        if userInput.kind == cmdEnd:
+        if arguments.len() == 0:
           helpOptions(db)
           historyIndex = updateHistory("options", db)
         # Show the list of available options
-        elif userInput.key == "show":
+        elif arguments == "show":
           showOptions(db)
           historyIndex = updateHistory("options show", db)
         elif userInput.key == "set":
