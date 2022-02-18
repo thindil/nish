@@ -74,17 +74,17 @@ proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
         for example: help options show.
 """)
 
-proc setOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
+proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
     sideEffect, locks: 0, raises: [DbError, IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
   ## Set the selected option's value
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if arguments.len() < 5:
     return showError("Please enter name of the option and its new value.")
-  let name = userInput.key
-  var value = join(userInput.remainingArgs(), " ")
-  if value.len() == 0:
+  let separatorIndex = arguments.find(' ', 4)
+  if separatorIndex == -1:
     return showError("Please enter a new value for the selected option.")
+  let name = arguments[4 .. (separatorIndex - 1)]
+  var value = arguments[(separatorIndex + 1) .. ^1]
   case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", name)
   of "integer":
     try:

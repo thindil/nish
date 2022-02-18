@@ -311,8 +311,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif arguments == "show":
           showOptions(db)
           historyIndex = updateHistory("options show", db)
-        elif userInput.key == "set":
-          returnCode = setOptions(userInput, db)
+        elif arguments.startsWith("set"):
+          returnCode = setOptions(arguments, db)
           historyIndex = updateHistory("options set", db, returnCode)
           updateHelp(helpContent, db)
         elif userInput.key == "reset":
