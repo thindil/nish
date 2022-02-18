@@ -327,11 +327,11 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       of "alias":
         userInput.next()
         # No subcommand entered, show available options
-        if userInput.kind == cmdEnd:
+        if arguments.len() == 0:
           historyIndex = helpAliases(db)
         # Show the list of available aliases
-        elif userInput.key == "list":
-          listAliases(userInput, historyIndex, aliases, db)
+        elif arguments.startsWith("list"):
+          listAliases(arguments, historyIndex, aliases, db)
         # Delete the selected alias
         elif userInput.key == "delete":
           returnCode = deleteAlias(userInput, historyIndex, aliases, db)

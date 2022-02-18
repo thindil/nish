@@ -45,7 +45,7 @@ func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
   for dbResult in db.fastRows(sql(dbQuery)):
     aliases[dbResult[1]] = parseInt(dbResult[0])
 
-proc listAliases*(userInput: var OptParser; historyIndex: var int;
+proc listAliases*(arguments: string; historyIndex: var int;
     aliases: OrderedTable[string, int]; db: DbConn) {.gcsafe, sideEffect,
         locks: 0, raises: [IOError, OSError, ValueError], tags: [ReadIOEffect,
         WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
@@ -53,14 +53,13 @@ proc listAliases*(userInput: var OptParser; historyIndex: var int;
   ## declared aliases then
   showOutput("Available aliases are:")
   showOutput("ID Name Description")
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if arguments == "list":
     historyIndex = updateHistory("alias list", db)
     for alias in aliases.values:
       let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
         alias)
       showOutput(row[0] & " " & row[1] & " " & row[2])
-  elif userInput.key == "all":
+  elif arguments == "list all":
     historyIndex = updateHistory("alias list all", db)
     for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
       showOutput(row[0] & " " & row[1] & " " & row[2])
