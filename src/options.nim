@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, parseopt, strutils, tables]
+import std/[db_sqlite, strutils, tables]
 import output
 
 func getOption*(name: string; db: DbConn;
@@ -108,24 +108,24 @@ proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
   showOutput("Value for option '" & name & "' was set to '" & value & "'");
   return QuitSuccess
 
-proc resetOptions*(userInput: var OptParser; db: DbConn): int {.gcsafe,
+proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
     sideEffect, locks: 0, raises: [DbError, IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if arguments.len() < 7:
     return showError("Please enter name of the option to reset or 'all' to reset all options.")
-  if userInput.key == "all":
+  let name = arguments[6 .. ^1]
+  if name == "all":
     db.exec(sql"UPDATE options SET value=defaultvalue")
     showOutput("All shell's options are reseted to their default values.")
   else:
     if db.getValue(sql"SELECT value FROM options WHERE option=?",
-        userInput.key) == "":
-      return showError("Shell's option with name '" & userInput.key &
+        name) == "":
+      return showError("Shell's option with name '" & name &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
-    db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", userInput.key)
-    showOutput("The shell's option '" & userInput.key & "' reseted to its default value.")
+    db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", name)
+    showOutput("The shell's option '" & name & "' reseted to its default value.")
   return QuitSuccess
 
 func initOptions*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
