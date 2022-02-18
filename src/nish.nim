@@ -302,7 +302,6 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             "` for `history`. To see all available history commands, type `history`.")
       # Various commands related to the shell's options
       of "options":
-        userInput.next()
         # No subcommand entered, show available options
         if arguments.len() == 0:
           helpOptions(db)
@@ -320,9 +319,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           historyIndex = updateHistory("options reset", db, returnCode)
           updateHelp(helpContent, db)
         else:
-          returnCode = showError("Unknown subcommand `" & userInput.key &
-            "` for `options`. To see all available aliases commands, type `options`.")
-          historyIndex = updateHistory("options " & userInput.key, db, returnCode)
+          returnCode = showError("Unknown subcommand `" & arguments &
+            "` for `options`. To see all available options commands, type `options`.")
+          historyIndex = updateHistory("options " & arguments, db, returnCode)
       # Various commands related to the aliases (like show list of available
       # aliases, add, delete, edit them)
       of "alias":
