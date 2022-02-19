@@ -336,8 +336,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif arguments.startsWith("delete"):
           returnCode = deleteAlias(arguments, historyIndex, aliases, db)
         # Show the selected alias
-        elif userInput.key == "show":
-          returnCode = showAlias(userInput, historyIndex, aliases, db)
+        elif arguments.startsWith("show"):
+          returnCode = showAlias(arguments, historyIndex, aliases, db)
         # Add a new alias
         elif userInput.key == "add":
           returnCode = addAlias(historyIndex, aliases, db)
