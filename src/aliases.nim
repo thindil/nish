@@ -220,7 +220,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   aliases.setAliases(getCurrentDir(), db)
   return QuitSuccess
 
-proc execAlias*(userInput: var OptParser; commandName: string;
+proc execAlias*(arguments: string; commandName: string;
     aliases: var OrderedTable[string, int]; db: DbConn): int{.gcsafe,
         sideEffect, raises: [DbError, ValueError, IOError, OSError], tags: [
         ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect, ExecIOEffect,
@@ -243,7 +243,7 @@ proc execAlias*(userInput: var OptParser; commandName: string;
 
   let
     currentDirectory = getCurrentDir()
-    commandArguments: seq[string] = userInput.remainingArgs()
+    commandArguments: seq[string] = initOptParser(arguments).remainingArgs()
   for command in splitLines(db.getValue(
       sql"SELECT commands FROM aliases WHERE id=?",
       aliases[commandName])):
