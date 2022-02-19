@@ -64,23 +64,22 @@ proc listAliases*(arguments: string; historyIndex: var int;
     for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
       showOutput(row[0] & " " & row[1] & " " & row[2])
 
-proc deleteAlias*(userInput: var OptParser; historyIndex: var int;
+proc deleteAlias*(arguments: string; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## Delete the selected alias from the shell's database
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if arguments.len() < 8 :
     historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("Enter the Id of the alias to delete.")
-  if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?",
-      userInput.key) == 0:
+  let id = arguments[7 .. ^1]
+  if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?", id) == 0:
     historyIndex = updateHistory("alias delete", db, QuitFailure)
-    return showError("The alias with the Id: " & userInput.key &
+    return showError("The alias with the Id: " & id &
       " doesn't exists.")
   historyIndex = updateHistory("alias delete", db)
   aliases.setAliases(getCurrentDir(), db)
-  showOutput("Deleted the alias with Id: " & userInput.key)
+  showOutput("Deleted the alias with Id: " & id)
   return QuitSuccess
 
 proc showAlias*(userInput: var OptParser; historyIndex: var int;
