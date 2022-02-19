@@ -352,7 +352,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         let commandToExecute = commandName & " " & arguments
         # Check if command is an alias, if yes, execute it
         if commandName in aliases:
-          returnCode = execAlias(userInput, commandName, aliases, db)
+          returnCode = execAlias(arguments, commandName, aliases, db)
           historyIndex = updateHistory(commandToExecute, db, returnCode)
           continue
         # Execute external command
