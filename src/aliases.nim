@@ -69,7 +69,7 @@ proc deleteAlias*(arguments: string; historyIndex: var int;
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## Delete the selected alias from the shell's database
-  if arguments.len() < 8 :
+  if arguments.len() < 8:
     historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("Enter the Id of the alias to delete.")
   let id = arguments[7 .. ^1]
@@ -82,24 +82,25 @@ proc deleteAlias*(arguments: string; historyIndex: var int;
   showOutput("Deleted the alias with Id: " & id)
   return QuitSuccess
 
-proc showAlias*(userInput: var OptParser; historyIndex: var int;
+proc showAlias*(arguments: string; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## Show details about the selected alias, its ID, name, description and
   ## commands which will be executed
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if arguments.len() < 6:
     historyIndex = updateHistory("alias show", db, QuitFailure)
     return showError("Enter the ID of the alias to show.")
-  let row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
-      userInput.key)
+  let
+    id = arguments[5 .. ^1]
+    row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
+      id)
   if row[0] == "":
     historyIndex = updateHistory("alias show", db, QuitFailure)
-    return showError("The alias with the ID: " & userInput.key &
+    return showError("The alias with the ID: " & id &
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
-  showOutput("Id: " & userInput.key)
+  showOutput("Id: " & id)
   showOutput("Name: " & row[0])
   showOutput("Description: " & row[2])
   if row[4] == "1":
