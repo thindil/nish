@@ -161,19 +161,19 @@ proc addAlias*(historyIndex: var int;
   aliases.setAliases(getCurrentDir(), db)
   return QuitSuccess
 
-proc editAlias*(userInput: var OptParser; historyIndex: var int;
+proc editAlias*(arguments: string; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
   ## Edit the selected alias
-  userInput.next()
-  if userInput.kind == cmdEnd:
+  if arguments.len() < 6:
     return showError("Enter the ID of the alias to edit.")
-  let row = db.getRow(sql"SELECT name, path, commands, description FROM aliases WHERE id=?",
-    userInput.key)
+  let
+    id = arguments[5 .. ^1]
+    row = db.getRow(sql"SELECT name, path, commands, description FROM aliases WHERE id=?",
+    id)
   if row[0] == "":
-    return showError("The alias with the ID: " & userInput.key &
-      " doesn't exists.")
+    return showError("The alias with the ID: " & id & " doesn't exists.")
   showOutput("You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showOutput("The name of the alias. Will be used to execute it. Current value: '" &
       row[0] & "'")
@@ -213,7 +213,7 @@ proc editAlias*(userInput: var OptParser; historyIndex: var int;
     commands = row[2]
   # Save the alias to the database
   if db.execAffectedRows(sql"UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?",
-      name, path, recursive, commands, description, userInput.key) != 1:
+      name, path, recursive, commands, description, id) != 1:
     return showError("Can't edit the alias.")
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory("alias edit", db)
