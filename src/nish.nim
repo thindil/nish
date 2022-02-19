@@ -101,7 +101,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
 
   var
     userInput: OptParser
-    commandName: string = ""
+    commandName, inputString: string = ""
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: int
@@ -167,14 +167,14 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   # Start the shell
   while true:
     try:
-      # Run only one command, don't show prompt and wait for the user input
-      if not oneTimeCommand:
+      # Run only one command, don't show prompt and wait for the user input,
+      # if there is still some data in last entered user input, also don't
+      # ask for more.
+      if not oneTimeCommand and inputString.len() == 0:
         # Write prompt
         showPrompt(not oneTimeCommand, commandName, returnCode)
         # Get the user input and parse it
-        var
-          inputString = ""
-          inputChar = '\0'
+        var inputChar = '\0'
         # Read the user input until not meet new line character or the input
         # reach the maximum length
         while inputChar.ord() != 13 and inputString.len() < maxInputLength:
@@ -214,9 +214,9 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
             inputString.add(inputChar)
           inputChar = getch()
         stdout.writeLine("")
-        userInput = initOptParser(inputString)
-        # Reset the return code of the program
-        returnCode = QuitSuccess
+      userInput = initOptParser(inputString)
+      # Reset the return code of the program
+      returnCode = QuitSuccess
       # Go to the first token
       userInput.next()
       # If it looks like an argument, it must be command name
@@ -230,7 +230,6 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       userInput.next()
       while userInput.kind != cmdEnd:
         if userInput.key == "&&":
-          userInput.next()
           break
         case userInput.kind
         of cmdLongOption:
@@ -243,6 +242,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           discard
         arguments.add(" ")
         userInput.next()
+      inputString = join(userInput.remainingArgs(), " ");
       arguments = strip(arguments)
       # Parse commands
       case commandName
