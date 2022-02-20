@@ -298,6 +298,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           historyIndex = showHistory(db)
         else:
           returnCode = showUnknownHelp(arguments, "history", "history")
+          historyIndex = updateHistory("history " & arguments, db, returnCode)
       # Various commands related to the shell's options
       of "options":
         # No subcommand entered, show available options
