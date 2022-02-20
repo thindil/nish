@@ -79,7 +79,7 @@ func initCommands*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
         when also command entered, show the information about the selected
         command.
         """
-  helpContent["command-merge"] = """
+  helpContent["merge commands"] = """
         Usage: command [&& or ||] command ...
 
         Comamnds can be merged to execute each after another. If merged
