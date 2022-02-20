@@ -105,7 +105,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: int
-    oneTimeCommand: bool = false
+    oneTimeCommand, conjCommands: bool = false
     returnCode: int = QuitSuccess
     aliases = initOrderedTable[string, int]()
     dbpath: string = getHomeDir() & ".config/nish/nish.db"
@@ -228,8 +228,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       # Set the command arguments
       var arguments: string = ""
       userInput.next()
+      conjCommands = false
       while userInput.kind != cmdEnd:
         if userInput.key == "&&":
+          conjCommands = true
+          break
+        if userInput.key == "||":
           break
         case userInput.kind
         of cmdLongOption:
@@ -358,9 +362,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     except:
       returnCode = showError()
     finally:
-      # If there is more commands to execute but the last command wasn't
-      # success, reset input, don't execute more commands
-      if inputString.len() > 0 and returnCode != QuitSuccess:
+      # If there is more commands to execute check if the next commands should
+      # be executed. if the last command wasn't success and commands conjuncted
+      # with && or the last command was success and command disjuncted, reset
+      # the input, don't execute more commands.
+      if inputString.len() > 0 and ((returnCode != QuitSuccess and
+          conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
         inputString = ""
       # Run only one command, quit from the shell
       if oneTimeCommand and inputString.len() == 0:
