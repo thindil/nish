@@ -318,8 +318,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
           historyIndex = updateHistory("options reset", db, returnCode)
           updateHelp(helpContent, db)
         else:
-          returnCode = showError("Unknown subcommand `" & arguments &
-            "` for `options`. To see all available options commands, type `options`.")
+          returnCode = showUnknownHelp(arguments, "options", "options")
           historyIndex = updateHistory("options " & arguments, db, returnCode)
       # Various commands related to the aliases (like show list of available
       # aliases, add, delete, edit them)
@@ -343,8 +342,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif arguments.startsWith("edit"):
           returnCode = editAlias(arguments, historyIndex, aliases, db)
         else:
-          returnCode = showError("Unknown subcommand `" & arguments &
-            "` for `alias`. To see all available aliases commands, type `alias`.")
+          returnCode = showUnknownHelp(arguments, "alias", "aliases")
           historyIndex = updateHistory("alias " & arguments, db, returnCode)
       # Execute external command or alias
       else:
