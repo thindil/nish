@@ -358,8 +358,12 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     except:
       returnCode = showError()
     finally:
+      # If there is more commands to execute but the last command wasn't
+      # success, reset input, don't execute more commands
+      if inputString.len() > 0 and returnCode != QuitSuccess:
+        inputString = ""
       # Run only one command, quit from the shell
-      if oneTimeCommand:
+      if oneTimeCommand and inputString.len() == 0:
         quitShell(returnCode, db)
 
 main()
