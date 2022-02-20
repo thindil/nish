@@ -60,7 +60,7 @@ func initCommands*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
   ## Initialize the shell's build-in commands. At this moment only set help
   ## related to the commands
   helpContent["cd"] = """
-        Usage: cd [directory]
+        Usage: cd ?directory?
 
         You must have permissions to enter the directory and directory
         need to exists. If you enter just 'cd' without the name of the
@@ -75,7 +75,15 @@ func initCommands*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
   helpContent["help"] = """
         Usage help ?command?
 
-        If entered only as help, show the list of available commands,
+        If entered only as help, show the list of available help topics,
         when also command entered, show the information about the selected
         command.
+        """
+  helpContent["command-merge"] = """
+        Usage: command [&& or ||] command ...
+
+        Comamnds can be merged to execute each after another. If merged
+        with && then the next command(s) will be executed only when the
+        previous was successfull. If merged with || then the next commands
+        will be executed only when the previous failed.
         """
