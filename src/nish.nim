@@ -283,8 +283,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif arguments.startsWith("edit"):
           returnCode = editVariable(arguments, historyIndex, db)
         else:
-          returnCode = showError("Unknown subcommand `" & arguments &
-            "` for `variable`. To see all available variables commands, type `variable`.")
+          returnCode = showUnknownHelp(arguments, "variable", "variables")
           historyIndex = updateHistory("variable " & arguments, db, returnCode)
       # Various commands related to the shell's commands' history
       of "history":
@@ -298,8 +297,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
         elif arguments == "show":
           historyIndex = showHistory(db)
         else:
-          returnCode = showError("Unknown subcommand `" & arguments &
-            "` for `history`. To see all available history commands, type `history`.")
+          returnCode = showUnknownHelp(arguments, "history", "history")
       # Various commands related to the shell's options
       of "options":
         # No subcommand entered, show available options
