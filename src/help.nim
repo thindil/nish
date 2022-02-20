@@ -75,13 +75,13 @@ proc showHelp*(topic: string; helpContent: var Table[string, string],
 
 proc setMainHelp*(helpContent: var Table[string, string]) =
   ## Set the content of the main help screen
-  helpContent["help"] = "         Available commands are: "
+  helpContent["help"] = "         Available help topics are: "
   for key in helpContent.keys:
     helpContent["help"].add(key & ", ")
   helpContent["help"].removeSuffix(", ")
   helpContent["help"].add("""
 
 
-        To see more information about the command, type help [command], for
-        example: help cd.
+        To see more information about the selected topic, type help [topic],
+        for example: help cd.
   """)
