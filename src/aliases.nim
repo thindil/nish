@@ -148,8 +148,8 @@ proc addAlias*(historyIndex: var int;
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
-  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. For example: 'clear; ls -a'. Commands can't contain a new line character.:")
-  let commands = replace(readInput(), "; ", "\\n")
+  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character.:")
+  let commands = readInput()
   if commands == "exit":
     return showError("Adding a new alias cancelled.")
   # Save the alias to the database
@@ -203,10 +203,9 @@ proc editAlias*(arguments: string; historyIndex: var int;
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
-  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, separate them with ';'. Current value: '" &
-      replace(row[2], "\\n", "; ") &
-      "'. Commands can't contain a new line character.:")
-  var commands = replace(readInput(), "; ", "\\n")
+  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '" &
+      row[2] & "'. Commands can't contain a new line character.:")
+  var commands = readInput()
   if commands == "exit":
     return showError("Editing the alias cancelled.")
   elif commands == "":
