@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/terminal
+import std/[parseopt, strutils, terminal]
 import constants
 
 proc readInput*(maxLength: int = maxInputLength): string =
@@ -55,3 +55,25 @@ proc readInput*(maxLength: int = maxInputLength): string =
     inputChar = getch()
   stdout.writeLine("")
 
+proc getArguments*(userInput: var OptParser; conjCommands: var bool): string =
+  ## Set the command arguments from the user input
+  userInput.next()
+  conjCommands = false
+  while userInput.kind != cmdEnd:
+    if userInput.key == "&&":
+      conjCommands = true
+      break
+    if userInput.key == "||":
+      break
+    case userInput.kind
+    of cmdLongOption:
+      result.add("--" & userInput.key & "=" & userInput.val)
+    of cmdShortOption:
+      result.add("-" & userInput.key)
+    of cmdArgument:
+      result.add(userInput.key)
+    of cmdEnd:
+      discard
+    result.add(" ")
+    userInput.next()
+  result = strip(result)
