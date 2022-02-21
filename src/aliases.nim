@@ -243,30 +243,34 @@ proc execAlias*(arguments: string; commandName: string;
   let
     currentDirectory = getCurrentDir()
     commandArguments: seq[string] = initOptParser(arguments).remainingArgs()
-  for command in splitLines(db.getValue(
-      sql"SELECT commands FROM aliases WHERE id=?",
-      aliases[commandName])):
-    # Convert all $number in command to arguments taken from the user
-    # input
-    var
-      argumentPosition: int = command.find('$')
-      newCommand: string = command
-    while argumentPosition > -1:
-      var argumentNumber: int = parseInt(command[argumentPosition + 1] & "")
-      # Not enough argument entered by the user, quit with error
-      if argumentNumber > commandArguments.len():
-        return showError("Not enough arguments entered")
-      newCommand = command.replace(command[
-          argumentPosition..argumentPosition + 1], commandArguments[
-              argumentNumber - 1])
-      argumentPosition = newCommand.find('$')
+  var inputString: string = db.getValue(sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])
+  # Convert all $number in commands to arguments taken from the user
+  # input
+  var
+    argumentPosition: int = inputString.find('$')
+  while argumentPosition > -1:
+    var argumentNumber: int = parseInt(inputString[argumentPosition + 1] & "")
+    # Not enough argument entered by the user, quit with error
+    if argumentNumber > commandArguments.len():
+      return showError("Not enough arguments entered")
+    inputString = inputString.replace(inputString[
+        argumentPosition..argumentPosition + 1], commandArguments[
+            argumentNumber - 1])
+    argumentPosition = inputString.find('$')
+  while inputString.len() > 0:
+    var 
+      conjCommands: bool
+      userInput = initOptParser(inputString)
+    let
+      command: string = getArguments(userInput, conjCommands)
+    inputString = join(userInput.remainingArgs(), " ")
+    echo command
     # Threat cd command specially, it should just change the current
     # directory for the alias
-    if newCommand[0..2] == "cd ":
-      if changeDirectory(newCommand[3..^1], aliases, db) != QuitSuccess:
+    if command[0..2] == "cd ":
+      if changeDirectory(command[3..^1], aliases, db) != QuitSuccess:
         return QuitFailure
-      continue
-    if execCmd(newCommand) != QuitSuccess:
+    if execCmd(command) != QuitSuccess:
       return QuitFailure
   return changeDirectory(currentDirectory, aliases, db)
 
