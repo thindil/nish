@@ -56,7 +56,8 @@ proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
     inputChar = getch()
   stdout.writeLine("")
 
-proc getArguments*(userInput: var OptParser; conjCommands: var bool): string =
+func getArguments*(userInput: var OptParser;
+    conjCommands: var bool): string {.gcsafe, raises: [], tags: [].} =
   ## Set the command arguments from the user input
   userInput.next()
   conjCommands = false
