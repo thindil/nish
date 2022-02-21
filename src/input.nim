@@ -69,7 +69,10 @@ func getArguments*(userInput: var OptParser;
       break
     case userInput.kind
     of cmdLongOption:
-      result.add("--" & userInput.key & "=" & userInput.val)
+      if userInput.val.len() > 0:
+        result.add("--" & userInput.key & "=" & userInput.val)
+      else:
+        result.add("--" & userInput.key)
     of cmdShortOption:
       result.add("-" & userInput.key)
     of cmdArgument:
