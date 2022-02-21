@@ -24,7 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases, commands, constants, help, history, options, output, variables
+import aliases, commands, constants, help, history, input, options, output,
+  variables
 
 proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
@@ -226,28 +227,8 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
       if commandName == "":
         continue
       # Set the command arguments
-      var arguments: string = ""
-      userInput.next()
-      conjCommands = false
-      while userInput.kind != cmdEnd:
-        if userInput.key == "&&":
-          conjCommands = true
-          break
-        if userInput.key == "||":
-          break
-        case userInput.kind
-        of cmdLongOption:
-          arguments.add("--" & userInput.key & "=" & userInput.val)
-        of cmdShortOption:
-          arguments.add("-" & userInput.key)
-        of cmdArgument:
-          arguments.add(userInput.key)
-        of cmdEnd:
-          discard
-        arguments.add(" ")
-        userInput.next()
+      let arguments: string = getArguments(userInput, conjCommands)
       inputString = join(userInput.remainingArgs(), " ");
-      arguments = strip(arguments)
       # Parse commands
       case commandName
       # Quit from shell
