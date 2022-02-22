@@ -13,4 +13,5 @@ task debug, "builds the project in debug mode":
 task release, "builds the project in release mode":
   switch("define", "release")
   switch("passc", "-flto")
+  switch("passl", "-s")
   setCommand("c", "src" & DirSep & "nish.nim")
