@@ -243,7 +243,8 @@ proc execAlias*(arguments: string; commandName: string;
   let
     currentDirectory = getCurrentDir()
     commandArguments: seq[string] = initOptParser(arguments).remainingArgs()
-  var inputString: string = db.getValue(sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])
+  var inputString: string = db.getValue(
+      sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])
   # Convert all $number in commands to arguments taken from the user
   # input
   var
@@ -258,7 +259,7 @@ proc execAlias*(arguments: string; commandName: string;
             argumentNumber - 1])
     argumentPosition = inputString.find('$')
   while inputString.len() > 0:
-    var 
+    var
       conjCommands: bool
       userInput = initOptParser(inputString)
     let
@@ -267,10 +268,10 @@ proc execAlias*(arguments: string; commandName: string;
     # Threat cd command specially, it should just change the current
     # directory for the alias
     if command[0..2] == "cd ":
-      if changeDirectory(command[3..^1], aliases, db) != QuitSuccess:
+      if changeDirectory(command[3..^1], aliases, db) != QuitSuccess and conjCommands:
         return QuitFailure
       continue
-    if execCmd(command) != QuitSuccess:
+    if execCmd(command) != QuitSuccess and conjCommands:
       return QuitFailure
   return changeDirectory(currentDirectory, aliases, db)
 
