@@ -136,7 +136,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     of cmdArgument:
       if oneTimeCommand:
         # Set the command to execute in shell
-        userInput = initOptParser(key)
+        inputString = key
       else:
         # Set the path to the shell database
         dbpath = key
