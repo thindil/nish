@@ -264,12 +264,12 @@ proc execAlias*(arguments: string; commandName: string;
     let
       command: string = getArguments(userInput, conjCommands)
     inputString = join(userInput.remainingArgs(), " ")
-    echo command
     # Threat cd command specially, it should just change the current
     # directory for the alias
     if command[0..2] == "cd ":
       if changeDirectory(command[3..^1], aliases, db) != QuitSuccess:
         return QuitFailure
+      continue
     if execCmd(command) != QuitSuccess:
       return QuitFailure
   return changeDirectory(currentDirectory, aliases, db)
