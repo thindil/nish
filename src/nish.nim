@@ -109,7 +109,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     oneTimeCommand, conjCommands: bool = false
     returnCode: int = QuitSuccess
     aliases = initOrderedTable[string, int]()
-    dbpath: string = getHomeDir() & ".config/nish/nish.db"
+    dbpath: string = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, string]()
 
   # Check the command line parameters entered by the user. Available options
