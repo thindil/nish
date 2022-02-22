@@ -74,13 +74,15 @@ The definition of the local alias can look that:
     Name: listdocs
     Path: /home/user
     Recursive: 0
-    Commands: cd docs
-              ls -lh
+    Commands: cd docs && ls -lh
     Description: Enter docs directory and list all files
 
 The alias will be executed when the user enters `listdocs` in the shell in the
 home directory. It doesn't work in any of its subdirectory. It enters `docs`
-directory and then runs the command `ls -lh`.
+directory and then runs the command `ls -lh`. If the next command should be
+executed only when the previous command was successful, use `&&` to merge them.
+If the next command should be executed only when the previous failed, use `||`
+to merge them.
 
 You can also pass arguments to the commands of the alias. The substitutes for
 arguments are start with `$` and have numbers from 1 to 9. Example: `$1`, `$5`.
@@ -106,7 +108,7 @@ The shell sorts the commands' history not only by most recently used but also by
 most frequently used. Additionally, there are available a few commands to
 manipulate the shell's commands' history like show history or clear it. It is
 also possible to set the amount of commands to store in the shell's history
-or do the shell should store also invalid commands or not.
+or the shell should store also invalid commands or not.
 
 #### Advanced shell's configuration
 
