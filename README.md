@@ -102,6 +102,20 @@ runs command `fossil open fossil/[reponame].fossil --workdir [reponame]`. For
 example, entering the shell's command: `fossopen myrepo` will execute command:
 `fossil open fossil/myrepo.fossil --workdir myrepo`
 
+There is also special argument `$0` which mean all remaining arguments entered
+by the user. The definition of alias which uses that argument can look that:
+
+    ID: 4
+    Name: foss
+    Path: /
+    Recursive: 1
+    Commands: fossil $0
+    Description: Alias for command fossil.
+
+The alias will be executed when the user enters `foss` or `foss [arguments]` in
+the shell. For example, entering the shell's command: `foss help` will execute
+command: `fossil help`
+
 #### Advanced shell's commands' history
 
 The shell sorts the commands' history not only by most recently used but also by
