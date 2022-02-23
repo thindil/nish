@@ -1,11 +1,15 @@
 ### General information
 
 Nish is an experimental (read: full of bugs and lack of a documentation)
-multiplatform command-line shell. At this moment everything is under
-organization, thus it is a subject to change in the future.  If you read this
-file on GitHub: **please don't send pull requests here**. All will be
-automatically closed. Any code propositions should go to the
+multiplatform command-line shell. If you read this file on GitHub:
+**please don't send pull requests here**. All will be automatically closed.
+Any code propositions should go to the
 [Fossil](https://www.laeran.pl/repositories/nish) repository.
+
+**IMPORTANT:** This version of the file is related to the future version
+of the shell. It may contain information not present in a released
+version of the program. For that information, please refer to the README.md
+file included into the release.
 
 ### The project's goals
 
