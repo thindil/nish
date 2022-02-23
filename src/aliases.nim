@@ -254,9 +254,13 @@ proc execAlias*(arguments: string; commandName: string;
     # Not enough argument entered by the user, quit with error
     if argumentNumber > commandArguments.len():
       return showError("Not enough arguments entered")
-    inputString = inputString.replace(inputString[
+    elif argumentNumber > 0:
+      inputString = inputString.replace(inputString[
         argumentPosition..argumentPosition + 1], commandArguments[
             argumentNumber - 1])
+    else:
+      inputString = inputString.replace(inputString[
+        argumentPosition..argumentPosition + 1], commandArguments.join(" "))
     argumentPosition = inputString.find('$')
   while inputString.len() > 0:
     var
