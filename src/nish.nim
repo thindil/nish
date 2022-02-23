@@ -41,7 +41,7 @@ proc showProgramVersion() {.gcsafe, locks: 0, sideEffect, raises: [],
                             tags: [].} =
   ## Show the program version
   echo """
-    Nish version 0.1.0
+    Nish version 0.2.0
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
     License: 3-Clause BSD"""
   quit QuitSuccess
