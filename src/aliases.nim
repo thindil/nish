@@ -159,8 +159,8 @@ proc addAlias*(historyIndex: var int;
   var inputChar: char = getch()
   while inputChar notin {'n', 'N', 'y', 'Y'}:
     inputChar = getch()
-  let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
-  stdout.writeLine("")
+  showOutput($inputChar)
+  let recursive = if inputChar in {'n', 'N'}: 0 else: 1
   showOutput("(5/5)The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
   showOutput("Command(s): ", false)
   var commands = ""
