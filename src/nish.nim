@@ -27,10 +27,9 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import aliases, commands, constants, help, history, input, options, output,
   variables
 
-proc showCommandLineHelp() {.gcsafe, locks: 0, sideEffect, raises: [],
-                            tags: [].} =
+func showCommandLineHelp() {.gcsafe, locks: 0, raises: [], tags: [].} =
   ## Show the program arguments help
-  echo """Available arguments are:
+  debugEcho """Available arguments are:
     -c [command]  - Run the selected command in shell and quit
     -db [path]    - Set the shell database to the selected file
     -h, --help    - Show this help and quit
