@@ -157,8 +157,7 @@ proc addAlias*(historyIndex: var int;
   showOutput("(4/5)Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput("Recursive(y/n): ", false)
   var inputChar: char = getch()
-  while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
-      inputChar != 'Y':
+  while inputChar notin {'n', 'N', 'y', 'Y'}:
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
