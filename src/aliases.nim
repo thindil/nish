@@ -171,6 +171,10 @@ proc addAlias*(historyIndex: var int;
       showOutput("Command(s): ", false)
   if commands == "exit":
     return showError("Adding a new alias cancelled.")
+  # Check if alias with the same parameters exists in the database
+  if db.getValue(sql"SELECT id FROM aliases  WHERE name=? AND path=? AND recursive=? AND commands=?",
+      name, path, recursive, commands).len() > 0:
+    return showError("There is an alias with the same name, path and commands in the database.")
   # Save the alias to the database
   if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
       name, path, recursive, commands, description) == -1:
