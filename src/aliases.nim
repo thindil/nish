@@ -129,39 +129,47 @@ proc addAlias*(historyIndex: var int;
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
   showOutput("You can cancel adding a new alias at any time by double press Escape key.")
-  showOutput("The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty:")
+  showOutput("(1/5)The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty:")
   var name = ""
+  showOutput("Name: ", false)
   while name.len() == 0:
     name = readInput(aliasNameLength)
     if name.len() == 0:
       discard showError("Please enter a name for the alias.")
+      showOutput("Name: ", false)
   if name == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
+  showOutput("(2/5)The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
+  showOutput("Description: ", false)
   let description = readInput()
   if description == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty.: ")
+  showOutput("(3/5)The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty.: ")
+  showOutput("Path: ", false)
   var path = ""
   while path.len() == 0:
     path = readInput()
     if path.len() == 0:
       discard showError("Please enter a path for the alias.")
+      showOutput("Path: ", false)
   if path == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+  showOutput("(4/5)Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+  showOutput("Recursive(y/n): ", false)
   var inputChar: char = getch()
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
-  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
+  showOutput("(5/5)The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
+  showOutput("Command(s): ", false)
   var commands = ""
   while commands.len() == 0:
     commands = readInput()
     if commands.len() == 0:
       discard showError("Please enter commands for the alias.")
+      showOutput("Command(s): ", false)
   if commands == "exit":
     return showError("Adding a new alias cancelled.")
   # Save the alias to the database
