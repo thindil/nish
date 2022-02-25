@@ -51,7 +51,8 @@ this moment, available options for aliases are:
   alias. It doesn't need to be unique, but if two aliases in the same directory
   have the same name, then the first one will be executed. The name can contain
   only letters, numbers, and underscores.
-* Path: The main directory in which the alias works.
+* Path: The main directory in which the alias works. It must be an existing
+  directory.
 * Recursive: If set to 1, the alias is available for all subdirectories of the
   path. If set to 0, is available only in the selected directory.
 * Commands: The list of commands which will be executed as alias. The alias can
