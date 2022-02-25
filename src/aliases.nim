@@ -129,13 +129,17 @@ proc addAlias*(historyIndex: var int;
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
   showOutput("You can cancel adding a new alias at any time by double press Escape key.")
-  showOutput("(1/5)The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty:")
+  showOutput("(1/5)The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
   var name = ""
   showOutput("Name: ", false)
   while name.len() == 0:
     name = readInput(aliasNameLength)
     if name.len() == 0:
       discard showError("Please enter a name for the alias.")
+    elif not name.validIdentifier:
+      name = ""
+      discard showError("Please enter a valid name for the alias.")
+    if name.len() == 0:
       showOutput("Name: ", false)
   if name == "exit":
     return showError("Adding a new alias cancelled.")
