@@ -36,10 +36,9 @@ func showCommandLineHelp() {.gcsafe, locks: 0, raises: [], tags: [].} =
     -v, --version - Show the shell version info"""
   quit QuitSuccess
 
-proc showProgramVersion() {.gcsafe, locks: 0, sideEffect, raises: [],
-                            tags: [].} =
+func showProgramVersion() {.gcsafe, locks: 0, raises: [], tags: [].} =
   ## Show the program version
-  echo """
+  debugEcho """
     Nish version 0.2.0
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
     License: 3-Clause BSD"""
