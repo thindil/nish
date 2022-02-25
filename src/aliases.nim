@@ -148,13 +148,17 @@ proc addAlias*(historyIndex: var int;
   let description = readInput()
   if description == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("(3/5)The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty.: ")
+  showOutput("(3/5)The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput("Path: ", false)
   var path = ""
   while path.len() == 0:
     path = readInput()
     if path.len() == 0:
       discard showError("Please enter a path for the alias.")
+    elif not dirExists(path) and path != "exit":
+      path = ""
+      discard showError("Please enter a path to the existing directory")
+    if path.len() == 0:
       showOutput("Path: ", false)
   if path == "exit":
     return showError("Adding a new alias cancelled.")
