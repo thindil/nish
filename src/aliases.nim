@@ -205,7 +205,7 @@ proc addAlias*(historyIndex: var int;
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory("alias add", db)
   aliases.setAliases(getCurrentDir(), db)
-  stdout.styledWriteLine(fgGreen, "The new alias '" & name & "' added.")
+  showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess
 
 proc editAlias*(arguments: string; historyIndex: var int;
