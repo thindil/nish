@@ -62,17 +62,27 @@ proc showOutput*(message: string; newLine: bool = true;
   stdout.flushFile()
 
 proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
-    raises: [IOError, ValueError], tags: [WriteIOEffect].} =
+    raises: [ValueError], tags: [WriteIOEffect].} =
   ## Print the message to standard error and set the shell return
   ## code to error. If message is empty, print the current exception message
   if message == "":
-    let currentException = getCurrentException()
-    stderr.styledWriteLine(fgRed, "Type: " & $currentException.name)
-    stderr.styledWriteLine(fgRed, "Message: " & currentException.msg)
-    let stackTrace = getStackTrace(currentException)
-    if stackTrace.len() > 0:
-      stderr.styledWriteLine(fgRed, stackTrace)
+    let
+      currentException = getCurrentException()
+      stackTrace = getStackTrace(currentException)
+    try:
+      stderr.styledWriteLine(fgRed, "Type: " & $currentException.name)
+      stderr.styledWriteLine(fgRed, "Message: " & currentException.msg)
+      if stackTrace.len() > 0:
+        stderr.styledWriteLine(fgRed, stackTrace)
+    except IOError:
+      echo("Type: " & $currentException.name)
+      echo("Message: " & currentException.msg)
+      if stackTrace.len() > 0:
+        echo(stackTrace)
   else:
-    stderr.styledWriteLine(fgRed, message)
+    try:
+      stderr.styledWriteLine(fgRed, message)
+    except IOError:
+      echo(message)
   result = QuitFailure
 
