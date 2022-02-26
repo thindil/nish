@@ -129,7 +129,10 @@ proc addAlias*(historyIndex: var int;
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
   showOutput("You can cancel adding a new alias at any time by double press Escape key.")
-  showOutput("(1/5)The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
+  showOutput("#####################")
+  showOutput("(1/5) Name")
+  showOutput("#####################")
+  showOutput("The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
   var name = ""
   showOutput("Name: ", false)
   while name.len() == 0:
@@ -143,12 +146,18 @@ proc addAlias*(historyIndex: var int;
       showOutput("Name: ", false)
   if name == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("(2/5)The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
+  showOutput("#####################")
+  showOutput("(2/5) Description")
+  showOutput("#####################")
+  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
   showOutput("Description: ", false)
   let description = readInput()
   if description == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("(3/5)The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
+  showOutput("#####################")
+  showOutput("(3/5) Working directory")
+  showOutput("#####################")
+  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput("Path: ", false)
   var path = ""
   while path.len() == 0:
@@ -162,14 +171,20 @@ proc addAlias*(historyIndex: var int;
       showOutput("Path: ", false)
   if path == "exit":
     return showError("Adding a new alias cancelled.")
-  showOutput("(4/5)Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+  showOutput("#####################")
+  showOutput("(4/5) Recursiveness")
+  showOutput("#####################")
+  showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput("Recursive(y/n): ", false)
   var inputChar: char = getch()
   while inputChar notin {'n', 'N', 'y', 'Y'}:
     inputChar = getch()
   showOutput($inputChar)
   let recursive = if inputChar in {'n', 'N'}: 0 else: 1
-  showOutput("(5/5)The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
+  showOutput("#####################")
+  showOutput("(5/5) Commands")
+  showOutput("#####################")
+  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
   showOutput("Command(s): ", false)
   var commands = ""
   while commands.len() == 0:
