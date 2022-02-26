@@ -27,9 +27,8 @@ import std/[db_sqlite, os, tables]
 import aliases, history, output, variables
 
 proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
-    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
-        IOError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-        WriteIOEffect].} =
+    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError],
+        tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect].} =
   ## Change the current directory for the shell
   try:
     var path: string = absolutePath(expandTilde(newDirectory))
@@ -44,9 +43,9 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
     return showError()
 
 proc cdCommand*(newDirectory: string; aliases: var OrderedTable[string,
-    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
-        IOError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-        WriteIOEffect, WriteDbEffect].} =
+    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError],
+        tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
+            WriteDbEffect].} =
   ## Build-in command to enter the selected by the user directory
   if newDirectory.len() == 0:
     result = changeDirectory("~", aliases, db)

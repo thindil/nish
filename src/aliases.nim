@@ -253,16 +253,17 @@ proc editAlias*(arguments: string; historyIndex: var int;
 
 proc execAlias*(arguments: string; commandName: string;
     aliases: var OrderedTable[string, int]; db: DbConn): int{.gcsafe,
-        sideEffect, raises: [DbError, ValueError, IOError, OSError], tags: [
-        ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect, ExecIOEffect,
+        sideEffect, raises: [DbError, ValueError, OSError], tags: [
+            ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
+            ExecIOEffect,
         RootEffect].} =
   ## Execute the selected by the user alias. If it is impossible due to lack
   ## of needed arguments or other errors, print information about it.
 
   proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
       int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
-          IOError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-          WriteIOEffect].} =
+          OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+              WriteIOEffect].} =
     ## Change the current directory for the shell
     let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
     try:
