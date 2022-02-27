@@ -222,6 +222,9 @@ proc editAlias*(arguments: string; historyIndex: var int;
   if row[0] == "":
     return showError("The alias with the ID: " & id & " doesn't exists.")
   showOutput("You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(1/5) Name", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The name of the alias. Will be used to execute it. Current value: '" &
       row[0] & "'")
   var name = readInput(aliasNameLength)
@@ -229,6 +232,9 @@ proc editAlias*(arguments: string; historyIndex: var int;
     return showError("Editing the alias cancelled.")
   elif name == "":
     name = row[0]
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(2/5) Description", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '" &
       row[3] & "'. Can't contains a new line character.: ")
   var description = readInput()
@@ -236,6 +242,9 @@ proc editAlias*(arguments: string; historyIndex: var int;
     return showError("Editing the alias cancelled.")
   elif description == "":
     description = row[3]
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(3/5) Working directory", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '" &
       row[1] & "'")
   var path = readInput()
@@ -243,6 +252,9 @@ proc editAlias*(arguments: string; historyIndex: var int;
     return showError("Editing the alias cancelled.")
   elif path == "":
     path = row[1]
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(4/5) Recursiveness", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   var inputChar: char = getch()
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
@@ -250,6 +262,9 @@ proc editAlias*(arguments: string; historyIndex: var int;
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(5/5) Commands", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '" &
       row[2] & "'. Commands can't contain a new line character.:")
   var commands = readInput()
