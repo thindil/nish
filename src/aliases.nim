@@ -228,6 +228,9 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput("The name of the alias. Will be used to execute it. Current value: '" &
       row[0] & "'")
   var name = readInput(aliasNameLength)
+  while name.len() > 0 and not name.validIdentifier:
+    discard showError("Please enter a valid name for the alias.")
+    name = readInput(aliasNameLength)
   if name == "exit":
     return showError("Editing the alias cancelled.")
   elif name == "":
