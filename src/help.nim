@@ -37,7 +37,7 @@ func updateHelp*(helpContent: var Table[string, string], db: DbConn) {.gcsafe,
         """
 
 proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
-    sideEffect, raises: [ValueError], tags: [WriteIOEffect].} =
+    sideEffect, raises: [], tags: [WriteIOEffect].} =
   return showError("Unknown subcommand `" & subCommand &
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
