@@ -227,6 +227,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The name of the alias. Will be used to execute it. Current value: '" &
       row[0] & "'")
+  showOutput("Name: ", false)
   var name = readInput(aliasNameLength)
   while name.len() > 0 and not name.validIdentifier:
     discard showError("Please enter a valid name for the alias.")
@@ -240,6 +241,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '" &
       row[3] & "'. Can't contains a new line character.: ")
+  showOutput("Description: ", false)
   var description = readInput()
   if description == "exit":
     return showError("Editing the alias cancelled.")
@@ -262,6 +264,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = "(4/5) Recursiveness", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+  showOutput("Recursive(y/n): ", false)
   var inputChar: char = getch()
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
@@ -273,6 +276,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '" &
       row[2] & "'. Commands can't contain a new line character.:")
+  showOutput("Commands: ", false)
   var commands = readInput()
   if commands == "exit":
     return showError("Editing the alias cancelled.")
