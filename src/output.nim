@@ -62,7 +62,7 @@ proc showOutput*(message: string; newLine: bool = true;
   stdout.flushFile()
 
 proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
-    raises: [ValueError], tags: [WriteIOEffect].} =
+    raises: [], tags: [WriteIOEffect].} =
   ## Print the message to standard error and set the shell return
   ## code to error. If message is empty, print the current exception message
   if message == "":
@@ -74,7 +74,7 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
       stderr.styledWriteLine(fgRed, "Message: " & currentException.msg)
       if stackTrace.len() > 0:
         stderr.styledWriteLine(fgRed, stackTrace)
-    except IOError:
+    except IOError, ValueError:
       echo("Type: " & $currentException.name)
       echo("Message: " & currentException.msg)
       if stackTrace.len() > 0:
@@ -82,7 +82,7 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
   else:
     try:
       stderr.styledWriteLine(fgRed, message)
-    except IOError:
+    except IOError, ValueError:
       echo(message)
   result = QuitFailure
 
