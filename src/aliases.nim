@@ -251,6 +251,9 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '" &
       row[1] & "'")
   var path = readInput()
+  while path.len() > 0 and (path != "exit" and not dirExists(path)):
+    discard showError("Please enter a path to the existing directory")
+    path = readInput()
   if path == "exit":
     return showError("Editing the alias cancelled.")
   elif path == "":
