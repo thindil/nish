@@ -325,6 +325,8 @@ proc execAlias*(arguments: string; commandName: string;
       continue
     if execCmd(command) != QuitSuccess and conjCommands:
       return QuitFailure
+    if not conjCommands:
+      break
   return changeDirectory(currentDirectory, aliases, db)
 
 proc initAliases*(helpContent: var Table[string, string];
