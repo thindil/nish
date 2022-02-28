@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Checks for valid name and path during creating the shell's aliases
+- Checks for valid name and path during creating or editing the shell's aliases
 
 ### Changed
 - Updated README.md
