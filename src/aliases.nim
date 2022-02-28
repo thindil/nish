@@ -51,15 +51,21 @@ proc listAliases*(arguments: string; historyIndex: var int;
         WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## List available aliases, if entered command was "alias list all" list all
   ## declared aliases then
-  showOutput("Available aliases are:")
-  showOutput("ID Name Description")
   if arguments == "list":
+    showOutput(message = "######################", fgColor = fgYellow)
+    showOutput(message = "Available aliases are:", fgColor = fgYellow)
+    showOutput(message = "######################", fgColor = fgYellow)
+    showOutput("ID Name Description")
     historyIndex = updateHistory("alias list", db)
     for alias in aliases.values:
       let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
         alias)
       showOutput(row[0] & " " & row[1] & " " & row[2])
   elif arguments == "list all":
+    showOutput(message = "##########################", fgColor = fgYellow)
+    showOutput(message = "All available aliases are:", fgColor = fgYellow)
+    showOutput(message = "##########################", fgColor = fgYellow)
+    showOutput("ID Name Description")
     historyIndex = updateHistory("alias list all", db)
     for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
       showOutput(row[0] & " " & row[1] & " " & row[2])
