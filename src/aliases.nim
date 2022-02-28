@@ -225,8 +225,10 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput(message = "(1/5) Name", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
-  showOutput("The name of the alias. Will be used to execute it. Current value: '" &
-      row[0] & "'")
+  showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
+      newLine = false)
+  showOutput(message = row[0], newLine = false, fgColor = fgMagenta)
+  showOutput("'. Can contains only letters, numbers and underscores.")
   showOutput("Name: ", false)
   var name = readInput(aliasNameLength)
   while name.len() > 0 and not name.validIdentifier:
@@ -239,8 +241,10 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput(message = "(2/5) Description", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
-  showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '" &
-      row[3] & "'. Can't contains a new line character.: ")
+  showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
+      newLine = false)
+  showOutput(message = row[3], newLine = false, fgColor = fgMagenta)
+  showOutput("'. Can't contains a new line character.: ")
   showOutput("Description: ", false)
   var description = readInput()
   if description == "exit":
@@ -250,8 +254,10 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput(message = "(3/5) Working directory", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
-  showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '" &
-      row[1] & "'")
+  showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
+      newLine = false)
+  showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
+  showOutput("'. Must be a path to the existing directory.")
   var path = readInput()
   while path.len() > 0 and (path != "exit" and not dirExists(path)):
     discard showError("Please enter a path to the existing directory")
@@ -274,8 +280,10 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput(message = "(5/5) Commands", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
-  showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '" &
-      row[2] & "'. Commands can't contain a new line character.:")
+  showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
+      newLine = false)
+  showOutput(message = row[2], newLine = false, fgColor = fgMagenta)
+  showOutput(message = "'. Commands can't contain a new line character.:")
   showOutput("Commands: ", false)
   var commands = readInput()
   if commands == "exit":
@@ -289,6 +297,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory("alias edit", db)
   aliases.setAliases(getCurrentDir(), db)
+  showOutput(message = "The alias  with Id: '" & id & "' edited.", fgColor = fgGreen)
   return QuitSuccess
 
 proc execAlias*(arguments: string; commandName: string;
