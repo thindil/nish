@@ -44,10 +44,13 @@ func showProgramVersion() {.gcsafe, locks: 0, raises: [], tags: [].} =
     License: 3-Clause BSD"""
   quit QuitSuccess
 
-func quitShell(returnCode: int; db: DbConn) {.gcsafe, locks: 0, raises: [
-    DbError], tags: [DbEffect].} =
+proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect, locks: 0,
+    raises: [], tags: [DbEffect, WriteIOEffect].} =
   ## Close the shell database and quit from the program with the selected return code
-  db.close()
+  try:
+    db.close()
+  except DbError as e:
+    quit showError("Can't close properly the shell database. Reason:" & e.msg)
   quit returnCode
 
 proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [OSError,
