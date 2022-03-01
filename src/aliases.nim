@@ -57,21 +57,25 @@ proc listAliases*(arguments: string; historyIndex: var int;
     showOutput(message = "Available aliases are:", fgColor = fgYellow)
     showOutput(message = "######################", fgColor = fgYellow)
     columnLength = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
-    showOutput(message = "ID   $1 Description" % [alignLeft("Name", columnLength)], fgColor = fgMagenta)
+    showOutput(message = "ID   $1 Description" % [alignLeft("Name",
+        columnLength)], fgColor = fgMagenta)
     historyIndex = updateHistory("alias list", db)
     for alias in aliases.values:
       let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
         alias)
-      showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], columnLength) & " " & row[2])
+      showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], columnLength) &
+          " " & row[2])
   elif arguments == "list all":
     showOutput(message = "##########################", fgColor = fgYellow)
     showOutput(message = "All available aliases are:", fgColor = fgYellow)
     showOutput(message = "##########################", fgColor = fgYellow)
     columnLength = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
-    showOutput(message = "ID   $1 Description" % [alignLeft("Name", columnLength)], fgColor = fgMagenta)
+    showOutput(message = "ID   $1 Description" % [alignLeft("Name",
+        columnLength)], fgColor = fgMagenta)
     historyIndex = updateHistory("alias list all", db)
     for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
-      showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], columnLength) & " " & row[2])
+      showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], columnLength) &
+          " " & row[2])
 
 proc deleteAlias*(arguments: string; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
@@ -88,7 +92,7 @@ proc deleteAlias*(arguments: string; historyIndex: var int;
       " doesn't exists.")
   historyIndex = updateHistory("alias delete", db)
   aliases.setAliases(getCurrentDir(), db)
-  showOutput("Deleted the alias with Id: " & id)
+  showOutput(message = "Deleted the alias with Id: " & id, fgColor = fgGreen)
   return QuitSuccess
 
 proc showAlias*(arguments: string; historyIndex: var int;
@@ -306,7 +310,8 @@ proc editAlias*(arguments: string; historyIndex: var int;
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory("alias edit", db)
   aliases.setAliases(getCurrentDir(), db)
-  showOutput(message = "The alias  with Id: '" & id & "' edited.", fgColor = fgGreen)
+  showOutput(message = "The alias  with Id: '" & id & "' edited.",
+      fgColor = fgGreen)
   return QuitSuccess
 
 proc execAlias*(arguments: string; commandName: string;
