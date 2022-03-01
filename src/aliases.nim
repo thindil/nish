@@ -113,15 +113,14 @@ proc showAlias*(arguments: string; historyIndex: var int;
     return showError("The alias with the ID: " & id &
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
-  showOutput("Id: " & id)
-  showOutput("Name: " & row[0])
+  showOutput(alignLeft("Id:", 13) & id)
+  showOutput(alignLeft("Name:", 13) & row[0])
   showOutput("Description: " & row[2])
   if row[4] == "1":
-    showOutput("Path: " & row[3] & " (recursive)")
+    showOutput(alignLeft("Path:", 13) & row[3] & " (recursive)")
   else:
-    showOutput("Path: " & row[3])
-  showOutput("Commands: ")
-  showOutput(row[1])
+    showOutput(alignLeft("Path:", 13) & row[3])
+  showOutput(alignLeft("Command(s):", 13) & row[1])
   return QuitSuccess
 
 proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
