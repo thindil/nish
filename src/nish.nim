@@ -150,6 +150,10 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
   # Connect to the shell database
   let db = startDb(dbpath)
 
+  # Stop shell if connection to its database was unsuccesful
+  if db == nil:
+    quit showError("Can't connect to the shell's database.")
+
   # Initialize the shell's commands history
   historyIndex = initHistory(db, helpContent)
 
