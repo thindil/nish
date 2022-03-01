@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Updated README.md
 - Updated adding a new alias form
 - Updated editing an existing alias form
+- Updated look of list of available aliases
 
 ### Fixed
 - Merging commands with || in aliases don't work properly
