@@ -53,11 +53,14 @@ proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect, locks: 0,
     quit showError("Can't close properly the shell database. Reason:" & e.msg)
   quit returnCode
 
-proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [OSError,
-    IOError], tags: [ReadIOEffect, WriteDirEffect, DbEffect].} =
+proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [IOError],
+    tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect].} =
   ## Open connection to the shell database. Create database if not exists.
   ## Set the historyIndex to the last command
-  discard existsOrCreateDir(parentDir(dbpath))
+  try:
+    discard existsOrCreateDir(parentDir(dbpath))
+  except OSError as e:
+    discard showError("Can't create directory for the shell's database. Reason: " & e.msg)
   result = open(dbpath, "", "", "")
   # Create a new database if not exists
   var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
