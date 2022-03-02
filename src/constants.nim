@@ -23,7 +23,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import std/tables
+
 const
   maxInputLength* = 4096 # The maximum length of the user input
   aliasNameLength* = 50 # The maximum length of the shell's alias name
 
+type
+  HelpTable* = Table[string, string] # Used to store the shell's help content

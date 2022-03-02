@@ -387,9 +387,9 @@ proc execAlias*(arguments: string; commandName: string;
       break
   return changeDirectory(currentDirectory, aliases, db)
 
-proc initAliases*(helpContent: var Table[string, string];
-    db: DbConn): OrderedTable[string, int] {.gcsafe, sideEffect, raises: [
-    OSError, ValueError, DbError], tags: [ReadDbEffect].} =
+proc initAliases*(helpContent: var HelpTable; db: DbConn): OrderedTable[string,
+    int] {.gcsafe, sideEffect, raises: [OSError, ValueError, DbError], tags: [
+        ReadDbEffect].} =
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
   helpContent["alias"] = """
