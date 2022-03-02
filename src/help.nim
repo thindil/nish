@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, strutils, tables]
+import std/[db_sqlite, strutils, tables, terminal]
 import constants, history, options, output
 
 func updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe,
@@ -48,8 +48,19 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
 
   proc showHelpEntry(helpEntry: HelpEntry) =
     ## Show the selected help entry
-    showOutput(helpEntry.usage)
-    showOutput(helpEntry.content)
+    showOutput(message = "    Usage: ", newLine = false, fgColor = fgYellow)
+    showOutput(helpEntry.usage & "\n")
+    var 
+      content = "    "
+      index = 4
+    let maxLength = terminalWidth() - 8;
+    for ch in items(helpEntry.content):
+      content.add(ch)
+      index.inc()
+      if index == maxLength:
+        content.add("\n    ")
+        index = 4
+    showOutput(content)
     discard updateHistory("help", db)
 
   result = QuitSuccess
@@ -76,8 +87,8 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
 
 proc setMainHelp*(helpContent: var HelpTable) =
   ## Set the content of the main help screen
-  helpContent["help"] = HelpEntry(usage: "Available help topics are: ")
+  helpContent["help"] = HelpEntry()
   for key in helpContent.keys:
-    helpContent["help"].content.add(key & ", ")
-  helpContent["help"].content.removeSuffix(", ")
+    helpContent["help"].usage.add(key & ", ")
+  helpContent["help"].usage.removeSuffix(", ")
   helpContent["help"].content.add("To see more information about the selected topic, type help [topic], for example: help cd.")
