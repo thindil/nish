@@ -55,7 +55,7 @@ proc setVariables*(newDirectory: string; db: DbConn;
   for dbResult in db.fastRows(sql(buildQuery(newDirectory, "name, value"))):
     putEnv(dbResult[0], dbResult[1])
 
-proc initVariables*(helpContent: var Table[string, string];
+proc initVariables*(helpContent: var HelpTable;
     db: DbConn) {.gcsafe, sideEffect, raises: [DbError, OSError], tags: [
     ReadDbEffect, WriteEnvEffect].} =
   ## Initialize enviroment variables. Set help related to the variables and

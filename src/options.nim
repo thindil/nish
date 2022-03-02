@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, strutils, tables]
-import output
+import constants, output
 
 func getOption*(name: string; db: DbConn;
     defaultValue: string = ""): string {.gcsafe, locks: 0, raises: [DbError],
@@ -128,7 +128,7 @@ proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
     showOutput("The shell's option '" & name & "' reseted to its default value.")
   return QuitSuccess
 
-func initOptions*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
+func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
     raises: [], tags: [].} =
   ## Initialize the shell's options. At this moment only set help related to
   ## the options

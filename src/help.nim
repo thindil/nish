@@ -24,9 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, strutils, tables]
-import history, options, output
+import constants, history, options, output
 
-func updateHelp*(helpContent: var Table[string, string], db: DbConn) {.gcsafe,
+func updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe,
     raises: [DbError], tags: [ReadDbEffect].} =
   ## Update the part of the shell's help content which depends on dynamic
   ## data, like the shell's options' values
@@ -42,7 +42,7 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
 
-proc showHelp*(topic: string; helpContent: var Table[string, string],
+proc showHelp*(topic: string; helpContent: var HelpTable,
     db: DbConn): int {.gcsafe, sideEffect, raises: [IOError, OSError,
         ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
         WriteDbEffect].} =
@@ -73,7 +73,7 @@ proc showHelp*(topic: string; helpContent: var Table[string, string],
       result = showError("Uknown command '" & key & "'")
       discard updateHistory("help " & key, db, result)
 
-proc setMainHelp*(helpContent: var Table[string, string]) =
+proc setMainHelp*(helpContent: var HelpTable) =
   ## Set the content of the main help screen
   helpContent["help"] = "         Available help topics are: "
   for key in helpContent.keys:

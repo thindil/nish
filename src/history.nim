@@ -31,7 +31,7 @@ func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
   ## Get the current length of the shell's commmand's history
   return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
 
-proc initHistory*(db: DbConn; helpContent: var Table[string, string]): int =
+proc initHistory*(db: DbConn; helpContent: var HelpTable): int =
   ## Initialize shell's commands history. Create history table if not exists,
   ## set the current historyIndex, options related to the history and help
   ## related to the history commands

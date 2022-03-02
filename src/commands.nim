@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, tables]
-import aliases, history, output, variables
+import aliases, constants, history, output, variables
 
 proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
     int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError],
@@ -54,8 +54,8 @@ proc cdCommand*(newDirectory: string; aliases: var OrderedTable[string,
     result = changeDirectory(newDirectory, aliases, db)
     discard updateHistory("cd " & newDirectory, db, result)
 
-func initCommands*(helpContent: var Table[string, string]) {.gcsafe, locks: 0,
-    raises: [], tags: [].} =
+func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
+    tags: [].} =
   ## Initialize the shell's build-in commands. At this moment only set help
   ## related to the commands
   helpContent["cd"] = """
