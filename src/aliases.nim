@@ -392,36 +392,16 @@ proc initAliases*(helpContent: var HelpTable; db: DbConn): OrderedTable[string,
         ReadDbEffect].} =
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
-  helpContent["alias"] = """
-        Usage: alias ?subcommand?
-
-        If entered without subcommand, show the list of available subcommands
-        for aliases. Otherwise, execute the selected subcommand.
-        """
-  helpContent["alias list"] = """
-        Usage: alias list ?all?
-
-        Show the list of all available aliases in the current directory. If parameter
-        all added, show all declared aliases.
-        """
-  helpContent["alias delete"] = """
-        Usage: alias delete [index]
-
-        Delete the alias with the selected index.
-        """
-  helpContent["alias show"] = """
-        Usage: alias show [index]
-
-        Show details (description, commands, etc) for the alias with the selected index.
-        """
-  helpContent["alias add"] = """
-        Usage: alias add
-
-        Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.
-        """
-  helpContent["alias edit"] = """
-        Usage: alias edit [index]
-
-        Start editing the alias with the selected index. You will be able to set again its all parameters.
-        """
+  helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
+      content: "If entered without subcommand, show the list of available subcommands for aliases. Otherwise, execute the selected subcommand.")
+  helpContent["alias list"] = HelpEntry(usage: "alias list ?all?",
+      content: "Show the list of all available aliases in the current directory. If parameter all added, show all declared aliases.")
+  helpContent["alias delete"] = HelpEntry(usage: "alias delete [index]",
+      content: "Delete the alias with the selected index.")
+  helpContent["alias show"] = HelpEntry(usage: "alias show [index]",
+      content: "Show details (description, commands, etc) for the alias with the selected index.")
+  helpContent["alias add"] = HelpEntry(usage: "alias add",
+      content: "Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.")
+  helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
+      content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
   result.setAliases(getCurrentDir(), db)
