@@ -45,11 +45,16 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
         WriteDbEffect].} =
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
+
+  proc showHelpEntry(helpEntry: HelpEntry) =
+    ## Show the selected help entry
+    showOutput(helpEntry.usage)
+    showOutput(helpEntry.content)
+    discard updateHistory("help", db)
+
   result = QuitSuccess
   if topic.len == 0:
-    showOutput(helpContent["help"].usage)
-    showOutput(helpContent["help"].content)
-    discard updateHistory("help", db)
+    showHelpEntry(helpContent["help"])
   else:
     let
       tokens = split(topic)
@@ -57,14 +62,10 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
       command = tokens[0]
       key = command & (if args.len() > 0: " " & args else: "")
     if helpContent.hasKey(key):
-      showOutput(helpContent[key].usage)
-      showOutput(helpContent[key].content)
-      discard updateHistory("help " & key, db)
+      showHelpEntry(helpContent[key])
     elif helpContent.hasKey(command):
       if key == command:
-        showOutput(helpContent[command].usage)
-        showOutput(helpContent[command].content)
-        discard updateHistory("help " & command, db)
+        showHelpEntry(helpContent[command])
       else:
         result = showUnknownHelp(args, command, (if command ==
             "alias": "aliases" else: command))
