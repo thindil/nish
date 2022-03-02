@@ -30,11 +30,8 @@ func updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe,
     raises: [DbError], tags: [ReadDbEffect].} =
   ## Update the part of the shell's help content which depends on dynamic
   ## data, like the shell's options' values
-  helpContent["history show"] = """
-        Usage: history show
-
-        Show the last """ & getOption("historyAmount", db) & """ commands from the shell's history.
-        """
+  helpContent["history show"] = HelpEntry(usage: "history show",
+      content: "Show the last " & getOption("historyAmount", db) & " commands from the shell's history.")
 
 proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect].} =
@@ -50,7 +47,8 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
   ## the help section, show info about it.
   result = QuitSuccess
   if topic.len == 0:
-    showOutput(helpContent["help"])
+    showOutput(helpContent["help"].usage)
+    showOutput(helpContent["help"].content)
     discard updateHistory("help", db)
   else:
     let
@@ -59,11 +57,13 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
       command = tokens[0]
       key = command & (if args.len() > 0: " " & args else: "")
     if helpContent.hasKey(key):
-      showOutput(helpContent[key])
+      showOutput(helpContent[key].usage)
+      showOutput(helpContent[key].content)
       discard updateHistory("help " & key, db)
     elif helpContent.hasKey(command):
       if key == command:
-        showOutput(helpContent[command])
+        showOutput(helpContent[command].usage)
+        showOutput(helpContent[command].content)
         discard updateHistory("help " & command, db)
       else:
         result = showUnknownHelp(args, command, (if command ==
@@ -75,13 +75,8 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
 
 proc setMainHelp*(helpContent: var HelpTable) =
   ## Set the content of the main help screen
-  helpContent["help"] = "         Available help topics are: "
+  helpContent["help"] = HelpEntry(usage: "Available help topics are: ")
   for key in helpContent.keys:
-    helpContent["help"].add(key & ", ")
-  helpContent["help"].removeSuffix(", ")
-  helpContent["help"].add("""
-
-
-        To see more information about the selected topic, type help [topic],
-        for example: help cd.
-  """)
+    helpContent["help"].content.add(key & ", ")
+  helpContent["help"].content.removeSuffix(", ")
+  helpContent["help"].content.add("To see more information about the selected topic, type help [topic], for example: help cd.")

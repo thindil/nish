@@ -60,47 +60,20 @@ proc initVariables*(helpContent: var HelpTable;
     ReadDbEffect, WriteEnvEffect].} =
   ## Initialize enviroment variables. Set help related to the variables and
   ## load the local environment variables
-  helpContent["set"] = """
-        Usage set [name=value]
-
-        Set the environment variable with the selected name and value.
-          """
-  helpContent["unset"] = """
-        Usage unset [name]
-
-        Remove the environment variable with the selected name.
-          """
-  helpContent["variable"] = """
-        Usage: variable ?subcommand?
-
-        If entered without subcommand, show the list of available subcommands
-        for variables. Otherwise, execute the selected subcommand.
-        """
-  helpContent["variable list"] = """
-        Usage: variable list ?all?
-
-        Show the list of all declared in shell environment variables in
-        the current directory. If parameter all added, show all declared
-        environment variables.
-        """
-  helpContent["variable delete"] = """
-        Usage: variable delete [index]
-
-        Delete the declared in shell environment variable with the selected
-        index.
-        """
-  helpContent["variable add"] = """
-        Usage: variable add
-
-        Start adding a new variable to the shell. You will be able to set its
-        name, description, value, etc.
-        """
-  helpContent["variable edit"] = """
-        Usage: variable edit [index]
-
-        Start editing the variable with the selected index. You will be able to set
-        again its all parameters.
-        """
+  helpContent["set"] = HelpEntry(usage: "set [name=value]",
+      content: "Set the environment variable with the selected name and value.")
+  helpContent["unset"] = HelpEntry(usage: "unset [name]",
+      content: "Remove the environment variable with the selected name.")
+  helpContent["variable"] = HelpEntry(usage: "variable ?subcommand?",
+      content: "If entered without subcommand, show the list of available subcommands for variables. Otherwise, execute the selected subcommand.")
+  helpContent["variable list"] = HelpEntry(usage: "variable list ?all?",
+      content: "Show the list of all declared in shell environment variables in the current directory. If parameter all added, show all declared environment variables.")
+  helpContent["variable delete"] = HelpEntry(usage: "variable delete [index]",
+      content: "Delete the declared in shell environment variable with the selected index.")
+  helpContent["variable add"] = HelpEntry(usage: "variable add",
+      content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
+  helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
+      content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
   setVariables(getCurrentDir(), db)
 
 proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,

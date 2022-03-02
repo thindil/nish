@@ -53,17 +53,10 @@ proc initHistory*(db: DbConn; helpContent: var HelpTable): int =
                amount      INTEGER NOT NULL DEFAULT 1
             )"""))
   # Set the history related help content
-  helpContent["history"] = """
-        Usage: history ?subcommand?
-
-        If entered without subcommand, show the list of available subcommands
-        for history. Otherwise, execute the selected subcommand.
-        """
-  helpContent["history clear"] = """
-        Usage: history clear
-
-        Clear the shell's commands' history.
-        """
+  helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
+      content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
+  helpContent["history clear"] = HelpEntry(usage: "history clear",
+      content: "Clear the shell's commands' history.")
   # Return the current help index set on the last command in the shell's history
   return historyLength(db)
 
