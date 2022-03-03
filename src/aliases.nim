@@ -26,9 +26,9 @@
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, output
 
-func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
-    db: DbConn) {.gcsafe, raises: [ValueError, DbError], tags: [
-    ReadDbEffect].} =
+proc setAliases*(aliases: var OrderedTable[string, int]; directory: string;
+    db: DbConn) {.gcsafe, sideEffect, raises: [ValueError], tags: [ReadDbEffect,
+        WriteIOEffect].} =
   ## Set the available aliases in the selected directory
   aliases.clear()
   var
@@ -42,8 +42,11 @@ func setAliases*(aliases: var OrderedTable[string, int]; directory: string;
     remainingDirectory = parentDir(remainingDirectory)
 
   dbQuery.add(" ORDER BY id ASC")
-  for dbResult in db.fastRows(sql(dbQuery)):
-    aliases[dbResult[1]] = parseInt(dbResult[0])
+  try:
+    for dbResult in db.fastRows(sql(dbQuery)):
+      aliases[dbResult[1]] = parseInt(dbResult[0])
+  except DbError as e:
+    discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
 proc listAliases*(arguments: string; historyIndex: var int;
     aliases: OrderedTable[string, int]; db: DbConn) {.gcsafe, sideEffect,
@@ -334,8 +337,7 @@ proc execAlias*(arguments: string; commandName: string;
   ## of needed arguments or other errors, print information about it.
 
   proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
-      int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError,
-          OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+      int]; db: DbConn): int {.gcsafe, sideEffect, raises: [ValueError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
               WriteIOEffect].} =
     ## Change the current directory for the shell
     let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
@@ -388,8 +390,8 @@ proc execAlias*(arguments: string; commandName: string;
   return changeDirectory(currentDirectory, aliases, db)
 
 proc initAliases*(helpContent: var HelpTable; db: DbConn): OrderedTable[string,
-    int] {.gcsafe, sideEffect, raises: [OSError, ValueError, DbError], tags: [
-        ReadDbEffect].} =
+    int] {.gcsafe, sideEffect, raises: [OSError, ValueError], tags: [
+        ReadDbEffect, WriteIOEffect].} =
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
   helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
