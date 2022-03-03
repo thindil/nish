@@ -53,7 +53,7 @@ proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect, locks: 0,
     quit showError("Can't close properly the shell database. Reason:" & e.msg)
   quit returnCode
 
-proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [DbError],
+proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect].} =
   ## Open connection to the shell database. Create database if not exists.
   ## Set the historyIndex to the last command
@@ -63,7 +63,11 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [DbError],
     discard showError("Can't create directory for the shell's database. Reason: " &
         getCurrentExceptionMsg())
     return nil
-  result = open(dbpath, "", "", "")
+  try:
+    result = open(dbpath, "", "", "")
+  except DbError as e:
+    discard showError("Can't open the shell's database. Reason: " & e.msg)
+    return nil
   # Create a new database if not exists
   var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
                id          INTEGER       PRIMARY KEY,
@@ -76,7 +80,11 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [DbError],
       """) NOT NULL,
                description VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
-  result.exec(sql(sqlQuery))
+  try:
+    result.exec(sql(sqlQuery))
+  except DbError as e:
+    discard showError("Can't create 'aliases' table. Reason: " & e.msg)
+    return nil
   sqlQuery = """CREATE TABLE IF NOT EXISTS options (
                 option VARCHAR(""" & $aliasNameLength &
           """) NOT NULL PRIMARY KEY,
@@ -88,7 +96,11 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [DbError],
           """) NOT NULL,
                 defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
-  result.exec(sql(sqlQuery))
+  try:
+    result.exec(sql(sqlQuery))
+  except DbError as e:
+    discard showError("Can't create 'options' table. Reason: " & e.msg)
+    return nil
   sqlQuery = """CREATE TABLE IF NOT EXISTS variables (
                id          INTEGER       PRIMARY KEY,
                name        VARCHAR(""" & $aliasNameLength &
@@ -100,7 +112,11 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [DbError],
           """) NOT NULL,
                description VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
-  result.exec(sql(sqlQuery))
+  try:
+    result.exec(sql(sqlQuery))
+  except DbError as e:
+    discard showError("Can't create 'variables' table. Reason: " & e.msg)
+    return nil
 
 proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
