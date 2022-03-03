@@ -88,8 +88,13 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
 
 proc setMainHelp*(helpContent: var HelpTable) =
   ## Set the content of the main help screen
-  helpContent["help"] = HelpEntry()
+  helpContent["help"] = HelpEntry(usage: "\n    ")
+  var i = 1
   for key in helpContent.keys:
-    helpContent["help"].usage.add(key & ", ")
+    helpContent["help"].usage.add(alignLeft(key, 20))
+    i.inc()
+    if i == 4:
+      helpContent["help"].usage.add("\n    ")
+      i = 1
   helpContent["help"].usage.removeSuffix(", ")
   helpContent["help"].content.add("To see more information about the selected topic, type help [topic], for example: help cd.")
