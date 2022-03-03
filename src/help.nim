@@ -86,7 +86,8 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
       result = showError("Uknown command '" & key & "'")
       discard updateHistory("help " & key, db, result)
 
-proc setMainHelp*(helpContent: var HelpTable) =
+func setMainHelp*(helpContent: var HelpTable) {.gcsafe, raises: [KeyError],
+    tags: [].} =
   ## Set the content of the main help screen
   helpContent["help"] = HelpEntry(usage: "\n    ")
   var i = 1
