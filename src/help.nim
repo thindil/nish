@@ -46,15 +46,16 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
 
-  proc showHelpEntry(helpEntry: HelpEntry) =
+  proc showHelpEntry(helpEntry: HelpEntry; usageHeader: string = "Usage") =
     ## Show the selected help entry
-    showOutput(message = "    Usage: ", newLine = false, fgColor = fgYellow)
+    showOutput(message = "    " & usageHeader & ": ", newLine = false,
+        fgColor = fgYellow)
     showOutput(helpEntry.usage & "\n")
-    var 
+    var
       content = "    "
       index = 4
     let maxLength = terminalWidth() - 8;
-    for ch in items(helpEntry.content):
+    for ch in helpEntry.content:
       content.add(ch)
       index.inc()
       if index == maxLength:
@@ -65,7 +66,7 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
 
   result = QuitSuccess
   if topic.len == 0:
-    showHelpEntry(helpContent["help"])
+    showHelpEntry(helpContent["help"], "Available help topics")
   else:
     let
       tokens = split(topic)
