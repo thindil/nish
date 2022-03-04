@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Updated adding a new alias form
 - Updated editing an existing alias form
 - Updated look of list of available aliases
+- Updated look of help entries
 
 ### Fixed
 - Merging commands with || in aliases don't work properly
