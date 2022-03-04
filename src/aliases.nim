@@ -27,7 +27,7 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, output
 
 proc setAliases*(aliases: var OrderedTable[string, int]; directory: string;
-    db: DbConn) {.gcsafe, sideEffect, raises: [ValueError], tags: [ReadDbEffect,
+    db: DbConn) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect].} =
   ## Set the available aliases in the selected directory
   aliases.clear()
@@ -44,7 +44,10 @@ proc setAliases*(aliases: var OrderedTable[string, int]; directory: string;
   dbQuery.add(" ORDER BY id ASC")
   try:
     for dbResult in db.fastRows(sql(dbQuery)):
-      aliases[dbResult[1]] = parseInt(dbResult[0])
+      try:
+        aliases[dbResult[1]] = parseInt(dbResult[0])
+      except ValueError:
+        discard showError("Can't set alias, invalid Id: " & dbResult[0])
   except DbError as e:
     discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
@@ -390,8 +393,8 @@ proc execAlias*(arguments: string; commandName: string;
   return changeDirectory(currentDirectory, aliases, db)
 
 proc initAliases*(helpContent: var HelpTable; db: DbConn): OrderedTable[string,
-    int] {.gcsafe, sideEffect, raises: [OSError, ValueError], tags: [
-        ReadDbEffect, WriteIOEffect].} =
+    int] {.gcsafe, sideEffect, raises: [OSError], tags: [ReadDbEffect,
+        WriteIOEffect].} =
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
   helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
