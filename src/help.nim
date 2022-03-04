@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, strutils, tables, terminal]
+import std/[algorithm, db_sqlite, strutils, tables, terminal]
 import constants, history, options, output
 
 func updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe,
@@ -90,8 +90,13 @@ func setMainHelp*(helpContent: var HelpTable) {.gcsafe, raises: [KeyError],
     tags: [].} =
   ## Set the content of the main help screen
   helpContent["help"] = HelpEntry(usage: "\n    ")
-  var i = 1
+  var
+    i = 1
+    keys: seq[string]
   for key in helpContent.keys:
+    keys.add(key)
+  keys.sort(system.cmp)
+  for key in keys:
     helpContent["help"].usage.add(alignLeft(key, 20))
     i.inc()
     if i == 4:
