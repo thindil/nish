@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, strutils, tables]
+import std/[db_sqlite, strutils, tables, terminal]
 import constants, options, output
 
 func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
@@ -111,9 +111,9 @@ proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   ## Show the last X entries to the shell's history. X can be set in the shell's
   ## options as 'historyAmount' option.
   let amount = getOption("historyAmount", db)
-  showOutput("The last commands from the shell's history")
-  showOutput("Last used           Times Command")
+  showOutput(message = "The last commands from the shell's history", fgColor = fgYellow)
+  showOutput(message = "Last used           Times Command", fgColor = fgYellow)
   for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
       amount, amount):
-    showOutput(row[1] & " " & row[2] & " " & row[0])
+    showOutput(row[1] & " " & alignLeft(row[2], 5) & " " & row[0])
   return updateHistory("history show", db)
