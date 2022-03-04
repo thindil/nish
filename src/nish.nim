@@ -132,7 +132,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError, OSError],
     returnCode: int = QuitSuccess
     aliases = initOrderedTable[string, int]()
     dbpath: string = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
-    helpContent = initOrderedTable[string, HelpEntry]()
+    helpContent = initTable[string, HelpEntry]()
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command, "-h" or "--help" to show
