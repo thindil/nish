@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Updated editing an existing alias form
 - Updated look of list of available aliases
 - Updated look of help entries
+- Updated look of showing last commands from shell's history
 
 ### Fixed
 - Merging commands with || in aliases don't work properly
