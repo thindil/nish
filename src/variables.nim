@@ -163,26 +163,46 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   ## Add a new variable to the shell. Ask the user a few questions and fill the
   ## variable values with answers
   showOutput("You can cancel adding a new variable at any time by double press Escape key.")
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(1/5) Name", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The name of the variable. For example: 'MY_KEY'.:")
+  showOutput("Name: ", false)
   let name = readInput(aliasNameLength)
   if name == "exit":
     return showError("Adding a new variable cancelled.")
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(2/5) Description", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
+  showOutput("Description: ", false)
   let description = readInput()
   if description == "exit":
     return showError("Adding a new variable cancelled.")
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(3/5) Working directory", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'.: ")
+  showOutput("Path: ", false)
   let path = readInput()
   if path == "exit":
     return showError("Adding a new variable cancelled.")
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(4/5) Recursiveness", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+  showOutput("Recursive(y/n): ", false)
   var inputChar: char = getch()
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
+  showOutput(message = "#####################", fgColor = fgYellow)
+  showOutput(message = "(5/5) Value", fgColor = fgYellow)
+  showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character.:")
+  showOutput("Value: ", false)
   let value = readInput()
   if value == "exit":
     return showError("Adding a new variable cancelled.")
