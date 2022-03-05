@@ -167,8 +167,17 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   showOutput(message = "(1/5) Name", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The name of the variable. For example: 'MY_KEY'.:")
+  var name = ""
   showOutput("Name: ", false)
-  let name = readInput(aliasNameLength)
+  while name.len() == 0:
+    name = readInput(aliasNameLength)
+    if name.len() == 0:
+      discard showError("Please enter a name for the variable.")
+    elif not name.validIdentifier:
+      name = ""
+      discard showError("Please enter a valid name for the variable.")
+    if name.len() == 0:
+      showOutput("Name: ", false)
   if name == "exit":
     return showError("Adding a new variable cancelled.")
   showOutput(message = "#####################", fgColor = fgYellow)
@@ -184,7 +193,16 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'.: ")
   showOutput("Path: ", false)
-  let path = readInput()
+  var path = ""
+  while path.len() == 0:
+    path = readInput()
+    if path.len() == 0:
+      discard showError("Please enter a path for the alias.")
+    elif not dirExists(path) and path != "exit":
+      path = ""
+      discard showError("Please enter a path to the existing directory")
+    if path.len() == 0:
+      showOutput("Path: ", false)
   if path == "exit":
     return showError("Adding a new variable cancelled.")
   showOutput(message = "#####################", fgColor = fgYellow)
@@ -203,9 +221,18 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput("The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character.:")
   showOutput("Value: ", false)
-  let value = readInput()
+  var value = ""
+  while value.len() == 0:
+    value = readInput()
+    if value.len() == 0:
+      discard showError("Please enter value for the variable.")
+      showOutput("Value: ", false)
   if value == "exit":
     return showError("Adding a new variable cancelled.")
+  # Check if variable with the same parameters exists in the database
+  if db.getValue(sql"SELECT id FROM aliases  WHERE name=? AND path=? AND recursive=? AND value=?",
+      name, path, recursive, value).len() > 0:
+    return showError("There is a variable with the same name, path and value in the database.")
   # Save the variable to the database
   if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
       name, path, recursive, value, description) == -1:
