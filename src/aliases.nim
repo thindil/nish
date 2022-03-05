@@ -393,7 +393,7 @@ proc execAlias*(arguments: string; commandName: string;
   return changeDirectory(currentDirectory, aliases, db)
 
 proc initAliases*(helpContent: var HelpTable; db: DbConn): OrderedTable[string,
-    int] {.gcsafe, sideEffect, raises: [OSError], tags: [ReadDbEffect,
+    int] {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect].} =
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
@@ -409,4 +409,7 @@ proc initAliases*(helpContent: var HelpTable; db: DbConn): OrderedTable[string,
       content: "Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.")
   helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
       content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
-  result.setAliases(getCurrentDir(), db)
+  try:
+    result.setAliases(getCurrentDir(), db)
+  except OSError as e:
+    discard showError("Can't initialize aliases. Reason: " & e.msg)
