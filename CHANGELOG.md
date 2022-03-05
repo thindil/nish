@@ -10,9 +10,8 @@ All notable changes to this project will be documented in this file.
 - Updated README.md
 - Updated adding a new alias form
 - Updated editing an existing alias form
-- Updated look of list of available aliases
-- Updated look of help entries
-- Updated look of showing last commands from shell's history
+- Updated look of list of available aliases, help entries, showing last
+  commands from shell's history, list of shell's options
 
 ### Fixed
 - Merging commands with || in aliases don't work properly
