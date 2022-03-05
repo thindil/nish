@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, strutils, tables]
+import std/[db_sqlite, strutils, tables, terminal]
 import constants, output
 
 func getOption*(name: string; db: DbConn;
@@ -60,9 +60,14 @@ proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
   ## Show the shell's options
-  showOutput("Name Value Default Type Description")
+  showOutput(message = "######################", fgColor = fgYellow)
+  showOutput(message = "Available options are:", fgColor = fgYellow)
+  showOutput(message = "######################", fgColor = fgYellow)
+  showOutput(message = "Name               Value   Default Type    Description",
+      fgColor = fgMagenta)
   for row in db.fastRows(sql"SELECT option, value, defaultvalue, valuetype, description FROM options"):
-    showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3] & " " & row[4])
+    showOutput(alignLeft(row[0], 18) & " " & alignLeft(row[1], 7) & " " &
+        alignLeft(row[2], 7) & " " & alignLeft(row[3], 7) & " " & row[4])
 
 proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     OSError, IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
