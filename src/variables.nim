@@ -166,7 +166,7 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput(message = "(1/5) Name", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
-  showOutput("The name of the variable. For example: 'MY_KEY'.:")
+  showOutput("The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
   var name = ""
   showOutput("Name: ", false)
   while name.len() == 0:
@@ -191,7 +191,7 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput(message = "(3/5) Working directory", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
-  showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'.: ")
+  showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput("Path: ", false)
   var path = ""
   while path.len() == 0:
@@ -219,7 +219,7 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   showOutput(message = "#####################", fgColor = fgYellow)
   showOutput(message = "(5/5) Value", fgColor = fgYellow)
   showOutput(message = "#####################", fgColor = fgYellow)
-  showOutput("The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character.:")
+  showOutput("The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
   showOutput("Value: ", false)
   var value = ""
   while value.len() == 0:
