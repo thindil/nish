@@ -230,7 +230,7 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   if value == "exit":
     return showError("Adding a new variable cancelled.")
   # Check if variable with the same parameters exists in the database
-  if db.getValue(sql"SELECT id FROM aliases  WHERE name=? AND path=? AND recursive=? AND value=?",
+  if db.getValue(sql"SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?",
       name, path, recursive, value).len() > 0:
     return showError("There is a variable with the same name, path and value in the database.")
   # Save the variable to the database
