@@ -101,3 +101,8 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
       echo(message)
   result = QuitFailure
 
+proc showFormHeader*(message: string; length: int = 23) =
+  ## Show form's header with selected length and message
+  showOutput(message = repeat('#', length), fgColor = fgYellow)
+  showOutput(message = message, fgColor = fgYellow)
+  showOutput(message = repeat('#', length), fgColor = fgYellow)
