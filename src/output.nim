@@ -26,8 +26,8 @@
 import std/[os, strutils, terminal]
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [OSError, IOError,
-        ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
+    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [OSError, IOError],
+        tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show the shell prompt if the shell wasn't started in one command mode
   if not promptEnabled:
     return
@@ -35,17 +35,32 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     currentDirectory: string = getCurrentDir()
     homeDirectory: string = getHomeDir()
   if endsWith(currentDirectory & "/", homeDirectory):
-    stdout.styledWrite(fgBlue, "~")
+    try:
+      stdout.styledWrite(fgBlue, "~")
+    except ValueError:
+      echo("~")
   else:
     let homeIndex: int = currentDirectory.find(homeDirectory)
     if homeIndex > -1:
-      stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
-          homeDirectory.len()..^1])
+      try:
+        stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
+            homeDirectory.len()..^1])
+      except ValueError:
+        echo("~/" & currentDirectory[homeIndex + homeDirectory.len()..^1])
     else:
-      stdout.styledWrite(fgBlue, currentDirectory)
+      try:
+        stdout.styledWrite(fgBlue, currentDirectory)
+      except ValueError:
+        echo(currentDirectory)
   if previousCommand != "" and resultCode != QuitSuccess:
-    stdout.styledWrite(fgRed, "[" & $resultCode & "]")
-  stdout.styledWrite(fgBlue, "# ")
+    try:
+      stdout.styledWrite(fgRed, "[" & $resultCode & "]")
+    except ValueError:
+      echo("[" & $resultCode & "]")
+  try:
+    stdout.styledWrite(fgBlue, "# ")
+  except ValueError:
+    echo("# ")
 
 proc showOutput*(message: string; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
