@@ -26,13 +26,13 @@
 import std/[os, strutils, terminal]
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [OSError, IOError],
+    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [IOError],
         tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show the shell prompt if the shell wasn't started in one command mode
   if not promptEnabled:
     return
   let
-    currentDirectory: string = getCurrentDir()
+    currentDirectory: string = (try: getCurrentDir() except OSError: "[unknown dir]")
     homeDirectory: string = getHomeDir()
   if endsWith(currentDirectory & "/", homeDirectory):
     try:
