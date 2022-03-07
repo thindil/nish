@@ -247,12 +247,20 @@ proc editVariable*(arguments: string; historyIndex: var int;
     return showError("The variable with the ID: " & varId &
       " doesn't exists.")
   showOutput("You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
-  showOutput("The name of the variable. Current value: '" & row[0] & "'")
-  var name = readInput(aliasNameLength)
+  showFormHeader("(1/5) Name")
+  showOutput("The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
+  var name = "exit"
+  showOutput("Name: ", false)
+  while name.len() > 0:
+    name = readInput(aliasNameLength)
+    if name.len() > 0 and not name.validIdentifier:
+      discard showError("Please enter a valid name for the variable.")
+      showOutput("Name: ", false)
   if name == "exit":
     return showError("Editing the variable cancelled.")
   elif name == "":
     name = row[0]
+  showFormHeader("(2/5) Description")
   showOutput("The description of the variable. It will be show on the list of available variable. Current value: '" &
       row[3] & "'. Can't contains a new line character.: ")
   var description = readInput()
@@ -260,13 +268,21 @@ proc editVariable*(arguments: string; historyIndex: var int;
     return showError("Editing the variable cancelled.")
   elif description == "":
     description = row[3]
+  showFormHeader("(3/5) Working directory")
   showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
-      row[1] & "'")
-  var path = readInput()
+      row[1] & "'. Must be a path to the existing directory.:")
+  showOutput("Path: ", false)
+  var path = "exit"
+  while path.len() > 0:
+    path = readInput()
+    if path.len() > 0 and not dirExists(path) and path != "exit":
+      discard showError("Please enter a path to the existing directory")
+      showOutput("Path: ", false)
   if path == "exit":
     return showError("Editing the variable cancelled.")
   elif path == "":
     path = row[1]
+  showFormHeader("(4/5) Recursiveness")
   showOutput("Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   var inputChar: char = getch()
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
@@ -274,6 +290,7 @@ proc editVariable*(arguments: string; historyIndex: var int;
     inputChar = getch()
   let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
+  showFormHeader("(5/5) Value")
   showOutput("The value of the variable. Current value: '" & row[2] &
       "'. Value can't contain a new line character.:")
   var value = readInput()
