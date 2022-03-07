@@ -65,8 +65,8 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
 proc showOutput*(message: string; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
         returnCode: int = QuitSuccess; fgColor: ForegroundColor = fgDefault) {.gcsafe,
-            locks: 0, sideEffect, raises: [OSError, IOError, ValueError],
-                tags: [ReadIOEffect, WriteIOEffect].} =
+            locks: 0, sideEffect, raises: [IOError, ValueError], tags: [
+                ReadIOEffect, WriteIOEffect].} =
   ## Show the selected message and prompt (if enabled, default) to the user.
   ## If newLine is true, add a new line after message.
   showPrompt(promptEnabled, previousCommand, returnCode)
@@ -102,7 +102,7 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
   result = QuitFailure
 
 proc showFormHeader*(message: string; length: int = 23) {.gcsafe, locks: 0,
-    sideEffect, raises: [IOError, OSError, ValueError], tags: [ReadIOEffect,
+    sideEffect, raises: [IOError, ValueError], tags: [ReadIOEffect,
     WriteIOEffect].} =
   ## Show form's header with selected length and message
   showOutput(message = repeat('#', length), fgColor = fgYellow)

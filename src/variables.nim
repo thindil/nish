@@ -128,7 +128,7 @@ proc listVariables*(arguments: string; historyIndex: var int;
   historyIndex = updateHistory("variable " & arguments, db)
 
 proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, OSError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    DbError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
   ## Show short help about available subcommands related to the environment variables
   showOutput("""Available subcommands are: list, delete, add, edit
