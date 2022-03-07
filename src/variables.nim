@@ -256,6 +256,8 @@ proc editVariable*(arguments: string; historyIndex: var int;
     if name.len() > 0 and not name.validIdentifier:
       discard showError("Please enter a valid name for the variable.")
       showOutput("Name: ", false)
+    else:
+      break
   if name == "exit":
     return showError("Editing the variable cancelled.")
   elif name == "":
@@ -278,6 +280,8 @@ proc editVariable*(arguments: string; historyIndex: var int;
     if path.len() > 0 and not dirExists(path) and path != "exit":
       discard showError("Please enter a path to the existing directory")
       showOutput("Path: ", false)
+    else:
+      break
   if path == "exit":
     return showError("Editing the variable cancelled.")
   elif path == "":
