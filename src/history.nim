@@ -86,7 +86,7 @@ func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
       $(historyIndex - 1));
 
 proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, IOError, OSError, ValueError], tags: [ReadIOEffect, WriteIOEffect,
+    DbError, IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect,
     ReadDbEffect, WriteDbEffect].} =
   ## Clear the shell's history, don't add the command to the history
   db.exec(sql"DELETE FROM history");
@@ -94,7 +94,7 @@ proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   return 0;
 
 proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, OSError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    DbError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
   ## Show short help about available subcommands related to the shell's
   ## commands' history
@@ -106,7 +106,7 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   return updateHistory("history", db)
 
 proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, IOError, OSError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    DbError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
   ## Show the last X entries to the shell's history. X can be set in the shell's
   ## options as 'historyAmount' option.

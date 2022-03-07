@@ -53,7 +53,7 @@ proc setAliases*(aliases: var OrderedTable[string, int]; directory: string;
 
 proc listAliases*(arguments: string; historyIndex: var int;
     aliases: OrderedTable[string, int]; db: DbConn) {.gcsafe, sideEffect,
-        locks: 0, raises: [IOError, OSError, ValueError], tags: [ReadIOEffect,
+        locks: 0, raises: [IOError, ValueError], tags: [ReadIOEffect,
         WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## List available aliases, if entered command was "alias list all" list all
   ## declared aliases then
@@ -103,7 +103,7 @@ proc deleteAlias*(arguments: string; historyIndex: var int;
 
 proc showAlias*(arguments: string; historyIndex: var int;
     aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
-        sideEffect, raises: [IOError, ValueError, OSError], tags: [
+        sideEffect, raises: [IOError, ValueError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## Show details about the selected alias, its ID, name, description and
   ## commands which will be executed
@@ -141,7 +141,7 @@ proc showAlias*(arguments: string; historyIndex: var int;
   return QuitSuccess
 
 proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, OSError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    DbError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
   ## Show short help about available subcommands related to the aliases
   showOutput("""Available subcommands are: list, delete, show, add, edit
