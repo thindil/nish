@@ -59,9 +59,7 @@ proc listAliases*(arguments: string; historyIndex: var int;
   ## declared aliases then
   var columnLength: int
   if arguments == "list":
-    showOutput(message = "######################", fgColor = fgYellow)
-    showOutput(message = "Available aliases are:", fgColor = fgYellow)
-    showOutput(message = "######################", fgColor = fgYellow)
+    showFormHeader("Available aliases are:", 22)
     columnLength = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
     showOutput(message = "ID   $1 Description" % [alignLeft("Name",
         columnLength)], fgColor = fgMagenta)
@@ -72,9 +70,7 @@ proc listAliases*(arguments: string; historyIndex: var int;
       showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], columnLength) &
           " " & row[2])
   elif arguments == "list all":
-    showOutput(message = "##########################", fgColor = fgYellow)
-    showOutput(message = "All available aliases are:", fgColor = fgYellow)
-    showOutput(message = "##########################", fgColor = fgYellow)
+    showFormHeader("All available aliases are:", 26)
     columnLength = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
     showOutput(message = "ID   $1 Description" % [alignLeft("Name",
         columnLength)], fgColor = fgMagenta)
