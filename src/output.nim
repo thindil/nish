@@ -26,7 +26,7 @@
 import std/[os, strutils, terminal]
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [IOError],
+    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [],
         tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show the shell prompt if the shell wasn't started in one command mode
   if not promptEnabled:
@@ -37,7 +37,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   if endsWith(currentDirectory & "/", homeDirectory):
     try:
       stdout.styledWrite(fgBlue, "~")
-    except ValueError:
+    except ValueError, IOError:
       echo("~")
   else:
     let homeIndex: int = currentDirectory.find(homeDirectory)
@@ -45,21 +45,21 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       try:
         stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
             homeDirectory.len()..^1])
-      except ValueError:
+      except ValueError, IOError:
         echo("~/" & currentDirectory[homeIndex + homeDirectory.len()..^1])
     else:
       try:
         stdout.styledWrite(fgBlue, currentDirectory)
-      except ValueError:
+      except ValueError, IOError:
         echo(currentDirectory)
   if previousCommand != "" and resultCode != QuitSuccess:
     try:
       stdout.styledWrite(fgRed, "[" & $resultCode & "]")
-    except ValueError:
+    except ValueError, IOError:
       echo("[" & $resultCode & "]")
   try:
     stdout.styledWrite(fgBlue, "# ")
-  except ValueError:
+  except ValueError, IOError:
     echo("# ")
 
 proc showOutput*(message: string; newLine: bool = true;
