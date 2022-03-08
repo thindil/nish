@@ -57,10 +57,9 @@ proc listAliases*(arguments: string; historyIndex: var int;
         WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## List available aliases, if entered command was "alias list all" list all
   ## declared aliases then
-  var columnLength: int
+  let columnLength: int = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
   if arguments == "list":
     showFormHeader("Available aliases are:", 22)
-    columnLength = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
     showOutput(message = "ID   $1 Description" % [alignLeft("Name",
         columnLength)], fgColor = fgMagenta)
     historyIndex = updateHistory("alias list", db)
@@ -71,7 +70,6 @@ proc listAliases*(arguments: string; historyIndex: var int;
           " " & row[2])
   elif arguments == "list all":
     showFormHeader("All available aliases are:", 26)
-    columnLength = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
     showOutput(message = "ID   $1 Description" % [alignLeft("Name",
         columnLength)], fgColor = fgMagenta)
     historyIndex = updateHistory("alias list all", db)
