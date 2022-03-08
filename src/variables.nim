@@ -116,15 +116,24 @@ proc listVariables*(arguments: string; historyIndex: var int;
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
-  showOutput("Declared environent variables are:")
-  showOutput("ID Name Value Description")
+  let
+    nameLength = db.getValue(sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len()
+    valueLength = db.getValue(sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len()
   if arguments == "list":
+    showFormHeader("Declared environent variables are:", 34)
+    showOutput(message = "ID   $1 $2 Description" % [alignLeft("Name",
+        nameLength), alignLeft("Value", valueLength)], fgColor = fgMagenta)
     for row in db.fastRows(sql(buildQuery(getCurrentDir(),
         "id, name, value, description"))):
-      showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3])
+      showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], nameLength) &
+          " " & alignLeft(row[2], valueLength) & " " & row[3])
   elif arguments == "list all":
+    showFormHeader("All declared environent variables are:", 38)
+    showOutput(message = "ID   $1 $2 Description" % [alignLeft("Name",
+        nameLength), alignLeft("Value", valueLength)], fgColor = fgMagenta)
     for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
-      showOutput(row[0] & " " & row[1] & " " & row[2] & " " & row[3])
+      showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], nameLength) &
+          " " & alignLeft(row[2], valueLength) & " " & row[3])
   historyIndex = updateHistory("variable " & arguments, db)
 
 proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
