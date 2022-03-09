@@ -57,7 +57,7 @@ func setOption*(name: string; value, description, valuetype: string = "";
         name, value, description, valuetype, value)
 
 proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
+    DbError, IOError], tags: [ReadDbEffect, WriteDbEffect,
     ReadIOEffect, WriteIOEffect].} =
   ## Show the shell's options
   showOutput(message = "######################", fgColor = fgYellow)
@@ -70,7 +70,7 @@ proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
         alignLeft(row[2], 7) & " " & alignLeft(row[3], 7) & " " & row[4])
 
 proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
-    IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect].} =
+    IOError], tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show short help about available subcommands related to the shell's
   ## options
   showOutput("""Available subcommands are: show, set, reset
@@ -80,7 +80,7 @@ proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
 """)
 
 proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, locks: 0, raises: [DbError, IOError, ValueError],
+    sideEffect, locks: 0, raises: [DbError, IOError],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
   ## Set the selected option's value
   if arguments.len() < 5:
@@ -115,7 +115,7 @@ proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
   return QuitSuccess
 
 proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, locks: 0, raises: [DbError, IOError, ValueError],
+    sideEffect, locks: 0, raises: [DbError, IOError],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
