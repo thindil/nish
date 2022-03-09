@@ -65,13 +65,16 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
 proc showOutput*(message: string; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
         returnCode: int = QuitSuccess; fgColor: ForegroundColor = fgDefault) {.gcsafe,
-            locks: 0, sideEffect, raises: [IOError, ValueError], tags: [
+            locks: 0, sideEffect, raises: [IOError], tags: [
                 ReadIOEffect, WriteIOEffect].} =
   ## Show the selected message and prompt (if enabled, default) to the user.
   ## If newLine is true, add a new line after message.
   showPrompt(promptEnabled, previousCommand, returnCode)
   if message != "":
-    stdout.styledWrite(fgColor, message)
+    try:
+      stdout.styledWrite(fgColor, message)
+    except ValueError:
+      stdout.write(message)
     if newLine:
       stdout.writeLine("")
   stdout.flushFile()
