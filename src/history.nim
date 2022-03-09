@@ -86,7 +86,7 @@ func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
       $(historyIndex - 1));
 
 proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, IOError, ValueError], tags: [ReadIOEffect, WriteIOEffect,
+    DbError, IOError], tags: [ReadIOEffect, WriteIOEffect,
     ReadDbEffect, WriteDbEffect].} =
   ## Clear the shell's history, don't add the command to the history
   db.exec(sql"DELETE FROM history");
