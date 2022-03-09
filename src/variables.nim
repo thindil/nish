@@ -85,8 +85,8 @@ proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
     if varValues.len() > 1:
       try:
         putEnv(varValues[0], varValues[1])
-        showOutput("Environment variable '" & varValues[0] &
-            "' set to '" & varValues[1] & "'", true)
+        showOutput(message = "Environment variable '" & varValues[0] &
+            "' set to '" & varValues[1] & "'", fgColor = fgGreen)
         result = QuitSuccess
       except OSError:
         result = showError()
@@ -103,7 +103,8 @@ proc unsetCommand*(arguments: string; db: DbConn): int {.gcsafe,
   if arguments.len() > 0:
     try:
       delEnv(arguments)
-      showOutput("Environment variable '" & arguments & "' removed")
+      showOutput(message = "Environment variable '" & arguments & "' removed",
+          fgColor = fgGreen)
       result = QuitSuccess
     except OSError:
       result = showError()
@@ -163,7 +164,8 @@ proc deleteVariable*(arguments: string; historyIndex: var int;
       " doesn't exist.")
   historyIndex = updateHistory("variable delete", db)
   setVariables(getCurrentDir(), db, getCurrentDir())
-  showOutput("Deleted the variable with Id: " & varName)
+  showOutput(message = "Deleted the variable with Id: " & varName,
+      fgColor = fgGreen)
   return QuitSuccess
 
 proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
