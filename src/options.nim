@@ -110,7 +110,8 @@ proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
     return showError("Shell's option with name '" & name &
       "' doesn't exists. Please use command 'options show' to see all available shell's options.")
   setOption(name = name, value = value, db = db)
-  showOutput("Value for option '" & name & "' was set to '" & value & "'");
+  showOutput(message = "Value for option '" & name & "' was set to '" & value &
+      "'", fgColor = fgGreen);
   return QuitSuccess
 
 proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
@@ -130,7 +131,8 @@ proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
       return showError("Shell's option with name '" & name &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
     db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", name)
-    showOutput("The shell's option '" & name & "' reseted to its default value.")
+    showOutput(message = "The shell's option '" & name &
+        "' reseted to its default value.", fgColor = fgGreen)
   return QuitSuccess
 
 func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
