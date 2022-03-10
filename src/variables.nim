@@ -241,6 +241,7 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory("variable add", db)
   setVariables(getCurrentDir(), db, getCurrentDir())
+  showOutput(message = "The new variable '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess
 
 proc editVariable*(arguments: string; historyIndex: var int;
@@ -320,4 +321,6 @@ proc editVariable*(arguments: string; historyIndex: var int;
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory("variable edit", db)
   setVariables(getCurrentDir(), db, getCurrentDir())
+  showOutput(message = "The variable  with Id: '" & varId & "' edited.",
+      fgColor = fgGreen)
   return QuitSuccess
