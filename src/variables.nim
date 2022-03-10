@@ -121,7 +121,7 @@ proc listVariables*(arguments: string; historyIndex: var int;
     nameLength = db.getValue(sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len()
     valueLength = db.getValue(sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len()
   if arguments == "list":
-    showFormHeader("Declared environent variables are:", 34)
+    showFormHeader("Declared environent variables are:")
     showOutput(message = "ID   $1 $2 Description" % [alignLeft("Name",
         nameLength), alignLeft("Value", valueLength)], fgColor = fgMagenta)
     for row in db.fastRows(sql(buildQuery(getCurrentDir(),
@@ -129,7 +129,7 @@ proc listVariables*(arguments: string; historyIndex: var int;
       showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], nameLength) &
           " " & alignLeft(row[2], valueLength) & " " & row[3])
   elif arguments == "list all":
-    showFormHeader("All declared environent variables are:", 38)
+    showFormHeader("All declared environent variables are:")
     showOutput(message = "ID   $1 $2 Description" % [alignLeft("Name",
         nameLength), alignLeft("Value", valueLength)], fgColor = fgMagenta)
     for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
