@@ -116,5 +116,5 @@ proc showFormHeader*(message: string) {.gcsafe, locks: 0,
   except ValueError:
     length = 80
   showOutput(message = repeat('#', length), fgColor = fgYellow)
-  showOutput(message = message, fgColor = fgYellow)
+  showOutput(message = center(message, length), fgColor = fgYellow)
   showOutput(message = repeat('#', length), fgColor = fgYellow)
