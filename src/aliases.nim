@@ -135,8 +135,8 @@ proc showAlias*(arguments: string; historyIndex: var int;
   return QuitSuccess
 
 proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
-    ReadIOEffect, WriteIOEffect].} =
+    DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
+        WriteIOEffect].} =
   ## Show short help about available subcommands related to the aliases
   showOutput("""Available subcommands are: list, delete, show, add, edit
 

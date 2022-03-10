@@ -77,8 +77,8 @@ proc initVariables*(helpContent: var HelpTable;
   setVariables(getCurrentDir(), db)
 
 proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, raises: [DbError, ValueError, IOError], tags: [ReadIOEffect,
-    ReadDbEffect, WriteIOEffect, WriteDbEffect].} =
+    sideEffect, raises: [DbError, ValueError], tags: [ReadIOEffect,
+        ReadDbEffect, WriteIOEffect, WriteDbEffect].} =
   ## Build-in command to set the selected environment variable
   if arguments.len() > 0:
     let varValues = arguments.split("=")
@@ -97,8 +97,8 @@ proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
   discard updateHistory("set " & arguments, db, result)
 
 proc unsetCommand*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, raises: [DbError, ValueError, IOError], tags: [ReadIOEffect,
-    ReadDbEffect, WriteIOEffect, WriteDbEffect].} =
+    sideEffect, raises: [DbError, ValueError], tags: [ReadIOEffect,
+        ReadDbEffect, WriteIOEffect, WriteDbEffect].} =
   ## Build-in command to unset the selected environment variable
   if arguments.len() > 0:
     try:
@@ -138,8 +138,8 @@ proc listVariables*(arguments: string; historyIndex: var int;
   historyIndex = updateHistory("variable " & arguments, db)
 
 proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, IOError, ValueError], tags: [ReadDbEffect, WriteDbEffect,
-    ReadIOEffect, WriteIOEffect].} =
+    DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
+        WriteIOEffect].} =
   ## Show short help about available subcommands related to the environment variables
   showOutput("""Available subcommands are: list, delete, add, edit
 
@@ -241,7 +241,8 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory("variable add", db)
   setVariables(getCurrentDir(), db, getCurrentDir())
-  showOutput(message = "The new variable '" & name & "' added.", fgColor = fgGreen)
+  showOutput(message = "The new variable '" & name & "' added.",
+      fgColor = fgGreen)
   return QuitSuccess
 
 proc editVariable*(arguments: string; historyIndex: var int;
