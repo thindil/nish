@@ -63,7 +63,7 @@ proc setVariables*(newDirectory: string; db: DbConn;
 
 proc initVariables*(helpContent: var HelpTable;
     db: DbConn) {.gcsafe, sideEffect, raises: [DbError, OSError], tags: [
-    ReadDbEffect, WriteEnvEffect].} =
+    ReadDbEffect, WriteEnvEffect, WriteIOEffect].} =
   ## Initialize enviroment variables. Set help related to the variables and
   ## load the local environment variables
   helpContent["set"] = HelpEntry(usage: "set [name=value]",
