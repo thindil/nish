@@ -64,18 +64,26 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
 
 proc showOutput*(message: string; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
-        returnCode: int = QuitSuccess; fgColor: ForegroundColor = fgDefault) {.gcsafe,
-            locks: 0, sideEffect, raises: [], tags: [ReadIOEffect,
-                WriteIOEffect].} =
+        returnCode: int = QuitSuccess; fgColor: ForegroundColor = fgDefault;
+            centered: bool = false) {.gcsafe, locks: 0, sideEffect, raises: [],
+                tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show the selected message and prompt (if enabled, default) to the user.
   ## If newLine is true, add a new line after message.
   showPrompt(promptEnabled, previousCommand, returnCode)
   if message != "":
+    var newMessage: string
+    if centered:
+      try:
+        newMessage = center(message, terminalWidth())
+      except ValueError:
+        newMessage = message
+    else:
+      newMessage = message
     try:
-      stdout.styledWrite(fgColor, message)
+      stdout.styledWrite(fgColor, newMessage)
     except IOError, ValueError:
       try:
-        stdout.write(message)
+        stdout.write(newMessage)
       except IOError:
         discard
     if newLine:
