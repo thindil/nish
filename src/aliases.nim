@@ -64,7 +64,7 @@ proc listAliases*(arguments: string; historyIndex: var int;
         columnLength)], fgColor = fgMagenta)
     historyIndex = updateHistory("alias list", db)
     for alias in aliases.values:
-      let row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
+      let row: Row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
         alias)
       showOutput(alignLeft(row[0], 4) & " " & alignLeft(row[1], columnLength) &
           " " & row[2])
@@ -85,7 +85,7 @@ proc deleteAlias*(arguments: string; historyIndex: var int;
   if arguments.len() < 8:
     historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("Enter the Id of the alias to delete.")
-  let id = arguments[7 .. ^1]
+  let id: string = arguments[7 .. ^1]
   if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?", id) == 0:
     historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("The alias with the Id: " & id &
@@ -105,8 +105,8 @@ proc showAlias*(arguments: string; historyIndex: var int;
     historyIndex = updateHistory("alias show", db, QuitFailure)
     return showError("Enter the ID of the alias to show.")
   let
-    id = arguments[5 .. ^1]
-    row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
+    id: string = arguments[5 .. ^1]
+    row: Row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
       id)
   if row[0] == "":
     historyIndex = updateHistory("alias show", db, QuitFailure)
@@ -154,7 +154,7 @@ proc addAlias*(historyIndex: var int;
   showOutput("You can cancel adding a new alias at any time by double press Escape key.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
-  var name = ""
+  var name: string = ""
   showOutput("Name: ", false)
   while name.len() == 0:
     name = readInput(aliasNameLength)
@@ -170,13 +170,13 @@ proc addAlias*(historyIndex: var int;
   showFormHeader("(2/5) Description")
   showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
   showOutput("Description: ", false)
-  let description = readInput()
+  let description: string = readInput()
   if description == "exit":
     return showError("Adding a new alias cancelled.")
   showFormHeader("(3/5) Working directory")
   showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput("Path: ", false)
-  var path = ""
+  var path: string = ""
   while path.len() == 0:
     path = readInput()
     if path.len() == 0:
@@ -195,11 +195,11 @@ proc addAlias*(historyIndex: var int;
   while inputChar notin {'n', 'N', 'y', 'Y'}:
     inputChar = getch()
   showOutput($inputChar)
-  let recursive = if inputChar in {'n', 'N'}: 0 else: 1
+  let recursive: int = if inputChar in {'n', 'N'}: 0 else: 1
   showFormHeader("(5/5) Commands")
   showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
   showOutput("Command(s): ", false)
-  var commands = ""
+  var commands: string = ""
   while commands.len() == 0:
     commands = readInput()
     if commands.len() == 0:
@@ -229,8 +229,8 @@ proc editAlias*(arguments: string; historyIndex: var int;
   if arguments.len() < 6:
     return showError("Enter the ID of the alias to edit.")
   let
-    id = arguments[5 .. ^1]
-    row = db.getRow(sql"SELECT name, path, commands, description FROM aliases WHERE id=?",
+    id: string = arguments[5 .. ^1]
+    row: Row = db.getRow(sql"SELECT name, path, commands, description FROM aliases WHERE id=?",
     id)
   if row[0] == "":
     return showError("The alias with the ID: " & id & " doesn't exists.")
@@ -241,7 +241,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = row[0], newLine = false, fgColor = fgMagenta)
   showOutput("'. Can contains only letters, numbers and underscores.")
   showOutput("Name: ", false)
-  var name = readInput(aliasNameLength)
+  var name: string = readInput(aliasNameLength)
   while name.len() > 0 and not name.validIdentifier:
     discard showError("Please enter a valid name for the alias.")
     name = readInput(aliasNameLength)
@@ -255,7 +255,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = row[3], newLine = false, fgColor = fgMagenta)
   showOutput("'. Can't contains a new line character.: ")
   showOutput("Description: ", false)
-  var description = readInput()
+  var description: string = readInput()
   if description == "exit":
     return showError("Editing the alias cancelled.")
   elif description == "":
@@ -265,7 +265,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
       newLine = false)
   showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
   showOutput("'. Must be a path to the existing directory.")
-  var path = readInput()
+  var path: string = readInput()
   while path.len() > 0 and (path != "exit" and not dirExists(path)):
     discard showError("Please enter a path to the existing directory")
     path = readInput()
@@ -280,7 +280,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = getch()
-  let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  let recursive: int = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
   showFormHeader("(5/5) Commands")
   showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
@@ -288,7 +288,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
   showOutput(message = row[2], newLine = false, fgColor = fgMagenta)
   showOutput(message = "'. Commands can't contain a new line character.:")
   showOutput("Commands: ", false)
-  var commands = readInput()
+  var commands: string = readInput()
   if commands == "exit":
     return showError("Editing the alias cancelled.")
   elif commands == "":
@@ -326,7 +326,7 @@ proc execAlias*(arguments: string; commandName: string;
       return showError()
 
   let
-    currentDirectory = getCurrentDir()
+    currentDirectory: string = getCurrentDir()
     commandArguments: seq[string] = initOptParser(arguments).remainingArgs()
   var inputString: string = db.getValue(
       sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])
@@ -350,7 +350,7 @@ proc execAlias*(arguments: string; commandName: string;
   while inputString.len() > 0:
     var
       conjCommands: bool
-      userInput = initOptParser(inputString)
+      userInput: OptParser = initOptParser(inputString)
     let
       command: string = getArguments(userInput, conjCommands)
     inputString = join(userInput.remainingArgs(), " ")
