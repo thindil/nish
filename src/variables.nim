@@ -42,24 +42,30 @@ proc buildQuery(directory, fields: string): string {.gcsafe, sideEffect,
   result.add(" ORDER BY id ASC")
 
 proc setVariables*(newDirectory: string; db: DbConn;
-    oldDirectory: string = "") {.gcsafe, sideEffect, raises: [DbError],
+    oldDirectory: string = "") {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect].} =
   ## Set the environment variables in the selected directory and remove the
   ## old ones
 
   # Remove the old environment variables if needed
   if oldDirectory.len() > 0:
-    for dbResult in db.fastRows(sql(buildQuery(oldDirectory, "name"))):
-      try:
-        delEnv(dbResult[0])
-      except OSError:
-        discard showError("Can't delete environment variables.")
-  # Set the new environment variables
-  for dbResult in db.fastRows(sql(buildQuery(newDirectory, "name, value"))):
     try:
-      putEnv(dbResult[0], dbResult[1])
-    except OSError:
-      discard showError("Can't set environment variables.")
+      for dbResult in db.fastRows(sql(buildQuery(oldDirectory, "name"))):
+        try:
+          delEnv(dbResult[0])
+        except OSError as e:
+          discard showError("Can't delete environment variables. Reason:" & e.msg)
+    except DbError as e:
+      discard showError("Can't read environment variables for the old directory. Reason:" & e.msg)
+  # Set the new environment variables
+  try:
+    for dbResult in db.fastRows(sql(buildQuery(newDirectory, "name, value"))):
+      try:
+        putEnv(dbResult[0], dbResult[1])
+      except OSError as e:
+        discard showError("Can't set environment variables. Reason:" & e.msg)
+  except DbError as e:
+    discard showError("Can't read environment variables for the new directory. Reason:" & e.msg)
 
 proc initVariables*(helpContent: var HelpTable;
     db: DbConn) {.gcsafe, sideEffect, raises: [DbError, OSError], tags: [
