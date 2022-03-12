@@ -27,7 +27,7 @@ import std/[db_sqlite, os, tables]
 import aliases, constants, history, output, variables
 
 proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
-    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError],
+    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [ValueError],
         tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect].} =
   ## Change the current directory for the shell
   try:
