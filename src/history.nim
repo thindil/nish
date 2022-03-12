@@ -117,6 +117,6 @@ proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
       spacesAmount), fgColor = fgMagenta)
   for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
       amount, amount):
-    showOutput(indent(row[1] & "      " & alignLeft(row[2], 5) & "      " &
+    showOutput(indent(row[1] & "      " & center(row[2], 5) & "      " &
         row[0], spacesAmount))
   return updateHistory("history show", db)
