@@ -68,7 +68,7 @@ proc setVariables*(newDirectory: string; db: DbConn;
     discard showError("Can't read environment variables for the new directory. Reason:" & e.msg)
 
 proc initVariables*(helpContent: var HelpTable;
-    db: DbConn) {.gcsafe, sideEffect, raises: [DbError, OSError], tags: [
+    db: DbConn) {.gcsafe, sideEffect, raises: [OSError], tags: [
     ReadDbEffect, WriteEnvEffect, WriteIOEffect].} =
   ## Initialize enviroment variables. Set help related to the variables and
   ## load the local environment variables
