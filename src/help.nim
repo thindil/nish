@@ -52,9 +52,9 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
         fgColor = fgYellow)
     showOutput(helpEntry.usage & "\n")
     var
-      content = "    "
-      index = 4
-    let maxLength = terminalWidth() - 8;
+      content: string = "    "
+      index: Positive = 4
+    let maxLength: int = terminalWidth() - 8;
     for ch in helpEntry.content:
       content.add(ch)
       index.inc()
@@ -69,10 +69,10 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
     showHelpEntry(helpContent["help"], "Available help topics")
   else:
     let
-      tokens = split(topic)
-      args = join(tokens[1 .. ^1], " ")
-      command = tokens[0]
-      key = command & (if args.len() > 0: " " & args else: "")
+      tokens: seq[string] = split(topic)
+      args: string = join(tokens[1 .. ^1], " ")
+      command: string = tokens[0]
+      key: string = command & (if args.len() > 0: " " & args else: "")
     if helpContent.hasKey(key):
       showHelpEntry(helpContent[key])
     elif helpContent.hasKey(command):
@@ -91,7 +91,7 @@ func setMainHelp*(helpContent: var HelpTable) {.gcsafe, raises: [KeyError],
   ## Set the content of the main help screen
   helpContent["help"] = HelpEntry(usage: "\n    ")
   var
-    i = 1
+    i: Positive = 1
     keys: seq[string]
   for key in helpContent.keys:
     keys.add(key)
