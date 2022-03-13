@@ -122,8 +122,9 @@ proc unsetCommand*(arguments: string; db: DbConn): int {.gcsafe,
       showOutput(message = "Environment variable '" & arguments & "' removed",
           fgColor = fgGreen)
       result = QuitSuccess
-    except OSError:
-      result = showError()
+    except OSError as e:
+      result = showError("Can't unset the environment variable '" & arguments &
+          "'. Reason:" & e.msg)
   else:
     result = showError("You have to enter the name of the variable to unset.")
   discard updateHistory("unset " & arguments, db, result)
