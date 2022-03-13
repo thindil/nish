@@ -68,8 +68,8 @@ proc setVariables*(newDirectory: string; db: DbConn;
     discard showError("Can't read environment variables for the new directory. Reason:" & e.msg)
 
 proc initVariables*(helpContent: var HelpTable;
-    db: DbConn) {.gcsafe, sideEffect, raises: [OSError], tags: [
-    ReadDbEffect, WriteEnvEffect, WriteIOEffect].} =
+    db: DbConn) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+        WriteEnvEffect, WriteIOEffect].} =
   ## Initialize enviroment variables. Set help related to the variables and
   ## load the local environment variables
   helpContent["set"] = HelpEntry(usage: "set [name=value]",
@@ -86,7 +86,10 @@ proc initVariables*(helpContent: var HelpTable;
       content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
   helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
       content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
-  setVariables(getCurrentDir(), db)
+  try:
+    setVariables(getCurrentDir(), db)
+  except OSError as e:
+    discard showError("Can't set environment variables for the current directory. Reason:" & e.msg)
 
 proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
     sideEffect, raises: [DbError, ValueError], tags: [ReadIOEffect,
