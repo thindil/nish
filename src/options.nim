@@ -60,9 +60,7 @@ proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     DbError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect].} =
   ## Show the shell's options
-  showOutput(message = "######################", fgColor = fgYellow)
-  showOutput(message = "Available options are:", fgColor = fgYellow)
-  showOutput(message = "######################", fgColor = fgYellow)
+  showFormHeader("Available options are:")
   showOutput(message = "Name               Value   Default Type    Description",
       fgColor = fgMagenta)
   for row in db.fastRows(sql"SELECT option, value, defaultvalue, valuetype, description FROM options"):
