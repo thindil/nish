@@ -115,24 +115,26 @@ proc showAlias*(arguments: string; historyIndex: var int;
     return showError("The alias with the ID: " & id &
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
-  showOutput(message = alignLeft("Id:", 13), newLine = false,
-      fgColor = fgMagenta)
+  let spacesAmount: Natural = (terminalWidth() / 12).int
+  showOutput(message = indent(alignLeft("Id:", 13), spacesAmount),
+      newLine = false, fgColor = fgMagenta)
   showOutput(id)
-  showOutput(message = alignLeft("Name:", 13), newLine = false,
-      fgColor = fgMagenta)
+  showOutput(message = indent(alignLeft("Name:", 13), spacesAmount),
+      newLine = false, fgColor = fgMagenta)
   showOutput(row[0])
-  showOutput(message = "Description: ", newLine = false, fgColor = fgMagenta)
+  showOutput(message = indent("Description: ", spacesAmount), newLine = false,
+      fgColor = fgMagenta)
   showOutput(row[2])
   if row[4] == "1":
-    showOutput(message = alignLeft("Path:", 13), newLine = false,
-        fgColor = fgMagenta)
+    showOutput(message = indent(alignLeft("Path:", 13), spacesAmount),
+        newLine = false, fgColor = fgMagenta)
     showOutput(row[3] & " (recursive)")
   else:
-    showOutput(message = alignLeft("Path:", 13), newLine = false,
-        fgColor = fgMagenta)
+    showOutput(message = indent(alignLeft("Path:", 13), spacesAmount),
+        newLine = false, fgColor = fgMagenta)
     showOutput(row[3])
-  showOutput(message = alignLeft("Command(s):", 13), newLine = false,
-      fgColor = fgMagenta)
+  showOutput(message = indent(alignLeft("Command(s):", 13), spacesAmount),
+      newLine = false, fgColor = fgMagenta)
   showOutput(row[1])
   return QuitSuccess
 
