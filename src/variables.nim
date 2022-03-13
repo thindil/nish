@@ -103,8 +103,9 @@ proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
         showOutput(message = "Environment variable '" & varValues[0] &
             "' set to '" & varValues[1] & "'", fgColor = fgGreen)
         result = QuitSuccess
-      except OSError:
-        result = showError()
+      except OSError as e:
+        result = showError("Can't set the environment variable '" & varValues[
+            0] & "'. Reason:" & e.msg)
     else:
       result = showError("You have to enter the name of the variable and its value.")
   else:
