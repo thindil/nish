@@ -12,12 +12,12 @@ All notable changes to this project will be documented in this file.
 - Updated editing an existing alias form
 - Updated look of list of available aliases, help entries, showing last
   commands from shell's history, list of shell's options, list of environment
-  variables
+  variables, showing the selected alias details
 - Updated adding a new variable form
 - Updated editing an existing variable form
 
 ### Fixed
-- Merging commands with || in aliases don't work properly
+- Merging commands with || in aliases doesn't work properly
 
 ## [0.1.0] - 2022-02-23
 - Initial release
