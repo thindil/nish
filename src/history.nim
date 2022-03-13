@@ -110,9 +110,10 @@ proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
         WriteIOEffect].} =
   ## Show the last X entries to the shell's history. X can be set in the shell's
   ## options as 'historyAmount' option.
-  let amount = getOption("historyAmount", db)
+  let
+    amount: string = getOption("historyAmount", db)
+    spacesAmount: Natural = (terminalWidth() / 12).int
   showFormHeader(message = "The last commands from the shell's history")
-  let spacesAmount: Natural = (terminalWidth() / 12).int
   showOutput(message = indent("Last used                Times      Command",
       spacesAmount), fgColor = fgMagenta)
   for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
