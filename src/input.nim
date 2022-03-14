@@ -31,7 +31,7 @@ proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
   # Get the user input and parse it
-  var inputChar = '\0'
+  var inputChar: char = '\0'
   # Read the user input until not meet new line character or the input
   # reach the maximum length
   while inputChar.ord() != 13 and result.len() < maxLength:
