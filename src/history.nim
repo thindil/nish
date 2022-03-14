@@ -63,9 +63,10 @@ proc initHistory*(db: DbConn; helpContent: var HelpTable): int =
   # Return the current help index set on the last command in the shell's history
   return historyLength(db)
 
-func updateHistory*(commandToAdd: string; db: DbConn;
-    returnCode: int = QuitSuccess): int {.gcsafe, raises: [
-ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect].} =
+proc updateHistory*(commandToAdd: string; db: DbConn;
+    returnCode: int = QuitSuccess): int {.gcsafe, sideEffect, raises: [
+        ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect,
+        WriteIOEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
   ## its amount ond last used timestamp. Remove the oldest entry if there is
