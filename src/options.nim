@@ -57,15 +57,16 @@ func setOption*(name: string; value, description, valuetype: string = "";
         name, value, description, valuetype, value)
 
 proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
+    DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect].} =
   ## Show the shell's options
+  let spacesAmount: Natural = (terminalWidth() / 12).int
   showFormHeader("Available options are:")
-  showOutput(message = "Name               Value   Default Type    Description",
-      fgColor = fgMagenta)
+  showOutput(message = indent("Name               Value   Default Type    Description",
+      spacesAmount), fgColor = fgMagenta)
   for row in db.fastRows(sql"SELECT option, value, defaultvalue, valuetype, description FROM options"):
-    showOutput(alignLeft(row[0], 18) & " " & alignLeft(row[1], 7) & " " &
-        alignLeft(row[2], 7) & " " & alignLeft(row[3], 7) & " " & row[4])
+    showOutput(indent(alignLeft(row[0], 18) & " " & alignLeft(row[1], 7) & " " &
+        alignLeft(row[2], 7) & " " & alignLeft(row[3], 7) & " " & row[4], spacesAmount))
 
 proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [],
     tags: [ReadIOEffect, WriteIOEffect].} =
