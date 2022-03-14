@@ -26,10 +26,13 @@
 import std/[db_sqlite, strutils, tables, terminal]
 import constants, options, output
 
-func historyLength*(db: DbConn): int {.gcsafe, locks: 0, raises: [ValueError,
-    DbError], tags: [ReadDbEffect].} =
+proc historyLength*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+    ValueError], tags: [ReadDbEffect, WriteIOEffect].} =
   ## Get the current length of the shell's commmand's history
-  return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
+  try:
+    return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
+  except DbError as e:
+    return showError("Can't get the length of the shell's commands history. Reason: " & e.msg)
 
 proc initHistory*(db: DbConn; helpContent: var HelpTable): int =
   ## Initialize shell's commands history. Create history table if not exists,
