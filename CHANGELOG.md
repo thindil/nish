@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - Updated editing an existing alias form
 - Updated look of list of available aliases, help entries, showing last
   commands from shell's history, list of shell's options, list of environment
-  variables, showing the selected alias details
+  variables, showing the selected alias details, list of shell's options
 - Updated adding a new variable form
 - Updated editing an existing variable form
 
