@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Checks for valid name and path during creating or editing the shell's aliases
+- Checks for valid name and path during creating or editing the shell's
+  environment variables
 
 ### Changed
 - Updated README.md
