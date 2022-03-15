@@ -35,7 +35,9 @@ proc historyLength*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [],
     return showError("Can't get the length of the shell's commands history. Reason: " &
         getCurrentExceptionMsg())
 
-proc initHistory*(db: DbConn; helpContent: var HelpTable): int =
+proc initHistory*(db: DbConn; helpContent: var HelpTable): int {.gcsafe,
+    sideEffect, locks: 0, raises: [DbError], tags: [ReadDbEffect, WriteIOEffect,
+    WriteDbEffect].} =
   ## Initialize shell's commands history. Create history table if not exists,
   ## set the current historyIndex, options related to the history and help
   ## related to the history commands
