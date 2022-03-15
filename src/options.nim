@@ -40,7 +40,7 @@ func setOption*(name: string; value, description, valuetype: string = "";
     WriteDbEffect].} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
-  var sqlQuery = "UPDATE options SET "
+  var sqlQuery: string = "UPDATE options SET "
   if value != "":
     sqlQuery.add("value='" & value & "'")
   if description != "":
@@ -120,7 +120,7 @@ proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
   ## is set to "all", reset all options to their default values
   if arguments.len() < 7:
     return showError("Please enter name of the option to reset or 'all' to reset all options.")
-  let name = arguments[6 .. ^1]
+  let name: string = arguments[6 .. ^1]
   if name == "all":
     db.exec(sql"UPDATE options SET value=defaultvalue")
     showOutput("All shell's options are reseted to their default values.")
