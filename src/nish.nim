@@ -166,7 +166,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError],
     else: discard
 
   # Connect to the shell database
-  let db = startDb(dbpath)
+  let db: DbConn = startDb(dbpath)
 
   # Stop shell if connection to its database was unsuccesful
   if db == nil:
@@ -201,7 +201,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError],
         # Write prompt
         showPrompt(not oneTimeCommand, commandName, returnCode)
         # Get the user input and parse it
-        var inputChar = '\0'
+        var inputChar: char = '\0'
         # Read the user input until not meet new line character or the input
         # reach the maximum length
         while inputChar.ord() != 13 and inputString.len() < maxInputLength:
@@ -229,7 +229,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError],
               # Arrow down key pressed
               elif inputChar == 'B' and historyIndex > 0:
                 historyIndex.inc()
-                let currentHistoryLength = historyLength(db)
+                let currentHistoryLength: int = historyLength(db)
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
                 inputString = getHistory(historyIndex, db)
@@ -357,7 +357,7 @@ proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError],
           historyIndex = updateHistory("alias " & arguments, db, returnCode)
       # Execute external command or alias
       else:
-        let commandToExecute = commandName & " " & arguments
+        let commandToExecute: string = commandName & " " & arguments
         # Check if command is an alias, if yes, execute it
         if commandName in aliases:
           returnCode = execAlias(arguments, commandName, aliases, db)
