@@ -118,7 +118,11 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
 proc showFormHeader*(message: string) {.gcsafe, locks: 0,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show form's header with the selected message
-  let length: Natural = try: terminalWidth() except ValueError: 80
-  showOutput(message = repeat('#', length), fgColor = fgYellow)
+  let
+    length: Natural = try: terminalWidth() except ValueError: 80
+    spacesAmount: Natural = (length / 12).int
+  showOutput(message = indent(repeat('#', length - (spacesAmount * 2)),
+      spacesAmount), fgColor = fgYellow)
   showOutput(message = center(message, length), fgColor = fgYellow)
-  showOutput(message = repeat('#', length), fgColor = fgYellow)
+  showOutput(message = indent(repeat('#', length - (spacesAmount * 2)),
+      spacesAmount), fgColor = fgYellow)
