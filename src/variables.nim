@@ -96,7 +96,7 @@ proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
         ReadDbEffect, WriteIOEffect, WriteDbEffect].} =
   ## Build-in command to set the selected environment variable
   if arguments.len() > 0:
-    let varValues = arguments.split("=")
+    let varValues: seq[string] = arguments.split("=")
     if varValues.len() > 1:
       try:
         putEnv(varValues[0], varValues[1])
@@ -135,8 +135,8 @@ proc listVariables*(arguments: string; historyIndex: var int;
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
   let
-    nameLength = db.getValue(sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len()
-    valueLength = db.getValue(sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len()
+    nameLength: int = db.getValue(sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len()
+    valueLength: int = db.getValue(sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len()
     spacesAmount: Natural = (terminalWidth() / 12).int
   if arguments == "list":
     showFormHeader("Declared environent variables are:")
@@ -176,7 +176,7 @@ proc deleteVariable*(arguments: string; historyIndex: var int;
   if arguments.len() < 8:
     historyIndex = updateHistory("variable delete", db, QuitFailure)
     return showError("Enter the Id of the variable to delete.")
-  let varName = arguments[7 .. ^1]
+  let varName: string = arguments[7 .. ^1]
   if db.execAffectedRows(sql"DELETE FROM variables WHERE id=?",
       varName) == 0:
     historyIndex = updateHistory("variable delete", db, QuitFailure)
@@ -196,7 +196,7 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   showOutput("You can cancel adding a new variable at any time by double press Escape key.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
-  var name = ""
+  var name: string = ""
   showOutput("Name: ", false)
   while name.len() == 0:
     name = readInput(aliasNameLength)
@@ -212,13 +212,13 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   showFormHeader("(2/5) Description")
   showOutput("The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
   showOutput("Description: ", false)
-  let description = readInput()
+  let description: string = readInput()
   if description == "exit":
     return showError("Adding a new variable cancelled.")
   showFormHeader("(3/5) Working directory")
   showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput("Path: ", false)
-  var path = ""
+  var path: string = ""
   while path.len() == 0:
     path = readInput()
     if path.len() == 0:
@@ -237,12 +237,12 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = getch()
-  let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  let recursive: int = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
   showFormHeader("(5/5) Value")
   showOutput("The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
   showOutput("Value: ", false)
-  var value = ""
+  var value: string = ""
   while value.len() == 0:
     value = readInput()
     if value.len() == 0:
@@ -273,8 +273,8 @@ proc editVariable*(arguments: string; historyIndex: var int;
   if arguments.len() < 6:
     return showError("Enter the ID of the variable to edit.")
   let
-    varId = arguments[5 .. ^1]
-    row = db.getRow(sql"SELECT name, path, value, description FROM variables WHERE id=?",
+    varId: string = arguments[5 .. ^1]
+    row: Row = db.getRow(sql"SELECT name, path, value, description FROM variables WHERE id=?",
     varId)
   if row[0] == "":
     return showError("The variable with the ID: " & varId &
@@ -282,7 +282,7 @@ proc editVariable*(arguments: string; historyIndex: var int;
   showOutput("You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
-  var name = "exit"
+  var name: string = "exit"
   showOutput("Name: ", false)
   while name.len() > 0:
     name = readInput(aliasNameLength)
@@ -298,7 +298,7 @@ proc editVariable*(arguments: string; historyIndex: var int;
   showFormHeader("(2/5) Description")
   showOutput("The description of the variable. It will be show on the list of available variable. Current value: '" &
       row[3] & "'. Can't contains a new line character.: ")
-  var description = readInput()
+  var description: string = readInput()
   if description == "exit":
     return showError("Editing the variable cancelled.")
   elif description == "":
@@ -307,7 +307,7 @@ proc editVariable*(arguments: string; historyIndex: var int;
   showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
       row[1] & "'. Must be a path to the existing directory.:")
   showOutput("Path: ", false)
-  var path = "exit"
+  var path: string = "exit"
   while path.len() > 0:
     path = readInput()
     if path.len() > 0 and not dirExists(path) and path != "exit":
@@ -325,12 +325,12 @@ proc editVariable*(arguments: string; historyIndex: var int;
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = getch()
-  let recursive = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  let recursive: int = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   stdout.writeLine("")
   showFormHeader("(5/5) Value")
   showOutput("The value of the variable. Current value: '" & row[2] &
       "'. Value can't contain a new line character.:")
-  var value = readInput()
+  var value: string = readInput()
   if value == "exit":
     return showError("Editing the variable cancelled.")
   elif value == "":
