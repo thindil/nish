@@ -26,8 +26,8 @@
 import std/[algorithm, db_sqlite, strutils, tables, terminal]
 import constants, history, options, output
 
-func updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe,
-    raises: [DbError], tags: [ReadDbEffect].} =
+proc updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, WriteIOEffect].} =
   ## Update the part of the shell's help content which depends on dynamic
   ## data, like the shell's options' values
   helpContent["history show"] = HelpEntry(usage: "history show",
