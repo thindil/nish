@@ -26,8 +26,11 @@
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, output
 
-proc setAliases*(aliases: var OrderedTable[string, int]; directory: string;
-    db: DbConn) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+using
+  db: DbConn # Connection to the shell's database
+  aliases: var OrderedTable[string, int] # The list of aliases available in the selected directory
+
+proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect].} =
   ## FUNCTION
   ## Set the available aliases in the selected directory
@@ -59,7 +62,7 @@ proc setAliases*(aliases: var OrderedTable[string, int]; directory: string;
     discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
 proc listAliases*(arguments: string; historyIndex: var int;
-    aliases: OrderedTable[string, int]; db: DbConn) {.gcsafe, sideEffect,
+    aliases: OrderedTable[string, int]; db) {.gcsafe, sideEffect,
         locks: 0, raises: [IOError, ValueError], tags: [ReadIOEffect,
         WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## List available aliases, if entered command was "alias list all" list all
@@ -86,8 +89,7 @@ proc listAliases*(arguments: string; historyIndex: var int;
       showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
           columnLength) & " " & row[2], spacesAmount))
 
-proc deleteAlias*(arguments: string; historyIndex: var int;
-    aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
+proc deleteAlias*(arguments: string; historyIndex: var int; aliases; db): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## Delete the selected alias from the shell's database
@@ -105,7 +107,7 @@ proc deleteAlias*(arguments: string; historyIndex: var int;
   return QuitSuccess
 
 proc showAlias*(arguments: string; historyIndex: var int;
-    aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
+    aliases: var OrderedTable[string, int]; db): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## Show details about the selected alias, its ID, name, description and
@@ -145,7 +147,7 @@ proc showAlias*(arguments: string; historyIndex: var int;
   showOutput(row[1])
   return QuitSuccess
 
-proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+proc helpAliases*(db): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect].} =
   ## Show short help about available subcommands related to the aliases
@@ -156,8 +158,7 @@ proc helpAliases*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
 """)
   return updateHistory("alias", db)
 
-proc addAlias*(historyIndex: var int;
-    aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
+proc addAlias*(historyIndex: var int; aliases; db): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
   ## Add a new alias to the shell. Ask the user a few questions and fill the
@@ -232,8 +233,7 @@ proc addAlias*(historyIndex: var int;
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess
 
-proc editAlias*(arguments: string; historyIndex: var int;
-    aliases: var OrderedTable[string, int]; db: DbConn): int {.gcsafe,
+proc editAlias*(arguments: string; historyIndex: var int; aliases; db): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
   ## Edit the selected alias
@@ -315,8 +315,7 @@ proc editAlias*(arguments: string; historyIndex: var int;
       fgColor = fgGreen)
   return QuitSuccess
 
-proc execAlias*(arguments: string; commandName: string;
-    aliases: var OrderedTable[string, int]; db: DbConn): int{.gcsafe,
+proc execAlias*(arguments: string; commandName: string; aliases; db): int{.gcsafe,
         sideEffect, raises: [DbError, ValueError, OSError], tags: [
             ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
             ExecIOEffect,
@@ -324,8 +323,8 @@ proc execAlias*(arguments: string; commandName: string;
   ## Execute the selected by the user alias. If it is impossible due to lack
   ## of needed arguments or other errors, print information about it.
 
-  proc changeDirectory(newDirectory: string; aliases: var OrderedTable[string,
-      int]; db: DbConn): int {.gcsafe, sideEffect, raises: [ValueError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+  proc changeDirectory(newDirectory: string; aliases; db): int {.gcsafe,
+    sideEffect, raises: [ValueError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
               WriteIOEffect].} =
     ## Change the current directory for the shell
     let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
@@ -377,7 +376,7 @@ proc execAlias*(arguments: string; commandName: string;
       break
   return changeDirectory(currentDirectory, aliases, db)
 
-proc initAliases*(helpContent: var HelpTable; db: DbConn): OrderedTable[string,
+proc initAliases*(helpContent: var HelpTable; db): OrderedTable[string,
     int] {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect].} =
   ## Initialize the shell's aliases. Set help related to the aliases and
