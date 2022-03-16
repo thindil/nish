@@ -29,7 +29,14 @@ import constants, history, input, output
 proc setAliases*(aliases: var OrderedTable[string, int]; directory: string;
     db: DbConn) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect].} =
+  ## FUNCTION
   ## Set the available aliases in the selected directory
+  ## PARAMETERS
+  ## aliases   - the list of aliases available in the selected directory
+  ## directory - the directory in which the aliases will be set
+  ## db        - the connection to the shell's database
+  ## RESULT
+  ## The parameter aliases with the new list of available aliases
   aliases.clear()
   var
     dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
@@ -40,8 +47,8 @@ proc setAliases*(aliases: var OrderedTable[string, int]; directory: string;
   while remainingDirectory != "":
     dbQuery.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
     remainingDirectory = parentDir(remainingDirectory)
-
   dbQuery.add(" ORDER BY id ASC")
+  # Set the aliases
   try:
     for dbResult in db.fastRows(sql(dbQuery)):
       try:
