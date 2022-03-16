@@ -26,12 +26,17 @@
 import std/[db_sqlite, strutils, tables, terminal]
 import constants, output
 
-func getOption*(name: string; db: DbConn;
-    defaultValue: string = ""): string {.gcsafe, locks: 0, raises: [DbError],
-    tags: [ReadDbEffect].} =
+proc getOption*(name: string; db: DbConn;
+    defaultValue: string = ""): string {.gcsafe, sideEffect, locks: 0, raises: [],
+        tags: [ReadDbEffect, WriteIOEffect].} =
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
-  result = db.getValue(sql"SELECT value FROM options WHERE option=?", name)
+  try:
+    result = db.getValue(sql"SELECT value FROM options WHERE option=?", name)
+  except DbError as e:
+    discard showError("Can't get value for option '" & name &
+        "' from database. Reason: " & e.msg)
+    result = defaultValue
   if result == "":
     result = defaultValue
 
