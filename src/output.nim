@@ -96,8 +96,8 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
   ## code to error. If message is empty, print the current exception message
   if message == "":
     let
-      currentException = getCurrentException()
-      stackTrace = getStackTrace(currentException)
+      currentException: ref Exception = getCurrentException()
+      stackTrace: string = getStackTrace(currentException)
     try:
       stderr.styledWriteLine(fgRed, "Type: " & $currentException.name)
       stderr.styledWriteLine(fgRed, "Message: " & currentException.msg)
