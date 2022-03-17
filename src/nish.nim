@@ -39,12 +39,12 @@ func showCommandLineHelp() {.gcsafe, locks: 0, raises: [], tags: [].} =
 func showProgramVersion() {.gcsafe, locks: 0, raises: [], tags: [].} =
   ## Show the program version
   debugEcho """
-    Nish version 0.2.0
+    Nish version """ & shellVersion & """
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
     License: 3-Clause BSD"""
   quit QuitSuccess
 
-proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect, locks: 0,
+proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
     raises: [], tags: [DbEffect, WriteIOEffect].} =
   ## Close the shell database and quit from the program with the selected return code
   try:
