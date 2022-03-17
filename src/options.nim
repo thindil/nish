@@ -27,8 +27,8 @@ import std/[db_sqlite, strutils, tables, terminal]
 import constants, output
 
 proc getOption*(name: string; db: DbConn;
-    defaultValue: string = ""): string {.gcsafe, sideEffect, locks: 0, raises: [],
-        tags: [ReadDbEffect, WriteIOEffect].} =
+    defaultValue: string = ""): string {.gcsafe, sideEffect, locks: 0, raises: [
+        ], tags: [ReadDbEffect, WriteIOEffect].} =
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
   try:
@@ -40,9 +40,9 @@ proc getOption*(name: string; db: DbConn;
   if result == "":
     result = defaultValue
 
-func setOption*(name: string; value, description, valuetype: string = "";
-    db: DbConn) {.gcsafe, locks: 0, raises: [DbError], tags: [ReadDbEffect,
-    WriteDbEffect].} =
+proc setOption*(name: string; value, description, valuetype: string = "";
+    db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, WriteIOEffect].} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
   var sqlQuery: string = "UPDATE options SET "
@@ -57,9 +57,12 @@ func setOption*(name: string; value, description, valuetype: string = "";
       sqlQuery.add(", ")
     sqlQuery.add("valuetype='" & valuetype & "'")
   sqlQuery.add(" WHERE option='" & name & "'")
-  if db.execAffectedRows(sql(sqlQuery)) == 0:
-    db.exec(sql"INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)",
-        name, value, description, valuetype, value)
+  try:
+    if db.execAffectedRows(sql(sqlQuery)) == 0:
+      db.exec(sql"INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)",
+          name, value, description, valuetype, value)
+  except DbError as e:
+    discard showError("Can't set value for option '" & name & "'. Reason: " & e.msg)
 
 proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
     DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
