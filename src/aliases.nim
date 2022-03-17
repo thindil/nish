@@ -107,7 +107,7 @@ proc deleteAlias*(arguments: string; historyIndex: var int; aliases; db): int {.
   return QuitSuccess
 
 proc showAlias*(arguments: string; historyIndex: var int;
-    aliases: var OrderedTable[string, int]; db): int {.gcsafe,
+    aliases: OrderedTable[string, int]; db): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
   ## Show details about the selected alias, its ID, name, description and
