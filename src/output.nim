@@ -23,7 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[os, strutils, terminal]
+import std/[os, strutils, terminal, times]
+import constants
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [],
@@ -90,8 +91,8 @@ proc showOutput*(message: string; newLine: bool = true;
       echo("")
   stdout.flushFile()
 
-proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
-    raises: [], tags: [WriteIOEffect].} =
+proc showError*(message: string = ""): int {.gcsafe, sideEffect,
+    raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Print the message to standard error and set the shell return
   ## code to error. If message is empty, print the current exception message
   if message == "":
@@ -108,6 +109,18 @@ proc showError*(message: string = ""): int {.gcsafe, locks: 0, sideEffect,
       echo("Message: " & currentException.msg)
       if stackTrace.len() > 0:
         echo(stackTrace)
+    finally:
+      if stackTrace.len() > 0:
+        try:
+          let debugFile: File = open(getCacheDir() & DirSep & "nish" & DirSep &
+              "error.log", fmAppend)
+          debugFile.writeLine("Version: " & shellVersion)
+          debugFile.writeLine("Date: " & $now())
+          debugFile.writeLine(stackTrace)
+          debugFile.writeLine(repeat('-', 40))
+          close(debugFile)
+        except IOError:
+          discard
   else:
     try:
       stderr.styledWriteLine(fgRed, message)
