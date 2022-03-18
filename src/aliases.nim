@@ -29,6 +29,8 @@ import constants, history, input, output
 using
   db: DbConn # Connection to the shell's database
   aliases: var OrderedTable[string, int] # The list of aliases available in the selected directory
+  arguments: string # The string with arguments entered by the user fot the command
+  historyIndex: var int # The index of the last command in the shell's history
 
 proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
@@ -66,9 +68,8 @@ proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [
   except DbError as e:
     discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
-proc listAliases*(arguments: string; historyIndex: var int;
-    aliases: OrderedTable[string, int]; db) {.gcsafe, sideEffect, raises: [
-        IOError, ValueError], tags: [ReadIOEffect,
+proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
+    db) {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [ReadIOEffect,
 
 WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
@@ -109,7 +110,7 @@ WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
       showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
           columnLength) & " " & row[2], spacesAmount))
 
-proc deleteAlias*(arguments: string; historyIndex: var int; aliases; db): int {.gcsafe,
+proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
@@ -127,11 +128,10 @@ proc deleteAlias*(arguments: string; historyIndex: var int; aliases; db): int {.
   showOutput(message = "Deleted the alias with Id: " & id, fgColor = fgGreen)
   return QuitSuccess
 
-proc showAlias*(arguments: string; historyIndex: var int;
-    aliases: OrderedTable[string, int]; db): int {.gcsafe,
-        sideEffect, raises: [IOError, ValueError], tags: [
-        WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect].} =
+proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
+    db): int {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
+    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## Show details about the selected alias, its ID, name, description and
   ## commands which will be executed
   if arguments.len() < 6:
@@ -180,7 +180,7 @@ proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [DbError, ValueError],
 """)
   return updateHistory("alias", db)
 
-proc addAlias*(historyIndex: var int; aliases; db): int {.gcsafe,
+proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
@@ -256,7 +256,7 @@ proc addAlias*(historyIndex: var int; aliases; db): int {.gcsafe,
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess
 
-proc editAlias*(arguments: string; historyIndex: var int; aliases; db): int {.gcsafe,
+proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
@@ -339,7 +339,7 @@ proc editAlias*(arguments: string; historyIndex: var int; aliases; db): int {.gc
       fgColor = fgGreen)
   return QuitSuccess
 
-proc execAlias*(arguments: string; commandName: string; aliases; db): int{.gcsafe,
+proc execAlias*(arguments; commandName: string; aliases; db): int{.gcsafe,
         sideEffect, raises: [DbError, ValueError, OSError], tags: [
             ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
             ExecIOEffect,
