@@ -23,11 +23,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, strutils, tables, terminal]
+import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, options, output
 
-proc historyLength*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect].} =
+proc historyLength*(db: DbConn): int {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Get the current length of the shell's commmand's history
   try:
     return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
@@ -36,8 +36,8 @@ proc historyLength*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [],
         getCurrentExceptionMsg())
 
 proc initHistory*(db: DbConn; helpContent: var HelpTable): int {.gcsafe,
-    sideEffect, locks: 0, raises: [DbError], tags: [ReadDbEffect, WriteIOEffect,
-    WriteDbEffect].} =
+    sideEffect, raises: [DbError], tags: [ReadDbEffect, WriteIOEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Initialize shell's commands history. Create history table if not exists,
   ## set the current historyIndex, options related to the history and help
   ## related to the history commands
@@ -69,7 +69,7 @@ proc initHistory*(db: DbConn; helpContent: var HelpTable): int {.gcsafe,
 proc updateHistory*(commandToAdd: string; db: DbConn;
     returnCode: int = QuitSuccess): int {.gcsafe, sideEffect, raises: [
         ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect,
-        WriteIOEffect].} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
   ## its amount ond last used timestamp. Remove the oldest entry if there is
@@ -100,9 +100,9 @@ proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   showOutput(message = "Shell's commands' history cleared.", fgColor = fgGreen)
   return 0;
 
-proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, raises: [
     DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
-        WriteIOEffect].} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Show short help about available subcommands related to the shell's
   ## commands' history
   showOutput("""Available subcommands are: clear, show
@@ -112,9 +112,9 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
 """)
   return updateHistory("history", db)
 
-proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, raises: [
     DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
-        WriteIOEffect].} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Show the last X entries to the shell's history. X can be set in the shell's
   ## options as 'historyAmount' option.
   let
