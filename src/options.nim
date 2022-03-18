@@ -92,7 +92,7 @@ proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [],
 """)
 
 proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, raises: [DbError], tags: [ReadIOEffect, WriteIOEffect,
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         WriteDbEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Set the selected option's value
   if arguments.len() < 5:
@@ -102,25 +102,29 @@ proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
     return showError("Please enter a new value for the selected option.")
   let name = arguments[4 .. (separatorIndex - 1)]
   var value = arguments[(separatorIndex + 1) .. ^1]
-  case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", name)
-  of "integer":
-    try:
-      discard parseInt(value)
-    except:
-      return showError("Value for option '" & name &
-          "' should be integer type.")
-  of "float":
-    try:
-      discard parseFloat(value)
-    except:
-      return showError("Value for option '" & name & "' should be float type.")
-  of "boolean":
-    value = toLowerAscii(value)
-    if value != "true" and value != "false":
-      return showError("Value for option '" & name & "' should be true or false (case insensitive).")
-  of "":
-    return showError("Shell's option with name '" & name &
-      "' doesn't exists. Please use command 'options show' to see all available shell's options.")
+  try:
+    case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", name)
+    of "integer":
+      try:
+        discard parseInt(value)
+      except:
+        return showError("Value for option '" & name &
+            "' should be integer type.")
+    of "float":
+      try:
+        discard parseFloat(value)
+      except:
+        return showError("Value for option '" & name & "' should be float type.")
+    of "boolean":
+      value = toLowerAscii(value)
+      if value != "true" and value != "false":
+        return showError("Value for option '" & name & "' should be true or false (case insensitive).")
+    of "":
+      return showError("Shell's option with name '" & name &
+        "' doesn't exists. Please use command 'options show' to see all available shell's options.")
+  except DbError as e:
+    return showError("Can't get type of value for option '" & name &
+        "'. Reason: " & e.msg)
   setOption(name = name, value = value, db = db)
   showOutput(message = "Value for option '" & name & "' was set to '" & value &
       "'", fgColor = fgGreen);
