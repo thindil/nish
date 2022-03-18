@@ -64,17 +64,21 @@ proc setOption*(name: string; value, description, valuetype: string = "";
   except DbError as e:
     discard showError("Can't set value for option '" & name & "'. Reason: " & e.msg)
 
-proc showOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
-        WriteIOEffect].} =
+proc showOptions*(db: DbConn) {.gcsafe, sideEffect, raises: [ValueError],
+    tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## Show the shell's options
   let spacesAmount: Natural = (terminalWidth() / 12).int
   showFormHeader("Available options are:")
   showOutput(message = indent("Name               Value   Default Type    Description",
       spacesAmount), fgColor = fgMagenta)
-  for row in db.fastRows(sql"SELECT option, value, defaultvalue, valuetype, description FROM options"):
-    showOutput(indent(alignLeft(row[0], 18) & " " & alignLeft(row[1], 7) & " " &
-        alignLeft(row[2], 7) & " " & alignLeft(row[3], 7) & " " & row[4], spacesAmount))
+  try:
+    for row in db.fastRows(sql"SELECT option, value, defaultvalue, valuetype, description FROM options"):
+      showOutput(indent(alignLeft(row[0], 18) & " " & alignLeft(row[1], 7) &
+          " " & alignLeft(row[2], 7) & " " & alignLeft(row[3], 7) & " " & row[
+              4], spacesAmount))
+  except DbError as e:
+    discard showError("Can't show the shell's options. Reason: " & e.msg)
 
 proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [],
     tags: [ReadIOEffect, WriteIOEffect].} =
