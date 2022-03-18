@@ -64,11 +64,12 @@ proc setOption*(name: string; value, description, valuetype: string = "";
   except DbError as e:
     discard showError("Can't set value for option '" & name & "'. Reason: " & e.msg)
 
-proc showOptions*(db: DbConn) {.gcsafe, sideEffect, raises: [ValueError],
+proc showOptions*(db: DbConn) {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect].} =
   ## Show the shell's options
-  let spacesAmount: Natural = (terminalWidth() / 12).int
+  let spacesAmount: Natural = (try: (terminalWidth() /
+      12).int except ValueError: 4)
   showFormHeader("Available options are:")
   showOutput(message = indent("Name               Value   Default Type    Description",
       spacesAmount), fgColor = fgMagenta)
