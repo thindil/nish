@@ -23,18 +23,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[algorithm, db_sqlite, strutils, tables, terminal]
+import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
 import constants, history, options, output
 
 proc updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteIOEffect].} =
+    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Update the part of the shell's help content which depends on dynamic
   ## data, like the shell's options' values
   helpContent["history show"] = HelpEntry(usage: "history show",
       content: "Show the last " & getOption("historyAmount", db) & " commands from the shell's history.")
 
 proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect].} =
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   return showError("Unknown subcommand `" & subCommand &
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
@@ -42,7 +42,7 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
 proc showHelp*(topic: string; helpContent: var HelpTable,
     db: DbConn): int {.gcsafe, sideEffect, raises: [IOError,
         ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-        WriteDbEffect].} =
+        WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
 

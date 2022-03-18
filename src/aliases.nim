@@ -31,7 +31,7 @@ using
   aliases: var OrderedTable[string, int] # The list of aliases available in the selected directory
 
 proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-        WriteIOEffect].} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Set the available aliases in the selected directory
@@ -67,9 +67,10 @@ proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [
     discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
 proc listAliases*(arguments: string; historyIndex: var int;
-    aliases: OrderedTable[string, int]; db) {.gcsafe, sideEffect,
-        locks: 0, raises: [IOError, ValueError], tags: [ReadIOEffect,
-        WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
+    aliases: OrderedTable[string, int]; db) {.gcsafe, sideEffect, raises: [
+        IOError, ValueError], tags: [ReadIOEffect,
+
+WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## List available aliases, if entered command was "alias list all" list all
   ## declared aliases then
   let
@@ -96,7 +97,8 @@ proc listAliases*(arguments: string; historyIndex: var int;
 
 proc deleteAlias*(arguments: string; historyIndex: var int; aliases; db): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
-        WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
+        WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+            TimeEffect].} =
   ## Delete the selected alias from the shell's database
   if arguments.len() < 8:
     historyIndex = updateHistory("alias delete", db, QuitFailure)
@@ -114,7 +116,8 @@ proc deleteAlias*(arguments: string; historyIndex: var int; aliases; db): int {.
 proc showAlias*(arguments: string; historyIndex: var int;
     aliases: OrderedTable[string, int]; db): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError], tags: [
-        WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect].} =
+        WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+            TimeEffect].} =
   ## Show details about the selected alias, its ID, name, description and
   ## commands which will be executed
   if arguments.len() < 6:
@@ -152,9 +155,9 @@ proc showAlias*(arguments: string; historyIndex: var int;
   showOutput(row[1])
   return QuitSuccess
 
-proc helpAliases*(db): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
-        WriteIOEffect].} =
+proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [DbError, ValueError],
+    tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
+        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Show short help about available subcommands related to the aliases
   showOutput("""Available subcommands are: list, delete, show, add, edit
 
@@ -165,7 +168,8 @@ proc helpAliases*(db): int {.gcsafe, sideEffect, locks: 0, raises: [
 
 proc addAlias*(historyIndex: var int; aliases; db): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
-        ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
+        ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
+            TimeEffect].} =
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
   showOutput("You can cancel adding a new alias at any time by double press Escape key.")
@@ -240,7 +244,8 @@ proc addAlias*(historyIndex: var int; aliases; db): int {.gcsafe,
 
 proc editAlias*(arguments: string; historyIndex: var int; aliases; db): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
-        ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect].} =
+        ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
+            TimeEffect].} =
   ## Edit the selected alias
   if arguments.len() < 6:
     return showError("Enter the ID of the alias to edit.")
@@ -330,7 +335,7 @@ proc execAlias*(arguments: string; commandName: string; aliases; db): int{.gcsaf
 
   proc changeDirectory(newDirectory: string; aliases; db): int {.gcsafe,
     sideEffect, raises: [ValueError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-              WriteIOEffect].} =
+              WriteIOEffect, ReadEnvEffect, TimeEffect].} =
     ## Change the current directory for the shell
     let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
     try:
@@ -383,7 +388,7 @@ proc execAlias*(arguments: string; commandName: string; aliases; db): int{.gcsaf
 
 proc initAliases*(helpContent: var HelpTable; db): OrderedTable[string,
     int] {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-        WriteIOEffect].} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
   helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",

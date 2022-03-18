@@ -45,7 +45,7 @@ func showProgramVersion() {.gcsafe, locks: 0, raises: [], tags: [].} =
   quit QuitSuccess
 
 proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
-    raises: [], tags: [DbEffect, WriteIOEffect].} =
+    raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Close the shell database and quit from the program with the selected return code
   try:
     db.close()
@@ -54,7 +54,8 @@ proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
   quit returnCode
 
 proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect].} =
+    tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
+        TimeEffect].} =
   ## Open connection to the shell database. Create database if not exists.
   ## Set the historyIndex to the last command
   try:

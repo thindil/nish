@@ -23,12 +23,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, strutils, tables, terminal]
+import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, output
 
 proc getOption*(name: string; db: DbConn;
-    defaultValue: string = ""): string {.gcsafe, sideEffect, locks: 0, raises: [
-        ], tags: [ReadDbEffect, WriteIOEffect].} =
+    defaultValue: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
+        ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
   try:
@@ -41,8 +41,8 @@ proc getOption*(name: string; db: DbConn;
     result = defaultValue
 
 proc setOption*(name: string; value, description, valuetype: string = "";
-    db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, WriteIOEffect].} =
+    db: DbConn) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
   var sqlQuery: string = "UPDATE options SET "
@@ -87,8 +87,8 @@ proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [],
 """)
 
 proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, locks: 0, raises: [DbError], tags: [ReadIOEffect, WriteIOEffect,
-        WriteDbEffect, ReadDbEffect].} =
+    sideEffect, raises: [DbError], tags: [ReadIOEffect, WriteIOEffect,
+        WriteDbEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Set the selected option's value
   if arguments.len() < 5:
     return showError("Please enter name of the option and its new value.")
@@ -122,8 +122,8 @@ proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
   return QuitSuccess
 
 proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, locks: 0, raises: [DbError], tags: [ReadIOEffect, WriteIOEffect,
-        WriteDbEffect, ReadDbEffect].} =
+    sideEffect, raises: [DbError], tags: [ReadIOEffect, WriteIOEffect,
+        WriteDbEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
   if arguments.len() < 7:
