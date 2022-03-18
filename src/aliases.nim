@@ -71,8 +71,22 @@ proc listAliases*(arguments: string; historyIndex: var int;
         IOError, ValueError], tags: [ReadIOEffect,
 
 WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
-  ## List available aliases, if entered command was "alias list all" list all
-  ## declared aliases then
+  ## FUNCTION
+  ##
+  ## List available aliases in the current directory, if entered command was
+  ## "alias list all" list all declared aliases then.
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for showing aliases
+  ## * historyIndex - the index of command in the shell's history
+  ## * aliases      - the list of aliases available in the current directory
+  ## * db           - the connection to the shell's database
+  ##
+  ## RESULT
+  ##
+  ## The parameter historyIndex updated after execution of showing the aliases'
+  ## list
   let
     columnLength: int = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
     spacesAmount: Natural = (terminalWidth() / 12).int
