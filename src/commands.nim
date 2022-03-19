@@ -26,10 +26,14 @@
 import std/[db_sqlite, os, tables]
 import aliases, constants, history, output, variables
 
-proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
-    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [ValueError],
-        tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
-            ReadEnvEffect, TimeEffect].} =
+using
+  db: DbConn # Connection to the shell's database
+  aliases: var OrderedTable[string, int] # The list of aliases available in the selected directory
+  newDirectory: string # The directory to which the current directory will be changed
+
+proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
+    raises: [ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+    WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Change the current directory for the shell
   try:
     var path: string = absolutePath(expandTilde(newDirectory))
@@ -43,10 +47,9 @@ proc changeDirectory*(newDirectory: string; aliases: var OrderedTable[string,
   except OSError:
     return showError()
 
-proc cdCommand*(newDirectory: string; aliases: var OrderedTable[string,
-    int]; db: DbConn): int {.gcsafe, sideEffect, raises: [DbError, ValueError],
-        tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
-            WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+proc cdCommand*(newDirectory; aliases; db): int {.gcsafe, sideEffect, raises: [
+    DbError, ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+    WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Build-in command to enter the selected by the user directory
   if newDirectory.len() == 0:
     result = changeDirectory("~", aliases, db)
