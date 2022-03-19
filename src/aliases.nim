@@ -114,7 +114,21 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
         sideEffect, raises: [IOError, ValueError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Delete the selected alias from the shell's database
+  ##
+  ## PARAMETERS
+  ## * arguments    - the user entered text with arguments for the deleting
+  ##                  alias
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * aliases      - the list of aliases available in the current directory
+  ## * db           - the connection to the shell's database
+  ##
+  ## RESULT
+  ##
+  ## QuitSuccess if the selected alias was properly deleted, otherwise
+  ## QuitFailure. Also, updated parameters historyIndex and aliases
   if arguments.len() < 8:
     historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("Enter the Id of the alias to delete.")
