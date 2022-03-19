@@ -119,8 +119,8 @@ proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [],
     discard showError("Can't create 'variables' table. Reason: " & e.msg)
     return nil
 
-proc main() {.gcsafe, sideEffect, raises: [IOError, ValueError],
-    tags: [ReadIOEffect, WriteIOEffect, ExecIOEffect, RootEffect].} =
+proc main() {.gcsafe, sideEffect, raises: [ValueError], tags: [ReadIOEffect,
+    WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## The main procedure of the shell
 
   var
