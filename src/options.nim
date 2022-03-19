@@ -131,7 +131,7 @@ proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
   return QuitSuccess
 
 proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, raises: [DbError], tags: [ReadIOEffect, WriteIOEffect,
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         WriteDbEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
@@ -139,16 +139,26 @@ proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
     return showError("Please enter name of the option to reset or 'all' to reset all options.")
   let name: string = arguments[6 .. ^1]
   if name == "all":
-    db.exec(sql"UPDATE options SET value=defaultvalue")
-    showOutput("All shell's options are reseted to their default values.")
+    try:
+      db.exec(sql"UPDATE options SET value=defaultvalue")
+      showOutput("All shell's options are reseted to their default values.")
+    except DbError as e:
+      return showError("Can't reset the shell's options to their default values. Reason: " & e.msg)
   else:
-    if db.getValue(sql"SELECT value FROM options WHERE option=?",
-        name) == "":
-      return showError("Shell's option with name '" & name &
-        "' doesn't exists. Please use command 'options show' to see all available shell's options.")
-    db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", name)
-    showOutput(message = "The shell's option '" & name &
-        "' reseted to its default value.", fgColor = fgGreen)
+    try:
+      if db.getValue(sql"SELECT value FROM options WHERE option=?",
+          name) == "":
+        return showError("Shell's option with name '" & name &
+          "' doesn't exists. Please use command 'options show' to see all available shell's options.")
+    except DbError as e:
+      return showError("Can't get value for option '" & name & "'. Reason: " & e.msg)
+    try:
+      db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", name)
+      showOutput(message = "The shell's option '" & name &
+          "' reseted to its default value.", fgColor = fgGreen)
+    except DbError as e:
+      return showError("Can't reset option '" & name &
+          "' to its default value. Reason: " & e.msg)
   return QuitSuccess
 
 func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
