@@ -36,7 +36,7 @@ proc historyLength*(db: DbConn): int {.gcsafe, sideEffect, raises: [],
         getCurrentExceptionMsg())
 
 proc initHistory*(db: DbConn; helpContent: var HelpTable): int {.gcsafe,
-    sideEffect, raises: [DbError], tags: [ReadDbEffect, WriteIOEffect,
+    sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Initialize shell's commands history. Create history table if not exists,
   ## set the current historyIndex, options related to the history and help
@@ -52,12 +52,16 @@ proc initHistory*(db: DbConn; helpContent: var HelpTable): int {.gcsafe,
     setOption("historySaveInvalid", "false",
         "Save in shell command history also invalid commands.", "boolean", db)
   # Create history table if not exists
-  db.exec(sql("""CREATE TABLE IF NOT EXISTS history (
-               command     VARCHAR(""" & $maxInputLength &
-      """) PRIMARY KEY,
-               lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
-               amount      INTEGER NOT NULL DEFAULT 1
-            )"""))
+  try:
+    db.exec(sql("""CREATE TABLE IF NOT EXISTS history (
+                 command     VARCHAR(""" & $maxInputLength &
+        """) PRIMARY KEY,
+                 lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
+                 amount      INTEGER NOT NULL DEFAULT 1
+              )"""))
+  except DbError as e:
+    discard showError("Can't create table for the shell's history. Reason: " & e.msg)
+    return -1
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
