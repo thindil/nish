@@ -27,7 +27,8 @@ import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
 import constants, history, options, output
 
 proc updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
+        TimeEffect].} =
   ## Update the part of the shell's help content which depends on dynamic
   ## data, like the shell's options' values
   helpContent["history show"] = HelpEntry(usage: "history show",
@@ -46,7 +47,10 @@ proc showHelp*(topic: string; helpContent: var HelpTable,
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
 
-  proc showHelpEntry(helpEntry: HelpEntry; usageHeader: string = "Usage") =
+  proc showHelpEntry(helpEntry: HelpEntry;
+      usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [DbError,
+      ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
+      ReadEnvEffect, TimeEffect, WriteDbEffect].} =
     ## Show the selected help entry
     showOutput(message = "    " & usageHeader & ": ", newLine = false,
         fgColor = fgYellow)
