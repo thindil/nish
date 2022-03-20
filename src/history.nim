@@ -117,7 +117,7 @@ proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   return 0;
 
 proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, raises: [
-    DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
+    ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Show short help about available subcommands related to the shell's
   ## commands' history

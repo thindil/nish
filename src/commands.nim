@@ -48,7 +48,7 @@ proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
     return showError()
 
 proc cdCommand*(newDirectory; aliases; db): int {.gcsafe, sideEffect, raises: [
-    DbError, ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+    ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
     WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Build-in command to enter the selected by the user directory
   if newDirectory.len() == 0:

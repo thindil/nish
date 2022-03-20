@@ -41,14 +41,14 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
               " commands, type `" & Command & "`.")
 
 proc showHelp*(topic: string; helpContent: HelpTable,
-    db: DbConn): int {.gcsafe, sideEffect, raises: [IOError,
+    db: DbConn): int {.gcsafe, sideEffect, raises: [
         ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
         WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
 
   proc showHelpEntry(helpEntry: HelpEntry;
-      usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [DbError,
+      usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [
       ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
       ReadEnvEffect, TimeEffect, WriteDbEffect].} =
     ## Show the selected help entry
