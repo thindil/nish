@@ -26,7 +26,10 @@
 import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, options, output
 
-proc historyLength*(db: DbConn): int {.gcsafe, sideEffect, raises: [],
+using
+  db: DbConn # Connection to the shell's database
+
+proc historyLength*(db): int {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Get the current length of the shell's commmand's history
   try:
@@ -35,7 +38,7 @@ proc historyLength*(db: DbConn): int {.gcsafe, sideEffect, raises: [],
     return showError("Can't get the length of the shell's commands history. Reason: " &
         getCurrentExceptionMsg())
 
-proc initHistory*(db: DbConn; helpContent: var HelpTable): int {.gcsafe,
+proc initHistory*(db; helpContent: var HelpTable): int {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Initialize shell's commands history. Create history table if not exists,
@@ -70,7 +73,7 @@ proc initHistory*(db: DbConn; helpContent: var HelpTable): int {.gcsafe,
   # Return the current help index set on the last command in the shell's history
   return historyLength(db)
 
-proc updateHistory*(commandToAdd: string; db: DbConn;
+proc updateHistory*(commandToAdd: string; db;
     returnCode: int = QuitSuccess): int {.gcsafe, sideEffect, raises: [
         ValueError], tags: [ReadDbEffect, WriteDbEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
@@ -102,13 +105,13 @@ proc updateHistory*(commandToAdd: string; db: DbConn;
     discard showError("Can't update the shell's history. Reason: " & e.msg)
     return
 
-func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
+func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0,
     raises: [DbError], tags: [ReadDbEffect].} =
   ## Get the command with the selected index from the shell history
   return db.getValue(sql"SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?",
       $(historyIndex - 1));
 
-proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
+proc clearHistory*(db): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
         WriteDbEffect].} =
   ## Clear the shell's history, don't add the command to the history
@@ -116,7 +119,7 @@ proc clearHistory*(db: DbConn): int {.gcsafe, sideEffect, locks: 0, raises: [
   showOutput(message = "Shell's commands' history cleared.", fgColor = fgGreen)
   return 0;
 
-proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, raises: [
+proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [
     ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Show short help about available subcommands related to the shell's
@@ -128,7 +131,7 @@ proc helpHistory*(db: DbConn): int {.gcsafe, sideEffect, raises: [
 """)
   return updateHistory("history", db)
 
-proc showHistory*(db: DbConn): int {.gcsafe, sideEffect, raises: [
+proc showHistory*(db): int {.gcsafe, sideEffect, raises: [
     DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Show the last X entries to the shell's history. X can be set in the shell's
