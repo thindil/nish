@@ -39,7 +39,8 @@ func showCommandLineHelp() {.gcsafe, locks: 0, raises: [], tags: [].} =
 func showProgramVersion() {.gcsafe, locks: 0, raises: [], tags: [].} =
   ## Show the program version
   debugEcho """
-    Nish version """ & shellVersion & """
+    Nish version: """ & shellVersion & """
+
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
     License: 3-Clause BSD"""
   quit QuitSuccess
