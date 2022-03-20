@@ -74,9 +74,9 @@ proc initHistory*(db; helpContent: var HelpTable): int {.gcsafe,
   return historyLength(db)
 
 proc updateHistory*(commandToAdd: string; db;
-    returnCode: int = QuitSuccess): int {.gcsafe, sideEffect, raises: [
-        ValueError], tags: [ReadDbEffect, WriteDbEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    returnCode: int = QuitSuccess): int {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
   ## its amount ond last used timestamp. Remove the oldest entry if there is
@@ -93,8 +93,9 @@ proc updateHistory*(commandToAdd: string; db;
     if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
       db.exec(sql"DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1");
       result.dec()
-  except DbError as e:
-    discard showError("Can't get value of option historyLength. Reason: " & e.msg)
+  except DbError, ValueError:
+    discard showError("Can't get value of option historyLength. Reason: " &
+        getCurrentExceptionMsg())
     return
   try:
     if db.execAffectedRows(sql"UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?",
