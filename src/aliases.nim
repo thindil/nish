@@ -44,7 +44,7 @@ proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [
   ## * directory - the directory in which the aliases will be set
   ## * db        - the connection to the shell's database
   ##
-  ## RESULT
+  ## RETURNS
   ##
   ## The parameter aliases with the new list of available aliases
   aliases.clear()
@@ -84,7 +84,7 @@ WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## * aliases      - the list of aliases available in the current directory
   ## * db           - the connection to the shell's database
   ##
-  ## RESULT
+  ## RETURNS
   ##
   ## The parameter historyIndex updated after execution of showing the aliases'
   ## list
@@ -119,13 +119,14 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
   ## Delete the selected alias from the shell's database
   ##
   ## PARAMETERS
+  ##
   ## * arguments    - the user entered text with arguments for the deleting
   ##                  alias
   ## * historyIndex - the index of the last command in the shell's history
   ## * aliases      - the list of aliases available in the current directory
   ## * db           - the connection to the shell's database
   ##
-  ## RESULT
+  ## RETURNS
   ##
   ## QuitSuccess if the selected alias was properly deleted, otherwise
   ## QuitFailure. Also, updated parameters historyIndex and aliases
@@ -146,8 +147,23 @@ proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
     db): int {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Show details about the selected alias, its ID, name, description and
   ## commands which will be executed
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for the showing
+  ##                  alias
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * aliases      - the list of aliases available in the current directory
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the selected alias was properly show, otherwise
+  ## QuitFailure. Also, updated parameter historyIndex
   if arguments.len() < 6:
     historyIndex = updateHistory("alias show", db, QuitFailure)
     return showError("Enter the ID of the alias to show.")
