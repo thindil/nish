@@ -40,7 +40,7 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
 
-proc showHelp*(topic: string; helpContent: var HelpTable,
+proc showHelp*(topic: string; helpContent: HelpTable,
     db: DbConn): int {.gcsafe, sideEffect, raises: [IOError,
         ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
         WriteDbEffect, ReadEnvEffect, TimeEffect].} =
