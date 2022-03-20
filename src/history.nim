@@ -72,23 +72,35 @@ proc initHistory*(db: DbConn; helpContent: var HelpTable): int {.gcsafe,
 
 proc updateHistory*(commandToAdd: string; db: DbConn;
     returnCode: int = QuitSuccess): int {.gcsafe, sideEffect, raises: [
-        ValueError, DbError], tags: [ReadDbEffect, WriteDbEffect,
+        ValueError], tags: [ReadDbEffect, WriteDbEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
   ## its amount ond last used timestamp. Remove the oldest entry if there is
   ## maximum allowed amount of history's entries
   result = historyLength(db)
-  if returnCode != QuitSuccess and db.getValue(
-      sql"SELECT value FROM options WHERE option='historySaveInvalid'") == "false":
+  try:
+    if returnCode != QuitSuccess and db.getValue(
+        sql"SELECT value FROM options WHERE option='historySaveInvalid'") == "false":
+      return
+  except DbError as e:
+    discard showError("Can't get value of option historySaveInvalid. Reason: " & e.msg)
     return
-  if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
-    db.exec(sql"DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1");
-    result.dec()
-  if db.execAffectedRows(sql"UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?",
-      commandToAdd) == 0:
-    db.exec(sql"INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))", commandToAdd)
-    result.inc()
+  try:
+    if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
+      db.exec(sql"DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1");
+      result.dec()
+  except DbError as e:
+    discard showError("Can't get value of option historyLength. Reason: " & e.msg)
+    return
+  try:
+    if db.execAffectedRows(sql"UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?",
+        commandToAdd) == 0:
+      db.exec(sql"INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))", commandToAdd)
+      result.inc()
+  except DbError as e:
+    discard showError("Can't update the shell's history. Reason: " & e.msg)
+    return
 
 func getHistory*(historyIndex: int; db: DbConn): string {.gcsafe, locks: 0,
     raises: [DbError], tags: [ReadDbEffect].} =
