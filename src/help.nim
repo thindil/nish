@@ -26,7 +26,11 @@
 import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
 import constants, history, options, output
 
-proc updateHelp*(helpContent: var HelpTable, db: DbConn) {.gcsafe, sideEffect,
+using
+  db: DbConn # Connection to the shell's database
+  helpContent: var HelpTable # The content of the help system
+
+proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
         TimeEffect].} =
   ## Update the part of the shell's help content which depends on dynamic
@@ -41,7 +45,7 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
               " commands, type `" & Command & "`.")
 
 proc showHelp*(topic: string; helpContent: HelpTable,
-    db: DbConn): int {.gcsafe, sideEffect, raises: [
+    db): int {.gcsafe, sideEffect, raises: [
         ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
         WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Show the selected help section. If the user entered non-existing name of
@@ -90,7 +94,7 @@ proc showHelp*(topic: string; helpContent: HelpTable,
       result = showError("Uknown command '" & key & "'")
       discard updateHistory("help " & key, db, result)
 
-func setMainHelp*(helpContent: var HelpTable) {.gcsafe, raises: [KeyError],
+func setMainHelp*(helpContent) {.gcsafe, raises: [KeyError],
     tags: [].} =
   ## Set the content of the main help screen
   helpContent["help"] = HelpEntry(usage: "\n    ")
