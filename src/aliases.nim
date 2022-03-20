@@ -199,7 +199,7 @@ proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
   showOutput(row[1])
   return QuitSuccess
 
-proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [DbError, ValueError],
+proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [ValueError],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Show short help about available subcommands related to the aliases
