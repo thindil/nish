@@ -24,10 +24,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[parseopt, strutils, terminal]
-import constants
+import constants, output
 
 proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
-    raises: [IOError, ValueError], tags: [WriteIOEffect, ReadIOEffect].} =
+    raises: [ValueError], tags: [WriteIOEffect, ReadIOEffect, TimeEffect].} =
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
   # Get the user input and parse it
@@ -39,11 +39,19 @@ proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
     if inputChar.ord() == 127:
       if result.len() > 0:
         result = result[0..^2]
-        stdout.cursorBackward()
-        stdout.write(" ")
-        stdout.cursorBackward()
+        try:
+          stdout.cursorBackward()
+          stdout.write(" ")
+          stdout.cursorBackward()
+        except IOError as e:
+          discard showError("Can't delete character. Reason: " & e.msg)
+          return "exit"
     elif inputChar.ord() == 27:
-      inputChar = getch()
+      try:
+        inputChar = getch()
+      except IOError as e:
+        discard showError("Can't get the next character after Escape. Reason: " & e.msg)
+        return "exit"
       if inputChar.ord() == 27:
         return "exit"
       else:
@@ -53,8 +61,16 @@ proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
     elif inputChar.ord() > 31:
       stdout.write(inputChar)
       result.add(inputChar)
-    inputChar = getch()
-  stdout.writeLine("")
+    try:
+      inputChar = getch()
+    except IOError as e:
+      discard showError("Can't get the next character. Reason: " & e.msg)
+      return "exit"
+  try:
+    stdout.writeLine("")
+  except IOError as e:
+    discard showError("Can't add a new line. Reason: " & e.msg)
+    return "exit"
 
 func getArguments*(userInput: var OptParser;
     conjCommands: var bool): string {.gcsafe, raises: [], tags: [].} =
