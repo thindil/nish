@@ -27,7 +27,7 @@ import std/[parseopt, strutils, terminal]
 import constants, output
 
 proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
-    raises: [ValueError], tags: [WriteIOEffect, ReadIOEffect, TimeEffect].} =
+    raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect].} =
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
   # Get the user input and parse it
@@ -43,8 +43,9 @@ proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
           stdout.cursorBackward()
           stdout.write(" ")
           stdout.cursorBackward()
-        except IOError as e:
-          discard showError("Can't delete character. Reason: " & e.msg)
+        except IOError, ValueError:
+          discard showError("Can't delete character. Reason: " &
+              getCurrentExceptionMsg())
           return "exit"
     elif inputChar.ord() == 27:
       try:
