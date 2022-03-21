@@ -111,7 +111,7 @@ WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
           columnLength) & " " & row[2], spacesAmount))
 
 proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [IOError, ValueError, OSError], tags: [
+        sideEffect, raises: [IOError, OSError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
   ## FUNCTION
@@ -199,9 +199,9 @@ proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
   showOutput(row[1])
   return QuitSuccess
 
-proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [ValueError],
-    tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## Show short help about available subcommands related to the aliases
   showOutput("""Available subcommands are: list, delete, show, add, edit
 
