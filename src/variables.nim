@@ -92,10 +92,9 @@ proc initVariables*(helpContent: var HelpTable;
   except OSError as e:
     discard showError("Can't set environment variables for the current directory. Reason:" & e.msg)
 
-proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, raises: [ValueError], tags: [ReadIOEffect,
-        ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect].} =
+proc setCommand*(arguments: string; db: DbConn): int {.gcsafe, sideEffect,
+    raises: [], tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## Build-in command to set the selected environment variable
   if arguments.len() > 0:
     let varValues: seq[string] = arguments.split("=")
@@ -114,10 +113,9 @@ proc setCommand*(arguments: string; db: DbConn): int {.gcsafe,
     result = showError("You have to enter the name of the variable and its value.")
   discard updateHistory("set " & arguments, db, result)
 
-proc unsetCommand*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, raises: [ValueError], tags: [ReadIOEffect,
-        ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect].} =
+proc unsetCommand*(arguments: string; db: DbConn): int {.gcsafe, sideEffect,
+    raises: [], tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## Build-in command to unset the selected environment variable
   if arguments.len() > 0:
     try:
@@ -161,9 +159,9 @@ proc listVariables*(arguments: string; historyIndex: var int;
           nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
   historyIndex = updateHistory("variable " & arguments, db)
 
-proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, raises: [
-    ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## Show short help about available subcommands related to the environment variables
   showOutput("""Available subcommands are: list, delete, add, edit
 
@@ -173,7 +171,7 @@ proc helpVariables*(db: DbConn): int {.gcsafe, sideEffect, raises: [
   return updateHistory("variable", db)
 
 proc deleteVariable*(arguments: string; historyIndex: var int;
-    db: DbConn): int {.gcsafe, sideEffect, raises: [IOError, ValueError,
+    db: DbConn): int {.gcsafe, sideEffect, raises: [IOError,
     OSError], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Delete the selected variable from the shell's database

@@ -120,9 +120,9 @@ proc clearHistory*(db): int {.gcsafe, sideEffect, locks: 0, raises: [
   showOutput(message = "Shell's commands' history cleared.", fgColor = fgGreen)
   return 0;
 
-proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [
-    ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## Show short help about available subcommands related to the shell's
   ## commands' history
   showOutput("""Available subcommands are: clear, show
