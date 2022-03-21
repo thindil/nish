@@ -26,6 +26,9 @@
 import std/[os, strutils, terminal, times]
 import constants
 
+using
+  message: string # The message to show to the user
+
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [],
         tags: [ReadIOEffect, WriteIOEffect].} =
@@ -63,7 +66,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   except ValueError, IOError:
     echo("# ")
 
-proc showOutput*(message: string; newLine: bool = true;
+proc showOutput*(message; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
         returnCode: int = QuitSuccess; fgColor: ForegroundColor = fgDefault;
             centered: bool = false) {.gcsafe, locks: 0, sideEffect, raises: [],
@@ -128,7 +131,7 @@ proc showError*(message: string = ""): int {.gcsafe, sideEffect,
       echo(message)
   result = QuitFailure
 
-proc showFormHeader*(message: string) {.gcsafe, locks: 0,
+proc showFormHeader*(message) {.gcsafe, locks: 0,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show form's header with the selected message
   let
