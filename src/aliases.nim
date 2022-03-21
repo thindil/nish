@@ -202,7 +202,13 @@ proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
 proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Show short help about available subcommands related to the aliases
+  ##
+  ## PARAMETERS
+  ##
+  ## * db           - the connection to the shell's database
   showOutput("""Available subcommands are: list, delete, show, add, edit
 
         To see more information about the subcommand, type help alias [command],
