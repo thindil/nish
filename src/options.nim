@@ -26,9 +26,14 @@
 import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, output
 
-proc getOption*(name: string; db: DbConn;
-    defaultValue: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
-        ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+using
+  db: DbConn # Connection to the shell's database
+  name: string # The name of option to get or set
+  arguments: string # The user entered agruments for set or reset option
+
+proc getOption*(name; db; defaultValue: string = ""): string {.gcsafe,
+    sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
   try:
@@ -40,9 +45,9 @@ proc getOption*(name: string; db: DbConn;
   if result == "":
     result = defaultValue
 
-proc setOption*(name: string; value, description, valuetype: string = "";
-    db: DbConn) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc setOption*(name; value, description, valuetype: string = ""; db) {.gcsafe,
+    sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
   var sqlQuery: string = "UPDATE options SET "
@@ -64,7 +69,7 @@ proc setOption*(name: string; value, description, valuetype: string = "";
   except DbError as e:
     discard showError("Can't set value for option '" & name & "'. Reason: " & e.msg)
 
-proc showOptions*(db: DbConn) {.gcsafe, sideEffect, raises: [],
+proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect].} =
   ## Show the shell's options
@@ -81,7 +86,7 @@ proc showOptions*(db: DbConn) {.gcsafe, sideEffect, raises: [],
   except DbError as e:
     discard showError("Can't show the shell's options. Reason: " & e.msg)
 
-proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [],
+proc helpOptions*(db) {.gcsafe, sideEffect, locks: 0, raises: [],
     tags: [ReadIOEffect, WriteIOEffect].} =
   ## Show short help about available subcommands related to the shell's
   ## options
@@ -91,9 +96,9 @@ proc helpOptions*(db: DbConn) {.gcsafe, sideEffect, locks: 0, raises: [],
         for example: help options show.
 """)
 
-proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
-        WriteDbEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
+proc setOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## Set the selected option's value
   if arguments.len() < 5:
     return showError("Please enter name of the option and its new value.")
@@ -130,9 +135,9 @@ proc setOptions*(arguments: string; db: DbConn): int {.gcsafe,
       "'", fgColor = fgGreen);
   return QuitSuccess
 
-proc resetOptions*(arguments: string; db: DbConn): int {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
-        WriteDbEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
+proc resetOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
   if arguments.len() < 7:
