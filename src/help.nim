@@ -52,9 +52,9 @@ proc showHelp*(topic: string; helpContent: HelpTable;
   ## the help section, show info about it.
 
   proc showHelpEntry(helpEntry: HelpEntry;
-      usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [
-      ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-      ReadEnvEffect, TimeEffect, WriteDbEffect].} =
+      usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
+      ReadIOEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
+      WriteDbEffect].} =
     ## Show the selected help entry
     showOutput(message = "    " & usageHeader & ": ", newLine = false,
         fgColor = fgYellow)
@@ -62,7 +62,7 @@ proc showHelp*(topic: string; helpContent: HelpTable;
     var
       content: string = "    "
       index: Positive = 4
-    let maxLength: int = terminalWidth() - 8;
+    let maxLength: int = (try: terminalWidth() - 8 except ValueError: 72);
     for ch in helpEntry.content:
       content.add(ch)
       index.inc()
