@@ -220,8 +220,21 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
+  ##
+  ## PARAMETERS
+  ##
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * aliases      - the list of aliases available in the current directory
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the new alias was properly set, otherwise QuitFailure.
+  ## Also, updated parameter historyIndex
   showOutput("You can cancel adding a new alias at any time by double press Escape key.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
