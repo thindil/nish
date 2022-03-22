@@ -44,7 +44,7 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
 
-proc showHelp*(topic: string; helpContent: HelpTable,
+proc showHelp*(topic: string; helpContent: HelpTable;
     db): int {.gcsafe, sideEffect, raises: [
         ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
         WriteDbEffect, ReadEnvEffect, TimeEffect].} =
@@ -94,8 +94,8 @@ proc showHelp*(topic: string; helpContent: HelpTable,
       result = showError("Uknown command '" & key & "'")
       discard updateHistory("help " & key, db, result)
 
-func setMainHelp*(helpContent) {.gcsafe, raises: [KeyError],
-    tags: [].} =
+proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
+    tags: [WriteIOEffect, TimeEffect, ReadEnvEffect].} =
   ## Set the content of the main help screen
   helpContent["help"] = HelpEntry(usage: "\n    ")
   var
@@ -105,10 +105,22 @@ func setMainHelp*(helpContent) {.gcsafe, raises: [KeyError],
     keys.add(key)
   keys.sort(system.cmp)
   for key in keys:
-    helpContent["help"].usage.add(alignLeft(key, 20))
+    try:
+      helpContent["help"].usage.add(alignLeft(key, 20))
+    except KeyError as e:
+      discard showError("Can't set content of the help main screen. Reason: " & e.msg)
+      return
     i.inc()
     if i == 4:
-      helpContent["help"].usage.add("\n    ")
+      try:
+        helpContent["help"].usage.add("\n    ")
+      except KeyError as e:
+        discard showError("Can't set content of the help main screen. Reason: " & e.msg)
+        return
       i = 1
-  helpContent["help"].usage.removeSuffix(", ")
-  helpContent["help"].content.add("To see more information about the selected topic, type help [topic], for example: help cd.")
+  try:
+    helpContent["help"].usage.removeSuffix(", ")
+    helpContent["help"].content.add("To see more information about the selected topic, type help [topic], for example: help cd.")
+  except KeyError as e:
+    discard showError("Can't set content of the help main screen. Reason: " & e.msg)
+    return
