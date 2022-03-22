@@ -217,7 +217,7 @@ proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory("alias", db)
 
 proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
+        sideEffect, raises: [EOFError, OSError, IOError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
   ## Add a new alias to the shell. Ask the user a few questions and fill the
@@ -293,7 +293,7 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
   return QuitSuccess
 
 proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [EOFError, OSError, IOError, ValueError], tags: [
+        sideEffect, raises: [EOFError, OSError, IOError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
   ## Edit the selected alias

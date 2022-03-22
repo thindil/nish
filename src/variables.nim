@@ -191,7 +191,7 @@ proc deleteVariable*(arguments: string; historyIndex: var int;
   return QuitSuccess
 
 proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
-    raises: [EOFError, OSError, IOError, ValueError], tags: [ReadDbEffect,
+    raises: [EOFError, OSError, IOError], tags: [ReadDbEffect,
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Add a new variable to the shell. Ask the user a few questions and fill the
   ## variable values with answers
@@ -268,8 +268,8 @@ proc addVariable*(historyIndex: var int; db: DbConn): int {.gcsafe, sideEffect,
   return QuitSuccess
 
 proc editVariable*(arguments: string; historyIndex: var int;
-    db: DbConn): int {.gcsafe, sideEffect, raises: [EOFError, OSError, IOError,
-    ValueError], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
+    db: DbConn): int {.gcsafe, sideEffect, raises: [EOFError, OSError, IOError],
+        tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Edit the selected variable
   if arguments.len() < 6:
