@@ -69,9 +69,9 @@ proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [
     discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
 proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
-    db) {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [ReadIOEffect,
-
-WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    db) {.gcsafe, sideEffect, raises: [IOError], tags: [ReadIOEffect,
+        WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+        TimeEffect].} =
   ## FUNCTION
   ##
   ## List available aliases in the current directory, if entered command was
@@ -90,11 +90,15 @@ WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## list
   let
     columnLength: int = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
-    spacesAmount: Natural = (terminalWidth() / 12).int
+    spacesAmount: Natural = try: (terminalWidth() / 12).int except ValueError: 6
   if arguments == "list":
     showFormHeader("Available aliases are:")
-    showOutput(message = indent("ID   $1 Description" % [alignLeft("Name",
+    try:
+      showOutput(message = indent("ID   $1 Description" % [alignLeft("Name",
         columnLength)], spacesAmount), fgColor = fgMagenta)
+    except ValueError:
+      showOutput(message = indent("ID   Name Description", spacesAmount),
+          fgColor = fgMagenta)
     historyIndex = updateHistory("alias list", db)
     for alias in aliases.values:
       let row: Row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
@@ -103,8 +107,12 @@ WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
           columnLength) & " " & row[2], spacesAmount))
   elif arguments == "list all":
     showFormHeader("All available aliases are:")
-    showOutput(message = indent("ID   $1 Description" % [alignLeft("Name",
-        columnLength)], spacesAmount), fgColor = fgMagenta)
+    try:
+      showOutput(message = indent("ID   $1 Description" % [alignLeft("Name",
+          columnLength)], spacesAmount), fgColor = fgMagenta)
+    except ValueError:
+      showOutput(message = indent("ID   Name Description", spacesAmount),
+          fgColor = fgMagenta)
     historyIndex = updateHistory("alias list all", db)
     for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
       showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
