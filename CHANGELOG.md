@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Merging commands with || in aliases doesn't work properly
+- Information about unknown help topic
 
 ## [0.1.0] - 2022-02-23
 - Initial release
