@@ -44,10 +44,9 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
 
-proc showHelp*(topic: string; helpContent: HelpTable;
-    db): int {.gcsafe, sideEffect, raises: [
-        ValueError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-        WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+proc showHelp*(topic: string; helpContent: HelpTable; db): int {.gcsafe,
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
 
@@ -74,7 +73,10 @@ proc showHelp*(topic: string; helpContent: HelpTable;
 
   result = QuitSuccess
   if topic.len == 0:
-    showHelpEntry(helpContent["help"], "Available help topics")
+    try:
+      showHelpEntry(helpContent["help"], "Available help topics")
+    except KeyError as e:
+      return showError("Can't show list of available help topics. Reason: " & e.msg)
   else:
     let
       tokens: seq[string] = split(topic)
@@ -82,10 +84,18 @@ proc showHelp*(topic: string; helpContent: HelpTable;
       command: string = tokens[0]
       key: string = command & (if args.len() > 0: " " & args else: "")
     if helpContent.hasKey(key):
-      showHelpEntry(helpContent[key])
+      try:
+        showHelpEntry(helpContent[key])
+      except KeyError as e:
+        return showError("Can't show the help topic for '" & key &
+            "'. Reason: " & e.msg)
     elif helpContent.hasKey(command):
       if key == command:
-        showHelpEntry(helpContent[command])
+        try:
+          showHelpEntry(helpContent[command])
+        except KeyError as e:
+          return showError("Cam't show the help topic for '" & command &
+              "'. Reason: " & e.msg)
       else:
         result = showUnknownHelp(args, command, (if command ==
             "alias": "aliases" else: command))
