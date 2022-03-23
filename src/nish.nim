@@ -27,7 +27,7 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import aliases, commands, constants, help, history, input, options, output,
   variables
 
-func showCommandLineHelp() {.gcsafe, locks: 0, raises: [], tags: [].} =
+func showCommandLineHelp*() {.gcsafe, locks: 0, raises: [], tags: [].} =
   ## Show the program arguments help
   debugEcho """Available arguments are:
     -c [command]  - Run the selected command in shell and quit
@@ -36,7 +36,7 @@ func showCommandLineHelp() {.gcsafe, locks: 0, raises: [], tags: [].} =
     -v, --version - Show the shell version info"""
   quit QuitSuccess
 
-func showProgramVersion() {.gcsafe, locks: 0, raises: [], tags: [].} =
+func showProgramVersion*() {.gcsafe, locks: 0, raises: [], tags: [].} =
   ## Show the program version
   debugEcho """
     Nish version: """ & shellVersion & """
@@ -45,7 +45,7 @@ func showProgramVersion() {.gcsafe, locks: 0, raises: [], tags: [].} =
     License: 3-Clause BSD"""
   quit QuitSuccess
 
-proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
+proc quitShell*(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
     raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## Close the shell database and quit from the program with the selected return code
   try:
@@ -54,7 +54,7 @@ proc quitShell(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
     quit showError("Can't close properly the shell database. Reason:" & e.msg)
   quit returnCode
 
-proc startDb(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [],
+proc startDb*(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
         TimeEffect].} =
   ## Open connection to the shell database. Create database if not exists.
