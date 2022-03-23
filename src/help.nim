@@ -101,7 +101,7 @@ proc showHelp*(topic: string; helpContent: HelpTable; db): int {.gcsafe,
             "alias": "aliases" else: command))
         discard updateHistory("help " & key, db, result)
     else:
-      result = showError("Uknown command '" & key & "'")
+      result = showError("Unknown help topic '" & key & "'")
       discard updateHistory("help " & key, db, result)
 
 proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
