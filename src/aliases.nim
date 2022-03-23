@@ -234,7 +234,7 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
   ## RETURNS
   ##
   ## QuitSuccess if the new alias was properly set, otherwise QuitFailure.
-  ## Also, updated parameter historyIndex
+  ## Also, updated parameter historyIndex and aliases.
   showOutput("You can cancel adding a new alias at any time by double press Escape key.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
@@ -309,7 +309,22 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
         sideEffect, raises: [EOFError, OSError, IOError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Edit the selected alias
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for the editing
+  ##                  alias
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * aliases      - the list of aliases available in the current directory
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the alias was properly edited, otherwise QuitFailure.
+  ## Also, updated parameters historyIndex and aliases.
   if arguments.len() < 6:
     return showError("Enter the ID of the alias to edit.")
   let
