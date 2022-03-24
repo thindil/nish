@@ -27,13 +27,18 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import aliases, commands, constants, help, history, input, options, output,
   variables
 
-func showCommandLineHelp*() {.gcsafe, locks: 0, raises: [], tags: [].} =
+proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
+    WriteIOEffect].} =
   ## Show the program arguments help
-  debugEcho """Available arguments are:
+  try:
+    stdout.writeLine("""Available arguments are:
     -c [command]  - Run the selected command in shell and quit
     -db [path]    - Set the shell database to the selected file
     -h, --help    - Show this help and quit
-    -v, --version - Show the shell version info"""
+    -v, --version - Show the shell version info""")
+    stdout.flushFile()
+  except IOError:
+    quit QuitFailure
   quit QuitSuccess
 
 func showProgramVersion*() {.gcsafe, locks: 0, raises: [], tags: [].} =
