@@ -387,4 +387,5 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       if oneTimeCommand and inputString.len() == 0:
         quitShell(returnCode, db)
 
-main()
+when isMainModule:
+  main()
