@@ -69,7 +69,8 @@ proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [
     discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
 proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
-    db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
+        ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## List available aliases in the current directory, if entered command was
@@ -87,7 +88,8 @@ proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
   ## The parameter historyIndex updated after execution of showing the aliases'
   ## list
   let
-    columnLength: int = try: db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 10
+    columnLength: int = try: db.getValue(
+        sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 10
     spacesAmount: Natural = try: (terminalWidth() / 12).int except ValueError: 6
   if arguments == "list":
     showFormHeader("Available aliases are:")
@@ -417,7 +419,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
       fgColor = fgGreen)
   return QuitSuccess
 
-proc execAlias*(arguments; commandName: string; aliases; db): int{.gcsafe,
+proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
         sideEffect, raises: [DbError, ValueError, OSError], tags: [
             ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
             ExecIOEffect,
@@ -429,11 +431,11 @@ proc execAlias*(arguments; commandName: string; aliases; db): int{.gcsafe,
   ##
   ## PARAMETERS
   ##
-  ## * arguments    - the user entered text with arguments for executing the
-  ##                  alias
-  ## * commandName  - the id of the alias which will be executed
-  ## * aliases      - the list of aliases available in the current directory
-  ## * db           - the connection to the shell's database
+  ## * arguments - the user entered text with arguments for executing the
+  ##               alias
+  ## * aliasId   - the id of the alias which will be executed
+  ## * aliases   - the list of aliases available in the current directory
+  ## * db        - the connection to the shell's database
   ##
   ## RETURNS
   ##
@@ -455,7 +457,7 @@ proc execAlias*(arguments; commandName: string; aliases; db): int{.gcsafe,
     currentDirectory: string = getCurrentDir()
     commandArguments: seq[string] = initOptParser(arguments).remainingArgs()
   var inputString: string = db.getValue(
-      sql"SELECT commands FROM aliases WHERE id=?", aliases[commandName])
+      sql"SELECT commands FROM aliases WHERE id=?", aliases[aliasId])
   # Convert all $number in commands to arguments taken from the user
   # input
   var
