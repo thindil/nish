@@ -69,9 +69,7 @@ proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [
     discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
 proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
-    db) {.gcsafe, sideEffect, raises: [IOError], tags: [ReadIOEffect,
-        WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-        TimeEffect].} =
+    db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## List available aliases in the current directory, if entered command was
@@ -89,7 +87,7 @@ proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
   ## The parameter historyIndex updated after execution of showing the aliases'
   ## list
   let
-    columnLength: int = db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len()
+    columnLength: int = try: db.getValue(sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 10
     spacesAmount: Natural = try: (terminalWidth() / 12).int except ValueError: 6
   if arguments == "list":
     showFormHeader("Available aliases are:")
@@ -99,12 +97,16 @@ proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
     except ValueError:
       showOutput(message = indent("ID   Name Description", spacesAmount),
           fgColor = fgMagenta)
-    historyIndex = updateHistory("alias list", db)
     for alias in aliases.values:
-      let row: Row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
-        alias)
-      showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
-          columnLength) & " " & row[2], spacesAmount))
+      try:
+        let row: Row = db.getRow(sql"SELECT id, name, description FROM aliases WHERE id=?",
+          alias)
+        showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
+            columnLength) & " " & row[2], spacesAmount))
+      except DbError as e:
+        discard showError("Can't read info about alias from database. Reason:" & e.msg)
+        return
+    historyIndex = updateHistory("alias list", db)
   elif arguments == "list all":
     showFormHeader("All available aliases are:")
     try:
@@ -113,10 +115,14 @@ proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
     except ValueError:
       showOutput(message = indent("ID   Name Description", spacesAmount),
           fgColor = fgMagenta)
+    try:
+      for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
+        showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
+            columnLength) & " " & row[2], spacesAmount))
+    except DbError as e:
+      discard showError("Can't read info about alias from database. Reason:" & e.msg)
+      return
     historyIndex = updateHistory("alias list all", db)
-    for row in db.fastRows(sql"SELECT id, name, description FROM aliases"):
-      showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
-          columnLength) & " " & row[2], spacesAmount))
 
 proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
         sideEffect, raises: [IOError, OSError], tags: [
