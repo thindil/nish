@@ -422,9 +422,23 @@ proc execAlias*(arguments; commandName: string; aliases; db): int{.gcsafe,
             ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
             ExecIOEffect,
         RootEffect].} =
+  ## FUNCTION
+  ##
   ## Execute the selected by the user alias. If it is impossible due to lack
   ## of needed arguments or other errors, print information about it.
-
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for executing the
+  ##                  alias
+  ## * commandName  - the id of the alias which will be executed
+  ## * aliases      - the list of aliases available in the current directory
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the alias was properly executed, otherwise QuitFailure.
+  ## Also, updated parameter aliases.
   proc changeDirectory(newDirectory: string; aliases; db): int {.gcsafe,
     sideEffect, raises: [ValueError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
               WriteIOEffect, ReadEnvEffect, TimeEffect].} =
