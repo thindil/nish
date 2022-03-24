@@ -1,9 +1,9 @@
 import os
 
-switch("outdir", "bin")
 switch("app", "console")
 
 task debug, "builds the project in debug mode":
+  switch("outdir", "bin")
   switch("define", "debug")
   switch("styleCheck", "error")
   switch("spellSuggest", "auto")
@@ -11,6 +11,7 @@ task debug, "builds the project in debug mode":
   setCommand("c", "src" & DirSep & "nish.nim")
 
 task release, "builds the project in release mode":
+  switch("outdir", "bin")
   switch("define", "release")
   switch("passc", "-flto")
   switch("passl", "-s")
