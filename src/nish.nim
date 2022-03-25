@@ -41,13 +41,18 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     quit QuitFailure
   quit QuitSuccess
 
-func showProgramVersion*() {.gcsafe, locks: 0, raises: [], tags: [].} =
+proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
+    WriteIOEffect].} =
   ## Show the program version
-  debugEcho """
+  try:
+    stdout.writeLine("""
     Nish version: """ & shellVersion & """
 
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
-    License: 3-Clause BSD"""
+    License: 3-Clause BSD""")
+    stdout.flushFile()
+  except IOError:
+    quit QuitFailure
   quit QuitSuccess
 
 proc quitShell*(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
