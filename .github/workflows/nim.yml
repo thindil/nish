@@ -30,3 +30,6 @@ jobs:
 
     - name: Debug build
       run: nim debug
+
+    - name: Run tests
+      run: testament pattern "tests/**/*.nim"
