@@ -34,7 +34,20 @@ using
 proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
     raises: [ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
     WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Change the current directory for the shell
+  ##
+  ## PARAMETERS
+  ## * newDirectory - the path to the new directory to which the current
+  ##                  working directory will be changed
+  ## * aliases      - the list of available aliases in the current directory
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the working directory was properly changed, otherwise
+  ## QuitFailure. Also, updated parameter aliases.
   try:
     var path: string = absolutePath(expandTilde(newDirectory))
     if not dirExists(path):
