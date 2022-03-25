@@ -500,8 +500,21 @@ proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
 proc initAliases*(helpContent: var HelpTable; db): OrderedTable[string,
     int] {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The list of available aliases in the current directory and the updated
+  ## helpContent with the help for the commands related to the shell's
+  ## aliases.
   helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for aliases. Otherwise, execute the selected subcommand.")
   helpContent["alias list"] = HelpEntry(usage: "alias list ?all?",
