@@ -127,7 +127,7 @@ proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
     historyIndex = updateHistory("alias list all", db)
 
 proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [IOError, OSError], tags: [
+        sideEffect, raises: [IOError], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
   ## FUNCTION
@@ -155,7 +155,10 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
     return showError("The alias with the Id: " & id &
       " doesn't exists.")
   historyIndex = updateHistory("alias delete", db)
-  aliases.setAliases(getCurrentDir(), db)
+  try:
+    aliases.setAliases(getCurrentDir(), db)
+  except OSError as e:
+    return showError("Can't delete alias, setting a new aliases not work. Reason: " & e.msg)
   showOutput(message = "Deleted the alias with Id: " & id, fgColor = fgGreen)
   return QuitSuccess
 
