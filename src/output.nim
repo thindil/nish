@@ -42,7 +42,10 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     try:
       stdout.styledWrite(fgBlue, "~")
     except ValueError, IOError:
-      echo("~")
+      try:
+        stdout.write("~")
+      except IOError:
+        discard
   else:
     let homeIndex: int = currentDirectory.find(homeDirectory)
     if homeIndex > -1:
@@ -50,21 +53,33 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
             homeDirectory.len()..^1])
       except ValueError, IOError:
-        echo("~/" & currentDirectory[homeIndex + homeDirectory.len()..^1])
+        try:
+          stdout.write("~/" & currentDirectory[homeIndex + homeDirectory.len()..^1])
+        except IOError:
+          discard
     else:
       try:
         stdout.styledWrite(fgBlue, currentDirectory)
       except ValueError, IOError:
-        echo(currentDirectory)
+        try:
+          stdout.write(currentDirectory)
+        except IOError:
+          discard
   if previousCommand != "" and resultCode != QuitSuccess:
     try:
       stdout.styledWrite(fgRed, "[" & $resultCode & "]")
     except ValueError, IOError:
-      echo("[" & $resultCode & "]")
+      try:
+        stdout.write("[" & $resultCode & "]")
+      except IOError:
+        discard
   try:
     stdout.styledWrite(fgBlue, "# ")
   except ValueError, IOError:
-    echo("# ")
+    try:
+      stdout.write("# ")
+    except IOError:
+      discard
 
 proc showOutput*(message; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
