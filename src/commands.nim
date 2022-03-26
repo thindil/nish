@@ -63,7 +63,20 @@ proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
 proc cdCommand*(newDirectory; aliases; db): int {.gcsafe, sideEffect, raises: [
     ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
     WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Build-in command to enter the selected by the user directory
+  ##
+  ## PARAMETERS
+  ## * newDirectory - the path to the new directory to which the current
+  ##                  working directory will be changed
+  ## * aliases      - the list of available aliases in the current directory
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the working directory was properly changed, otherwise
+  ## QuitFailure. Also, updated parameter aliases.
   if newDirectory.len() == 0:
     result = changeDirectory("~", aliases, db)
     discard updateHistory("cd ~", db, result)
