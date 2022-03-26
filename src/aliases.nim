@@ -166,7 +166,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
   return QuitSuccess
 
 proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
-    db): int {.gcsafe, sideEffect, raises: [IOError, ValueError], tags: [
+    db): int {.gcsafe, sideEffect, raises: [IOError], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -198,7 +198,8 @@ proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
     return showError("The alias with the ID: " & id &
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
-  let spacesAmount: Natural = (terminalWidth() / 12).int
+  let spacesAmount: Natural = (try: (terminalWidth() /
+      12).int except ValueError: 6)
   showOutput(message = indent(alignLeft("Id:", 13), spacesAmount),
       newLine = false, fgColor = fgMagenta)
   showOutput(id)
