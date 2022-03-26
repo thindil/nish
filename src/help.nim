@@ -33,8 +33,17 @@ using
 proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
         TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Update the part of the shell's help content which depends on dynamic
   ## data, like the shell's options' values
+  ##
+  ## PARAMETERS
+  ## * helpContent - the HelpTable with help content of the shell
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ## The argument helpContent with updated help for command 'history show'.
   helpContent["history show"] = HelpEntry(usage: "history show",
       content: "Show the last " & getOption("historyAmount", db) & " commands from the shell's history.")
 
