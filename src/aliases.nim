@@ -127,7 +127,7 @@ proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
     historyIndex = updateHistory("alias list all", db)
 
 proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [IOError], tags: [
+        sideEffect, raises: [], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
   ## FUNCTION
@@ -150,10 +150,13 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
     historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("Enter the Id of the alias to delete.")
   let id: string = arguments[7 .. ^1]
-  if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?", id) == 0:
-    historyIndex = updateHistory("alias delete", db, QuitFailure)
-    return showError("The alias with the Id: " & id &
-      " doesn't exists.")
+  try:
+    if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?", id) == 0:
+      historyIndex = updateHistory("alias delete", db, QuitFailure)
+      return showError("The alias with the Id: " & id &
+        " doesn't exists.")
+  except DbError as e:
+    return showError("Can't delete alias from database. Reason: " & e.msg)
   historyIndex = updateHistory("alias delete", db)
   try:
     aliases.setAliases(getCurrentDir(), db)
