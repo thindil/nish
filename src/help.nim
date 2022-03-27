@@ -39,10 +39,12 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   ## data, like the shell's options' values
   ##
   ## PARAMETERS
+  ##
   ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
   ##
   ## RETURNS
+  ##
   ## The argument helpContent with updated help for command 'history show'.
   helpContent["history show"] = HelpEntry(usage: "history show",
       content: "Show the last " & getOption("historyAmount", db) & " commands from the shell's history.")
@@ -56,8 +58,22 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
 proc showHelp*(topic: string; helpContent: HelpTable; db): int {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
+  ##
+  ## PARAMETERS
+  ##
+  ## * topic       - the help's topic to show. If empty, show index of the
+  ##                 shell's help
+  ## * helpContent - the HelpTable with help content of the shell
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the selected help's topic was succesully shown, otherwise
+  ## QuitFailure.
 
   proc showHelpEntry(helpEntry: HelpEntry;
       usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
