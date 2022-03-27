@@ -166,7 +166,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
   return QuitSuccess
 
 proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
-    db): int {.gcsafe, sideEffect, raises: [IOError], tags: [
+    db): int {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -191,8 +191,9 @@ proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
     return showError("Enter the ID of the alias to show.")
   let
     id: string = arguments[5 .. ^1]
-    row: Row = db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
-      id)
+    row: Row = (try: db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
+      id) except DbError as e: return showError(
+          "Can't read alias data from database. Reason: " & e.msg))
   if row[0] == "":
     historyIndex = updateHistory("alias show", db, QuitFailure)
     return showError("The alias with the ID: " & id &
