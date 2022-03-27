@@ -241,7 +241,7 @@ proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory("alias", db)
 
 proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [EOFError, OSError, IOError], tags: [
+        sideEffect, raises: [OSError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
   ## FUNCTION
@@ -299,9 +299,9 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
   showFormHeader("(4/5) Recursiveness")
   showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput("Recursive(y/n): ", false)
-  var inputChar: char = getch()
+  var inputChar: char = (try: getch() except IOError: 'y')
   while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = getch()
+    inputChar = (try: getch() except IOError: 'y')
   showOutput($inputChar)
   let recursive: int = if inputChar in {'n', 'N'}: 0 else: 1
   showFormHeader("(5/5) Commands")
@@ -316,13 +316,19 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
   if commands == "exit":
     return showError("Adding a new alias cancelled.")
   # Check if alias with the same parameters exists in the database
-  if db.getValue(sql"SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?",
-      name, path, recursive, commands).len() > 0:
-    return showError("There is an alias with the same name, path and commands in the database.")
+  try:
+    if db.getValue(sql"SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?",
+        name, path, recursive, commands).len() > 0:
+      return showError("There is an alias with the same name, path and commands in the database.")
+  except DbError as e:
+    return showError("Can't check if the similar alias exists. Reason: " & e.msg)
   # Save the alias to the database
-  if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
-      name, path, recursive, commands, description) == -1:
-    return showError("Can't add alias.")
+  try:
+    if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
+        name, path, recursive, commands, description) == -1:
+      return showError("Can't add alias.")
+  except DbError as e:
+    return showError("Can't add the alias to the database. Reason: " & e.msg)
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory("alias add", db)
   aliases.setAliases(getCurrentDir(), db)
