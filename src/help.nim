@@ -93,7 +93,15 @@ proc showHelp*(topic: string; helpContent: HelpTable; db): int {.gcsafe,
       usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
       ReadIOEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
       WriteDbEffect].} =
+    ## FUNCTION
+    ##
     ## Show the selected help entry
+    ##
+    ## PARAMETERS
+    ##
+    ## * helpEntry   - the help entry to show to the user
+    ## * usageHeader - the sentence used as the first in the help entry's usage
+    ##                 header. Default value is "Usage"
     showOutput(message = "    " & usageHeader & ": ", newLine = false,
         fgColor = fgYellow)
     showOutput(helpEntry.usage & "\n")
