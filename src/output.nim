@@ -106,7 +106,10 @@ proc showOutput*(message; newLine: bool = true;
       except IOError:
         discard
     if newLine:
-      echo("")
+      try:
+        stdout.writeLine("")
+      except IOError:
+        discard
   stdout.flushFile()
 
 proc showError*(message: string = ""): int {.gcsafe, sideEffect,
@@ -123,10 +126,13 @@ proc showError*(message: string = ""): int {.gcsafe, sideEffect,
       if stackTrace.len() > 0:
         stderr.styledWriteLine(fgRed, stackTrace)
     except IOError, ValueError:
-      echo("Type: " & $currentException.name)
-      echo("Message: " & currentException.msg)
-      if stackTrace.len() > 0:
-        echo(stackTrace)
+      try:
+        stdout.writeLine("Type: " & $currentException.name)
+        stdout.writeLine("Message: " & currentException.msg)
+        if stackTrace.len() > 0:
+          stdout.writeLine(stackTrace)
+      except IOError:
+        discard
     finally:
       if stackTrace.len() > 0:
         try:
@@ -143,7 +149,10 @@ proc showError*(message: string = ""): int {.gcsafe, sideEffect,
     try:
       stderr.styledWriteLine(fgRed, message)
     except IOError, ValueError:
-      echo(message)
+      try:
+        stdout.writeLine(message)
+      except IOError:
+        discard
   result = QuitFailure
 
 proc showFormHeader*(message) {.gcsafe, locks: 0,
