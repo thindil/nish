@@ -51,6 +51,20 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
 
 proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
+  ## Show information about unknown help topic entered by the user
+  ##
+  ## PARAMETERS
+  ##
+  ## * subCommand - the subcommand for which help was looking for entered by
+  ##                the user
+  ## * Command    - the command for which help was looking for enteted by the
+  ##                user
+  ## * helpType   - the type of help topic
+  ##
+  ## RETURNS
+  ## Always QuitFailure.
   return showError("Unknown subcommand `" & subCommand &
               "` for `" & Command & "`. To see all available " & helpType &
               " commands, type `" & Command & "`.")
