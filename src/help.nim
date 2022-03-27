@@ -49,7 +49,7 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   helpContent["history show"] = HelpEntry(usage: "history show",
       content: "Show the last " & getOption("historyAmount", db) & " commands from the shell's history.")
 
-proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
+proc showUnknownHelp*(subCommand, command, helpType: string): int {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -66,8 +66,8 @@ proc showUnknownHelp*(subCommand, Command, helpType: string): int {.gcsafe,
   ## RETURNS
   ## Always QuitFailure.
   return showError("Unknown subcommand `" & subCommand &
-              "` for `" & Command & "`. To see all available " & helpType &
-              " commands, type `" & Command & "`.")
+              "` for `" & command & "`. To see all available " & helpType &
+              " commands, type `" & command & "`.")
 
 proc showHelp*(topic: string; helpContent: HelpTable; db): int {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
