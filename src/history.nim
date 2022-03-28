@@ -31,7 +31,16 @@ using
 
 proc historyLength*(db): int {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
-  ## Get the current length of the shell's commmand's history
+  ## FUNCTION
+  ##
+  ## Get the current length of the shell's commmands' history
+  ##
+  ## PARAMETERS
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The amount of commands in the shell's commands' history
   try:
     return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
   except DbError, ValueError:
