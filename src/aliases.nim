@@ -240,10 +240,9 @@ proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory("alias", db)
 
-proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [OSError], tags: [
-        ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect].} =
+proc addAlias*(historyIndex; aliases; db): int {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Add a new alias to the shell. Ask the user a few questions and fill the
@@ -331,7 +330,10 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe,
     return showError("Can't add the alias to the database. Reason: " & e.msg)
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory("alias add", db)
-  aliases.setAliases(getCurrentDir(), db)
+  try:
+    aliases.setAliases(getCurrentDir(), db)
+  except OSError as e:
+    return showError("Can't set aliases for the current directory. Reason: " & e.msg)
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess
 
