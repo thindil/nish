@@ -338,7 +338,7 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe, sideEffect, raises: [],
   return QuitSuccess
 
 proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [EOFError, OSError, IOError], tags: [
+        sideEffect, raises: [OSError], tags: [
         ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
   ## FUNCTION
@@ -361,8 +361,8 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
     return showError("Enter the ID of the alias to edit.")
   let
     id: string = arguments[5 .. ^1]
-    row: Row = db.getRow(sql"SELECT name, path, commands, description FROM aliases WHERE id=?",
-    id)
+    row: Row = (try: db.getRow(sql"SELECT name, path, commands, description FROM aliases WHERE id=?",
+    id) except DbError: @["", "", "", ""])
   if row[0] == "":
     return showError("The alias with the ID: " & id & " doesn't exists.")
   showOutput("You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
@@ -407,12 +407,15 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
   showFormHeader("(4/5) Recursiveness")
   showOutput("Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput("Recursive(y/n): ", false)
-  var inputChar: char = getch()
+  var inputChar: char = (try: getch() except IOError: 'y')
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
-    inputChar = getch()
+    inputChar = (try: getch() except IOError: 'y')
   let recursive: int = if inputChar == 'n' or inputChar == 'N': 0 else: 1
-  stdout.writeLine("")
+  try:
+    stdout.writeLine("")
+  except IOError:
+    discard
   showFormHeader("(5/5) Commands")
   showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
       newLine = false)
@@ -425,9 +428,12 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
   elif commands == "":
     commands = row[2]
   # Save the alias to the database
-  if db.execAffectedRows(sql"UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?",
-      name, path, recursive, commands, description, id) != 1:
-    return showError("Can't edit the alias.")
+  try:
+    if db.execAffectedRows(sql"UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?",
+        name, path, recursive, commands, description, id) != 1:
+      return showError("Can't edit the alias.")
+  except DbError as e:
+    return showError("Can't save the alias to database. Reason: " & e.msg)
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory("alias edit", db)
   aliases.setAliases(getCurrentDir(), db)
