@@ -153,7 +153,17 @@ proc showHelp*(topic: string; helpContent: HelpTable; db): int {.gcsafe,
 
 proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect].} =
+  ## FUNCTION
+  ##
   ## Set the content of the main help screen
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ##
+  ## RETURNS
+  ##
+  ## Updated argument helpContent
   helpContent["help"] = HelpEntry(usage: "\n    ")
   var
     i: Positive = 1
