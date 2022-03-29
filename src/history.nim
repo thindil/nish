@@ -50,9 +50,21 @@ proc historyLength*(db): int {.gcsafe, sideEffect, raises: [],
 proc initHistory*(db; helpContent: var HelpTable): int {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Initialize shell's commands history. Create history table if not exists,
   ## set the current historyIndex, options related to the history and help
   ## related to the history commands
+  ##
+  ## PARAMETERS
+  ## * db          - the connection to the shell's database
+  ## * helpContent - the content of the shell's help system
+  ##
+  ## RETURNS
+  ##
+  ## The length of the shell's commands' history or -1 if can't create the
+  ## history's table in the shell's database
+
   # Set the history related options
   if getOption("historyLength", db) == "":
     setOption("historyLength", "500", "Max amount of entries in shell commands history.",
