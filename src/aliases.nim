@@ -466,10 +466,14 @@ proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
   ## QuitSuccess if the alias was properly executed, otherwise QuitFailure.
   ## Also, updated parameter aliases.
   proc changeDirectory(newDirectory: string; aliases; db): int {.gcsafe,
-    sideEffect, raises: [ValueError, OSError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+    sideEffect, raises: [ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
               WriteIOEffect, ReadEnvEffect, TimeEffect].} =
     ## Change the current directory for the shell
-    let path: string = expandFilename(absolutePath(expandTilde(newDirectory)))
+    let path: string = (try: expandFilename(absolutePath(expandTilde(
+        newDirectory))) except OSError: "")
+    if path.len() == 0:
+      return showError("Can't change directory. Reason: " &
+          getCurrentExceptionMsg())
     try:
       setCurrentDir(path)
       aliases.setAliases(path, db)
