@@ -337,10 +337,9 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe, sideEffect, raises: [],
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess
 
-proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
-        sideEffect, raises: [OSError], tags: [
-        ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect].} =
+proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Edit the selected alias
@@ -436,7 +435,10 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
     return showError("Can't save the alias to database. Reason: " & e.msg)
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory("alias edit", db)
-  aliases.setAliases(getCurrentDir(), db)
+  try:
+    aliases.setAliases(getCurrentDir(), db)
+  except OSError as e:
+    return showError("Can't set aliases for the current directory. Reason: " & e.msg)
   showOutput(message = "The alias  with Id: '" & id & "' edited.",
       fgColor = fgGreen)
   return QuitSuccess
