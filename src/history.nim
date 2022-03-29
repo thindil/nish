@@ -98,10 +98,22 @@ proc updateHistory*(commandToAdd: string; db;
     returnCode: int = QuitSuccess): int {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
   ## its amount ond last used timestamp. Remove the oldest entry if there is
-  ## maximum allowed amount of history's entries
+  ## maximum allowed amount of history's entries.
+  ##
+  ## PARAMETERS
+  ##
+  ## * commandToAdd - the command entered by the user which will be added
+  ## * db           - the connection to the shell's database
+  ## * returnCode   - the return code (success or failure) of the command to add
+  ##
+  ## RETURNS
+  ##
+  ## The new length of the shell's commands' history.
   result = historyLength(db)
   try:
     if returnCode != QuitSuccess and db.getValue(
