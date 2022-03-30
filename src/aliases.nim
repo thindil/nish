@@ -444,7 +444,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe, sideEffect,
   return QuitSuccess
 
 proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
-        sideEffect, raises: [DbError, ValueError, OSError], tags: [
+        sideEffect, raises: [DbError, ValueError], tags: [
             ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
             ExecIOEffect,
         RootEffect].} =
@@ -482,8 +482,11 @@ proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
       return showError()
 
   let
-    currentDirectory: string = getCurrentDir()
+    currentDirectory: string = (try: getCurrentDir() except OSError: "")
     commandArguments: seq[string] = initOptParser(arguments).remainingArgs()
+  if currentDirectory.len() == 0:
+    return showError("Can't get the current directory name. Reason: " &
+        getCurrentExceptionMsg())
   var inputString: string = db.getValue(
       sql"SELECT commands FROM aliases WHERE id=?", aliases[aliasId])
   # Convert all $number in commands to arguments taken from the user
