@@ -167,8 +167,17 @@ proc clearHistory*(db): int {.gcsafe, sideEffect, locks: 0, raises: [
 proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Show short help about available subcommands related to the shell's
   ## commands' history
+  ##
+  ## PARAMETERS
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The new length of the shell's commands' history.
   showOutput("""Available subcommands are: clear, show
 
         To see more information about the subcommand, type help history [command],
