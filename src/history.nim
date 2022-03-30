@@ -141,7 +141,18 @@ proc updateHistory*(commandToAdd: string; db;
 
 func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0,
     raises: [DbError], tags: [ReadDbEffect].} =
+  ## FUNCTION
+  ##
   ## Get the command with the selected index from the shell history
+  ##
+  ## PARAMETERS
+  ## *historyIndex - the index of command in the shell's commands' history which
+  ##                 will be get
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The selected command from the shell's commands' history.
   return db.getValue(sql"SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?",
       $(historyIndex - 1));
 
