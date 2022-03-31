@@ -3,7 +3,7 @@ discard """
 """
 
 import std/[db_sqlite, os, strutils, tables]
-import ../../src/[nish, aliases]
+import ../../src/[aliases, nish]
 
 let db = startDb("test.db")
 if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
