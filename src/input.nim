@@ -28,8 +28,19 @@ import constants, output
 
 proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
+  ##
+  ## PARAMETERS
+  ## * maxLength - the maximum length of the user input to parse. Default value
+  ##               is the constant maxInputLength
+  ##
+  ## RETURNS
+  ##
+  ## The user input text or "exit" if there was an error or the user pressed
+  ## Escape key
   # Get the user input and parse it
   var inputChar: char = '\0'
   # Read the user input until not meet new line character or the input
