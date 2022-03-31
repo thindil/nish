@@ -173,7 +173,7 @@ proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   ## commands' history
   ##
   ## PARAMETERS
-  ## * db          - the connection to the shell's database
+  ## * db - the connection to the shell's database
   ##
   ## RETURNS
   ##
@@ -188,8 +188,17 @@ proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
 proc showHistory*(db): int {.gcsafe, sideEffect, raises: [
     DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Show the last X entries to the shell's history. X can be set in the shell's
   ## options as 'historyAmount' option.
+  ##
+  ## PARAMETERS
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The new length of the shell's commands' history.
   let
     amount: string = getOption("historyAmount", db)
     spacesAmount: Natural = (terminalWidth() / 12).int
