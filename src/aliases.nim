@@ -444,10 +444,8 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe, sideEffect,
   return QuitSuccess
 
 proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
-        sideEffect, raises: [DbError], tags: [
-            ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
-            ExecIOEffect,
-        RootEffect].} =
+    sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+    WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## FUNCTION
   ##
   ## Execute the selected by the user alias. If it is impossible due to lack
@@ -489,7 +487,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
         getCurrentExceptionMsg())
   var inputString: string = (try: db.getValue(
       sql"SELECT commands FROM aliases WHERE id=?", aliases[
-          aliasId]) except KeyError: "")
+          aliasId]) except KeyError, DbError: "")
   if inputString.len() == 0:
     return showError("Can't get commands for alias. Reason: " &
         getCurrentExceptionMsg())
