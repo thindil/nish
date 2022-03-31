@@ -444,7 +444,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe, sideEffect,
   return QuitSuccess
 
 proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
-        sideEffect, raises: [DbError, ValueError], tags: [
+        sideEffect, raises: [DbError], tags: [
             ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
             ExecIOEffect,
         RootEffect].} =
@@ -487,14 +487,22 @@ proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
   if currentDirectory.len() == 0:
     return showError("Can't get the current directory name. Reason: " &
         getCurrentExceptionMsg())
-  var inputString: string = db.getValue(
-      sql"SELECT commands FROM aliases WHERE id=?", aliases[aliasId])
+  var inputString: string = (try: db.getValue(
+      sql"SELECT commands FROM aliases WHERE id=?", aliases[
+          aliasId]) except KeyError: "")
+  if inputString.len() == 0:
+    return showError("Can't get commands for alias. Reason: " &
+        getCurrentExceptionMsg())
   # Convert all $number in commands to arguments taken from the user
   # input
   var
     argumentPosition: int = inputString.find('$')
   while argumentPosition > -1:
-    var argumentNumber: int = parseInt(inputString[argumentPosition + 1] & "")
+    var argumentNumber: int = (try: parseInt(inputString[argumentPosition + 1] &
+        "") except ValueError: -1)
+    if argumentNumber == -1:
+      return showError("Can't get argument number for alias. Reason: " &
+          getCurrentExceptionMsg())
     # Not enough argument entered by the user, quit with error
     if argumentNumber > commandArguments.len():
       return showError("Not enough arguments entered")
