@@ -29,7 +29,14 @@ import aliases, commands, constants, help, history, input, options, output,
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =
+  ## FUNCTION
+  ##
   ## Show the program arguments help
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess when the program's arguments help was shown, otherwise
+  ## QuitFailure.
   try:
     stdout.writeLine("""Available arguments are:
     -c [command]  - Run the selected command in shell and quit
