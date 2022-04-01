@@ -63,9 +63,9 @@ proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
   except OSError:
     return showError()
 
-proc cdCommand*(newDirectory; aliases; db): int {.gcsafe, sideEffect, raises: [
-    ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-    WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+proc cdCommand*(newDirectory; aliases; db): int {.gcsafe, sideEffect, raises: [],
+    tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Build-in command to enter the selected by the user directory
