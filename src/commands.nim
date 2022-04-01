@@ -89,8 +89,19 @@ proc cdCommand*(newDirectory; aliases; db): int {.gcsafe, sideEffect, raises: []
 
 func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
     tags: [].} =
+  ## FUNCTION
+  ##
   ## Initialize the shell's build-in commands. At this moment only set help
   ## related to the commands
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ##
+  ## RETURNS
+  ##
+  ## The updated helpContent with the help for the commands related to the
+  ## shell's build-in commands.
   helpContent["cd"] = HelpEntry(usage: "cd ?directory?",
       content: "You must have permissions to enter the directory and directory need to exists. If you enter just 'cd' without the name of the directory to enter, the current directory will be switched to your home directory.")
   helpContent["exit"] = HelpEntry(usage: "exit",
