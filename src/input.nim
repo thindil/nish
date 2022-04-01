@@ -86,7 +86,19 @@ proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
 
 func getArguments*(userInput: var OptParser;
     conjCommands: var bool): string {.gcsafe, raises: [], tags: [].} =
+  ## FUNCTION
+  ##
   ## Set the command arguments from the user input
+  ##
+  ## PARAMETERS
+  ## * userInput    - the input string entered by the user
+  ## * conjCommands - if true, set the commands to run next only if the previous
+  ##                  was successful, otherwise run the next command only when
+  ##                  previous was failure
+  ##
+  ## RETURNS
+  ##
+  ## Properly converted user input and parameter conjCommands
   userInput.next()
   conjCommands = false
   while userInput.kind != cmdEnd:
