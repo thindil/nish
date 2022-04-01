@@ -32,8 +32,8 @@ using
   newDirectory: string # The directory to which the current directory will be changed
 
 proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
-    raises: [ValueError], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-    WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Change the current directory for the shell
@@ -49,7 +49,10 @@ proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   try:
-    var path: string = absolutePath(expandTilde(newDirectory))
+    var path: string = (try: absolutePath(expandTilde(
+        newDirectory)) except ValueError: "")
+    if path.len() == 0:
+      return showError("Can't get absolute path to the new directory.")
     if not dirExists(path):
       return showError("Directory '" & path & "' doesn't exist.")
     path = expandFilename(path)
