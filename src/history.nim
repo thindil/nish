@@ -159,11 +159,14 @@ func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0, raises: [],
   except DbError as e:
     return "Can't get the selected command from the shell's history. Reason: " & e.msg
 
-proc clearHistory*(db): int {.gcsafe, sideEffect, locks: 0, raises: [
-    DbError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-        WriteDbEffect].} =
+proc clearHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect].} =
   ## Clear the shell's history, don't add the command to the history
-  db.exec(sql"DELETE FROM history");
+  try:
+    db.exec(sql"DELETE FROM history");
+  except DbError as e:
+    discard showError("Can't clear the shell's commands history. Reason: " & e.msg)
+    return historyLength(db)
   showOutput(message = "Shell's commands' history cleared.", fgColor = fgGreen)
   return 0;
 
