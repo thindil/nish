@@ -139,8 +139,8 @@ proc updateHistory*(commandToAdd: string; db;
     discard showError("Can't update the shell's history. Reason: " & e.msg)
     return
 
-func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0,
-    raises: [DbError], tags: [ReadDbEffect].} =
+func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0, raises: [],
+    tags: [ReadDbEffect].} =
   ## FUNCTION
   ##
   ## Get the command with the selected index from the shell history
@@ -153,8 +153,11 @@ func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0,
   ## RETURNS
   ##
   ## The selected command from the shell's commands' history.
-  return db.getValue(sql"SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?",
-      $(historyIndex - 1));
+  try:
+    return db.getValue(sql"SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?",
+        $(historyIndex - 1));
+  except DbError as e:
+    return "Can't get the selected command from the shell's history. Reason: " & e.msg
 
 proc clearHistory*(db): int {.gcsafe, sideEffect, locks: 0, raises: [
     DbError], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
