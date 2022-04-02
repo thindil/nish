@@ -44,8 +44,9 @@ proc historyLength*(db): int {.gcsafe, sideEffect, raises: [],
   try:
     return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
   except DbError, ValueError:
-    return showError("Can't get the length of the shell's commands history. Reason: " &
+    discard showError("Can't get the length of the shell's commands history. Reason: " &
         getCurrentExceptionMsg())
+    return 0
 
 proc initHistory*(db; helpContent: var HelpTable): int {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
