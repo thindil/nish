@@ -50,7 +50,14 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
 
 proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =
+  ## FUNCTION
+  ##
   ## Show the program version
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess when the program's arguments help was shown, otherwise
+  ## QuitFailure.
   try:
     stdout.writeLine("""
     Nish version: """ & shellVersion & """
