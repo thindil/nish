@@ -161,7 +161,16 @@ func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0, raises: [],
 
 proc clearHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Clear the shell's history, don't add the command to the history
+  ##
+  ## PARAMETERS
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The new last index in the shell's commands history
   try:
     db.exec(sql"DELETE FROM history");
   except DbError as e:
