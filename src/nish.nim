@@ -87,8 +87,18 @@ proc quitShell*(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
 proc startDb*(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
         TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Open connection to the shell database. Create database if not exists.
   ## Set the historyIndex to the last command
+  ##
+  ## PARAMETERS
+  ## * dbpath - The full path to the database file
+  ##
+  ## RETURNS
+  ##
+  ## Pointer to the database connection. If connection cannot be established,
+  ## returns nil.
   try:
     discard existsOrCreateDir(parentDir(dbpath))
   except OSError, IOError:
