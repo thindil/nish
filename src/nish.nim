@@ -84,7 +84,7 @@ proc quitShell*(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
     quit showError("Can't close properly the shell database. Reason:" & e.msg)
   quit returnCode
 
-proc startDb*(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [],
+proc startDb*(dbPath: string): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
         TimeEffect].} =
   ## FUNCTION
@@ -93,20 +93,20 @@ proc startDb*(dbpath: string): DbConn {.gcsafe, sideEffect, raises: [],
   ## Set the historyIndex to the last command
   ##
   ## PARAMETERS
-  ## * dbpath - The full path to the database file
+  ## * dbPath - The full path to the database file
   ##
   ## RETURNS
   ##
   ## Pointer to the database connection. If connection cannot be established,
   ## returns nil.
   try:
-    discard existsOrCreateDir(parentDir(dbpath))
+    discard existsOrCreateDir(parentDir(dbPath))
   except OSError, IOError:
     discard showError("Can't create directory for the shell's database. Reason: " &
         getCurrentExceptionMsg())
     return nil
   try:
-    result = open(dbpath, "", "", "")
+    result = open(dbPath, "", "", "")
   except DbError as e:
     discard showError("Can't open the shell's database. Reason: " & e.msg)
     return nil
@@ -173,7 +173,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     oneTimeCommand, conjCommands: bool = false
     returnCode: int = QuitSuccess
     aliases = initOrderedTable[string, int]()
-    dbpath: string = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
+    dbPath: string = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, HelpEntry]()
 
   # Check the command line parameters entered by the user. Available options
@@ -203,12 +203,12 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         inputString = key
       else:
         # Set the path to the shell database
-        dbpath = key
+        dbPath = key
       break
     else: discard
 
   # Connect to the shell database
-  let db: DbConn = startDb(dbpath)
+  let db: DbConn = startDb(dbPath)
 
   # Stop shell if connection to its database was unsuccesful
   if db == nil:
