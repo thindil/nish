@@ -161,8 +161,8 @@ proc showFormHeader*(message) {.gcsafe, locks: 0,
   let
     length: Natural = try: terminalWidth() except ValueError: 80
     spacesAmount: Natural = (length / 12).int
-  showOutput(message = indent(repeat('#', length - (spacesAmount * 2)),
+  showOutput(message = indent(repeat('=', length - (spacesAmount * 2)),
       spacesAmount), fgColor = fgYellow)
   showOutput(message = center(message, length), fgColor = fgYellow)
-  showOutput(message = indent(repeat('#', length - (spacesAmount * 2)),
+  showOutput(message = indent(repeat('=', length - (spacesAmount * 2)),
       spacesAmount), fgColor = fgYellow)
