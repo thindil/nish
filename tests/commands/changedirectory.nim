@@ -2,8 +2,8 @@ discard """
   exitcode: 0
 """
 
-import std/[db_sqlite, os, strutils, tables]
-import ../../src/[aliases, commands, nish]
+import std/[db_sqlite, strutils, tables]
+import ../../src/[commands, nish]
 
 let db = startDb("test.db")
 if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
