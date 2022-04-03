@@ -202,7 +202,7 @@ proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory("history", db)
 
 proc showHistory*(db): int {.gcsafe, sideEffect, raises: [
-    DbError, ValueError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
+    DbError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -217,7 +217,8 @@ proc showHistory*(db): int {.gcsafe, sideEffect, raises: [
   ## The new length of the shell's commands' history.
   let
     amount: string = getOption("historyAmount", db)
-    spacesAmount: Natural = (terminalWidth() / 12).int
+    spacesAmount: Natural = (try: (terminalWidth() /
+        12).int except ValueError: 6)
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent("Last used                Times      Command",
       spacesAmount), fgColor = fgMagenta)
