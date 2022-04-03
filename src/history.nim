@@ -201,9 +201,9 @@ proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory("history", db)
 
-proc showHistory*(db): int {.gcsafe, sideEffect, raises: [
-    DbError], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc showHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## FUNCTION
   ##
   ## Show the last X entries to the shell's history. X can be set in the shell's
@@ -222,8 +222,12 @@ proc showHistory*(db): int {.gcsafe, sideEffect, raises: [
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent("Last used                Times      Command",
       spacesAmount), fgColor = fgMagenta)
-  for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
-      amount, amount):
-    showOutput(indent(row[1] & "      " & center(row[2], 5) & "      " &
-        row[0], spacesAmount))
-  return updateHistory("history show", db)
+  try:
+    for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
+        amount, amount):
+      showOutput(indent(row[1] & "      " & center(row[2], 5) & "      " &
+          row[0], spacesAmount))
+    return updateHistory("history show", db)
+  except DbError as e:
+    discard showError("Can't get the last commands from the shell's history. Reason: " & e.msg)
+    return updateHistory("history show", db, QuitFailure)
