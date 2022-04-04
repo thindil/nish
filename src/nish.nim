@@ -162,6 +162,8 @@ proc startDb*(dbPath: string): DbConn {.gcsafe, sideEffect, raises: [],
 
 proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     WriteIOEffect, ExecIOEffect, RootEffect].} =
+  ## FUNCTION
+  ##
   ## The main procedure of the shell
 
   var
