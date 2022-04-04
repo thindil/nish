@@ -135,7 +135,7 @@ proc unsetCommand*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
   discard updateHistory("unset " & arguments, db, result)
 
 proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
-    IOError, OSError], tags: [ReadIOEffect, WriteIOEffect,
+    IOError], tags: [ReadIOEffect, WriteIOEffect,
     ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
@@ -152,10 +152,15 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
               fgColor = fgMagenta)
     except ValueError as e:
       discard showError("Can't draw header for variables. Reason: " & e.msg)
-    for row in db.fastRows(sql(buildQuery(getCurrentDir(),
-        "id, name, value, description"))):
-      showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
-          nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
+    try:
+      for row in db.fastRows(sql(buildQuery(getCurrentDir(),
+          "id, name, value, description"))):
+        showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
+            nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
+    except OSError as e:
+      discard showError("Can't get the current directory name. Reason: " & e.msg)
+      historyIndex = updateHistory("variable " & arguments, db, QuitFailure)
+      return
   elif arguments == "list all":
     showFormHeader("All declared environent variables are:")
     try:
