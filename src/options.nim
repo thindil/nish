@@ -34,8 +34,22 @@ using
 proc getOption*(name; db; defaultValue: string = ""): string {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
+  ##
+  ## PARAMETERS
+  ##
+  ## * name         - the name of the option which value will be get
+  ## * db           - the connection to the shell's database
+  ## * defaultValue - the default value for option if the is no that option in
+  ##                  the database. Default value is empty string ""
+  ##
+  ## RETURNS
+  ##
+  ## The value of the selected option or empty string if there is no that
+  ## option in the database.
   try:
     result = db.getValue(sql"SELECT value FROM options WHERE option=?", name)
   except DbError as e:
