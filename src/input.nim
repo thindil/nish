@@ -34,6 +34,7 @@ proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
   ## or environment variable
   ##
   ## PARAMETERS
+  ##
   ## * maxLength - the maximum length of the user input to parse. Default value
   ##               is the constant maxInputLength
   ##
@@ -91,6 +92,7 @@ func getArguments*(userInput: var OptParser;
   ## Set the command arguments from the user input
   ##
   ## PARAMETERS
+  ##
   ## * userInput    - the input string entered by the user
   ## * conjCommands - if true, set the commands to run next only if the previous
   ##                  was successful, otherwise run the next command only when
