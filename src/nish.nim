@@ -93,6 +93,7 @@ proc startDb*(dbPath: string): DbConn {.gcsafe, sideEffect, raises: [],
   ## Set the historyIndex to the last command
   ##
   ## PARAMETERS
+  ##
   ## * dbPath - The full path to the database file
   ##
   ## RETURNS
