@@ -135,28 +135,35 @@ proc unsetCommand*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
   discard updateHistory("unset " & arguments, db, result)
 
 proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
-    IOError, OSError, ValueError], tags: [ReadIOEffect, WriteIOEffect,
+    IOError, OSError], tags: [ReadIOEffect, WriteIOEffect,
     ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
   let
     nameLength: int = db.getValue(sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len()
     valueLength: int = db.getValue(sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len()
-    spacesAmount: Natural = (terminalWidth() / 12).int
+    spacesAmount: Natural = (try: (terminalWidth() /
+        12).int except ValueError: 6)
   if arguments == "list":
     showFormHeader("Declared environent variables are:")
-    showOutput(message = indent("ID   $1 $2 Description" % [alignLeft("Name",
-        nameLength), alignLeft("Value", valueLength)], spacesAmount),
-            fgColor = fgMagenta)
+    try:
+      showOutput(message = indent("ID   $1 $2 Description" % [alignLeft("Name",
+          nameLength), alignLeft("Value", valueLength)], spacesAmount),
+              fgColor = fgMagenta)
+    except ValueError as e:
+      discard showError("Can't draw header for variables. Reason: " & e.msg)
     for row in db.fastRows(sql(buildQuery(getCurrentDir(),
         "id, name, value, description"))):
       showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
           nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
   elif arguments == "list all":
     showFormHeader("All declared environent variables are:")
-    showOutput(message = indent("ID   $1 $2 Description" % [alignLeft("Name",
-        nameLength), alignLeft("Value", valueLength)], spacesAmount),
-            fgColor = fgMagenta)
+    try:
+      showOutput(message = indent("ID   $1 $2 Description" % [alignLeft("Name",
+          nameLength), alignLeft("Value", valueLength)], spacesAmount),
+              fgColor = fgMagenta)
+    except ValueError as e:
+      discard showError("Can't draw header for variables. Reason: " & e.msg)
     for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
       showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
           nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
