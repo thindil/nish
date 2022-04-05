@@ -200,7 +200,7 @@ proc helpVariables*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory("variable", db)
 
 proc deleteVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
-    raises: [IOError, OSError], tags: [WriteIOEffect, ReadIOEffect,
+    raises: [IOError], tags: [WriteIOEffect, ReadIOEffect,
     ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Delete the selected variable from the shell's database
   if arguments.len() < 8:
@@ -213,7 +213,10 @@ proc deleteVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
     return showError("The variable with the Id: " & varName &
       " doesn't exist.")
   historyIndex = updateHistory("variable delete", db)
-  setVariables(getCurrentDir(), db, getCurrentDir())
+  try:
+    setVariables(getCurrentDir(), db, getCurrentDir())
+  except OSError as e:
+    return showError("Can't set environment variables in the current directory. Reason: " & e.msg)
   showOutput(message = "Deleted the variable with Id: " & varName,
       fgColor = fgGreen)
   return QuitSuccess
