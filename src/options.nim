@@ -102,8 +102,14 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
 
 proc helpOptions*(db) {.gcsafe, sideEffect, locks: 0, raises: [],
     tags: [ReadIOEffect, WriteIOEffect].} =
+  ## FUNCTION
+  ##
   ## Show short help about available subcommands related to the shell's
   ## options
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
   showOutput("""Available subcommands are: show, set, reset
 
         To see more information about the subcommand, type help options [command],
