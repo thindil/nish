@@ -62,8 +62,18 @@ proc getOption*(name; db; defaultValue: string = ""): string {.gcsafe,
 proc setOption*(name; value, description, valuetype: string = ""; db) {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect].} =
+  ## FUNCTIONS
+  ##
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
+  ##
+  ## PARAMETERS
+  ##
+  ## * name        - the name of the option which will be set
+  ## * value       - the value of the option to set
+  ## * description - the description of the option to set
+  ## * valuetype   - the type of the option to set
+  ## * db          - the connection to the shell's database
   var sqlQuery: string = "UPDATE options SET "
   if value != "":
     sqlQuery.add("value='" & value & "'")
