@@ -36,6 +36,7 @@ proc historyLength*(db): int {.gcsafe, sideEffect, raises: [],
   ## Get the current length of the shell's commmands' history
   ##
   ## PARAMETERS
+  ##
   ## * db - the connection to the shell's database
   ##
   ## RETURNS
@@ -58,6 +59,7 @@ proc initHistory*(db; helpContent: var HelpTable): int {.gcsafe,
   ## related to the history commands
   ##
   ## PARAMETERS
+  ##
   ## * db          - the connection to the shell's database
   ## * helpContent - the content of the shell's help system
   ##
@@ -147,6 +149,7 @@ func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0, raises: [],
   ## Get the command with the selected index from the shell history
   ##
   ## PARAMETERS
+  ##
   ## *historyIndex - the index of command in the shell's commands' history which
   ##                 will be get
   ## * db          - the connection to the shell's database
@@ -167,6 +170,7 @@ proc clearHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   ## Clear the shell's history, don't add the command to the history
   ##
   ## PARAMETERS
+  ##
   ## * db - the connection to the shell's database
   ##
   ## RETURNS
@@ -189,6 +193,7 @@ proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   ## commands' history
   ##
   ## PARAMETERS
+  ##
   ## * db - the connection to the shell's database
   ##
   ## RETURNS
@@ -210,6 +215,7 @@ proc showHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   ## options as 'historyAmount' option.
   ##
   ## PARAMETERS
+  ##
   ## * db - the connection to the shell's database
   ##
   ## RETURNS
