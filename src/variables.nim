@@ -134,16 +134,24 @@ proc unsetCommand*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
     result = showError("You have to enter the name of the variable to unset.")
   discard updateHistory("unset " & arguments, db, result)
 
-proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
-    IOError], tags: [ReadIOEffect, WriteIOEffect,
-    ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
   let
-    nameLength: int = db.getValue(sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len()
-    valueLength: int = db.getValue(sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len()
+    nameLength: Natural = (try: db.getValue(
+        sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 0)
+    valueLength: Natural = (try: db.getValue(
+        sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len() except DbError: 0)
     spacesAmount: Natural = (try: (terminalWidth() /
         12).int except ValueError: 6)
+  if nameLength == 0:
+    discard showError("Can't get the maximum length of the variables names from database.")
+    return
+  if valueLength == 0:
+    discard showError("Can't get the maximum length of the variables values from database.")
+    return
   if arguments == "list":
     showFormHeader("Declared environent variables are:")
     try:
@@ -157,8 +165,9 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
           "id, name, value, description"))):
         showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
             nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
-    except OSError as e:
-      discard showError("Can't get the current directory name. Reason: " & e.msg)
+    except DbError, OSError:
+      discard showError("Can't get the current directory name. Reason: " &
+          getCurrentExceptionMsg())
       historyIndex = updateHistory("variable " & arguments, db, QuitFailure)
       return
   elif arguments == "list all":
@@ -169,9 +178,14 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
               fgColor = fgMagenta)
     except ValueError as e:
       discard showError("Can't draw header for variables. Reason: " & e.msg)
-    for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
-      showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
-          nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
+    try:
+      for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
+        showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
+            nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
+    except DbError as e:
+      discard showError("Can't read data about variables from database. Reason: " & e.msg)
+      historyIndex = updateHistory("variable " & arguments, db, QuitFailure)
+      return
   historyIndex = updateHistory("variable " & arguments, db)
 
 proc helpVariables*(db): int {.gcsafe, sideEffect, raises: [], tags: [
