@@ -39,6 +39,7 @@ proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
   ## Change the current directory for the shell
   ##
   ## PARAMETERS
+  ##
   ## * newDirectory - the path to the new directory to which the current
   ##                  working directory will be changed
   ## * aliases      - the list of available aliases in the current directory
@@ -71,6 +72,7 @@ proc cdCommand*(newDirectory; aliases; db): int {.gcsafe, sideEffect, raises: []
   ## Build-in command to enter the selected by the user directory
   ##
   ## PARAMETERS
+  ##
   ## * newDirectory - the path to the new directory to which the current
   ##                  working directory will be changed
   ## * aliases      - the list of available aliases in the current directory
