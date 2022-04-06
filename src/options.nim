@@ -135,7 +135,19 @@ proc helpOptions*(db) {.gcsafe, sideEffect, locks: 0, raises: [],
 proc setOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Set the selected option's value
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments - the user entered text with arguments for the variable, its
+  ##               name and a new value
+  ## * db        - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the variable was correctly set, otherwise QuitFailure.
   if arguments.len() < 5:
     return showError("Please enter name of the option and its new value.")
   let separatorIndex = arguments.find(' ', 4)
