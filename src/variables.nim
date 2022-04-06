@@ -134,8 +134,8 @@ proc unsetCommand*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
     result = showError("You have to enter the name of the variable to unset.")
   discard updateHistory("unset " & arguments, db, result)
 
-proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
+    ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
@@ -200,18 +200,21 @@ proc helpVariables*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory("variable", db)
 
 proc deleteVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
-    raises: [IOError], tags: [WriteIOEffect, ReadIOEffect,
-    ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## Delete the selected variable from the shell's database
   if arguments.len() < 8:
     historyIndex = updateHistory("variable delete", db, QuitFailure)
     return showError("Enter the Id of the variable to delete.")
   let varName: string = arguments[7 .. ^1]
-  if db.execAffectedRows(sql"DELETE FROM variables WHERE id=?",
-      varName) == 0:
-    historyIndex = updateHistory("variable delete", db, QuitFailure)
-    return showError("The variable with the Id: " & varName &
-      " doesn't exist.")
+  try:
+    if db.execAffectedRows(sql"DELETE FROM variables WHERE id=?",
+        varName) == 0:
+      historyIndex = updateHistory("variable delete", db, QuitFailure)
+      return showError("The variable with the Id: " & varName &
+        " doesn't exist.")
+  except DbError as e:
+    return showError("Can't delete variable from database. Reason: " & e.msg)
   historyIndex = updateHistory("variable delete", db)
   try:
     setVariables(getCurrentDir(), db, getCurrentDir())
