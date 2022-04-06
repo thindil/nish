@@ -96,7 +96,13 @@ proc setOption*(name; value, description, valuetype: string = ""; db) {.gcsafe,
 proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Show the shell's options
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
   let spacesAmount: Natural = (try: (terminalWidth() /
       12).int except ValueError: 4)
   showFormHeader("Available options are:")
