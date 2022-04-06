@@ -224,9 +224,9 @@ proc deleteVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
       fgColor = fgGreen)
   return QuitSuccess
 
-proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [
-    OSError], tags: [ReadDbEffect, ReadIOEffect,
-    WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## Add a new variable to the shell. Ask the user a few questions and fill the
   ## variable values with answers
   showOutput("You can cancel adding a new variable at any time by double press Escape key.")
@@ -305,7 +305,10 @@ proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [
     return showError("Can't add the variable to database. Reason: " & e.msg)
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory("variable add", db)
-  setVariables(getCurrentDir(), db, getCurrentDir())
+  try:
+    setVariables(getCurrentDir(), db, getCurrentDir())
+  except OSError as e:
+    return showError("Can't set variables for the current directory. Reason: " & e.msg)
   showOutput(message = "The new variable '" & name & "' added.",
       fgColor = fgGreen)
   return QuitSuccess
