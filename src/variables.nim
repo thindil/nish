@@ -225,7 +225,7 @@ proc deleteVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
   return QuitSuccess
 
 proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [
-    EOFError, OSError, IOError], tags: [ReadDbEffect, ReadIOEffect,
+    OSError], tags: [ReadDbEffect, ReadIOEffect,
     WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## Add a new variable to the shell. Ask the user a few questions and fill the
   ## variable values with answers
@@ -269,12 +269,15 @@ proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [
   showFormHeader("(4/5) Recursiveness")
   showOutput("Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput("Recursive(y/n): ", false)
-  var inputChar: char = getch()
+  var inputChar: char = (try: getch() except IOError: 'y')
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
-    inputChar = getch()
+    inputChar = (try: getch() except IOError: 'y')
   let recursive: int = if inputChar == 'n' or inputChar == 'N': 0 else: 1
-  stdout.writeLine("")
+  try:
+    stdout.writeLine("")
+  except IOError:
+    discard
   showFormHeader("(5/5) Value")
   showOutput("The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
   showOutput("Value: ", false)
@@ -287,13 +290,19 @@ proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [
   if value == "exit":
     return showError("Adding a new variable cancelled.")
   # Check if variable with the same parameters exists in the database
-  if db.getValue(sql"SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?",
-      name, path, recursive, value).len() > 0:
-    return showError("There is a variable with the same name, path and value in the database.")
+  try:
+    if db.getValue(sql"SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?",
+        name, path, recursive, value).len() > 0:
+      return showError("There is a variable with the same name, path and value in the database.")
+  except DbError as e:
+    return showError("Can't check if the same variable exists in the database. Reason: " & e.msg)
   # Save the variable to the database
-  if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
-      name, path, recursive, value, description) == -1:
-    return showError("Can't add variable.")
+  try:
+    if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
+        name, path, recursive, value, description) == -1:
+      return showError("Can't add variable.")
+  except DbError as e:
+    return showError("Can't add the variable to database. Reason: " & e.msg)
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory("variable add", db)
   setVariables(getCurrentDir(), db, getCurrentDir())
