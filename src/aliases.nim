@@ -26,9 +26,12 @@
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, output
 
+type
+  AliasesList = OrderedTable[string, int] # Used to store the available aliases in the selected directory
+
 using
   db: DbConn # Connection to the shell's database
-  aliases: var OrderedTable[string, int] # The list of aliases available in the selected directory
+  aliases: var AliasesList # The list of aliases available in the selected directory
   arguments: string # The string with arguments entered by the user fot the command
   historyIndex: var int # The index of the last command in the shell's history
 
@@ -68,7 +71,7 @@ proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [
   except DbError as e:
     discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
 
-proc listAliases*(arguments; historyIndex; aliases: OrderedTable[string, int];
+proc listAliases*(arguments; historyIndex; aliases: AliasesList;
     db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
@@ -165,7 +168,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
   showOutput(message = "Deleted the alias with Id: " & id, fgColor = fgGreen)
   return QuitSuccess
 
-proc showAlias*(arguments; historyIndex; aliases: OrderedTable[string, int];
+proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     db): int {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect].} =
@@ -531,9 +534,9 @@ proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
       break
   return changeDirectory(currentDirectory, aliases, db)
 
-proc initAliases*(helpContent: var HelpTable; db): OrderedTable[string,
-    int] {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
+    sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
+    TimeEffect].} =
   ## FUNCTION
   ##
   ## Initialize the shell's aliases. Set help related to the aliases and
