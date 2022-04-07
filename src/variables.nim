@@ -314,8 +314,8 @@ proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [],
   return QuitSuccess
 
 proc editVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
-    raises: [OSError], tags: [ReadDbEffect, ReadIOEffect,
-    WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect].} =
   ## Edit the selected variable
   if arguments.len() < 6:
     return showError("Enter the ID of the variable to edit.")
@@ -394,7 +394,10 @@ proc editVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
     return showError("Can't save the edits of the variable to database. Reason: " & e.msg)
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory("variable edit", db)
-  setVariables(getCurrentDir(), db, getCurrentDir())
+  try:
+    setVariables(getCurrentDir(), db, getCurrentDir())
+  except OSError as e:
+    return showError("Can't set variables for the current directory. Reason: " & e.msg)
   showOutput(message = "The variable  with Id: '" & varId & "' edited.",
       fgColor = fgGreen)
   return QuitSuccess
