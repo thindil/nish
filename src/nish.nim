@@ -175,7 +175,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     historyIndex: int
     oneTimeCommand, conjCommands: bool = false
     returnCode: int = QuitSuccess
-    aliases = initOrderedTable[string, int]()
+    aliases: AliasesList = initOrderedTable[string, int]()
     dbPath: string = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, HelpEntry]()
 

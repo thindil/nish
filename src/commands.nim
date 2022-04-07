@@ -28,7 +28,7 @@ import aliases, constants, history, output, variables
 
 using
   db: DbConn # Connection to the shell's database
-  aliases: var OrderedTable[string, int] # The list of aliases available in the selected directory
+  aliases: var AliasesList # The list of aliases available in the selected directory
   newDirectory: string # The directory to which the current directory will be changed
 
 proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
