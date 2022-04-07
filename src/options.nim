@@ -228,8 +228,14 @@ proc resetOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
 
 func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
     raises: [], tags: [].} =
+  ## FUNCTION
+  ##
   ## Initialize the shell's options. At this moment only set help related to
   ## the options
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
   helpContent["options"] = HelpEntry(usage: "options ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for options. Otherwise, execute the selected subcommand.")
   helpContent["options show"] = HelpEntry(usage: "options show",
