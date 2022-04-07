@@ -27,7 +27,7 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, output
 
 type
-  AliasesList = OrderedTable[string, int] # Used to store the available aliases in the selected directory
+  AliasesList* = OrderedTable[string, int] # Used to store the available aliases in the selected directory
 
 using
   db: DbConn # Connection to the shell's database
