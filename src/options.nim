@@ -186,8 +186,20 @@ proc setOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
 proc resetOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments - the user entered text with arguments for the variable, its
+  ##               name or all
+  ## * db        - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the variable(s) correctly reseted, otherwise QuitFailure.
   if arguments.len() < 7:
     return showError("Please enter name of the option to reset or 'all' to reset all options.")
   let name: string = arguments[6 .. ^1]
