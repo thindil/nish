@@ -35,7 +35,7 @@ using
   arguments: string # The string with arguments entered by the user fot the command
   historyIndex: var int # The index of the last command in the shell's history
 
-proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -53,7 +53,7 @@ proc setAliases*(aliases; directory: string; db) {.gcsafe, sideEffect, raises: [
   aliases.clear()
   var
     dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
-    remainingDirectory: string = parentDir(directory)
+    remainingDirectory: DirectoryPath = parentDir(directory)
 
   # Construct SQL querry, search for aliases also defined in parent directories
   # if they are recursive
@@ -466,11 +466,11 @@ proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
   ##
   ## QuitSuccess if the alias was properly executed, otherwise QuitFailure.
   ## Also, updated parameter aliases.
-  proc changeDirectory(newDirectory: string; aliases; db): int {.gcsafe,
+  proc changeDirectory(newDirectory: DirectoryPath; aliases; db): int {.gcsafe,
       sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
       WriteIOEffect, ReadEnvEffect, TimeEffect].} =
     ## Change the current directory for the shell
-    let path: string = (try: expandFilename(absolutePath(expandTilde(
+    let path: DirectoryPath = (try: expandFilename(absolutePath(expandTilde(
         newDirectory))) except OSError, ValueError: "")
     if path.len() == 0:
       return showError("Can't change directory. Reason: " &

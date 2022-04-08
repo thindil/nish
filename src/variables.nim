@@ -31,12 +31,12 @@ using
   arguments: string # The string with arguments entered by the user fot the command
   historyIndex: var int # The index of the last command in the shell's history
 
-proc buildQuery(directory, fields: string): string {.gcsafe, sideEffect,
+proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect].} =
   ## Build database query for get environment variables for the selected
   ## directory
   result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
-  var remainingDirectory: string = parentDir(directory)
+  var remainingDirectory: DirectoryPath = parentDir(directory)
 
 # Construct SQL querry, search for variables also defined in parent directories
   # if they are recursive
