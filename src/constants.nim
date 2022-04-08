@@ -36,3 +36,4 @@ type
     usage*: string # The shell's command to enter for the selected entry
     content*: string # The content of the selected entry
   HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
+  DirectoryPath* = string # Used to store paths to directories
