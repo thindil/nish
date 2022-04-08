@@ -32,7 +32,7 @@ type
 using
   db: DbConn # Connection to the shell's database
   aliases: var AliasesList # The list of aliases available in the selected directory
-  arguments: string # The string with arguments entered by the user fot the command
+  arguments: UserArguments # The string with arguments entered by the user fot the command
   historyIndex: var int # The index of the last command in the shell's history
 
 proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
@@ -520,7 +520,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
       conjCommands: bool
       userInput: OptParser = initOptParser(inputString)
     let
-      command: string = getArguments(userInput, conjCommands)
+      command: UserArguments = getArguments(userInput, conjCommands)
     inputString = join(userInput.remainingArgs(), " ")
     # Threat cd command specially, it should just change the current
     # directory for the alias
