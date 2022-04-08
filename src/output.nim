@@ -38,7 +38,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   ##
   ## PARAMETERS
   ##
-  ## * promptEnabled   - If true, show the prompt.
+  ## * promptEnabled   - if true, show the prompt
   ## * previousCommand - the previous command executed by the user
   ## * resultCode      - the result of the previous command executed by the user
   if not promptEnabled:
@@ -94,8 +94,20 @@ proc showOutput*(message; newLine: bool = true;
         returnCode: int = QuitSuccess; fgColor: ForegroundColor = fgDefault;
             centered: bool = false) {.gcsafe, locks: 0, sideEffect, raises: [],
                 tags: [ReadIOEffect, WriteIOEffect].} =
+  ## FUNCTION
+  ##
   ## Show the selected message and prompt (if enabled, default) to the user.
   ## If newLine is true, add a new line after message.
+  ##
+  ## PARAMETERS
+  ##
+  ## * message         - the message to show
+  ## * newLine         - if true, add a new line after the message
+  ## * promptEnabled   - if true, show the prompt
+  ## * previousCommand - the previous command executed by the user
+  ## * resultCode      - the result of the previous command executed by the user
+  ## * fgColor         - the color of the text (foreground)
+  ## * centered        - if true, center the message on the screen
   showPrompt(promptEnabled, previousCommand, returnCode)
   if message != "":
     var newMessage: string
