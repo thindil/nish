@@ -28,7 +28,7 @@ import constants, history, input, output
 
 using
   db: DbConn # Connection to the shell's database
-  arguments: string # The string with arguments entered by the user fot the command
+  arguments: UserArguments # The string with arguments entered by the user fot the command
   historyIndex: var int # The index of the last command in the shell's history
 
 proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe, sideEffect,

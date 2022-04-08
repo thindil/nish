@@ -86,7 +86,7 @@ proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
     return "exit"
 
 func getArguments*(userInput: var OptParser;
-    conjCommands: var bool): string {.gcsafe, raises: [], tags: [].} =
+    conjCommands: var bool): UserArguments {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Set the command arguments from the user input
