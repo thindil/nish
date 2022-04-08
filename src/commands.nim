@@ -29,7 +29,7 @@ import aliases, constants, history, output, variables
 using
   db: DbConn # Connection to the shell's database
   aliases: var AliasesList # The list of aliases available in the selected directory
-  newDirectory: string # The directory to which the current directory will be changed
+  newDirectory: DirectoryPath # The directory to which the current directory will be changed
 
 proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
@@ -50,7 +50,7 @@ proc changeDirectory*(newDirectory; aliases; db): int {.gcsafe, sideEffect,
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   try:
-    var path: string = (try: absolutePath(expandTilde(
+    var path: DirectoryPath = (try: absolutePath(expandTilde(
         newDirectory)) except ValueError: "")
     if path.len() == 0:
       return showError("Can't get absolute path to the new directory.")
