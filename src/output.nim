@@ -32,12 +32,20 @@ using
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [],
         tags: [ReadIOEffect, WriteIOEffect].} =
+  ## FUNCTION
+  ##
   ## Show the shell prompt if the shell wasn't started in one command mode
+  ##
+  ## PARAMETERS
+  ##
+  ## * promptEnabled   - If true, show the prompt.
+  ## * previousCommand - the previous command executed by the user
+  ## * resultCode      - the result of the previous command executed by the user
   if not promptEnabled:
     return
   let
-    currentDirectory: string = (try: getCurrentDir() except OSError: "[unknown dir]")
-    homeDirectory: string = getHomeDir()
+    currentDirectory: DirectoryPath = (try: getCurrentDir() except OSError: "[unknown dir]")
+    homeDirectory: DirectoryPath = getHomeDir()
   if endsWith(currentDirectory & "/", homeDirectory):
     try:
       stdout.styledWrite(fgBlue, "~")
