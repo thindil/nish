@@ -236,6 +236,10 @@ proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## PARAMETERS
   ##
   ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The new length of the shell's commands' history.
   showOutput("""Available subcommands are: list, delete, show, add, edit
 
         To see more information about the subcommand, type help alias [command],
