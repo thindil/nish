@@ -32,7 +32,7 @@ type
 using
   db: DbConn # Connection to the shell's database
 
-proc historyLength*(db): int {.gcsafe, sideEffect, raises: [],
+proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -101,7 +101,7 @@ proc initHistory*(db; helpContent: var HelpTable): int {.gcsafe,
   return historyLength(db)
 
 proc updateHistory*(commandToAdd: string; db;
-    returnCode: int = QuitSuccess): int {.gcsafe, sideEffect, raises: [],
+    returnCode: int = QuitSuccess): HistoryRange {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -145,8 +145,8 @@ proc updateHistory*(commandToAdd: string; db;
     discard showError("Can't update the shell's history. Reason: " & e.msg)
     return
 
-func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0, raises: [],
-    tags: [ReadDbEffect].} =
+func getHistory*(historyIndex: HistoryRange; db): string {.gcsafe, locks: 0,
+    raises: [], tags: [ReadDbEffect].} =
   ## FUNCTION
   ##
   ## Get the command with the selected index from the shell history
@@ -166,7 +166,7 @@ func getHistory*(historyIndex: int; db): string {.gcsafe, locks: 0, raises: [],
   except DbError as e:
     return "Can't get the selected command from the shell's history. Reason: " & e.msg
 
-proc clearHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -187,7 +187,7 @@ proc clearHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
   showOutput(message = "Shell's commands' history cleared.", fgColor = fgGreen)
   return 0;
 
-proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -209,7 +209,7 @@ proc helpHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory("history", db)
 
-proc showHistory*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
