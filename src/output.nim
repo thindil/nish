@@ -134,8 +134,17 @@ proc showOutput*(message; newLine: bool = true;
 
 proc showError*(message: string = ""): int {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Print the message to standard error and set the shell return
   ## code to error. If message is empty, print the current exception message
+  ##
+  ## PARAMETERS
+  ##
+  ## * message - the error message to show
+  ##
+  ## RETURNS
+  ## Always QuitFailure
   if message == "":
     let
       currentException: ref Exception = getCurrentException()
