@@ -50,7 +50,7 @@ proc historyLength*(db): int {.gcsafe, sideEffect, raises: [],
   except DbError, ValueError:
     discard showError("Can't get the length of the shell's commands history. Reason: " &
         getCurrentExceptionMsg())
-    return 0
+    return -1
 
 proc initHistory*(db; helpContent: var HelpTable): int {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
