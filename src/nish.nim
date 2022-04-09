@@ -172,7 +172,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     commandName, inputString: string = ""
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
-    historyIndex: int
+    historyIndex: HistoryRange
     oneTimeCommand, conjCommands: bool = false
     returnCode: int = QuitSuccess
     aliases: AliasesList = initOrderedTable[string, int]()

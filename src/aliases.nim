@@ -33,7 +33,7 @@ using
   db: DbConn # Connection to the shell's database
   aliases: var AliasesList # The list of aliases available in the selected directory
   arguments: UserArguments # The string with arguments entered by the user fot the command
-  historyIndex: var int # The index of the last command in the shell's history
+  historyIndex: var HistoryRange # The index of the last command in the shell's history
 
 proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect].} =
@@ -226,7 +226,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   showOutput(row[1])
   return QuitSuccess
 
-proc helpAliases*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
