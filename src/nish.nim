@@ -176,7 +176,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     oneTimeCommand, conjCommands: bool = false
     returnCode: int = QuitSuccess
     aliases: AliasesList = initOrderedTable[string, int]()
-    dbPath: string = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
+    dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, HelpEntry]()
 
   # Check the command line parameters entered by the user. Available options
