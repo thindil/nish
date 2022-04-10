@@ -152,11 +152,13 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
   if arguments.len() < 8:
     historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("Enter the Id of the alias to delete.")
-  let id: string = arguments[7 .. ^1]
+  let id: Natural = (try: parseInt(arguments[7 .. ^1]) except ValueError: 0)
+  if id == 0:
+    return showError("The Id of the alias must be a positive number.")
   try:
     if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?", id) == 0:
       historyIndex = updateHistory("alias delete", db, QuitFailure)
-      return showError("The alias with the Id: " & id &
+      return showError("The alias with the Id: " & $id &
         " doesn't exists.")
   except DbError as e:
     return showError("Can't delete alias from database. Reason: " & e.msg)
@@ -165,7 +167,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
     aliases.setAliases(getCurrentDir(), db)
   except OSError as e:
     return showError("Can't delete alias, setting a new aliases not work. Reason: " & e.msg)
-  showOutput(message = "Deleted the alias with Id: " & id, fgColor = fgGreen)
+  showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
   return QuitSuccess
 
 proc showAlias*(arguments; historyIndex; aliases: AliasesList;
@@ -192,21 +194,22 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   if arguments.len() < 6:
     historyIndex = updateHistory("alias show", db, QuitFailure)
     return showError("Enter the ID of the alias to show.")
-  let
-    id: string = arguments[5 .. ^1]
-    row: Row = (try: db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
+  let id: Natural = (try: parseInt(arguments[5 .. ^1]) except ValueError: 0)
+  if id == 0:
+    return showError("The Id of the alias must be a positive number.")
+  let row: Row = (try: db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
       id) except DbError as e: return showError(
           "Can't read alias data from database. Reason: " & e.msg))
   if row[0] == "":
     historyIndex = updateHistory("alias show", db, QuitFailure)
-    return showError("The alias with the ID: " & id &
+    return showError("The alias with the ID: " & $id &
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
   let spacesAmount: Natural = (try: (terminalWidth() /
       12).int except ValueError: 6)
   showOutput(message = indent(alignLeft("Id:", 13), spacesAmount),
       newLine = false, fgColor = fgMagenta)
-  showOutput(id)
+  showOutput($id)
   showOutput(message = indent(alignLeft("Name:", 13), spacesAmount),
       newLine = false, fgColor = fgMagenta)
   showOutput(row[0])
@@ -365,12 +368,14 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe, sideEffect,
   ## Also, updated parameters historyIndex and aliases.
   if arguments.len() < 6:
     return showError("Enter the ID of the alias to edit.")
+  let id: Natural = (try: parseInt(arguments[5 .. ^1]) except ValueError: 0)
+  if id == 0:
+    return showError("The Id of the alias must be a positive number.")
   let
-    id: string = arguments[5 .. ^1]
     row: Row = (try: db.getRow(sql"SELECT name, path, commands, description FROM aliases WHERE id=?",
     id) except DbError: @["", "", "", ""])
   if row[0] == "":
-    return showError("The alias with the ID: " & id & " doesn't exists.")
+    return showError("The alias with the ID: " & $id & " doesn't exists.")
   showOutput("You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showFormHeader("(1/5) Name")
   showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
@@ -446,7 +451,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe, sideEffect,
     aliases.setAliases(getCurrentDir(), db)
   except OSError as e:
     return showError("Can't set aliases for the current directory. Reason: " & e.msg)
-  showOutput(message = "The alias  with Id: '" & id & "' edited.",
+  showOutput(message = "The alias  with Id: '" & $id & "' edited.",
       fgColor = fgGreen)
   return QuitSuccess
 
