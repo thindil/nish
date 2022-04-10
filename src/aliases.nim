@@ -91,7 +91,7 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   ## The parameter historyIndex updated after execution of showing the aliases'
   ## list
   let
-    columnLength: int = try: db.getValue(
+    columnLength: Natural = try: db.getValue(
         sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 10
     spacesAmount: Natural = try: (terminalWidth() / 12).int except ValueError: 6
   if arguments == "list":
