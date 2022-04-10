@@ -33,8 +33,19 @@ using
 
 proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect].} =
+  ## FUNCTION
+  ##
   ## Build database query for get environment variables for the selected
-  ## directory
+  ## directory and its parents
+  ##
+  ## PARAMETERS
+  ##
+  ## * directory - the directory path for which the database's query will be build
+  ## * fields    - the database fields to retrieve by the database's query
+  ##
+  ## RETURNS
+  ##
+  ## The string with database's query for the selected directory and fields
   result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
   var remainingDirectory: DirectoryPath = parentDir(directory)
 
