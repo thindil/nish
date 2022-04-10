@@ -129,7 +129,7 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
       return
     historyIndex = updateHistory("alias list all", db)
 
-proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
+proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
         sideEffect, raises: [], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
             TimeEffect].} =
@@ -171,7 +171,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): int {.gcsafe,
   return QuitSuccess
 
 proc showAlias*(arguments; historyIndex; aliases: AliasesList;
-    db): int {.gcsafe, sideEffect, raises: [], tags: [
+    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -250,7 +250,7 @@ proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory("alias", db)
 
-proc addAlias*(historyIndex; aliases; db): int {.gcsafe, sideEffect, raises: [],
+proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
@@ -347,7 +347,7 @@ proc addAlias*(historyIndex; aliases; db): int {.gcsafe, sideEffect, raises: [],
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess
 
-proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe, sideEffect,
+proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
@@ -455,7 +455,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): int {.gcsafe, sideEffect,
       fgColor = fgGreen)
   return QuitSuccess
 
-proc execAlias*(arguments; aliasId: string; aliases; db): int{.gcsafe,
+proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
     WriteIOEffect, ExecIOEffect, RootEffect].} =
   ## FUNCTION

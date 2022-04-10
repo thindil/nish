@@ -38,4 +38,4 @@ type
   HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
   DirectoryPath* = string # Used to store paths to directories
   UserArguments* = string # Used to store arguments for commands entered by the user
-  ReturnCode* = Natural # Used to store return code from commands entered by the user
+  ResultCode* = Natural # Used to store result code from commands entered by the user
