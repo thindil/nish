@@ -29,10 +29,10 @@ import constants, history, input, output
 using
   db: DbConn # Connection to the shell's database
   arguments: UserArguments # The string with arguments entered by the user fot the command
-  historyIndex: var int # The index of the last command in the shell's history
+  historyIndex: var HistoryRange # The index of the last command in the shell's history
 
-proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect].} =
+proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe,
+    sideEffect, raises: [], tags: [ReadDbEffect].} =
   ## Build database query for get environment variables for the selected
   ## directory
   result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
@@ -188,7 +188,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
       return
   historyIndex = updateHistory("variable " & arguments, db)
 
-proc helpVariables*(db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## Show short help about available subcommands related to the environment variables
