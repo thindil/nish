@@ -101,7 +101,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   return historyLength(db)
 
 proc updateHistory*(commandToAdd: string; db;
-    returnCode: int = QuitSuccess): HistoryRange {.gcsafe, sideEffect, raises: [],
+    returnCode: ResultCode = QuitSuccess): HistoryRange {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
