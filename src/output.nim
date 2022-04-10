@@ -186,7 +186,13 @@ proc showError*(message: string = ""): int {.gcsafe, sideEffect,
 
 proc showFormHeader*(message) {.gcsafe, locks: 0,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
+  ## FUNCTION
+  ##
   ## Show form's header with the selected message
+  ##
+  ## PARAMETERS
+  ##
+  ## * message - the text which will be shown in the header
   let
     length: Natural = try: terminalWidth() except ValueError: 80
     spacesAmount: Natural = (length / 12).int
