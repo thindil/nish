@@ -96,8 +96,21 @@ proc setVariables*(newDirectory: string; db;
 proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Initialize enviroment variables. Set help related to the variables and
   ## load the local environment variables
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The list of available environment variables in the current directory and
+  ## the updated helpContent with the help for the commands related to the
+  ## variables.
   helpContent["set"] = HelpEntry(usage: "set [name=value]",
       content: "Set the environment variable with the selected name and value.")
   helpContent["unset"] = HelpEntry(usage: "unset [name]",
