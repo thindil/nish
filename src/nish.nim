@@ -76,6 +76,7 @@ proc quitShell*(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
   ## Close the shell database and quit from the program with the selected return code
   ##
   ## PARAMETERS
+  ##
   ## * returnCode - the exit code to return with the end of the program
   ## * db         - the connection to the shell's database
   try:
