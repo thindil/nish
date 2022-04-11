@@ -60,8 +60,18 @@ proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe,
 proc setVariables*(newDirectory: string; db;
     oldDirectory: string = "") {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Set the environment variables in the selected directory and remove the
   ## old ones
+  ##
+  ## PARAMETERS
+  ##
+  ## * newDirectory - the new directory in which environment variables will be
+  ##                  set
+  ## * db           - the connection to the shell's database
+  ## * oldDirectory - the old directory in which environment variables will be
+  ##                  removed. Can be empty. Default value is empty
 
   # Remove the old environment variables if needed
   if oldDirectory.len() > 0:
