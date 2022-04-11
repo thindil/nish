@@ -69,7 +69,7 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     quit QuitFailure
   quit QuitSuccess
 
-proc quitShell*(returnCode: int; db: DbConn) {.gcsafe, sideEffect,
+proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -175,7 +175,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         "help", "version"])
     historyIndex: HistoryRange
     oneTimeCommand, conjCommands: bool = false
-    returnCode: int = QuitSuccess
+    returnCode: ResultCode = QuitSuccess
     aliases: AliasesList = initOrderedTable[string, int]()
     dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, HelpEntry]()

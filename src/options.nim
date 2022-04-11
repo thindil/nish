@@ -132,7 +132,7 @@ proc helpOptions*(db) {.gcsafe, sideEffect, locks: 0, raises: [],
         for example: help options show.
 """)
 
-proc setOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -183,7 +183,7 @@ proc setOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
       "'", fgColor = fgGreen);
   return QuitSuccess
 
-proc resetOptions*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
