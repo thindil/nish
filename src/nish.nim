@@ -85,7 +85,7 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     quit showError("Can't close properly the shell database. Reason:" & e.msg)
   quit returnCode
 
-proc startDb*(dbPath: string): DbConn {.gcsafe, sideEffect, raises: [],
+proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
         TimeEffect].} =
   ## FUNCTION
@@ -176,7 +176,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     historyIndex: HistoryRange
     oneTimeCommand, conjCommands: bool = false
     returnCode: ResultCode = QuitSuccess
-    aliases: AliasesList = initOrderedTable[string, int]()
+    aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, HelpEntry]()
 

@@ -27,8 +27,8 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, output
 
 type
-  AliasKey* = string # Used to store aliases keys in tables.
-  AliasesList* = OrderedTable[AliasKey, int] # Used to store the available aliases in the selected directory
+  AliasName* = string # Used to store aliases names in tables and database.
+  AliasesList* = OrderedTable[AliasName, int] # Used to store the available aliases in the selected directory
 
 using
   db: DbConn # Connection to the shell's database
@@ -272,7 +272,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect, rais
   showOutput("You can cancel adding a new alias at any time by double press Escape key.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
-  var name: string = ""
+  var name: AliasName = ""
   showOutput("Name: ", false)
   while name.len() == 0:
     name = readInput(aliasNameLength)
@@ -384,7 +384,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe, side
   showOutput(message = row[0], newLine = false, fgColor = fgMagenta)
   showOutput("'. Can contains only letters, numbers and underscores.")
   showOutput("Name: ", false)
-  var name: string = readInput(aliasNameLength)
+  var name: AliasName = readInput(aliasNameLength)
   while name.len() > 0 and not name.validIdentifier:
     discard showError("Please enter a valid name for the alias.")
     name = readInput(aliasNameLength)
