@@ -30,7 +30,7 @@ using
   message: string # The message to show to the user
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: int) {.gcsafe, locks: 0, sideEffect, raises: [],
+    resultCode: ResultCode) {.gcsafe, locks: 0, sideEffect, raises: [],
         tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
   ##
@@ -91,7 +91,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
 
 proc showOutput*(message; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
-        returnCode: int = QuitSuccess; fgColor: ForegroundColor = fgDefault;
+        returnCode: ResultCode = QuitSuccess; fgColor: ForegroundColor = fgDefault;
             centered: bool = false) {.gcsafe, locks: 0, sideEffect, raises: [],
                 tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
@@ -132,7 +132,7 @@ proc showOutput*(message; newLine: bool = true;
         discard
   stdout.flushFile()
 
-proc showError*(message: string = ""): int {.gcsafe, sideEffect,
+proc showError*(message: string = ""): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##

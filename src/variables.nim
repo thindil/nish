@@ -117,7 +117,7 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
   except OSError as e:
     discard showError("Can't set environment variables for the current directory. Reason:" & e.msg)
 
-proc setCommand*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect].} =
   ## Build-in command to set the selected environment variable
@@ -138,7 +138,7 @@ proc setCommand*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
     result = showError("You have to enter the name of the variable and its value.")
   discard updateHistory("set " & arguments, db, result)
 
-proc unsetCommand*(arguments; db): int {.gcsafe, sideEffect, raises: [], tags: [
+proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
         TimeEffect].} =
   ## Build-in command to unset the selected environment variable
@@ -220,7 +220,7 @@ proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory("variable", db)
 
-proc deleteVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
+proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## Delete the selected variable from the shell's database
@@ -245,7 +245,7 @@ proc deleteVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
       fgColor = fgGreen)
   return QuitSuccess
 
-proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [],
+proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## Add a new variable to the shell. Ask the user a few questions and fill the
@@ -334,7 +334,7 @@ proc addVariable*(historyIndex; db): int {.gcsafe, sideEffect, raises: [],
       fgColor = fgGreen)
   return QuitSuccess
 
-proc editVariable*(arguments; historyIndex; db): int {.gcsafe, sideEffect,
+proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## Edit the selected variable
