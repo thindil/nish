@@ -92,9 +92,9 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   ## The parameter historyIndex updated after execution of showing the aliases'
   ## list
   let
-    columnLength: Natural = try: db.getValue(
+    columnLength: ColumnAmount = try: db.getValue(
         sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 10
-    spacesAmount: Natural = try: (terminalWidth() / 12).int except ValueError: 6
+    spacesAmount: ColumnAmount = try: (terminalWidth() / 12).int except ValueError: 6
   if arguments == "list":
     showFormHeader("Available aliases are:")
     try:
@@ -206,7 +206,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     return showError("The alias with the ID: " & $id &
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
-  let spacesAmount: Natural = (try: (terminalWidth() /
+  let spacesAmount: ColumnAmount = (try: (terminalWidth() /
       12).int except ValueError: 6)
   showOutput(message = indent(alignLeft("Id:", 13), spacesAmount),
       newLine = false, fgColor = fgMagenta)

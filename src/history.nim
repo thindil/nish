@@ -226,7 +226,7 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## The new length of the shell's commands' history.
   let
     amount: string = getOption("historyAmount", db)
-    spacesAmount: Natural = (try: (terminalWidth() /
+    spacesAmount: ColumnAmount = (try: (terminalWidth() /
         12).int except ValueError: 6)
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent("Last used                Times      Command",
