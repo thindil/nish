@@ -39,3 +39,4 @@ type
   DirectoryPath* = string # Used to store paths to directories
   UserArguments* = string # Used to store arguments for commands entered by the user
   ResultCode* = Natural # Used to store result code from commands entered by the user
+  ColumnAmount* = Natural # Used to store length or amount of terminal's characters columns
