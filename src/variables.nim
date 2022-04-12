@@ -186,11 +186,11 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
   let
-    nameLength: Natural = (try: db.getValue(
+    nameLength: ColumnAmount = (try: db.getValue(
         sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 0)
-    valueLength: Natural = (try: db.getValue(
+    valueLength: ColumnAmount = (try: db.getValue(
         sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len() except DbError: 0)
-    spacesAmount: Natural = (try: (terminalWidth() /
+    spacesAmount: ColumnAmount = (try: (terminalWidth() /
         12).int except ValueError: 6)
   if nameLength == 0:
     discard showError("Can't get the maximum length of the variables names from database.")
