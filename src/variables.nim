@@ -166,7 +166,19 @@ proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], ta
 proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
         TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Build-in command to unset the selected environment variable
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments - the user entered text with arguments for unset variable
+  ## * db        - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the environment variable was successfully unset, otherwise
+  ## QuitFailure
   if arguments.len() > 0:
     try:
       delEnv(arguments)
