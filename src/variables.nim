@@ -133,7 +133,19 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
 proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Build-in command to set the selected environment variable
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments - the user entered text with arguments for set variable
+  ## * db        - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the environment variable was successfully set, otherwise
+  ## QuitFailure
   if arguments.len() > 0:
     let varValues: seq[string] = arguments.split("=")
     if varValues.len() > 1:
