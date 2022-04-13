@@ -493,7 +493,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       return showError()
 
   let
-    currentDirectory: string = (try: getCurrentDir() except OSError: "")
+    currentDirectory: DirectoryPath = (try: getCurrentDir() except OSError: "")
     commandArguments: seq[string] = initOptParser(arguments).remainingArgs()
   if currentDirectory.len() == 0:
     return showError("Can't get the current directory name. Reason: " &
