@@ -153,7 +153,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if arguments.len() < 8:
     historyIndex = updateHistory("alias delete", db, QuitFailure)
     return showError("Enter the Id of the alias to delete.")
-  let id: Natural = (try: parseInt(arguments[7 .. ^1]) except ValueError: 0)
+  let id: DatabaseId = (try: parseInt(arguments[7 .. ^1]) except ValueError: 0)
   if id == 0:
     return showError("The Id of the alias must be a positive number.")
   try:
@@ -195,7 +195,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   if arguments.len() < 6:
     historyIndex = updateHistory("alias show", db, QuitFailure)
     return showError("Enter the ID of the alias to show.")
-  let id: Natural = (try: parseInt(arguments[5 .. ^1]) except ValueError: 0)
+  let id: DatabaseId = (try: parseInt(arguments[5 .. ^1]) except ValueError: 0)
   if id == 0:
     return showError("The Id of the alias must be a positive number.")
   let row: Row = (try: db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
@@ -369,7 +369,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe, side
   ## Also, updated parameters historyIndex and aliases.
   if arguments.len() < 6:
     return showError("Enter the ID of the alias to edit.")
-  let id: Natural = (try: parseInt(arguments[5 .. ^1]) except ValueError: 0)
+  let id: DatabaseId = (try: parseInt(arguments[5 .. ^1]) except ValueError: 0)
   if id == 0:
     return showError("The Id of the alias must be a positive number.")
   let
