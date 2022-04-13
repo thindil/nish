@@ -261,7 +261,17 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
 proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Show short help about available subcommands related to the environment variables
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The new length of the shell's commands' history.
   showOutput("""Available subcommands are: list, delete, add, edit
 
         To see more information about the subcommand, type help variable [command],
