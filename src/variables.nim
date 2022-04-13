@@ -195,8 +195,20 @@ proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], 
 proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
     ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for list variables
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## Updated value for the historyIndex argument
   let
     nameLength: ColumnAmount = (try: db.getValue(
         sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 0)
