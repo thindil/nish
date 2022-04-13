@@ -282,7 +282,20 @@ proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Delete the selected variable from the shell's database
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for delete the variable
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the environment variable was successfully deleted, otherwise
+  ## QuitFailure. Also, updated parameter historyIndex with new length of the
+  ## shell's history
   if arguments.len() < 8:
     historyIndex = updateHistory("variable delete", db, QuitFailure)
     return showError("Enter the Id of the variable to delete.")
