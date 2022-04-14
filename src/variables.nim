@@ -300,12 +300,14 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffe
   if arguments.len() < 8:
     historyIndex = updateHistory("variable delete", db, QuitFailure)
     return showError("Enter the Id of the variable to delete.")
-  let varName: string = arguments[7 .. ^1]
+  let varId: DatabaseId = (try: parseInt(arguments[7 .. ^1]) except ValueError: 0)
+  if varId == 0:
+    return showError("The Id of the variable must be a positive number.")
   try:
     if db.execAffectedRows(sql"DELETE FROM variables WHERE id=?",
-        varName) == 0:
+        varId) == 0:
       historyIndex = updateHistory("variable delete", db, QuitFailure)
-      return showError("The variable with the Id: " & varName &
+      return showError("The variable with the Id: " & $varId &
         " doesn't exist.")
   except DbError as e:
     return showError("Can't delete variable from database. Reason: " & e.msg)
@@ -314,7 +316,7 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffe
     setVariables(getCurrentDir(), db, getCurrentDir())
   except OSError as e:
     return showError("Can't set environment variables in the current directory. Reason: " & e.msg)
-  showOutput(message = "Deleted the variable with Id: " & varName,
+  showOutput(message = "Deleted the variable with Id: " & $varId,
       fgColor = fgGreen)
   return QuitSuccess
 
