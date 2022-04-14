@@ -507,9 +507,9 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   # Convert all $number in commands to arguments taken from the user
   # input
   var
-    argumentPosition: int = inputString.find('$')
+    argumentPosition: ExtendedNatural = inputString.find('$')
   while argumentPosition > -1:
-    var argumentNumber: int = (try: parseInt(inputString[argumentPosition + 1] &
+    var argumentNumber: ExtendedNatural = (try: parseInt(inputString[argumentPosition + 1] &
         "") except ValueError: -1)
     if argumentNumber == -1:
       return showError("Can't get argument number for alias. Reason: " &

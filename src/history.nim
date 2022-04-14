@@ -27,7 +27,7 @@ import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, options, output
 
 type
-  HistoryRange* = range[-1..high(int)] # Used to store the amount of commands in the shell's history
+  HistoryRange* = ExtendedNatural # Used to store the amount of commands in the shell's history
 
 using
   db: DbConn # Connection to the shell's database
