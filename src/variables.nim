@@ -423,7 +423,22 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: []
 proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
-  ## Edit the selected variable
+  ## FUNCTION
+  ##
+  ## Edit the selected variable.  Ask the user a few questions and fill the
+  ## variable values with answers
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for editing the variable
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the environment variable was successfully updated, otherwise
+  ## QuitFailure. Also, updated parameter historyIndex with new length of the
+  ## shell's history
   if arguments.len() < 6:
     return showError("Enter the ID of the variable to edit.")
   let
