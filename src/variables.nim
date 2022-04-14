@@ -285,6 +285,7 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffe
   ## FUNCTION
   ##
   ## Delete the selected variable from the shell's database
+  ##
   ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for delete the variable
@@ -320,8 +321,21 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffe
 proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
   ## Add a new variable to the shell. Ask the user a few questions and fill the
   ## variable values with answers
+  ##
+  ## PARAMETERS
+  ##
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the environment variable was successfully added, otherwise
+  ## QuitFailure. Also, updated parameter historyIndex with new length of the
+  ## shell's history
   showOutput("You can cancel adding a new variable at any time by double press Escape key.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
