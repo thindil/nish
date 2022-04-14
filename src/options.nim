@@ -150,7 +150,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], ta
   ## QuitSuccess if the variable was correctly set, otherwise QuitFailure.
   if arguments.len() < 5:
     return showError("Please enter name of the option and its new value.")
-  let separatorIndex = arguments.find(' ', 4)
+  let separatorIndex: ExtendedNatural = arguments.find(' ', 4)
   if separatorIndex == -1:
     return showError("Please enter a new value for the selected option.")
   let name = arguments[4 .. (separatorIndex - 1)]
