@@ -443,12 +443,14 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect
   ## shell's history
   if arguments.len() < 6:
     return showError("Enter the ID of the variable to edit.")
+  let varId: DatabaseId = (try: parseInt(arguments[7 .. ^1]) except ValueError: 0)
+  if varId == 0:
+    return showError("The Id of the variable must be a positive number.")
   let
-    varId: string = arguments[5 .. ^1]
     row: Row = (try: db.getRow(sql"SELECT name, path, value, description FROM variables WHERE id=?",
     varId) except DbError: @["", "", "", ""])
   if row[0] == "":
-    return showError("The variable with the ID: " & varId &
+    return showError("The variable with the ID: " & $varId &
       " doesn't exists.")
   showOutput("You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showFormHeader("(1/5) Name")
@@ -522,6 +524,6 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect
     setVariables(getCurrentDir(), db, getCurrentDir())
   except OSError as e:
     return showError("Can't set variables for the current directory. Reason: " & e.msg)
-  showOutput(message = "The variable  with Id: '" & varId & "' edited.",
+  showOutput(message = "The variable  with Id: '" & $varId & "' edited.",
       fgColor = fgGreen)
   return QuitSuccess
