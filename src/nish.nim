@@ -299,7 +299,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       if commandName == "":
         continue
       # Set the command arguments
-      let arguments: UserArguments = getArguments(userInput, conjCommands)
+      let arguments: UserInput = getArguments(userInput, conjCommands)
       inputString = join(userInput.remainingArgs(), " ");
       # Parse commands
       case commandName

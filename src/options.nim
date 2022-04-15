@@ -29,7 +29,7 @@ import constants, output
 using
   db: DbConn # Connection to the shell's database
   name: string # The name of option to get or set
-  arguments: UserArguments # The user entered agruments for set or reset option
+  arguments: UserInput # The user entered agruments for set or reset option
 
 proc getOption*(name; db; defaultValue: string = ""): string {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
