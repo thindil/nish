@@ -28,7 +28,7 @@ import constants, history, input, output
 
 using
   db: DbConn # Connection to the shell's database
-  arguments: UserArguments # The string with arguments entered by the user fot the command
+  arguments: UserInput # The string with arguments entered by the user fot the command
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
 proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe,
@@ -130,9 +130,9 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
   except OSError as e:
     discard showError("Can't set environment variables for the current directory. Reason:" & e.msg)
 
-proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
-    TimeEffect].} =
+proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
+        ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Build-in command to set the selected environment variable
@@ -163,9 +163,9 @@ proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], ta
     result = showError("You have to enter the name of the variable and its value.")
   discard updateHistory("set " & arguments, db, result)
 
-proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
-        TimeEffect].} =
+proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
+        ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Build-in command to unset the selected environment variable
@@ -279,9 +279,9 @@ proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory("variable", db)
 
-proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect].} =
+proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
+        WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Delete the selected variable from the shell's database
@@ -300,7 +300,8 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffe
   if arguments.len() < 8:
     historyIndex = updateHistory("variable delete", db, QuitFailure)
     return showError("Enter the Id of the variable to delete.")
-  let varId: DatabaseId = (try: parseInt(arguments[7 .. ^1]) except ValueError: 0)
+  let varId: DatabaseId = (try: parseInt(arguments[7 ..
+      ^1]) except ValueError: 0)
   if varId == 0:
     return showError("The Id of the variable must be a positive number.")
   try:
@@ -320,8 +321,8 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffe
       fgColor = fgGreen)
   return QuitSuccess
 
-proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
+    ], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -422,9 +423,9 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: []
       fgColor = fgGreen)
   return QuitSuccess
 
-proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect].} =
+proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
+        WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Edit the selected variable.  Ask the user a few questions and fill the
@@ -443,7 +444,8 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe, sideEffect
   ## shell's history
   if arguments.len() < 6:
     return showError("Enter the ID of the variable to edit.")
-  let varId: DatabaseId = (try: parseInt(arguments[7 .. ^1]) except ValueError: 0)
+  let varId: DatabaseId = (try: parseInt(arguments[7 ..
+      ^1]) except ValueError: 0)
   if varId == 0:
     return showError("The Id of the variable must be a positive number.")
   let
