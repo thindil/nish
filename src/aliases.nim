@@ -96,7 +96,7 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
     columnLength: ColumnAmount = try: db.getValue(
         sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 10
     spacesAmount: ColumnAmount = try: (terminalWidth() /
-        12).int except ValueError: 6
+        12).ColumnAmount except ValueError: 6
   if arguments == "list":
     showFormHeader("Available aliases are:")
     try:
@@ -209,7 +209,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
       " doesn't exists.")
   historyIndex = updateHistory("alias show", db)
   let spacesAmount: ColumnAmount = (try: (terminalWidth() /
-      12).int except ValueError: 6)
+      12).ColumnAmount except ValueError: 6)
   showOutput(message = indent(alignLeft("Id:", 13), spacesAmount),
       newLine = false, fgColor = fgMagenta)
   showOutput($id)
@@ -479,8 +479,9 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   ##
   ## QuitSuccess if the alias was properly executed, otherwise QuitFailure.
   ## Also, updated parameter aliases.
-  proc changeDirectory(newDirectory: DirectoryPath; aliases; db): int {.gcsafe,
-      sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
+  proc changeDirectory(newDirectory: DirectoryPath; aliases;
+      db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadEnvEffect,
+          ReadIOEffect, ReadDbEffect,
       WriteIOEffect, ReadEnvEffect, TimeEffect].} =
     ## Change the current directory for the shell
     let path: DirectoryPath = (try: expandFilename(absolutePath(expandTilde(
