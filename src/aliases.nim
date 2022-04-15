@@ -28,7 +28,8 @@ import constants, history, input, output
 
 type
   AliasName* = string # Used to store aliases names in tables and database.
-  AliasesList* = OrderedTable[AliasName, int] # Used to store the available aliases in the selected directory
+  AliasesList* = OrderedTable[AliasName,
+      int] # Used to store the available aliases in the selected directory
 
 using
   db: DbConn # Connection to the shell's database
@@ -54,23 +55,23 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
   aliases.clear()
   var
     dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
-    remainingDirectory: DirectoryPath = parentDir(directory)
+    remainingDirectory: DirectoryPath = parentDir(path = directory)
 
   # Construct SQL querry, search for aliases also defined in parent directories
   # if they are recursive
   while remainingDirectory != "":
-    dbQuery.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
-    remainingDirectory = parentDir(remainingDirectory)
-  dbQuery.add(" ORDER BY id ASC")
+    dbQuery.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
+    remainingDirectory = parentDir(path = remainingDirectory)
+  dbQuery.add(y = " ORDER BY id ASC")
   # Set the aliases
   try:
-    for dbResult in db.fastRows(sql(dbQuery)):
+    for dbResult in db.fastRows(query = sql(query = dbQuery)):
       try:
-        aliases[dbResult[1]] = parseInt(dbResult[0])
+        aliases[dbResult[1]] = parseInt(s = dbResult[0])
       except ValueError:
         discard showError("Can't set alias, invalid Id: " & dbResult[0])
   except DbError as e:
-    discard showError("Can't set aliases for the current directory. Reason: " & e.msg)
+    discard showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
 
 proc listAliases*(arguments; historyIndex; aliases: AliasesList;
     db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
@@ -94,7 +95,8 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   let
     columnLength: ColumnAmount = try: db.getValue(
         sql"SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 10
-    spacesAmount: ColumnAmount = try: (terminalWidth() / 12).int except ValueError: 6
+    spacesAmount: ColumnAmount = try: (terminalWidth() /
+        12).int except ValueError: 6
   if arguments == "list":
     showFormHeader("Available aliases are:")
     try:
@@ -251,8 +253,8 @@ proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory("alias", db)
 
-proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -348,8 +350,9 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect, rais
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess
 
-proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
+        WriteDbEffect,
     ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -509,8 +512,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   var
     argumentPosition: ExtendedNatural = inputString.find('$')
   while argumentPosition > -1:
-    var argumentNumber: ExtendedNatural = (try: parseInt(inputString[argumentPosition + 1] &
-        "") except ValueError: -1)
+    var argumentNumber: ExtendedNatural = (try: parseInt(inputString[
+        argumentPosition + 1] & "") except ValueError: -1)
     if argumentNumber == -1:
       return showError("Can't get argument number for alias. Reason: " &
           getCurrentExceptionMsg())
