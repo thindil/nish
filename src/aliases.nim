@@ -205,41 +205,44 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   ## QuitSuccess if the selected alias was properly show, otherwise
   ## QuitFailure. Also, updated parameter historyIndex
   if arguments.len() < 6:
-    historyIndex = updateHistory("alias show", db, QuitFailure)
-    return showError("Enter the ID of the alias to show.")
-  let id: DatabaseId = (try: parseInt(arguments[5 .. ^1]) except ValueError: 0)
+    historyIndex = updateHistory(commandToAdd = "alias show", db = db,
+        returnCode = QuitFailure)
+    return showError(message = "Enter the ID of the alias to show.")
+  let id: DatabaseId = (try: parseInt(s = arguments[5 ..
+      ^1]) except ValueError: 0)
   if id == 0:
-    return showError("The Id of the alias must be a positive number.")
-  let row: Row = (try: db.getRow(sql"SELECT name, commands, description, path, recursive FROM aliases WHERE id=?",
-      id) except DbError as e: return showError(
-          "Can't read alias data from database. Reason: " & e.msg))
+    return showError(message = "The Id of the alias must be a positive number.")
+  let row: Row = (try: db.getRow(query = sql(
+      "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"), args = id) except DbError as e: return showError(
+          message = "Can't read alias data from database. Reason: " & e.msg))
   if row[0] == "":
-    historyIndex = updateHistory("alias show", db, QuitFailure)
-    return showError("The alias with the ID: " & $id &
+    historyIndex = updateHistory(commandToAdd = "alias show", db = db,
+        returnCode = QuitFailure)
+    return showError(message = "The alias with the ID: " & $id &
       " doesn't exists.")
-  historyIndex = updateHistory("alias show", db)
+  historyIndex = updateHistory(commandToAdd = "alias show", db = db)
   let spacesAmount: ColumnAmount = (try: (terminalWidth() /
       12).ColumnAmount except ValueError: 6)
-  showOutput(message = indent(alignLeft("Id:", 13), spacesAmount),
+  showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
+      count = spacesAmount), newLine = false, fgColor = fgMagenta)
+  showOutput(message = $id)
+  showOutput(message = indent(s = alignLeft(s = "Name:", count = 13),
+      count = spacesAmount), newLine = false, fgColor = fgMagenta)
+  showOutput(message = row[0])
+  showOutput(message = indent(s = "Description: ", count = spacesAmount),
       newLine = false, fgColor = fgMagenta)
-  showOutput($id)
-  showOutput(message = indent(alignLeft("Name:", 13), spacesAmount),
-      newLine = false, fgColor = fgMagenta)
-  showOutput(row[0])
-  showOutput(message = indent("Description: ", spacesAmount), newLine = false,
-      fgColor = fgMagenta)
-  showOutput(row[2])
+  showOutput(message = row[2])
   if row[4] == "1":
-    showOutput(message = indent(alignLeft("Path:", 13), spacesAmount),
-        newLine = false, fgColor = fgMagenta)
-    showOutput(row[3] & " (recursive)")
+    showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+        count = spacesAmount), newLine = false, fgColor = fgMagenta)
+    showOutput(message = row[3] & " (recursive)")
   else:
-    showOutput(message = indent(alignLeft("Path:", 13), spacesAmount),
-        newLine = false, fgColor = fgMagenta)
-    showOutput(row[3])
-  showOutput(message = indent(alignLeft("Command(s):", 13), spacesAmount),
-      newLine = false, fgColor = fgMagenta)
-  showOutput(row[1])
+    showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+        count = spacesAmount), newLine = false, fgColor = fgMagenta)
+    showOutput(message = row[3])
+  showOutput(message = indent(s = alignLeft(s = "Command(s):", count = 13),
+      count = spacesAmount), newLine = false, fgColor = fgMagenta)
+  showOutput(message = row[1])
   return QuitSuccess
 
 proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
