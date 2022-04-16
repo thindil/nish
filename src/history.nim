@@ -44,13 +44,14 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
   ##
   ## RETURNS
   ##
-  ## The amount of commands in the shell's commands' history
+  ## The amount of commands in the shell's commands' history or -1 if can't
+  ## get the current amount of commands.
   try:
     return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
   except DbError, ValueError:
     discard showError("Can't get the length of the shell's commands history. Reason: " &
         getCurrentExceptionMsg())
-    return -1
+    return HistoryRange.low()
 
 proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
@@ -91,7 +92,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
               )"""))
   except DbError as e:
     discard showError("Can't create table for the shell's history. Reason: " & e.msg)
-    return -1
+    return HistoryRange.low()
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
