@@ -102,7 +102,8 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   return historyLength(db)
 
 proc updateHistory*(commandToAdd: string; db;
-    returnCode: ResultCode = QuitSuccess): HistoryRange {.gcsafe, sideEffect, raises: [],
+    returnCode: ResultCode = QuitSuccess): HistoryRange {.gcsafe, sideEffect,
+        raises: [],
     tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -226,9 +227,13 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## The new length of the shell's commands' history.
   let
-    amount: string = getOption("historyAmount", db)
+    amount: HistoryRange = (try: parseInt(getOption("historyAmount",
+        db)) except ValueError: HistoryRange.low())
     spacesAmount: ColumnAmount = (try: (terminalWidth() /
         12).int except ValueError: 6)
+  if amount == HistoryRange.low():
+    discard showError("Can't get setting for the amount of history commands to show.")
+    return updateHistory("history show", db, QuitFailure)
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent("Last used                Times      Command",
       spacesAmount), fgColor = fgMagenta)
