@@ -159,23 +159,27 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ## QuitSuccess if the selected alias was properly deleted, otherwise
   ## QuitFailure. Also, updated parameters historyIndex and aliases
   if arguments.len() < 8:
-    historyIndex = updateHistory("alias delete", db, QuitFailure)
-    return showError("Enter the Id of the alias to delete.")
-  let id: DatabaseId = (try: parseInt(arguments[7 .. ^1]) except ValueError: 0)
+    historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
+        returnCode = QuitFailure)
+    return showError(message = "Enter the Id of the alias to delete.")
+  let id: DatabaseId = (try: parseInt(s = arguments[7 ..
+      ^1]) except ValueError: 0)
   if id == 0:
-    return showError("The Id of the alias must be a positive number.")
+    return showError(message = "The Id of the alias must be a positive number.")
   try:
-    if db.execAffectedRows(sql"DELETE FROM aliases WHERE id=?", id) == 0:
-      historyIndex = updateHistory("alias delete", db, QuitFailure)
-      return showError("The alias with the Id: " & $id &
+    if db.execAffectedRows(query = sql(query = "DELETE FROM aliases WHERE id=?"),
+        id) == 0:
+      historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
+          returnCode = QuitFailure)
+      return showError(message = "The alias with the Id: " & $id &
         " doesn't exists.")
   except DbError as e:
-    return showError("Can't delete alias from database. Reason: " & e.msg)
-  historyIndex = updateHistory("alias delete", db)
+    return showError(message = "Can't delete alias from database. Reason: " & e.msg)
+  historyIndex = updateHistory(commandToAdd = "alias delete", db = db)
   try:
-    aliases.setAliases(getCurrentDir(), db)
+    aliases.setAliases(directory = getCurrentDir(), db = db)
   except OSError as e:
-    return showError("Can't delete alias, setting a new aliases not work. Reason: " & e.msg)
+    return showError(message = "Can't delete alias, setting a new aliases not work. Reason: " & e.msg)
   showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
   return QuitSuccess
 
