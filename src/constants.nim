@@ -42,3 +42,4 @@ type
   ColumnAmount* = Natural # Used to store length or amount of terminal's characters columns
   DatabaseId* = Natural # Used to store ids from or to the shell's database
   ExtendedNatural* = range[-1..high(int)] # Used to store various indexes
+  BooleanInt* = range[0..1] # Used to store boolean values in database
