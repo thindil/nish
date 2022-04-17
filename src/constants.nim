@@ -27,13 +27,13 @@ import std/tables
 
 const
   maxInputLength* = 4096 # The maximum length of the user input
-  aliasNameLength* = 50 # The maximum length of the shell's alias name
-  shellVersion* = "0.2" # The current version of the project
+  aliasNameLength* = 50  # The maximum length of the shell's alias name
+  shellVersion* = "0.2"  # The current version of the project
 
 type
   HelpEntry* = object
     # Used to store the shell's help entries
-    usage*: string # The shell's command to enter for the selected entry
+    usage*: string   # The shell's command to enter for the selected entry
     content*: string # The content of the selected entry
   HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
   DirectoryPath* = string # Used to store paths to directories
