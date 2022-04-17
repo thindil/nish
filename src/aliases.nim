@@ -213,7 +213,8 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   if id == 0:
     return showError(message = "The Id of the alias must be a positive number.")
   let row: Row = (try: db.getRow(query = sql(
-      "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"), args = id) except DbError as e: return showError(
+      "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"),
+      args = id) except DbError as e: return showError(
           message = "Can't read alias data from database. Reason: " & e.msg))
   if row[0] == "":
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
@@ -259,12 +260,12 @@ proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput("""Available subcommands are: list, delete, show, add, edit
+  showOutput(message = """Available subcommands are: list, delete, show, add, edit
 
         To see more information about the subcommand, type help alias [command],
         for example: help alias list.
 """)
-  return updateHistory("alias", db)
+  return updateHistory(commandToAdd = "alias", db = db)
 
 proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
