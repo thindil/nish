@@ -304,13 +304,13 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showFormHeader("(2/5) Description")
   showOutput("The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
   showOutput("Description: ", false)
-  let description: string = readInput()
+  let description: UserInput = readInput()
   if description == "exit":
     return showError("Adding a new alias cancelled.")
   showFormHeader("(3/5) Working directory")
   showOutput("The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput("Path: ", false)
-  var path: string = ""
+  var path: DirectoryPath = ""
   while path.len() == 0:
     path = readInput()
     if path.len() == 0:
@@ -333,7 +333,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showFormHeader("(5/5) Commands")
   showOutput("The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
   showOutput("Command(s): ", false)
-  var commands: string = ""
+  var commands: UserInput = ""
   while commands.len() == 0:
     commands = readInput()
     if commands.len() == 0:
@@ -415,7 +415,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   showOutput(message = row[3], newLine = false, fgColor = fgMagenta)
   showOutput("'. Can't contains a new line character.: ")
   showOutput("Description: ", false)
-  var description: string = readInput()
+  var description: UserInput = readInput()
   if description == "exit":
     return showError("Editing the alias cancelled.")
   elif description == "":
@@ -425,7 +425,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
       newLine = false)
   showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
   showOutput("'. Must be a path to the existing directory.")
-  var path: string = readInput()
+  var path: DirectoryPath = readInput()
   while path.len() > 0 and (path != "exit" and not dirExists(path)):
     discard showError("Please enter a path to the existing directory")
     path = readInput()
@@ -451,7 +451,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   showOutput(message = row[2], newLine = false, fgColor = fgMagenta)
   showOutput(message = "'. Commands can't contain a new line character.:")
   showOutput("Commands: ", false)
-  var commands: string = readInput()
+  var commands: UserInput = readInput()
   if commands == "exit":
     return showError("Editing the alias cancelled.")
   elif commands == "":
