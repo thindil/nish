@@ -383,7 +383,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = (try: getch() except IOError: 'y')
-  let recursive: int = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   try:
     stdout.writeLine("")
   except IOError:
@@ -500,7 +500,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = (try: getch() except IOError: 'y')
-  let recursive: int = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   try:
     stdout.writeLine("")
   except IOError:

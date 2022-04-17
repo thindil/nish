@@ -329,7 +329,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   while inputChar notin {'n', 'N', 'y', 'Y'}:
     inputChar = (try: getch() except IOError: 'y')
   showOutput(message = $inputChar)
-  let recursive: Natural = if inputChar in {'n', 'N'}: 0 else: 1
+  let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
   showFormHeader(message = "(5/5) Commands")
   showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
   showOutput(message = "Command(s): ", newLine = false)
@@ -440,7 +440,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
       inputChar != 'Y':
     inputChar = (try: getch() except IOError: 'y')
-  let recursive: int = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+  let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   try:
     stdout.writeLine("")
   except IOError:
