@@ -26,6 +26,9 @@
 import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, history, input, output
 
+type
+  VariableName = string # Used to store variables names in the database.
+
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user fot the command
