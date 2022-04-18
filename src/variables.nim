@@ -345,7 +345,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showOutput("You can cancel adding a new variable at any time by double press Escape key.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
-  var name: string = ""
+  var name: VariableName = ""
   showOutput("Name: ", false)
   while name.len() == 0:
     name = readInput(aliasNameLength)
@@ -361,13 +361,13 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showFormHeader("(2/5) Description")
   showOutput("The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
   showOutput("Description: ", false)
-  let description: string = readInput()
+  let description: UserInput = readInput()
   if description == "exit":
     return showError("Adding a new variable cancelled.")
   showFormHeader("(3/5) Working directory")
   showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput("Path: ", false)
-  var path: string = ""
+  var path: DirectoryPath = ""
   while path.len() == 0:
     path = readInput()
     if path.len() == 0:
@@ -383,8 +383,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showOutput("Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput("Recursive(y/n): ", false)
   var inputChar: char = (try: getch() except IOError: 'y')
-  while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
-      inputChar != 'Y':
+  while inputChar notin {'n', 'N', 'y', 'Y'}:
     inputChar = (try: getch() except IOError: 'y')
   let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   try:
@@ -394,7 +393,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showFormHeader("(5/5) Value")
   showOutput("The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
   showOutput("Value: ", false)
-  var value: string = ""
+  var value: UserInput = ""
   while value.len() == 0:
     value = readInput()
     if value.len() == 0:
@@ -460,7 +459,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   showOutput("You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showFormHeader("(1/5) Name")
   showOutput("The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
-  var name: string = "exit"
+  var name: VariableName = "exit"
   showOutput("Name: ", false)
   while name.len() > 0:
     name = readInput(aliasNameLength)
@@ -476,7 +475,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   showFormHeader("(2/5) Description")
   showOutput("The description of the variable. It will be show on the list of available variable. Current value: '" &
       row[3] & "'. Can't contains a new line character.: ")
-  var description: string = readInput()
+  var description: UserInput = readInput()
   if description == "exit":
     return showError("Editing the variable cancelled.")
   elif description == "":
@@ -485,7 +484,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   showOutput("The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
       row[1] & "'. Must be a path to the existing directory.:")
   showOutput("Path: ", false)
-  var path: string = "exit"
+  var path: DirectoryPath = "exit"
   while path.len() > 0:
     path = readInput()
     if path.len() > 0 and not dirExists(path) and path != "exit":
@@ -500,8 +499,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   showFormHeader("(4/5) Recursiveness")
   showOutput("Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   var inputChar: char = (try: getch() except IOError: 'y')
-  while inputChar != 'n' and inputChar != 'N' and inputChar != 'y' and
-      inputChar != 'Y':
+  while inputChar notin {'n', 'N', 'y', 'Y'}:
     inputChar = (try: getch() except IOError: 'y')
   let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   try:
@@ -511,7 +509,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   showFormHeader("(5/5) Value")
   showOutput("The value of the variable. Current value: '" & row[2] &
       "'. Value can't contain a new line character.:")
-  var value: string = readInput()
+  var value: UserInput = readInput()
   if value == "exit":
     return showError("Editing the variable cancelled.")
   elif value == "":
