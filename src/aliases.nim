@@ -493,72 +493,76 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   ## Also, updated parameter aliases.
   proc changeDirectory(newDirectory: DirectoryPath; aliases;
       db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadEnvEffect,
-          ReadIOEffect, ReadDbEffect,
-      WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+          ReadIOEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect,
+              TimeEffect].} =
     ## Change the current directory for the shell
-    let path: DirectoryPath = (try: expandFilename(absolutePath(expandTilde(
-        newDirectory))) except OSError, ValueError: "")
+    let path: DirectoryPath = (try: expandFilename(filename = absolutePath(
+        path = expandTilde(path = newDirectory))) except OSError,
+            ValueError: "")
     if path.len() == 0:
-      return showError("Can't change directory. Reason: " &
+      return showError(message = "Can't change directory. Reason: " &
           getCurrentExceptionMsg())
     try:
-      setCurrentDir(path)
-      aliases.setAliases(path, db)
+      setCurrentDir(newDir = path)
+      aliases.setAliases(directory = path, db = db)
       return QuitSuccess
     except OSError:
       return showError()
 
   let
     currentDirectory: DirectoryPath = (try: getCurrentDir() except OSError: "")
-    commandArguments: seq[string] = initOptParser(arguments).remainingArgs()
+    commandArguments: seq[string] = initOptParser(
+        cmdline = arguments).remainingArgs()
   if currentDirectory.len() == 0:
-    return showError("Can't get the current directory name. Reason: " &
+    return showError(message = "Can't get the current directory name. Reason: " &
         getCurrentExceptionMsg())
   var inputString: string = (try: db.getValue(
-      sql"SELECT commands FROM aliases WHERE id=?", aliases[
+      query = sql("SELECT commands FROM aliases WHERE id=?"), aliases[
           aliasId]) except KeyError, DbError: "")
   if inputString.len() == 0:
-    return showError("Can't get commands for alias. Reason: " &
+    return showError(message = "Can't get commands for alias. Reason: " &
         getCurrentExceptionMsg())
   # Convert all $number in commands to arguments taken from the user
   # input
   var
-    argumentPosition: ExtendedNatural = inputString.find('$')
+    argumentPosition: ExtendedNatural = inputString.find(item = '$')
   while argumentPosition > -1:
-    var argumentNumber: ExtendedNatural = (try: parseInt(inputString[
+    var argumentNumber: ExtendedNatural = (try: parseInt(s = inputString[
         argumentPosition + 1] & "") except ValueError: -1)
     if argumentNumber == -1:
-      return showError("Can't get argument number for alias. Reason: " &
+      return showError(message = "Can't get argument number for alias. Reason: " &
           getCurrentExceptionMsg())
     # Not enough argument entered by the user, quit with error
     if argumentNumber > commandArguments.len():
-      return showError("Not enough arguments entered")
+      return showError(message = "Not enough arguments entered")
     elif argumentNumber > 0:
-      inputString = inputString.replace(inputString[
-        argumentPosition..argumentPosition + 1], commandArguments[
+      inputString = inputString.replace(sub = inputString[
+        argumentPosition..argumentPosition + 1], by = commandArguments[
             argumentNumber - 1])
     else:
-      inputString = inputString.replace(inputString[
-        argumentPosition..argumentPosition + 1], commandArguments.join(" "))
-    argumentPosition = inputString.find('$')
+      inputString = inputString.replace(sub = inputString[
+        argumentPosition..argumentPosition + 1], by = commandArguments.join(sep = " "))
+    argumentPosition = inputString.find(item = '$')
   while inputString.len() > 0:
     var
       conjCommands: bool
-      userInput: OptParser = initOptParser(inputString)
+      userInput: OptParser = initOptParser(cmdline = inputString)
     let
-      command: UserInput = getArguments(userInput, conjCommands)
-    inputString = join(userInput.remainingArgs(), " ")
+      command: UserInput = getArguments(userInput = userInput,
+          conjCommands = conjCommands)
+    inputString = join(a = userInput.remainingArgs(), sep = " ")
     # Threat cd command specially, it should just change the current
     # directory for the alias
     if command[0..2] == "cd ":
-      if changeDirectory(command[3..^1], aliases, db) != QuitSuccess and conjCommands:
+      if changeDirectory(newDirectory = command[3..^1], aliases = aliases,
+          db = db) != QuitSuccess and conjCommands:
         return QuitFailure
       continue
     if execCmd(command) != QuitSuccess and conjCommands:
       return QuitFailure
     if not conjCommands:
       break
-  return changeDirectory(currentDirectory, aliases, db)
+  return changeDirectory(newDirectory = currentDirectory, aliases = aliases, db = db)
 
 proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
