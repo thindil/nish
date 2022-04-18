@@ -49,8 +49,10 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   helpContent["history show"] = HelpEntry(usage: "history show",
       content: "Show the last " & getOption("historyAmount", db) & " commands from the shell's history.")
 
-proc showUnknownHelp*(subCommand, command, helpType: string): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc showUnknownHelp*(subCommand, command,
+    helpType: string): ResultCode {.gcsafe,
+
+sideEffect, raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Show information about unknown help topic entered by the user
@@ -108,7 +110,8 @@ proc showHelp*(topic: string; helpContent: HelpTable; db): ResultCode {.gcsafe,
     var
       content: string = "    "
       index: Positive = 4
-    let maxLength: ColumnAmount = (try: terminalWidth() - 8 except ValueError: 72);
+    let maxLength: ColumnAmount = (try: terminalWidth() -
+        8 except ValueError: 72);
     for ch in helpEntry.content:
       content.add(ch)
       index.inc()
