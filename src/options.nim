@@ -132,9 +132,9 @@ proc helpOptions*(db) {.gcsafe, sideEffect, locks: 0, raises: [],
         for example: help options show.
 """)
 
-proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
-    TimeEffect].} =
+proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
+        ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Set the selected option's value
@@ -183,9 +183,9 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], ta
       "'", fgColor = fgGreen);
   return QuitSuccess
 
-proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
-    TimeEffect].} =
+proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
+        ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Reset the selected option's value to default value. If name of the option
