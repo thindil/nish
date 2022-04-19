@@ -595,6 +595,6 @@ proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
   helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
       content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
   try:
-    result.setAliases(getCurrentDir(), db)
+    result.setAliases(directory = getCurrentDir(), db = db)
   except OSError as e:
-    discard showError("Can't initialize aliases. Reason: " & e.msg)
+    discard showError(message = "Can't initialize aliases. Reason: " & e.msg)
