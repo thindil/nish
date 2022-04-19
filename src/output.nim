@@ -91,9 +91,11 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
 
 proc showOutput*(message; newLine: bool = true;
     promptEnabled: bool = false; previousCommand: string = "";
-        returnCode: ResultCode = QuitSuccess; fgColor: ForegroundColor = fgDefault;
-            centered: bool = false) {.gcsafe, locks: 0, sideEffect, raises: [],
-                tags: [ReadIOEffect, WriteIOEffect].} =
+        returnCode: ResultCode = QuitSuccess;
+            fgColor: ForegroundColor = fgDefault;centered: bool = false) {.gcsafe,
+                locks: 0, sideEffect, raises: [],
+
+tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
   ##
   ## Show the selected message and prompt (if enabled, default) to the user.
