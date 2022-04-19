@@ -50,16 +50,16 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   try:
-    var path: DirectoryPath = (try: absolutePath(expandTilde(
-        newDirectory)) except ValueError: "")
+    var path: DirectoryPath = (try: absolutePath(path = expandTilde(
+        path = newDirectory)) except ValueError: "")
     if path.len() == 0:
-      return showError("Can't get absolute path to the new directory.")
-    if not dirExists(path):
-      return showError("Directory '" & path & "' doesn't exist.")
-    path = expandFilename(path)
-    setVariables(path, db, getCurrentDir())
-    setCurrentDir(path)
-    aliases.setAliases(path, db)
+      return showError(message = "Can't get absolute path to the new directory.")
+    if not dirExists(dir = path):
+      return showError(message = "Directory '" & path & "' doesn't exist.")
+    path = expandFilename(filename = path)
+    setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDir())
+    setCurrentDir(newDir = path)
+    aliases.setAliases(directory = path, db = db)
     return QuitSuccess
   except OSError:
     return showError()
