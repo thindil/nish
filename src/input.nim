@@ -26,8 +26,8 @@
 import std/[parseopt, strutils, terminal]
 import constants, output
 
-proc readInput*(maxLength: int = maxInputLength): string {.gcsafe, sideEffect,
-    raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect].} =
+proc readInput*(maxLength: Positive = maxInputLength): string {.gcsafe,
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Read the user input. Used in adding a new or editing an existing alias
