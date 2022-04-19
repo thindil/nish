@@ -50,9 +50,8 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
       content: "Show the last " & getOption("historyAmount", db) & " commands from the shell's history.")
 
 proc showUnknownHelp*(subCommand, command,
-    helpType: string): ResultCode {.gcsafe,
-
-sideEffect, raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    helpType: string): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Show information about unknown help topic entered by the user
