@@ -47,7 +47,8 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   ##
   ## The argument helpContent with updated help for command 'history show'.
   helpContent["history show"] = HelpEntry(usage: "history show",
-      content: "Show the last " & getOption(optionName = "historyAmount", db = db) & " commands from the shell's history.")
+      content: "Show the last " & getOption(optionName = "historyAmount",
+          db = db) & " commands from the shell's history.")
 
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
@@ -72,7 +73,8 @@ proc showUnknownHelp*(subCommand, command,
 
 proc showHelp*(topic: UserInput; helpContent: HelpTable;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
-        WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+        WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+            TimeEffect].} =
   ## FUNCTION
   ##
   ## Show the selected help section. If the user entered non-existing name of
