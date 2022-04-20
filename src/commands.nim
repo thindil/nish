@@ -83,11 +83,12 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   if newDirectory.len() == 0:
-    result = changeDirectory("~", aliases, db)
-    discard updateHistory("cd ~", db, result)
+    result = changeDirectory(newDirectory = "~", aliases = aliases, db = db)
+    discard updateHistory(commandToAdd = "cd ~", db = db, returnCode = result)
   else:
-    result = changeDirectory(newDirectory, aliases, db)
-    discard updateHistory("cd " & newDirectory, db, result)
+    result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)
+    discard updateHistory(commandToAdd = "cd " & newDirectory, db = db,
+        returnCode = result)
 
 func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
     tags: [].} =
