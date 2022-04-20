@@ -153,8 +153,8 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   let separatorIndex: ExtendedNatural = arguments.find(' ', 4)
   if separatorIndex == -1:
     return showError("Please enter a new value for the selected option.")
-  let name = arguments[4 .. (separatorIndex - 1)]
-  var value = arguments[(separatorIndex + 1) .. ^1]
+  let name: string = arguments[4 .. (separatorIndex - 1)]
+  var value: string = arguments[(separatorIndex + 1) .. ^1]
   try:
     case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", name)
     of "integer":
