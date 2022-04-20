@@ -47,7 +47,7 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   ##
   ## The argument helpContent with updated help for command 'history show'.
   helpContent["history show"] = HelpEntry(usage: "history show",
-      content: "Show the last " & getOption(name = "historyAmount", db = db) & " commands from the shell's history.")
+      content: "Show the last " & getOption(optionName = "historyAmount", db = db) & " commands from the shell's history.")
 
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [

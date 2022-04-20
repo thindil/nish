@@ -28,10 +28,10 @@ import constants, output
 
 using
   db: DbConn # Connection to the shell's database
-  name: string # The name of option to get or set
+  optionName: string # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
-proc getOption*(name; db; defaultValue: string = ""): string {.gcsafe,
+proc getOption*(optionName; db; defaultValue: string = ""): string {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -41,7 +41,7 @@ proc getOption*(name; db; defaultValue: string = ""): string {.gcsafe,
   ##
   ## PARAMETERS
   ##
-  ## * name         - the name of the option which value will be get
+  ## * optionName         - the name of the option which value will be get
   ## * db           - the connection to the shell's database
   ## * defaultValue - the default value for option if the is no that option in
   ##                  the database. Default value is empty string ""
@@ -51,16 +51,17 @@ proc getOption*(name; db; defaultValue: string = ""): string {.gcsafe,
   ## The value of the selected option or empty string if there is no that
   ## option in the database.
   try:
-    result = db.getValue(sql"SELECT value FROM options WHERE option=?", name)
+    result = db.getValue(sql"SELECT value FROM options WHERE option=?", optionName)
   except DbError as e:
-    discard showError("Can't get value for option '" & name &
+    discard showError("Can't get value for option '" & optionName &
         "' from database. Reason: " & e.msg)
     result = defaultValue
   if result == "":
     result = defaultValue
 
-proc setOption*(name; value, description, valuetype: string = ""; db) {.gcsafe,
-    sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
+proc setOption*(optionName; value, description, valuetype: string = "";
+    db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
+        WriteIOEffect,
     ReadEnvEffect, TimeEffect].} =
   ## FUNCTIONS
   ##
@@ -69,7 +70,7 @@ proc setOption*(name; value, description, valuetype: string = ""; db) {.gcsafe,
   ##
   ## PARAMETERS
   ##
-  ## * name        - the name of the option which will be set
+  ## * optionName        - the name of the option which will be set
   ## * value       - the value of the option to set
   ## * description - the description of the option to set
   ## * valuetype   - the type of the option to set
@@ -85,13 +86,14 @@ proc setOption*(name; value, description, valuetype: string = ""; db) {.gcsafe,
     if sqlQuery.len() > 21:
       sqlQuery.add(", ")
     sqlQuery.add("valuetype='" & valuetype & "'")
-  sqlQuery.add(" WHERE option='" & name & "'")
+  sqlQuery.add(" WHERE option='" & optionName & "'")
   try:
     if db.execAffectedRows(sql(sqlQuery)) == 0:
       db.exec(sql"INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)",
-          name, value, description, valuetype, value)
+          optionName, value, description, valuetype, value)
   except DbError as e:
-    discard showError("Can't set value for option '" & name & "'. Reason: " & e.msg)
+    discard showError("Can't set value for option '" & optionName &
+        "'. Reason: " & e.msg)
 
 proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
@@ -153,34 +155,34 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   let separatorIndex: ExtendedNatural = arguments.find(' ', 4)
   if separatorIndex == -1:
     return showError("Please enter a new value for the selected option.")
-  let name: string = arguments[4 .. (separatorIndex - 1)]
+  let optionName: string = arguments[4 .. (separatorIndex - 1)]
   var value: string = arguments[(separatorIndex + 1) .. ^1]
   try:
-    case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", name)
+    case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", optionName)
     of "integer":
       try:
         discard parseInt(value)
       except:
-        return showError("Value for option '" & name &
+        return showError("Value for option '" & optionName &
             "' should be integer type.")
     of "float":
       try:
         discard parseFloat(value)
       except:
-        return showError("Value for option '" & name & "' should be float type.")
+        return showError("Value for option '" & optionName & "' should be float type.")
     of "boolean":
       value = toLowerAscii(value)
       if value != "true" and value != "false":
-        return showError("Value for option '" & name & "' should be true or false (case insensitive).")
+        return showError("Value for option '" & optionName & "' should be true or false (case insensitive).")
     of "":
-      return showError("Shell's option with name '" & name &
+      return showError("Shell's option with name '" & optionName &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
   except DbError as e:
-    return showError("Can't get type of value for option '" & name &
+    return showError("Can't get type of value for option '" & optionName &
         "'. Reason: " & e.msg)
-  setOption(name = name, value = value, db = db)
-  showOutput(message = "Value for option '" & name & "' was set to '" & value &
-      "'", fgColor = fgGreen);
+  setOption(optionName = optionName, value = value, db = db)
+  showOutput(message = "Value for option '" & optionName & "' was set to '" &
+      value & "'", fgColor = fgGreen);
   return QuitSuccess
 
 proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
@@ -202,8 +204,8 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitSuccess if the variable(s) correctly reseted, otherwise QuitFailure.
   if arguments.len() < 7:
     return showError("Please enter name of the option to reset or 'all' to reset all options.")
-  let name: string = arguments[6 .. ^1]
-  if name == "all":
+  let optionName: string = arguments[6 .. ^1]
+  if optionName == "all":
     try:
       db.exec(sql"UPDATE options SET value=defaultvalue")
       showOutput("All shell's options are reseted to their default values.")
@@ -212,17 +214,18 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   else:
     try:
       if db.getValue(sql"SELECT value FROM options WHERE option=?",
-          name) == "":
-        return showError("Shell's option with name '" & name &
+          optionName) == "":
+        return showError("Shell's option with name '" & optionName &
           "' doesn't exists. Please use command 'options show' to see all available shell's options.")
     except DbError as e:
-      return showError("Can't get value for option '" & name & "'. Reason: " & e.msg)
+      return showError("Can't get value for option '" & optionName &
+          "'. Reason: " & e.msg)
     try:
-      db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", name)
-      showOutput(message = "The shell's option '" & name &
+      db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", optionName)
+      showOutput(message = "The shell's option '" & optionName &
           "' reseted to its default value.", fgColor = fgGreen)
     except DbError as e:
-      return showError("Can't reset option '" & name &
+      return showError("Can't reset option '" & optionName &
           "' to its default value. Reason: " & e.msg)
   return QuitSuccess
 
