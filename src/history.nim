@@ -47,9 +47,10 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
   ## The amount of commands in the shell's commands' history or -1 if can't
   ## get the current amount of commands.
   try:
-    return parseInt(db.getValue(sql"SELECT COUNT(*) FROM history"))
+    return parseInt(s = db.getValue(query = sql(
+        "SELECT COUNT(*) FROM history")))
   except DbError, ValueError:
-    discard showError("Can't get the length of the shell's commands history. Reason: " &
+    discard showError(message = "Can't get the length of the shell's commands history. Reason: " &
         getCurrentExceptionMsg())
     return HistoryRange.low()
 
