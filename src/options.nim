@@ -26,6 +26,9 @@
 import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, output
 
+type
+  OptionName* = string # Used to store options names in the database.
+
 using
   db: DbConn # Connection to the shell's database
   optionName: string # The name of option to get or set
