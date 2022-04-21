@@ -67,7 +67,7 @@ proc showUnknownHelp*(subCommand, command,
   ##
   ## RETURNS
   ## Always QuitFailure.
-  return showError("Unknown subcommand `" & subCommand &
+  return showError(message = "Unknown subcommand `" & subCommand &
               "` for `" & command & "`. To see all available " & helpType &
               " commands, type `" & command & "`.")
 
@@ -176,25 +176,25 @@ proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
     i: Positive = 1
     keys: seq[string]
   for key in helpContent.keys:
-    keys.add(key)
-  keys.sort(system.cmp)
+    keys.add(y = key)
+  keys.sort(cmp = system.cmp)
   for key in keys:
     try:
-      helpContent["help"].usage.add(alignLeft(key, 20))
+      helpContent["help"].usage.add(y = alignLeft(s = key, count = 20))
     except KeyError as e:
-      discard showError("Can't set content of the help main screen. Reason: " & e.msg)
+      discard showError(message = "Can't set content of the help main screen. Reason: " & e.msg)
       return
     i.inc()
     if i == 4:
       try:
-        helpContent["help"].usage.add("\n    ")
+        helpContent["help"].usage.add(y = "\n    ")
       except KeyError as e:
-        discard showError("Can't set content of the help main screen. Reason: " & e.msg)
+        discard showError(message = "Can't set content of the help main screen. Reason: " & e.msg)
         return
       i = 1
   try:
-    helpContent["help"].usage.removeSuffix(", ")
-    helpContent["help"].content.add("To see more information about the selected topic, type help [topic], for example: help cd.")
+    helpContent["help"].usage.removeSuffix(suffix = ", ")
+    helpContent["help"].content.add(y = "To see more information about the selected topic, type help [topic], for example: help cd.")
   except KeyError as e:
-    discard showError("Can't set content of the help main screen. Reason: " & e.msg)
+    discard showError(message = "Can't set content of the help main screen. Reason: " & e.msg)
     return
