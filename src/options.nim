@@ -31,7 +31,7 @@ type
 
 using
   db: DbConn # Connection to the shell's database
-  optionName: string # The name of option to get or set
+  optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
 proc getOption*(optionName; db; defaultValue: string = ""): string {.gcsafe,
@@ -158,7 +158,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   let separatorIndex: ExtendedNatural = arguments.find(' ', 4)
   if separatorIndex == -1:
     return showError("Please enter a new value for the selected option.")
-  let optionName: string = arguments[4 .. (separatorIndex - 1)]
+  let optionName: OptionName = arguments[4 .. (separatorIndex - 1)]
   var value: string = arguments[(separatorIndex + 1) .. ^1]
   try:
     case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", optionName)
@@ -207,7 +207,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitSuccess if the variable(s) correctly reseted, otherwise QuitFailure.
   if arguments.len() < 7:
     return showError("Please enter name of the option to reset or 'all' to reset all options.")
-  let optionName: string = arguments[6 .. ^1]
+  let optionName: OptionName = arguments[6 .. ^1]
   if optionName == "all":
     try:
       db.exec(sql"UPDATE options SET value=defaultvalue")
