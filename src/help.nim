@@ -107,53 +107,56 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
     ##                 header. Default value is "Usage"
     showOutput(message = "    " & usageHeader & ": ", newLine = false,
         fgColor = fgYellow)
-    showOutput(helpEntry.usage & "\n")
+    showOutput(message = helpEntry.usage & "\n")
     var
       content: string = "    "
       index: Positive = 4
     let maxLength: ColumnAmount = (try: terminalWidth() -
         8 except ValueError: 72);
     for ch in helpEntry.content:
-      content.add(ch)
+      content.add(y = ch)
       index.inc()
       if index == maxLength:
-        content.add("\n    ")
+        content.add(y = "\n    ")
         index = 4
-    showOutput(content)
-    discard updateHistory("help", db)
+    showOutput(message = content)
+    discard updateHistory(commandToAdd = "help", db = db)
 
   result = QuitSuccess
   if topic.len == 0:
     try:
-      showHelpEntry(helpContent["help"], "Available help topics")
+      showHelpEntry(helpEntry = helpContent["help"],
+          usageHeader = "Available help topics")
     except KeyError as e:
-      return showError("Can't show list of available help topics. Reason: " & e.msg)
+      return showError(message = "Can't show list of available help topics. Reason: " & e.msg)
   else:
     let
-      tokens: seq[string] = split(topic)
-      args: string = join(tokens[1 .. ^1], " ")
+      tokens: seq[string] = split(s = topic)
+      args: string = join(a = tokens[1 .. ^1], " ")
       command: string = tokens[0]
       key: string = command & (if args.len() > 0: " " & args else: "")
-    if helpContent.hasKey(key):
+    if helpContent.hasKey(key = key):
       try:
-        showHelpEntry(helpContent[key])
+        showHelpEntry(helpEntry = helpContent[key])
       except KeyError as e:
-        return showError("Can't show the help topic for '" & key &
+        return showError(message = "Can't show the help topic for '" & key &
             "'. Reason: " & e.msg)
-    elif helpContent.hasKey(command):
+    elif helpContent.hasKey(key = command):
       if key == command:
         try:
-          showHelpEntry(helpContent[command])
+          showHelpEntry(helpEntry = helpContent[command])
         except KeyError as e:
-          return showError("Cam't show the help topic for '" & command &
-              "'. Reason: " & e.msg)
+          return showError(message = "Cam't show the help topic for '" &
+              command & "'. Reason: " & e.msg)
       else:
-        result = showUnknownHelp(args, command, (if command ==
-            "alias": "aliases" else: command))
-        discard updateHistory("help " & key, db, result)
+        result = showUnknownHelp(subCommand = args, command = command,
+            helpType = (if command == "alias": "aliases" else: command))
+        discard updateHistory(commandToAdd = "help " & key, db = db,
+            returnCode = result)
     else:
-      result = showError("Unknown help topic '" & key & "'")
-      discard updateHistory("help " & key, db, result)
+      result = showError(message = "Unknown help topic '" & key & "'")
+      discard updateHistory(commandToAdd = "help " & key, db = db,
+          returnCode = result)
 
 proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect].} =
