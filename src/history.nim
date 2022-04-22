@@ -74,25 +74,28 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   ## history's table in the shell's database
 
   # Set the history related options
-  if getOption("historyLength", db) == "":
-    setOption("historyLength", "500", "Max amount of entries in shell commands history.",
-        "integer", db)
-  if getOption("historyAmount", db) == "":
-    setOption("historyAmount", "20", "Amount of entries in shell commands history to show with history show command.",
-        "integer", db)
-  if getOption("historySaveInvalid", db) == "":
-    setOption("historySaveInvalid", "false",
-        "Save in shell command history also invalid commands.", "boolean", db)
+  if getOption(optionName = "historyLength", db = db) == "":
+    setOption(optionName = "historyLength", value = "500",
+        description = "Max amount of entries in shell commands history.",
+        valueType = "integer", db = db)
+  if getOption(optionName = "historyAmount", db = db) == "":
+    setOption(optionName = "historyAmount", value = "20",
+        description = "Amount of entries in shell commands history to show with history show command.",
+         valueType = "integer", db = db)
+  if getOption(optionName = "historySaveInvalid", db = db) == "":
+    setOption(optionName = "historySaveInvalid", value = "false",
+        description = "Save in shell command history also invalid commands.",
+        valueType = "boolean", db = db)
   # Create history table if not exists
   try:
-    db.exec(sql("""CREATE TABLE IF NOT EXISTS history (
+    db.exec(query = sql("""CREATE TABLE IF NOT EXISTS history (
                  command     VARCHAR(""" & $maxInputLength &
         """) PRIMARY KEY,
                  lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
                  amount      INTEGER NOT NULL DEFAULT 1
               )"""))
   except DbError as e:
-    discard showError("Can't create table for the shell's history. Reason: " & e.msg)
+    discard showError(message = "Can't create table for the shell's history. Reason: " & e.msg)
     return HistoryRange.low()
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
@@ -100,7 +103,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   helpContent["history clear"] = HelpEntry(usage: "history clear",
       content: "Clear the shell's commands' history.")
   # Return the current help index set on the last command in the shell's history
-  return historyLength(db)
+  return historyLength(db = db)
 
 proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = QuitSuccess): HistoryRange {.gcsafe, sideEffect,
