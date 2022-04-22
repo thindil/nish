@@ -168,7 +168,7 @@ func getHistory*(historyIndex: HistoryRange; db): string {.gcsafe, locks: 0,
   ##
   ## The selected command from the shell's commands' history.
   try:
-    return db.getValue(sql"SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?",
+    return db.getValue(query = sql("SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?"),
         $(historyIndex - 1));
   except DbError as e:
     return "Can't get the selected command from the shell's history. Reason: " & e.msg
@@ -187,10 +187,10 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## The new last index in the shell's commands history
   try:
-    db.exec(sql"DELETE FROM history");
+    db.exec(query = sql("DELETE FROM history"));
   except DbError as e:
-    discard showError("Can't clear the shell's commands history. Reason: " & e.msg)
-    return historyLength(db)
+    discard showError(message = "Can't clear the shell's commands history. Reason: " & e.msg)
+    return historyLength(db = db)
   showOutput(message = "Shell's commands' history cleared.", fgColor = fgGreen)
   return 0;
 
@@ -209,12 +209,12 @@ proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput("""Available subcommands are: clear, show
+  showOutput(message = """Available subcommands are: clear, show
 
         To see more information about the subcommand, type help history [command],
         for example: help history clear.
 """)
-  return updateHistory("history", db)
+  return updateHistory(commandToAdd = "history", db = db)
 
 proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
