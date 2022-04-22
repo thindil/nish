@@ -35,7 +35,7 @@ using
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
-proc getOption*(optionName; db; defaultValue: string = ""): string {.gcsafe,
+proc getOption*(optionName; db; defaultValue: OptionValue = ""): string {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -63,10 +63,10 @@ proc getOption*(optionName; db; defaultValue: string = ""): string {.gcsafe,
   if result == "":
     result = defaultValue
 
-proc setOption*(optionName; value, description, valuetype: string = "";
-    db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
-        WriteIOEffect,
-    ReadEnvEffect, TimeEffect].} =
+proc setOption*(optionName; value: OptionValue = ""; description,
+    valuetype: string = ""; db) {.gcsafe, sideEffect, raises: [], tags: [
+        ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
+            TimeEffect].} =
   ## FUNCTIONS
   ##
   ## Set the value and or description of the selected option. If the option
@@ -160,7 +160,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   if separatorIndex == -1:
     return showError("Please enter a new value for the selected option.")
   let optionName: OptionName = arguments[4 .. (separatorIndex - 1)]
-  var value: string = arguments[(separatorIndex + 1) .. ^1]
+  var value: OptionValue = arguments[(separatorIndex + 1) .. ^1]
   try:
     case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", optionName)
     of "integer":
