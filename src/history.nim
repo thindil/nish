@@ -126,29 +126,30 @@ proc updateHistory*(commandToAdd: string; db;
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  result = historyLength(db)
+  result = historyLength(db = db)
   try:
-    if returnCode != QuitSuccess and db.getValue(
-        sql"SELECT value FROM options WHERE option='historySaveInvalid'") == "false":
+    if returnCode != QuitSuccess and db.getValue(query = sql(
+        "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
       return
   except DbError as e:
-    discard showError("Can't get value of option historySaveInvalid. Reason: " & e.msg)
+    discard showError(message = "Can't get value of option historySaveInvalid. Reason: " & e.msg)
     return
   try:
-    if result == parseInt(db.getValue(sql"SELECT value FROM options where option='historyLength'")):
-      db.exec(sql"DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1");
+    if result == parseInt(s = db.getValue(query = sql(
+        "SELECT value FROM options where option='historyLength'"))):
+      db.exec(query = sql("DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
       result.dec()
   except DbError, ValueError:
-    discard showError("Can't get value of option historyLength. Reason: " &
+    discard showError(message = "Can't get value of option historyLength. Reason: " &
         getCurrentExceptionMsg())
     return
   try:
-    if db.execAffectedRows(sql"UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?",
+    if db.execAffectedRows(query = sql("UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?"),
         commandToAdd) == 0:
-      db.exec(sql"INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))", commandToAdd)
+      db.exec(query = sql("INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))"), commandToAdd)
       result.inc()
   except DbError as e:
-    discard showError("Can't update the shell's history. Reason: " & e.msg)
+    discard showError(message = "Can't update the shell's history. Reason: " & e.msg)
     return
 
 func getHistory*(historyIndex: HistoryRange; db): string {.gcsafe, locks: 0,
