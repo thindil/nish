@@ -28,6 +28,7 @@ import constants, output
 
 type
   OptionName* = string # Used to store options names in the database.
+  OptionValue* = string # Used to set or get the option's values
 
 using
   db: DbConn # Connection to the shell's database
