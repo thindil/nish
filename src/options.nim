@@ -45,7 +45,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = ""): string {.gcsafe
   ##
   ## PARAMETERS
   ##
-  ## * optionName         - the name of the option which value will be get
+  ## * optionName   - the name of the option which value will be get
   ## * db           - the connection to the shell's database
   ## * defaultValue - the default value for option if the is no that option in
   ##                  the database. Default value is empty string ""
@@ -74,7 +74,7 @@ proc setOption*(optionName; value: OptionValue = ""; description,
   ##
   ## PARAMETERS
   ##
-  ## * optionName        - the name of the option which will be set
+  ## * optionName  - the name of the option which will be set
   ## * value       - the value of the option to set
   ## * description - the description of the option to set
   ## * valuetype   - the type of the option to set
