@@ -232,22 +232,25 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## The new length of the shell's commands' history.
   let
-    amount: HistoryRange = (try: parseInt(getOption("historyAmount",
-        db)) except ValueError: HistoryRange.low())
+    amount: HistoryRange = (try: parseInt(s = getOption(
+       optionName = "historyAmount",
+       db = db)) except ValueError: HistoryRange.low())
     spacesAmount: ColumnAmount = (try: (terminalWidth() /
         12).int except ValueError: 6)
   if amount == HistoryRange.low():
-    discard showError("Can't get setting for the amount of history commands to show.")
-    return updateHistory("history show", db, QuitFailure)
+    discard showError(message = "Can't get setting for the amount of history commands to show.")
+    return updateHistory(commandToAdd = "history show", db = db,
+        returnCode = QuitFailure)
   showFormHeader(message = "The last commands from the shell's history")
-  showOutput(message = indent("Last used                Times      Command",
-      spacesAmount), fgColor = fgMagenta)
+  showOutput(message = indent(s = "Last used                Times      Command",
+      count = spacesAmount), fgColor = fgMagenta)
   try:
-    for row in db.fastRows(sql"SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)",
+    for row in db.fastRows(query = sql("SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)"),
         amount, amount):
-      showOutput(indent(row[1] & "      " & center(row[2], 5) & "      " &
-          row[0], spacesAmount))
-    return updateHistory("history show", db)
+      showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
+          width = 5) & "      " & row[0], count = spacesAmount))
+    return updateHistory(commandToAdd = "history show", db = db)
   except DbError as e:
-    discard showError("Can't get the last commands from the shell's history. Reason: " & e.msg)
-    return updateHistory("history show", db, QuitFailure)
+    discard showError(message = "Can't get the last commands from the shell's history. Reason: " & e.msg)
+    return updateHistory(commandToAdd = "history show", db = db,
+        returnCode = QuitFailure)
