@@ -77,15 +77,15 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   if getOption(optionName = "historyLength", db = db) == "":
     setOption(optionName = "historyLength", value = "500",
         description = "Max amount of entries in shell commands history.",
-        valueType = "integer", db = db)
+        valueType = ValueType.integer, db = db)
   if getOption(optionName = "historyAmount", db = db) == "":
     setOption(optionName = "historyAmount", value = "20",
         description = "Amount of entries in shell commands history to show with history show command.",
-         valueType = "integer", db = db)
+         valueType = ValueType.integer, db = db)
   if getOption(optionName = "historySaveInvalid", db = db) == "":
     setOption(optionName = "historySaveInvalid", value = "false",
         description = "Save in shell command history also invalid commands.",
-        valueType = "boolean", db = db)
+        valueType = ValueType.boolean, db = db)
   # Create history table if not exists
   try:
     db.exec(query = sql("""CREATE TABLE IF NOT EXISTS history (
