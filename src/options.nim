@@ -30,7 +30,7 @@ type
   OptionName* = string # Used to store options names in the database.
   OptionValue* = string # Used to set or get the option's values
   ValueType* = enum # Used to set the type of option's value
-    integer, float, boolean
+    integer, float, boolean, none
 
 using
   db: DbConn # Connection to the shell's database
@@ -65,10 +65,10 @@ proc getOption*(optionName; db; defaultValue: OptionValue = ""): string {.gcsafe
   if result == "":
     result = defaultValue
 
-proc setOption*(optionName; value: OptionValue = ""; description,
-    valuetype: string = ""; db) {.gcsafe, sideEffect, raises: [], tags: [
-        ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
-            TimeEffect].} =
+proc setOption*(optionName; value: OptionValue = "";
+    description: UserInput = "";valuetype: ValueType = none; db) {.gcsafe,
+        sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
+            ReadEnvEffect, TimeEffect].} =
   ## FUNCTIONS
   ##
   ## Set the value and or description of the selected option. If the option
@@ -88,10 +88,10 @@ proc setOption*(optionName; value: OptionValue = ""; description,
     if sqlQuery.len() > 21:
       sqlQuery.add(", ")
     sqlQuery.add("description='" & description & "'")
-  if valuetype != "":
+  if valuetype != none:
     if sqlQuery.len() > 21:
       sqlQuery.add(", ")
-    sqlQuery.add("valuetype='" & valuetype & "'")
+    sqlQuery.add("valuetype='" & $valuetype & "'")
   sqlQuery.add(" WHERE option='" & optionName & "'")
   try:
     if db.execAffectedRows(sql(sqlQuery)) == 0:
