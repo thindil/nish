@@ -58,7 +58,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       except IOError:
         discard
   else:
-    let homeIndex: int = currentDirectory.find(homeDirectory)
+    let homeIndex: ExtendedNatural = currentDirectory.find(homeDirectory)
     if homeIndex > -1:
       try:
         stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
