@@ -26,6 +26,9 @@
 import std/[os, strutils, terminal, times]
 import constants
 
+type
+  OutputMessage* = string # Used to store message to show to the user
+
 using
   message: string # The message to show to the user
 
