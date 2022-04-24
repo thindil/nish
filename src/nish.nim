@@ -59,7 +59,7 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
   ## QuitSuccess when the program's arguments help was shown, otherwise
   ## QuitFailure.
   try:
-    stdout.writeLine("""
+    stdout.writeLine(x = """
     Nish version: """ & shellVersion & """
 
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
@@ -82,7 +82,7 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
   try:
     db.close()
   except DbError as e:
-    quit showError("Can't close properly the shell database. Reason:" & e.msg)
+    quit showError(message = "Can't close properly the shell database. Reason:" & e.msg)
   quit returnCode
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
@@ -102,15 +102,15 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
   ## Pointer to the database connection. If connection cannot be established,
   ## returns nil.
   try:
-    discard existsOrCreateDir(parentDir(dbPath))
+    discard existsOrCreateDir(dir = parentDir(path = dbPath))
   except OSError, IOError:
-    discard showError("Can't create directory for the shell's database. Reason: " &
+    discard showError(message = "Can't create directory for the shell's database. Reason: " &
         getCurrentExceptionMsg())
     return nil
   try:
-    result = open(dbPath, "", "", "")
+    result = open(connection = dbPath, user = "", password = "", database = "")
   except DbError as e:
-    discard showError("Can't open the shell's database. Reason: " & e.msg)
+    discard showError(message = "Can't open the shell's database. Reason: " & e.msg)
     return nil
   # Create a new database if not exists
   var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
@@ -125,9 +125,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
                description VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   try:
-    result.exec(sql(sqlQuery))
+    result.exec(query = sql(sqlQuery))
   except DbError as e:
-    discard showError("Can't create 'aliases' table. Reason: " & e.msg)
+    discard showError(message = "Can't create 'aliases' table. Reason: " & e.msg)
     return nil
   sqlQuery = """CREATE TABLE IF NOT EXISTS options (
                 option VARCHAR(""" & $aliasNameLength &
@@ -141,9 +141,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
                 defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   try:
-    result.exec(sql(sqlQuery))
+    result.exec(query = sql(sqlQuery))
   except DbError as e:
-    discard showError("Can't create 'options' table. Reason: " & e.msg)
+    discard showError(message = "Can't create 'options' table. Reason: " & e.msg)
     return nil
   sqlQuery = """CREATE TABLE IF NOT EXISTS variables (
                id          INTEGER       PRIMARY KEY,
@@ -157,9 +157,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
                description VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   try:
-    result.exec(sql(sqlQuery))
+    result.exec(query = sql(sqlQuery))
   except DbError as e:
-    discard showError("Can't create 'variables' table. Reason: " & e.msg)
+    discard showError(message = "Can't create 'variables' table. Reason: " & e.msg)
     return nil
 
 proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
