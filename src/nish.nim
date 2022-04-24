@@ -113,7 +113,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     discard showError(message = "Can't open the shell's database. Reason: " & e.msg)
     return nil
   # Create a new database if not exists
-  var sqlQuery = """CREATE TABLE IF NOT EXISTS aliases (
+  var sqlQuery: string = """CREATE TABLE IF NOT EXISTS aliases (
                id          INTEGER       PRIMARY KEY,
                name        VARCHAR(""" & $aliasNameLength &
       """) NOT NULL,
@@ -125,7 +125,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
                description VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   try:
-    result.exec(query = sql(sqlQuery))
+    result.exec(query = sql(query = sqlQuery))
   except DbError as e:
     discard showError(message = "Can't create 'aliases' table. Reason: " & e.msg)
     return nil
@@ -141,7 +141,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
                 defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   try:
-    result.exec(query = sql(sqlQuery))
+    result.exec(query = sql(query = sqlQuery))
   except DbError as e:
     discard showError(message = "Can't create 'options' table. Reason: " & e.msg)
     return nil
@@ -157,7 +157,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
                description VARCHAR(""" & $maxInputLength & """) NOT NULL
             )"""
   try:
-    result.exec(query = sql(sqlQuery))
+    result.exec(query = sql(query = sqlQuery))
   except DbError as e:
     discard showError(message = "Can't create 'variables' table. Reason: " & e.msg)
     return nil

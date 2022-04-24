@@ -212,10 +212,10 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
       ^1]) except ValueError: 0)
   if id == 0:
     return showError(message = "The Id of the alias must be a positive number.")
-  let row: Row = (try: db.getRow(query = sql(
-      "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"),
-      args = id) except DbError as e: return showError(
-          message = "Can't read alias data from database. Reason: " & e.msg))
+  let row: Row = (try: db.getRow(query = sql(query =
+    "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"),
+    args = id) except DbError as e: return showError(
+        message = "Can't read alias data from database. Reason: " & e.msg))
   if row[0] == "":
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
         returnCode = QuitFailure)
@@ -343,14 +343,14 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     return showError(message = "Adding a new alias cancelled.")
   # Check if alias with the same parameters exists in the database
   try:
-    if db.getValue(query = sql("SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?"),
+    if db.getValue(query = sql(query = "SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?"),
         name, path, recursive, commands).len() > 0:
       return showError(message = "There is an alias with the same name, path and commands in the database.")
   except DbError as e:
     return showError(message = "Can't check if the similar alias exists. Reason: " & e.msg)
   # Save the alias to the database
   try:
-    if db.tryInsertID(query = sql("INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)"),
+    if db.tryInsertID(query = sql(query = "INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)"),
         name, path, recursive, commands, description) == -1:
       return showError(message = "Can't add alias.")
   except DbError as e:
@@ -391,8 +391,8 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if id == 0:
     return showError(message = "The Id of the alias must be a positive number.")
   let
-    row: Row = (try: db.getRow(query = sql(
-        "SELECT name, path, commands, description FROM aliases WHERE id=?"),
+    row: Row = (try: db.getRow(query = sql(query =
+      "SELECT name, path, commands, description FROM aliases WHERE id=?"),
     id) except DbError: @["", "", "", ""])
   if row[0] == "":
     return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
@@ -456,7 +456,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     commands = row[2]
   # Save the alias to the database
   try:
-    if db.execAffectedRows(query = sql("UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?"),
+    if db.execAffectedRows(query = sql(query = "UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?"),
         name, path, recursive, commands, description, id) != 1:
       return showError(message = "Can't edit the alias.")
   except DbError as e:
@@ -517,7 +517,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     return showError(message = "Can't get the current directory name. Reason: " &
         getCurrentExceptionMsg())
   var inputString: string = (try: db.getValue(
-      query = sql("SELECT commands FROM aliases WHERE id=?"), aliases[
+      query = sql(query = "SELECT commands FROM aliases WHERE id=?"), aliases[
           aliasId]) except KeyError, DbError: "")
   if inputString.len() == 0:
     return showError(message = "Can't get commands for alias. Reason: " &

@@ -47,8 +47,8 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
   ## The amount of commands in the shell's commands' history or -1 if can't
   ## get the current amount of commands.
   try:
-    return parseInt(s = db.getValue(query = sql(
-        "SELECT COUNT(*) FROM history")))
+    return parseInt(s = db.getValue(query = sql(query =
+      "SELECT COUNT(*) FROM history")))
   except DbError, ValueError:
     discard showError(message = "Can't get the length of the shell's commands history. Reason: " &
         getCurrentExceptionMsg())
@@ -88,7 +88,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
         valueType = ValueType.boolean, db = db)
   # Create history table if not exists
   try:
-    db.exec(query = sql("""CREATE TABLE IF NOT EXISTS history (
+    db.exec(query = sql(query = """CREATE TABLE IF NOT EXISTS history (
                  command     VARCHAR(""" & $maxInputLength &
         """) PRIMARY KEY,
                  lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
@@ -128,25 +128,25 @@ proc updateHistory*(commandToAdd: string; db;
   ## The new length of the shell's commands' history.
   result = historyLength(db = db)
   try:
-    if returnCode != QuitSuccess and db.getValue(query = sql(
-        "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
+    if returnCode != QuitSuccess and db.getValue(query = sql(query =
+      "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
       return
   except DbError as e:
     discard showError(message = "Can't get value of option historySaveInvalid. Reason: " & e.msg)
     return
   try:
-    if result == parseInt(s = db.getValue(query = sql(
-        "SELECT value FROM options where option='historyLength'"))):
-      db.exec(query = sql("DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
+    if result == parseInt(s = db.getValue(query = sql(query =
+      "SELECT value FROM options where option='historyLength'"))):
+      db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
       result.dec()
   except DbError, ValueError:
     discard showError(message = "Can't get value of option historyLength. Reason: " &
         getCurrentExceptionMsg())
     return
   try:
-    if db.execAffectedRows(query = sql("UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?"),
+    if db.execAffectedRows(query = sql(query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?"),
         commandToAdd) == 0:
-      db.exec(query = sql("INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))"), commandToAdd)
+      db.exec(query = sql(query = "INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))"), commandToAdd)
       result.inc()
   except DbError as e:
     discard showError(message = "Can't update the shell's history. Reason: " & e.msg)
@@ -168,7 +168,7 @@ func getHistory*(historyIndex: HistoryRange; db): string {.gcsafe, locks: 0,
   ##
   ## The selected command from the shell's commands' history.
   try:
-    return db.getValue(query = sql("SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?"),
+    return db.getValue(query = sql(query = "SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?"),
         $(historyIndex - 1));
   except DbError as e:
     return "Can't get the selected command from the shell's history. Reason: " & e.msg
@@ -187,7 +187,7 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## The new last index in the shell's commands history
   try:
-    db.exec(query = sql("DELETE FROM history"));
+    db.exec(query = sql(query = "DELETE FROM history"));
   except DbError as e:
     discard showError(message = "Can't clear the shell's commands history. Reason: " & e.msg)
     return historyLength(db = db)
@@ -245,7 +245,7 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   showOutput(message = indent(s = "Last used                Times      Command",
       count = spacesAmount), fgColor = fgMagenta)
   try:
-    for row in db.fastRows(query = sql("SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)"),
+    for row in db.fastRows(query = sql(query = "SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)"),
         amount, amount):
       showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
           width = 5) & "      " & row[0], count = spacesAmount))
