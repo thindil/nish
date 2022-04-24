@@ -37,7 +37,7 @@ using
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
-proc getOption*(optionName; db; defaultValue: OptionValue = ""): string {.gcsafe,
+proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
