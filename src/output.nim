@@ -30,7 +30,7 @@ type
   OutputMessage* = string # Used to store message to show to the user
 
 using
-  message: string # The message to show to the user
+  message: OutputMessage # The message to show to the user
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode) {.gcsafe, locks: 0, sideEffect, raises: [],
@@ -112,7 +112,7 @@ proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
   ## * centered        - if true, center the message on the screen
   showPrompt(promptEnabled, previousCommand, returnCode)
   if message != "":
-    var newMessage: string
+    var newMessage: OutputMessage
     if centered:
       try:
         newMessage = center(message, terminalWidth())
@@ -134,7 +134,7 @@ proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
         discard
   stdout.flushFile()
 
-proc showError*(message: string = ""): ResultCode {.gcsafe, sideEffect,
+proc showError*(message: OutputMessage = ""): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
