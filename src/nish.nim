@@ -246,7 +246,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       # ask for more.
       if not oneTimeCommand and inputString.len() == 0:
         # Write prompt
-        showPrompt(promptEnabled = not oneTimeCommand, previousCommand = commandName, resultCode = returnCode)
+        showPrompt(promptEnabled = not oneTimeCommand,
+            previousCommand = commandName, resultCode = returnCode)
         # Get the user input and parse it
         var inputChar: char = '\0'
         # Read the user input until not meet new line character or the input
@@ -257,7 +258,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             if inputString.len() > 0:
               inputString = inputString[0..^2]
               stdout.cursorBackward()
-              stdout.write(" ")
+              stdout.write(s = " ")
               stdout.cursorBackward()
           # Escape or arrows keys pressed
           elif inputChar.ord() == 27:
@@ -268,8 +269,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               if inputChar == 'A' and historyIndex > 0:
                 inputString = getHistory(historyIndex = historyIndex, db = db)
                 stdout.eraseLine()
-                showOutput(message = inputString, newLine = false, promptEnabled = not oneTimeCommand,
-                    previousCommand = commandName, returnCode = returnCode)
+                showOutput(message = inputString, newLine = false,
+                    promptEnabled = not oneTimeCommand,
+
+previousCommand = commandName, returnCode = returnCode)
                 historyIndex.dec()
                 if historyIndex < 1:
                   historyIndex = 1;
@@ -279,16 +282,18 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 let currentHistoryLength: HistoryRange = historyLength(db = db)
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
-                inputString = getHistory(historyIndex, db)
+                inputString = getHistory(historyIndex = historyIndex, db = db)
                 stdout.eraseLine()
-                showOutput(inputString, false, not oneTimeCommand,
-                    commandName, returnCode)
+                showOutput(message = inputString, newLine = false,
+                    promptEnabled = not oneTimeCommand,
+
+previousCommand = commandName, returnCode = returnCode)
           elif inputChar.ord() > 31:
-            stdout.write(inputChar)
-            inputString.add(inputChar)
+            stdout.write(c = inputChar)
+            inputString.add(y = inputChar)
           inputChar = getch()
-        stdout.writeLine("")
-      userInput = initOptParser(inputString)
+        stdout.writeLine(x = "")
+      userInput = initOptParser(cmdLine = inputString)
       # Reset the return code of the program
       returnCode = QuitSuccess
       # Go to the first token
@@ -300,46 +305,49 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       if commandName == "":
         continue
       # Set the command arguments
-      let arguments: UserInput = getArguments(userInput, conjCommands)
-      inputString = join(userInput.remainingArgs(), " ");
+      let arguments: UserInput = getArguments(userInput = userInput,
+          conjCommands = conjCommands)
+      inputString = join(a = userInput.remainingArgs(), sep = " ");
       # Parse commands
       case commandName
       # Quit from shell
       of "exit":
-        historyIndex = updateHistory("exit", db)
-        quitShell(returnCode, db)
+        historyIndex = updateHistory(commandToAdd = "exit", db = db)
+        quitShell(returnCode = returnCode, db = db)
       # Show help screen
       of "help":
-        returnCode = showHelp(arguments, helpContent, db)
+        returnCode = showHelp(topic = arguments, helpContent = helpContent, db = db)
       # Change current directory
       of "cd":
-        returnCode = cdCommand(arguments, aliases, db)
-        historyIndex = historyLength(db)
+        returnCode = cdCommand(newDirectory = arguments, aliases = aliases, db = db)
+        historyIndex = historyLength(db = db)
       # Set the environment variable
       of "set":
-        returnCode = setCommand(arguments, db)
-        historyIndex = historyLength(db)
+        returnCode = setCommand(arguments = arguments, db = db)
+        historyIndex = historyLength(db = db)
       # Delete environment variable
       of "unset":
-        returnCode = unsetCommand(arguments, db)
-        historyIndex = historyLength(db)
+        returnCode = unsetCommand(arguments = arguments, db = db)
+        historyIndex = historyLength(db = db)
       # Various commands related to environment variables
       of "variable":
         # No subcommand entered, show available options
         if arguments.len() == 0:
-          historyIndex = helpVariables(db)
+          historyIndex = helpVariables(db = db)
         # Show the list of declared environment variables
-        elif arguments.startsWith("list"):
-          listVariables(arguments, historyIndex, db)
+        elif arguments.startsWith(prefix = "list"):
+          listVariables(arguments = arguments, historyIndex = historyIndex, db = db)
         # Delete the selected environment variable
-        elif arguments.startsWith("delete"):
-          returnCode = deleteVariable(arguments, historyIndex, db)
+        elif arguments.startsWith(prefix = "delete"):
+          returnCode = deleteVariable(arguments = arguments,
+              historyIndex = historyIndex, db = db)
         # Add a new variable
         elif arguments == "add":
-          returnCode = addVariable(historyIndex, db)
+          returnCode = addVariable(historyIndex = historyIndex, db = db)
         # Edit an existing variable
-        elif arguments.startsWith("edit"):
-          returnCode = editVariable(arguments, historyIndex, db)
+        elif arguments.startsWith(prefix = "edit"):
+          returnCode = editVariable(arguments = arguments,
+              historyIndex = historyIndex, db = db)
         else:
           returnCode = showUnknownHelp(arguments, "variable", "variables")
           historyIndex = updateHistory("variable " & arguments, db, returnCode)
