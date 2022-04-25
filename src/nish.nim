@@ -213,30 +213,30 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     else: discard
 
   # Connect to the shell database
-  let db: DbConn = startDb(dbPath)
+  let db: DbConn = startDb(dbPath = dbPath)
 
   # Stop shell if connection to its database was unsuccesful
   if db == nil:
     quit QuitFailure
 
   # Initialize the shell's commands history
-  historyIndex = initHistory(db, helpContent)
+  historyIndex = initHistory(db = db, helpContent = helpContent)
 
   # Initialize the shell's options system
-  initOptions(helpContent)
+  initOptions(helpContent = helpContent)
 
   # Initialize the shell's aliases system
-  aliases = initAliases(helpContent, db)
+  aliases = initAliases(helpContent = helpContent, db = db)
 
   # Initialize the shell's build-in commands
-  initCommands(helpContent)
+  initCommands(helpContent = helpContent)
 
   # Initialize the shell's environment variables system
-  initVariables(helpContent, db)
+  initVariables(helpContent = helpContent, db = db)
 
   # Set the shell's help
-  updateHelp(helpContent, db)
-  setMainHelp(helpContent)
+  updateHelp(helpContent = helpContent, db = db)
+  setMainHelp(helpContent = helpContent)
 
   # Start the shell
   while true:
@@ -246,7 +246,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       # ask for more.
       if not oneTimeCommand and inputString.len() == 0:
         # Write prompt
-        showPrompt(not oneTimeCommand, commandName, returnCode)
+        showPrompt(promptEnabled = not oneTimeCommand, previousCommand = commandName, resultCode = returnCode)
         # Get the user input and parse it
         var inputChar: char = '\0'
         # Read the user input until not meet new line character or the input
@@ -266,17 +266,17 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               # Arrow up key pressed
               inputChar = getch()
               if inputChar == 'A' and historyIndex > 0:
-                inputString = getHistory(historyIndex, db)
+                inputString = getHistory(historyIndex = historyIndex, db = db)
                 stdout.eraseLine()
-                showOutput(inputString, false, not oneTimeCommand,
-                    commandName, returnCode)
+                showOutput(message = inputString, newLine = false, promptEnabled = not oneTimeCommand,
+                    previousCommand = commandName, returnCode = returnCode)
                 historyIndex.dec()
                 if historyIndex < 1:
                   historyIndex = 1;
               # Arrow down key pressed
               elif inputChar == 'B' and historyIndex > 0:
                 historyIndex.inc()
-                let currentHistoryLength: int = historyLength(db)
+                let currentHistoryLength: int = historyLength(db = db)
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
                 inputString = getHistory(historyIndex, db)
