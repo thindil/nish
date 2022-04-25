@@ -60,8 +60,8 @@ proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe,
 
   result.add(" ORDER BY id ASC")
 
-proc setVariables*(newDirectory: string; db;
-    oldDirectory: string = "") {.gcsafe, sideEffect, raises: [], tags: [
+proc setVariables*(newDirectory: DirectoryPath; db;
+    oldDirectory: DirectoryPath = "") {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
