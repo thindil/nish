@@ -170,7 +170,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
 
   var
     userInput: OptParser
-    commandName, inputString: string = ""
+    commandName: string = ""
+    inputString: UserInput = ""
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: HistoryRange
