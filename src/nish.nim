@@ -276,7 +276,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               # Arrow down key pressed
               elif inputChar == 'B' and historyIndex > 0:
                 historyIndex.inc()
-                let currentHistoryLength: int = historyLength(db = db)
+                let currentHistoryLength: HistoryRange = historyLength(db = db)
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
                 inputString = getHistory(historyIndex, db)
