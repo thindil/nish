@@ -34,7 +34,7 @@ using
   arguments: UserInput # The string with arguments entered by the user fot the command
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
-proc buildQuery(directory: DirectoryPath; fields: string): string {.gcsafe,
+proc buildQuery*(directory: DirectoryPath; fields: string): string {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect].} =
   ## FUNCTION
   ##
