@@ -506,8 +506,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       setCurrentDir(newDir = path)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess
-    except OSError:
-      return showError()
+    except OSError as e:
+      return showError("Can't change directory. Reason: " & e.msg)
 
   let
     currentDirectory: DirectoryPath = (try: getCurrentDir() except OSError: "")
