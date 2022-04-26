@@ -271,8 +271,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 stdout.eraseLine()
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
-
-previousCommand = commandName, returnCode = returnCode)
+                    previousCommand = commandName, returnCode = returnCode)
                 historyIndex.dec()
                 if historyIndex < 1:
                   historyIndex = 1;
@@ -286,8 +285,7 @@ previousCommand = commandName, returnCode = returnCode)
                 stdout.eraseLine()
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
-
-previousCommand = commandName, returnCode = returnCode)
+                    previousCommand = commandName, returnCode = returnCode)
           elif inputChar.ord() > 31:
             stdout.write(c = inputChar)
             inputString.add(y = inputChar)
@@ -349,78 +347,95 @@ previousCommand = commandName, returnCode = returnCode)
           returnCode = editVariable(arguments = arguments,
               historyIndex = historyIndex, db = db)
         else:
-          returnCode = showUnknownHelp(arguments, "variable", "variables")
-          historyIndex = updateHistory("variable " & arguments, db, returnCode)
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = "variable", helpType = "variables")
+          historyIndex = updateHistory(commandToAdd = "variable " & arguments,
+              db = db, returnCode = returnCode)
       # Various commands related to the shell's commands' history
       of "history":
         # No subcommand entered, show available options
         if arguments.len() == 0:
-          historyIndex = helpHistory(db)
+          historyIndex = helpHistory(db = db)
         # Clear the shell's commands' history
         elif arguments == "clear":
-          historyIndex = clearHistory(db)
+          historyIndex = clearHistory(db = db)
         # Show the last executed shell's commands
         elif arguments == "show":
-          historyIndex = showHistory(db)
+          historyIndex = showHistory(db = db)
         else:
-          returnCode = showUnknownHelp(arguments, "history", "history")
-          historyIndex = updateHistory("history " & arguments, db, returnCode)
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = "history", helpType = "history")
+          historyIndex = updateHistory(commandToAdd = "history " & arguments,
+              db = db, returnCode = returnCode)
       # Various commands related to the shell's options
       of "options":
         # No subcommand entered, show available options
         if arguments.len() == 0:
-          helpOptions(db)
-          historyIndex = updateHistory("options", db)
+          helpOptions(db = db)
+          historyIndex = updateHistory(commandToAdd = "options", db = db)
         # Show the list of available options
         elif arguments == "show":
-          showOptions(db)
-          historyIndex = updateHistory("options show", db)
-        elif arguments.startsWith("set"):
-          returnCode = setOptions(arguments, db)
-          historyIndex = updateHistory("options set", db, returnCode)
-          updateHelp(helpContent, db)
-        elif arguments.startsWith("reset"):
-          returnCode = resetOptions(arguments, db)
-          historyIndex = updateHistory("options reset", db, returnCode)
-          updateHelp(helpContent, db)
+          showOptions(db = db)
+          historyIndex = updateHistory(commandToAdd = "options show", db = db)
+        elif arguments.startsWith(prefix = "set"):
+          returnCode = setOptions(arguments = arguments, db = db)
+          historyIndex = updateHistory(commandToAdd = "options set", db = db,
+              returnCode = returnCode)
+          updateHelp(helpContent = helpContent, db = db)
+        elif arguments.startsWith(prefix = "reset"):
+          returnCode = resetOptions(arguments = arguments, db = db)
+          historyIndex = updateHistory(commandToAdd = "options reset", db = db,
+              returnCode = returnCode)
+          updateHelp(helpContent = helpContent, db = db)
         else:
-          returnCode = showUnknownHelp(arguments, "options", "options")
-          historyIndex = updateHistory("options " & arguments, db, returnCode)
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = "options", helpType = "options")
+          historyIndex = updateHistory(commandToAdd = "options " & arguments,
+              db = db, returnCode = returnCode)
       # Various commands related to the aliases (like show list of available
       # aliases, add, delete, edit them)
       of "alias":
         # No subcommand entered, show available options
         if arguments.len() == 0:
-          historyIndex = helpAliases(db)
+          historyIndex = helpAliases(db = db)
         # Show the list of available aliases
-        elif arguments.startsWith("list"):
-          listAliases(arguments, historyIndex, aliases, db)
+        elif arguments.startsWith(prefix = "list"):
+          listAliases(arguments = arguments, historyIndex = historyIndex,
+              aliases = aliases, db = db)
         # Delete the selected alias
-        elif arguments.startsWith("delete"):
-          returnCode = deleteAlias(arguments, historyIndex, aliases, db)
+        elif arguments.startsWith(prefix = "delete"):
+          returnCode = deleteAlias(arguments = arguments,
+              historyIndex = historyIndex, aliases = aliases, db = db)
         # Show the selected alias
-        elif arguments.startsWith("show"):
-          returnCode = showAlias(arguments, historyIndex, aliases, db)
+        elif arguments.startsWith(prefix = "show"):
+          returnCode = showAlias(arguments = arguments,
+              historyIndex = historyIndex, aliases = aliases, db = db)
         # Add a new alias
-        elif arguments.startsWith("add"):
-          returnCode = addAlias(historyIndex, aliases, db)
+        elif arguments.startsWith(prefix = "add"):
+          returnCode = addAlias(historyIndex = historyIndex, aliases = aliases, db = db)
         # Add a new alias
-        elif arguments.startsWith("edit"):
-          returnCode = editAlias(arguments, historyIndex, aliases, db)
+        elif arguments.startsWith(prefix = "edit"):
+          returnCode = editAlias(arguments = arguments,
+              historyIndex = historyIndex, aliases = aliases, db = db)
         else:
-          returnCode = showUnknownHelp(arguments, "alias", "aliases")
-          historyIndex = updateHistory("alias " & arguments, db, returnCode)
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = "alias", helpType = "aliases")
+          historyIndex = updateHistory(commandToAdd = "alias " & arguments,
+              db = db, returnCode = returnCode)
       # Execute external command or alias
       else:
         let commandToExecute: string = commandName & " " & arguments
         # Check if command is an alias, if yes, execute it
         if commandName in aliases:
-          returnCode = execAlias(arguments, commandName, aliases, db)
-          historyIndex = updateHistory(commandToExecute, db, returnCode)
+          returnCode = execAlias(arguments = arguments, aliasId = commandName,
+              aliases = aliases, db = db)
+          historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
+              returnCode = returnCode)
           continue
         # Execute external command
-        returnCode = execCmd(commandToExecute)
-        historyIndex = updateHistory(commandToExecute, db, returnCode)
+        returnCode = execCmd(command = commandToExecute)
+        historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
+            returnCode = returnCode)
     except:
       returnCode = showError()
     finally:
@@ -433,7 +448,7 @@ previousCommand = commandName, returnCode = returnCode)
         inputString = ""
       # Run only one command, quit from the shell
       if oneTimeCommand and inputString.len() == 0:
-        quitShell(returnCode, db)
+        quitShell(returnCode = returnCode, db = db)
 
 when isMainModule:
   main()
