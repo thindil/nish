@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[os, strutils, terminal, times]
+import std/[os, strutils, terminal]
 import constants
 
 type
@@ -134,12 +134,12 @@ proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
         discard
   stdout.flushFile()
 
-proc showError*(message: OutputMessage = ""): ResultCode {.gcsafe, sideEffect,
+proc showError*(message: OutputMessage): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## Print the message to standard error and set the shell return
-  ## code to error. If message is empty, print the current exception message
+  ## code to error.
   ##
   ## PARAMETERS
   ##
@@ -147,44 +147,14 @@ proc showError*(message: OutputMessage = ""): ResultCode {.gcsafe, sideEffect,
   ##
   ## RETURNS
   ## Always QuitFailure
-  if message == "":
-    let
-      currentException: ref Exception = getCurrentException()
-      stackTrace: string = getStackTrace(currentException)
+  try:
+    stderr.styledWriteLine(fgRed, message)
+  except IOError, ValueError:
     try:
-      stderr.styledWriteLine(fgRed, "Type: " & $currentException.name)
-      stderr.styledWriteLine(fgRed, "Message: " & currentException.msg)
-      if stackTrace.len() > 0:
-        stderr.styledWriteLine(fgRed, stackTrace)
-    except IOError, ValueError:
-      try:
-        stdout.writeLine("Type: " & $currentException.name)
-        stdout.writeLine("Message: " & currentException.msg)
-        if stackTrace.len() > 0:
-          stdout.writeLine(stackTrace)
-      except IOError:
-        discard
-    finally:
-      if stackTrace.len() > 0:
-        try:
-          let debugFile: File = open(getCacheDir() & DirSep & "nish" & DirSep &
-              "error.log", fmAppend)
-          debugFile.writeLine("Version: " & shellVersion)
-          debugFile.writeLine("Date: " & $now())
-          debugFile.writeLine(stackTrace)
-          debugFile.writeLine(repeat('-', 40))
-          close(debugFile)
-        except IOError:
-          discard
-  else:
-    try:
-      stderr.styledWriteLine(fgRed, message)
-    except IOError, ValueError:
-      try:
-        stdout.writeLine(message)
-      except IOError:
-        discard
-  result = QuitFailure
+      stdout.writeLine(message)
+    except IOError:
+      discard
+  return QuitFailure
 
 proc showFormHeader*(message) {.gcsafe, locks: 0,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
