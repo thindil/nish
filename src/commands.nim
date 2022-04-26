@@ -61,8 +61,8 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
     setCurrentDir(newDir = path)
     aliases.setAliases(directory = path, db = db)
     return QuitSuccess
-  except OSError:
-    return showError()
+  except OSError as e:
+    return showError("Can't change directory. Reason: " & e.msg)
 
 proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,

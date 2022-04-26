@@ -437,7 +437,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
             returnCode = returnCode)
     except:
-      returnCode = showError()
+      returnCode = showError("Error during parsing the user command: " & getCurrentExceptionMsg())
     finally:
       # If there is more commands to execute check if the next commands should
       # be executed. if the last command wasn't success and commands conjuncted
