@@ -57,18 +57,18 @@ proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.g
   ## The value of the selected option or empty string if there is no that
   ## option in the database.
   try:
-    result = db.getValue(sql"SELECT value FROM options WHERE option=?", optionName)
+    result = db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"), optionName)
   except DbError as e:
-    discard showError("Can't get value for option '" & optionName &
+    discard showError(message = "Can't get value for option '" & optionName &
         "' from database. Reason: " & e.msg)
     result = defaultValue
   if result == "":
     result = defaultValue
 
 proc setOption*(optionName; value: OptionValue = "";
-    description: UserInput = "";valuetype: ValueType = none; db) {.gcsafe,
-        sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
-            ReadEnvEffect, TimeEffect].} =
+    description: UserInput = ""; valuetype: ValueType = none; db) {.gcsafe,
+        sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
+            WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTIONS
   ##
   ## Set the value and or description of the selected option. If the option
@@ -83,22 +83,22 @@ proc setOption*(optionName; value: OptionValue = "";
   ## * db          - the connection to the shell's database
   var sqlQuery: string = "UPDATE options SET "
   if value != "":
-    sqlQuery.add("value='" & value & "'")
+    sqlQuery.add(y = "value='" & value & "'")
   if description != "":
     if sqlQuery.len() > 21:
-      sqlQuery.add(", ")
-    sqlQuery.add("description='" & description & "'")
+      sqlQuery.add(y = ", ")
+    sqlQuery.add(y = "description='" & description & "'")
   if valuetype != none:
     if sqlQuery.len() > 21:
-      sqlQuery.add(", ")
-    sqlQuery.add("valuetype='" & $valuetype & "'")
-  sqlQuery.add(" WHERE option='" & optionName & "'")
+      sqlQuery.add(y = ", ")
+    sqlQuery.add(y = "valuetype='" & $valuetype & "'")
+  sqlQuery.add(y = " WHERE option='" & optionName & "'")
   try:
-    if db.execAffectedRows(sql(sqlQuery)) == 0:
-      db.exec(sql"INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)",
+    if db.execAffectedRows(query = sql(query = sqlQuery)) == 0:
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)"),
           optionName, value, description, valuetype, value)
   except DbError as e:
-    discard showError("Can't set value for option '" & optionName &
+    discard showError(message = "Can't set value for option '" & optionName &
         "'. Reason: " & e.msg)
 
 proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
