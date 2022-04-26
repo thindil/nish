@@ -113,16 +113,17 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
   ## * db - the connection to the shell's database
   let spacesAmount: ColumnAmount = (try: (terminalWidth() /
       12).int except ValueError: 4)
-  showFormHeader("Available options are:")
-  showOutput(message = indent("Name               Value   Default Type    Description",
-      spacesAmount), fgColor = fgMagenta)
+  showFormHeader(message = "Available options are:")
+  showOutput(message = indent(s = "Name               Value   Default Type    Description",
+      count = spacesAmount), fgColor = fgMagenta)
   try:
-    for row in db.fastRows(sql"SELECT option, value, defaultvalue, valuetype, description FROM options"):
-      showOutput(indent(alignLeft(row[0], 18) & " " & alignLeft(row[1], 7) &
-          " " & alignLeft(row[2], 7) & " " & alignLeft(row[3], 7) & " " & row[
-              4], spacesAmount))
+    for row in db.fastRows(query = sql(query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
+      showOutput(message = indent(s = alignLeft(s = row[0], count = 18) & " " &
+          alignLeft(s = row[1], count = 7) & " " & alignLeft(s = row[2],
+              count = 7) & " " & alignLeft(s = row[3], count = 7) & " " & row[4],
+                  count = spacesAmount))
   except DbError as e:
-    discard showError("Can't show the shell's options. Reason: " & e.msg)
+    discard showError(message = "Can't show the shell's options. Reason: " & e.msg)
 
 proc helpOptions*(db) {.gcsafe, sideEffect, locks: 0, raises: [],
     tags: [ReadIOEffect, WriteIOEffect].} =
@@ -134,7 +135,7 @@ proc helpOptions*(db) {.gcsafe, sideEffect, locks: 0, raises: [],
   ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
-  showOutput("""Available subcommands are: show, set, reset
+  showOutput(message = """Available subcommands are: show, set, reset
 
         To see more information about the subcommand, type help options [command],
         for example: help options show.
