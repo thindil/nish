@@ -120,8 +120,8 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
     for row in db.fastRows(query = sql(query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
       showOutput(message = indent(s = alignLeft(s = row[0], count = 18) & " " &
           alignLeft(s = row[1], count = 7) & " " & alignLeft(s = row[2],
-              count = 7) & " " & alignLeft(s = row[3], count = 7) & " " & row[4],
-                  count = spacesAmount))
+              count = 7) & " " & alignLeft(s = row[3], count = 7) & " " & row[
+                  4], count = spacesAmount))
   except DbError as e:
     discard showError(message = "Can't show the shell's options. Reason: " & e.msg)
 
@@ -158,35 +158,35 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ##
   ## QuitSuccess if the variable was correctly set, otherwise QuitFailure.
   if arguments.len() < 5:
-    return showError("Please enter name of the option and its new value.")
-  let separatorIndex: ExtendedNatural = arguments.find(' ', 4)
+    return showError(message = "Please enter name of the option and its new value.")
+  let separatorIndex: ExtendedNatural = arguments.find(sub = ' ', start = 4)
   if separatorIndex == -1:
-    return showError("Please enter a new value for the selected option.")
+    return showError(message = "Please enter a new value for the selected option.")
   let optionName: OptionName = arguments[4 .. (separatorIndex - 1)]
   var value: OptionValue = arguments[(separatorIndex + 1) .. ^1]
   try:
-    case db.getValue(sql"SELECT valuetype FROM options WHERE option=?", optionName)
+    case db.getValue(query = sql(query = "SELECT valuetype FROM options WHERE option=?"), optionName)
     of "integer":
       try:
-        discard parseInt(value)
+        discard parseInt(s = value)
       except:
-        return showError("Value for option '" & optionName &
+        return showError(message = "Value for option '" & optionName &
             "' should be integer type.")
     of "float":
       try:
-        discard parseFloat(value)
+        discard parseFloat(s = value)
       except:
-        return showError("Value for option '" & optionName & "' should be float type.")
+        return showError(message = "Value for option '" & optionName & "' should be float type.")
     of "boolean":
-      value = toLowerAscii(value)
+      value = toLowerAscii(s = value)
       if value != "true" and value != "false":
-        return showError("Value for option '" & optionName & "' should be true or false (case insensitive).")
+        return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
     of "":
-      return showError("Shell's option with name '" & optionName &
+      return showError(message = "Shell's option with name '" & optionName &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
   except DbError as e:
-    return showError("Can't get type of value for option '" & optionName &
-        "'. Reason: " & e.msg)
+    return showError(message = "Can't get type of value for option '" &
+        optionName & "'. Reason: " & e.msg)
   setOption(optionName = optionName, value = value, db = db)
   showOutput(message = "Value for option '" & optionName & "' was set to '" &
       value & "'", fgColor = fgGreen);
