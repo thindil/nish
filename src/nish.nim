@@ -240,29 +240,32 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
 
   # Start the shell
   while true:
-    try:
-      # Run only one command, don't show prompt and wait for the user input,
-      # if there is still some data in last entered user input, also don't
-      # ask for more.
-      if not oneTimeCommand and inputString.len() == 0:
-        # Write prompt
-        showPrompt(promptEnabled = not oneTimeCommand,
-            previousCommand = commandName, resultCode = returnCode)
-        # Get the user input and parse it
-        var inputChar: char = '\0'
-        # Read the user input until not meet new line character or the input
-        # reach the maximum length
-        while inputChar.ord() != 13 and inputString.len() < maxInputLength:
-          # Backspace pressed, delete the last character from the user input
-          if inputChar.ord() == 127:
-            if inputString.len() > 0:
-              inputString = inputString[0..^2]
+    # Run only one command, don't show prompt and wait for the user input,
+    # if there is still some data in last entered user input, also don't
+    # ask for more.
+    if not oneTimeCommand and inputString.len() == 0:
+      # Write prompt
+      showPrompt(promptEnabled = not oneTimeCommand,
+          previousCommand = commandName, resultCode = returnCode)
+      # Get the user input and parse it
+      var inputChar: char = '\0'
+      # Read the user input until not meet new line character or the input
+      # reach the maximum length
+      while inputChar.ord() != 13 and inputString.len() < maxInputLength:
+        # Backspace pressed, delete the last character from the user input
+        if inputChar.ord() == 127:
+          if inputString.len() > 0:
+            inputString = inputString[0..^2]
+            try:
               stdout.cursorBackward()
               stdout.write(s = " ")
               stdout.cursorBackward()
-          # Escape or arrows keys pressed
-          elif inputChar.ord() == 27:
-            # Arrow key pressed
+            except ValueError, IOError:
+              discard
+        # Escape or arrows keys pressed
+        elif inputChar.ord() == 27:
+          # Arrow key pressed
+          try:
             if getch() == '[':
               # Arrow up key pressed
               inputChar = getch()
@@ -286,169 +289,174 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
                     previousCommand = commandName, returnCode = returnCode)
-          elif inputChar.ord() > 31:
-            stdout.write(c = inputChar)
-            inputString.add(y = inputChar)
+          except ValueError, IOError:
+            discard
+        elif inputChar.ord() > 31:
+          stdout.write(c = inputChar)
+          inputString.add(y = inputChar)
+        try:
           inputChar = getch()
+        except IOError:
+          discard
+      try:
         stdout.writeLine(x = "")
-      userInput = initOptParser(cmdLine = inputString)
-      # Reset the return code of the program
-      returnCode = QuitSuccess
-      # Go to the first token
-      userInput.next()
-      # If it looks like an argument, it must be command name
-      if userInput.kind == cmdArgument:
-        commandName = userInput.key
-      # No command name, back to beginning
-      if commandName == "":
-        continue
-      # Set the command arguments
-      let arguments: UserInput = getArguments(userInput = userInput,
-          conjCommands = conjCommands)
-      inputString = join(a = userInput.remainingArgs(), sep = " ");
-      # Parse commands
-      case commandName
-      # Quit from shell
-      of "exit":
-        historyIndex = updateHistory(commandToAdd = "exit", db = db)
-        quitShell(returnCode = returnCode, db = db)
-      # Show help screen
-      of "help":
-        returnCode = showHelp(topic = arguments, helpContent = helpContent, db = db)
-      # Change current directory
-      of "cd":
-        returnCode = cdCommand(newDirectory = arguments, aliases = aliases, db = db)
-        historyIndex = historyLength(db = db)
-      # Set the environment variable
-      of "set":
-        returnCode = setCommand(arguments = arguments, db = db)
-        historyIndex = historyLength(db = db)
-      # Delete environment variable
-      of "unset":
-        returnCode = unsetCommand(arguments = arguments, db = db)
-        historyIndex = historyLength(db = db)
-      # Various commands related to environment variables
-      of "variable":
-        # No subcommand entered, show available options
-        if arguments.len() == 0:
-          historyIndex = helpVariables(db = db)
-        # Show the list of declared environment variables
-        elif arguments.startsWith(prefix = "list"):
-          listVariables(arguments = arguments, historyIndex = historyIndex, db = db)
-        # Delete the selected environment variable
-        elif arguments.startsWith(prefix = "delete"):
-          returnCode = deleteVariable(arguments = arguments,
-              historyIndex = historyIndex, db = db)
-        # Add a new variable
-        elif arguments == "add":
-          returnCode = addVariable(historyIndex = historyIndex, db = db)
-        # Edit an existing variable
-        elif arguments.startsWith(prefix = "edit"):
-          returnCode = editVariable(arguments = arguments,
-              historyIndex = historyIndex, db = db)
-        else:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = "variable", helpType = "variables")
-          historyIndex = updateHistory(commandToAdd = "variable " & arguments,
-              db = db, returnCode = returnCode)
-      # Various commands related to the shell's commands' history
-      of "history":
-        # No subcommand entered, show available options
-        if arguments.len() == 0:
-          historyIndex = helpHistory(db = db)
-        # Clear the shell's commands' history
-        elif arguments == "clear":
-          historyIndex = clearHistory(db = db)
-        # Show the last executed shell's commands
-        elif arguments == "show":
-          historyIndex = showHistory(db = db)
-        else:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = "history", helpType = "history")
-          historyIndex = updateHistory(commandToAdd = "history " & arguments,
-              db = db, returnCode = returnCode)
-      # Various commands related to the shell's options
-      of "options":
-        # No subcommand entered, show available options
-        if arguments.len() == 0:
-          helpOptions(db = db)
-          historyIndex = updateHistory(commandToAdd = "options", db = db)
-        # Show the list of available options
-        elif arguments == "show":
-          showOptions(db = db)
-          historyIndex = updateHistory(commandToAdd = "options show", db = db)
-        elif arguments.startsWith(prefix = "set"):
-          returnCode = setOptions(arguments = arguments, db = db)
-          historyIndex = updateHistory(commandToAdd = "options set", db = db,
-              returnCode = returnCode)
-          updateHelp(helpContent = helpContent, db = db)
-        elif arguments.startsWith(prefix = "reset"):
-          returnCode = resetOptions(arguments = arguments, db = db)
-          historyIndex = updateHistory(commandToAdd = "options reset", db = db,
-              returnCode = returnCode)
-          updateHelp(helpContent = helpContent, db = db)
-        else:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = "options", helpType = "options")
-          historyIndex = updateHistory(commandToAdd = "options " & arguments,
-              db = db, returnCode = returnCode)
-      # Various commands related to the aliases (like show list of available
-      # aliases, add, delete, edit them)
-      of "alias":
-        # No subcommand entered, show available options
-        if arguments.len() == 0:
-          historyIndex = helpAliases(db = db)
-        # Show the list of available aliases
-        elif arguments.startsWith(prefix = "list"):
-          listAliases(arguments = arguments, historyIndex = historyIndex,
-              aliases = aliases, db = db)
-        # Delete the selected alias
-        elif arguments.startsWith(prefix = "delete"):
-          returnCode = deleteAlias(arguments = arguments,
-              historyIndex = historyIndex, aliases = aliases, db = db)
-        # Show the selected alias
-        elif arguments.startsWith(prefix = "show"):
-          returnCode = showAlias(arguments = arguments,
-              historyIndex = historyIndex, aliases = aliases, db = db)
-        # Add a new alias
-        elif arguments.startsWith(prefix = "add"):
-          returnCode = addAlias(historyIndex = historyIndex, aliases = aliases, db = db)
-        # Add a new alias
-        elif arguments.startsWith(prefix = "edit"):
-          returnCode = editAlias(arguments = arguments,
-              historyIndex = historyIndex, aliases = aliases, db = db)
-        else:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = "alias", helpType = "aliases")
-          historyIndex = updateHistory(commandToAdd = "alias " & arguments,
-              db = db, returnCode = returnCode)
-      # Execute external command or alias
+      except IOError:
+        discard
+    userInput = initOptParser(cmdLine = inputString)
+    # Reset the return code of the program
+    returnCode = QuitSuccess
+    # Go to the first token
+    userInput.next()
+    # If it looks like an argument, it must be command name
+    if userInput.kind == cmdArgument:
+      commandName = userInput.key
+    # No command name, back to beginning
+    if commandName == "":
+      continue
+    # Set the command arguments
+    let arguments: UserInput = getArguments(userInput = userInput,
+        conjCommands = conjCommands)
+    inputString = join(a = userInput.remainingArgs(), sep = " ");
+    # Parse commands
+    case commandName
+    # Quit from shell
+    of "exit":
+      historyIndex = updateHistory(commandToAdd = "exit", db = db)
+      quitShell(returnCode = returnCode, db = db)
+    # Show help screen
+    of "help":
+      returnCode = showHelp(topic = arguments, helpContent = helpContent, db = db)
+    # Change current directory
+    of "cd":
+      returnCode = cdCommand(newDirectory = arguments, aliases = aliases, db = db)
+      historyIndex = historyLength(db = db)
+    # Set the environment variable
+    of "set":
+      returnCode = setCommand(arguments = arguments, db = db)
+      historyIndex = historyLength(db = db)
+    # Delete environment variable
+    of "unset":
+      returnCode = unsetCommand(arguments = arguments, db = db)
+      historyIndex = historyLength(db = db)
+    # Various commands related to environment variables
+    of "variable":
+      # No subcommand entered, show available options
+      if arguments.len() == 0:
+        historyIndex = helpVariables(db = db)
+      # Show the list of declared environment variables
+      elif arguments.startsWith(prefix = "list"):
+        listVariables(arguments = arguments, historyIndex = historyIndex, db = db)
+      # Delete the selected environment variable
+      elif arguments.startsWith(prefix = "delete"):
+        returnCode = deleteVariable(arguments = arguments,
+            historyIndex = historyIndex, db = db)
+      # Add a new variable
+      elif arguments == "add":
+        returnCode = addVariable(historyIndex = historyIndex, db = db)
+      # Edit an existing variable
+      elif arguments.startsWith(prefix = "edit"):
+        returnCode = editVariable(arguments = arguments,
+            historyIndex = historyIndex, db = db)
       else:
-        let commandToExecute: string = commandName & " " & arguments
-        # Check if command is an alias, if yes, execute it
-        if commandName in aliases:
-          returnCode = execAlias(arguments = arguments, aliasId = commandName,
-              aliases = aliases, db = db)
-          historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
-              returnCode = returnCode)
-          continue
-        # Execute external command
-        returnCode = execCmd(command = commandToExecute)
+        returnCode = showUnknownHelp(subCommand = arguments,
+            command = "variable", helpType = "variables")
+        historyIndex = updateHistory(commandToAdd = "variable " & arguments,
+            db = db, returnCode = returnCode)
+    # Various commands related to the shell's commands' history
+    of "history":
+      # No subcommand entered, show available options
+      if arguments.len() == 0:
+        historyIndex = helpHistory(db = db)
+      # Clear the shell's commands' history
+      elif arguments == "clear":
+        historyIndex = clearHistory(db = db)
+      # Show the last executed shell's commands
+      elif arguments == "show":
+        historyIndex = showHistory(db = db)
+      else:
+        returnCode = showUnknownHelp(subCommand = arguments,
+            command = "history", helpType = "history")
+        historyIndex = updateHistory(commandToAdd = "history " & arguments,
+            db = db, returnCode = returnCode)
+    # Various commands related to the shell's options
+    of "options":
+      # No subcommand entered, show available options
+      if arguments.len() == 0:
+        helpOptions(db = db)
+        historyIndex = updateHistory(commandToAdd = "options", db = db)
+      # Show the list of available options
+      elif arguments == "show":
+        showOptions(db = db)
+        historyIndex = updateHistory(commandToAdd = "options show", db = db)
+      elif arguments.startsWith(prefix = "set"):
+        returnCode = setOptions(arguments = arguments, db = db)
+        historyIndex = updateHistory(commandToAdd = "options set", db = db,
+            returnCode = returnCode)
+        updateHelp(helpContent = helpContent, db = db)
+      elif arguments.startsWith(prefix = "reset"):
+        returnCode = resetOptions(arguments = arguments, db = db)
+        historyIndex = updateHistory(commandToAdd = "options reset", db = db,
+            returnCode = returnCode)
+        updateHelp(helpContent = helpContent, db = db)
+      else:
+        returnCode = showUnknownHelp(subCommand = arguments,
+            command = "options", helpType = "options")
+        historyIndex = updateHistory(commandToAdd = "options " & arguments,
+            db = db, returnCode = returnCode)
+    # Various commands related to the aliases (like show list of available
+    # aliases, add, delete, edit them)
+    of "alias":
+      # No subcommand entered, show available options
+      if arguments.len() == 0:
+        historyIndex = helpAliases(db = db)
+      # Show the list of available aliases
+      elif arguments.startsWith(prefix = "list"):
+        listAliases(arguments = arguments, historyIndex = historyIndex,
+            aliases = aliases, db = db)
+      # Delete the selected alias
+      elif arguments.startsWith(prefix = "delete"):
+        returnCode = deleteAlias(arguments = arguments,
+            historyIndex = historyIndex, aliases = aliases, db = db)
+      # Show the selected alias
+      elif arguments.startsWith(prefix = "show"):
+        returnCode = showAlias(arguments = arguments,
+            historyIndex = historyIndex, aliases = aliases, db = db)
+      # Add a new alias
+      elif arguments.startsWith(prefix = "add"):
+        returnCode = addAlias(historyIndex = historyIndex, aliases = aliases, db = db)
+      # Add a new alias
+      elif arguments.startsWith(prefix = "edit"):
+        returnCode = editAlias(arguments = arguments,
+            historyIndex = historyIndex, aliases = aliases, db = db)
+      else:
+        returnCode = showUnknownHelp(subCommand = arguments,
+            command = "alias", helpType = "aliases")
+        historyIndex = updateHistory(commandToAdd = "alias " & arguments,
+            db = db, returnCode = returnCode)
+    # Execute external command or alias
+    else:
+      let commandToExecute: string = commandName & " " & arguments
+      # Check if command is an alias, if yes, execute it
+      if commandName in aliases:
+        returnCode = execAlias(arguments = arguments, aliasId = commandName,
+            aliases = aliases, db = db)
         historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
             returnCode = returnCode)
-    except:
-      returnCode = showError("Error during parsing the user command: " & getCurrentExceptionMsg())
-    finally:
-      # If there is more commands to execute check if the next commands should
-      # be executed. if the last command wasn't success and commands conjuncted
-      # with && or the last command was success and command disjuncted, reset
-      # the input, don't execute more commands.
-      if inputString.len() > 0 and ((returnCode != QuitSuccess and
-          conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
-        inputString = ""
-      # Run only one command, quit from the shell
-      if oneTimeCommand and inputString.len() == 0:
-        quitShell(returnCode = returnCode, db = db)
+        continue
+      # Execute external command
+      returnCode = execCmd(command = commandToExecute)
+      historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
+          returnCode = returnCode)
+    # If there is more commands to execute check if the next commands should
+    # be executed. if the last command wasn't success and commands conjuncted
+    # with && or the last command was success and command disjuncted, reset
+    # the input, don't execute more commands.
+    if inputString.len() > 0 and ((returnCode != QuitSuccess and
+        conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
+      inputString = ""
+    # Run only one command, quit from the shell
+    if oneTimeCommand and inputString.len() == 0:
+      quitShell(returnCode = returnCode, db = db)
 
 when isMainModule:
   main()
