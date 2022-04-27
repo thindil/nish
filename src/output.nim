@@ -49,23 +49,24 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   let
     currentDirectory: DirectoryPath = (try: getCurrentDir() except OSError: "[unknown dir]")
     homeDirectory: DirectoryPath = getHomeDir()
-  if endsWith(currentDirectory & "/", homeDirectory):
+  if endsWith(s = currentDirectory & "/", suffix = homeDirectory):
     try:
       stdout.styledWrite(fgBlue, "~")
     except ValueError, IOError:
       try:
-        stdout.write("~")
+        stdout.write(s = "~")
       except IOError:
         discard
   else:
-    let homeIndex: ExtendedNatural = currentDirectory.find(homeDirectory)
+    let homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
     if homeIndex > -1:
       try:
         stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
             homeDirectory.len()..^1])
       except ValueError, IOError:
         try:
-          stdout.write("~/" & currentDirectory[homeIndex + homeDirectory.len()..^1])
+          stdout.write(s = "~/" & currentDirectory[homeIndex +
+              homeDirectory.len()..^1])
         except IOError:
           discard
     else:
@@ -73,7 +74,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         stdout.styledWrite(fgBlue, currentDirectory)
       except ValueError, IOError:
         try:
-          stdout.write(currentDirectory)
+          stdout.write(s = currentDirectory)
         except IOError:
           discard
   if previousCommand != "" and resultCode != QuitSuccess:
@@ -81,14 +82,14 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       stdout.styledWrite(fgRed, "[" & $resultCode & "]")
     except ValueError, IOError:
       try:
-        stdout.write("[" & $resultCode & "]")
+        stdout.write(s = "[" & $resultCode & "]")
       except IOError:
         discard
   try:
     stdout.styledWrite(fgBlue, "# ")
   except ValueError, IOError:
     try:
-      stdout.write("# ")
+      stdout.write(s = "# ")
     except IOError:
       discard
 
