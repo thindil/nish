@@ -52,7 +52,7 @@ proc buildQuery*(directory: DirectoryPath; fields: string): string {.gcsafe,
   result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
   var remainingDirectory: DirectoryPath = parentDir(directory)
 
-# Construct SQL querry, search for variables also defined in parent directories
+  # Construct SQL querry, search for variables also defined in parent directories
   # if they are recursive
   while remainingDirectory != "":
     result.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
