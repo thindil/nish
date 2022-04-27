@@ -214,25 +214,25 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   let optionName: OptionName = arguments[6 .. ^1]
   if optionName == "all":
     try:
-      db.exec(sql"UPDATE options SET value=defaultvalue")
-      showOutput("All shell's options are reseted to their default values.")
+      db.exec(query = sql(query = "UPDATE options SET value=defaultvalue"))
+      showOutput(message = "All shell's options are reseted to their default values.")
     except DbError as e:
-      return showError("Can't reset the shell's options to their default values. Reason: " & e.msg)
+      return showError(message = "Can't reset the shell's options to their default values. Reason: " & e.msg)
   else:
     try:
-      if db.getValue(sql"SELECT value FROM options WHERE option=?",
+      if db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"),
           optionName) == "":
-        return showError("Shell's option with name '" & optionName &
+        return showError(message = "Shell's option with name '" & optionName &
           "' doesn't exists. Please use command 'options show' to see all available shell's options.")
     except DbError as e:
-      return showError("Can't get value for option '" & optionName &
+      return showError(message = "Can't get value for option '" & optionName &
           "'. Reason: " & e.msg)
     try:
-      db.exec(sql"UPDATE options SET value=defaultvalue WHERE option=?", optionName)
+      db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE option=?"), optionName)
       showOutput(message = "The shell's option '" & optionName &
           "' reseted to its default value.", fgColor = fgGreen)
     except DbError as e:
-      return showError("Can't reset option '" & optionName &
+      return showError(message = "Can't reset option '" & optionName &
           "' to its default value. Reason: " & e.msg)
   return QuitSuccess
 
