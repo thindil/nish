@@ -111,12 +111,13 @@ proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
   ## * resultCode      - the result of the previous command executed by the user
   ## * fgColor         - the color of the text (foreground)
   ## * centered        - if true, center the message on the screen
-  showPrompt(promptEnabled, previousCommand, returnCode)
+  showPrompt(promptEnabled = promptEnabled, previousCommand = previousCommand,
+      resultCode = returnCode)
   if message != "":
     var newMessage: OutputMessage
     if centered:
       try:
-        newMessage = center(message, terminalWidth())
+        newMessage = center(s = message, width = terminalWidth())
       except ValueError:
         newMessage = message
     else:
@@ -125,12 +126,12 @@ proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
       stdout.styledWrite(fgColor, newMessage)
     except IOError, ValueError:
       try:
-        stdout.write(newMessage)
+        stdout.write(s = newMessage)
       except IOError:
         discard
     if newLine:
       try:
-        stdout.writeLine("")
+        stdout.writeLine(x = "")
       except IOError:
         discard
   stdout.flushFile()
@@ -152,7 +153,7 @@ proc showError*(message: OutputMessage): ResultCode {.gcsafe, sideEffect,
     stderr.styledWriteLine(fgRed, message)
   except IOError, ValueError:
     try:
-      stdout.writeLine(message)
+      stdout.writeLine(x = message)
     except IOError:
       discard
   return QuitFailure
@@ -169,8 +170,8 @@ proc showFormHeader*(message) {.gcsafe, locks: 0,
   let
     length: ColumnAmount = try: terminalWidth() except ValueError: 80
     spacesAmount: ColumnAmount = (length / 12).int
-  showOutput(message = indent(repeat('=', length - (spacesAmount * 2)),
-      spacesAmount), fgColor = fgYellow)
-  showOutput(message = center(message, length), fgColor = fgYellow)
-  showOutput(message = indent(repeat('=', length - (spacesAmount * 2)),
-      spacesAmount), fgColor = fgYellow)
+  showOutput(message = indent(s = repeat(c = '=', count = length - (
+      spacesAmount * 2)), count = spacesAmount), fgColor = fgYellow)
+  showOutput(message = center(s = message, width = length), fgColor = fgYellow)
+  showOutput(message = indent(s = repeat(c = '=', count = length - (
+      spacesAmount * 2)), count = spacesAmount), fgColor = fgYellow)
