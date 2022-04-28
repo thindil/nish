@@ -50,15 +50,15 @@ proc buildQuery*(directory: DirectoryPath; fields: string): string {.gcsafe,
   ##
   ## The string with database's query for the selected directory and fields
   result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
-  var remainingDirectory: DirectoryPath = parentDir(directory)
+  var remainingDirectory: DirectoryPath = parentDir(path = directory)
 
   # Construct SQL querry, search for variables also defined in parent directories
   # if they are recursive
   while remainingDirectory != "":
-    result.add(" OR (path='" & remainingDirectory & "' AND recursive=1)")
+    result.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
     remainingDirectory = parentDir(remainingDirectory)
 
-  result.add(" ORDER BY id ASC")
+  result.add(y = " ORDER BY id ASC")
 
 proc setVariables*(newDirectory: DirectoryPath; db;
     oldDirectory: DirectoryPath = "") {.gcsafe, sideEffect, raises: [], tags: [
@@ -79,22 +79,24 @@ proc setVariables*(newDirectory: DirectoryPath; db;
   # Remove the old environment variables if needed
   if oldDirectory.len() > 0:
     try:
-      for dbResult in db.fastRows(sql(buildQuery(oldDirectory, "name"))):
+      for dbResult in db.fastRows(query = sql(query = buildQuery(
+          directory = oldDirectory, fields = "name"))):
         try:
-          delEnv(dbResult[0])
+          delEnv(key = dbResult[0])
         except OSError as e:
-          discard showError("Can't delete environment variables. Reason:" & e.msg)
+          discard showError(message = "Can't delete environment variables. Reason:" & e.msg)
     except DbError as e:
-      discard showError("Can't read environment variables for the old directory. Reason:" & e.msg)
+      discard showError(message = "Can't read environment variables for the old directory. Reason:" & e.msg)
   # Set the new environment variables
   try:
-    for dbResult in db.fastRows(sql(buildQuery(newDirectory, "name, value"))):
+    for dbResult in db.fastRows(query = sql(query = buildQuery(
+        directory = newDirectory, fields = "name, value"))):
       try:
-        putEnv(dbResult[0], dbResult[1])
+        putEnv(key = dbResult[0], val = dbResult[1])
       except OSError as e:
-        discard showError("Can't set environment variables. Reason:" & e.msg)
+        discard showError(message = "Can't set environment variables. Reason:" & e.msg)
   except DbError as e:
-    discard showError("Can't read environment variables for the new directory. Reason:" & e.msg)
+    discard showError(message = "Can't read environment variables for the new directory. Reason:" & e.msg)
 
 proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
