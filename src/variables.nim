@@ -187,16 +187,17 @@ proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitFailure
   if arguments.len() > 0:
     try:
-      delEnv(arguments)
+      delEnv(key = arguments)
       showOutput(message = "Environment variable '" & arguments & "' removed",
           fgColor = fgGreen)
       result = QuitSuccess
     except OSError as e:
-      result = showError("Can't unset the environment variable '" & arguments &
-          "'. Reason:" & e.msg)
+      result = showError(message = "Can't unset the environment variable '" &
+          arguments & "'. Reason:" & e.msg)
   else:
-    result = showError("You have to enter the name of the variable to unset.")
-  discard updateHistory("unset " & arguments, db, result)
+    result = showError(message = "You have to enter the name of the variable to unset.")
+  discard updateHistory(commandToAdd = "unset " & arguments, db = db,
+      returnCode = result)
 
 proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
     ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
@@ -216,53 +217,60 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
   ##
   ## Updated value for the historyIndex argument
   let
-    nameLength: ColumnAmount = (try: db.getValue(
-        sql"SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1").len() except DbError: 0)
-    valueLength: ColumnAmount = (try: db.getValue(
-        sql"SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1").len() except DbError: 0)
+    nameLength: ColumnAmount = (try: db.getValue(query =
+      sql(query = "SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1")).len() except DbError: 0)
+    valueLength: ColumnAmount = (try: db.getValue(query =
+      sql(query = "SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1")).len() except DbError: 0)
     spacesAmount: ColumnAmount = (try: (terminalWidth() /
         12).int except ValueError: 6)
   if nameLength == 0:
-    discard showError("Can't get the maximum length of the variables names from database.")
+    discard showError(message = "Can't get the maximum length of the variables names from database.")
     return
   if valueLength == 0:
-    discard showError("Can't get the maximum length of the variables values from database.")
+    discard showError(message = "Can't get the maximum length of the variables values from database.")
     return
   if arguments == "list":
-    showFormHeader("Declared environent variables are:")
+    showFormHeader(message = "Declared environent variables are:")
     try:
-      showOutput(message = indent("ID   $1 $2 Description" % [alignLeft("Name",
-          nameLength), alignLeft("Value", valueLength)], spacesAmount),
-              fgColor = fgMagenta)
+      showOutput(message = indent(s = "ID   $1 $2 Description" % [alignLeft(
+          s = "Name", count = nameLength), alignLeft(s = "Value",
+              count = valueLength)], count = spacesAmount), fgColor = fgMagenta)
     except ValueError as e:
-      discard showError("Can't draw header for variables. Reason: " & e.msg)
+      discard showError(message = "Can't draw header for variables. Reason: " & e.msg)
     try:
-      for row in db.fastRows(sql(buildQuery(getCurrentDir(),
-          "id, name, value, description"))):
-        showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
-            nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
+      for row in db.fastRows(query = sql(query = buildQuery(
+          directory = getCurrentDir(),
+
+fields = "id, name, value, description"))):
+        showOutput(message = indent(s = alignLeft(s = row[0], count = 4) & " " &
+            alignLeft(s = row[1], count = nameLength) & " " & alignLeft(s = row[
+                2], count = valueLength) & " " & row[3], count = spacesAmount))
     except DbError, OSError:
-      discard showError("Can't get the current directory name. Reason: " &
+      discard showError(message = "Can't get the current directory name. Reason: " &
           getCurrentExceptionMsg())
-      historyIndex = updateHistory("variable " & arguments, db, QuitFailure)
+      historyIndex = updateHistory(commandToAdd = "variable " & arguments,
+          db = db, returnCode = QuitFailure)
       return
   elif arguments == "list all":
-    showFormHeader("All declared environent variables are:")
+    showFormHeader(message = "All declared environent variables are:")
     try:
-      showOutput(message = indent("ID   $1 $2 Description" % [alignLeft("Name",
-          nameLength), alignLeft("Value", valueLength)], spacesAmount),
-              fgColor = fgMagenta)
+      showOutput(message = indent(s = "ID   $1 $2 Description" % [alignLeft(
+          s = "Name", count = nameLength), alignLeft(s = "Value",
+              count = valueLength)], count = spacesAmount), fgColor = fgMagenta)
     except ValueError as e:
-      discard showError("Can't draw header for variables. Reason: " & e.msg)
+      discard showError(message = "Can't draw header for variables. Reason: " & e.msg)
     try:
-      for row in db.fastRows(sql"SELECT id, name, value, description FROM variables"):
-        showOutput(indent(alignLeft(row[0], 4) & " " & alignLeft(row[1],
-            nameLength) & " " & alignLeft(row[2], valueLength) & " " & row[3], spacesAmount))
+      for row in db.fastRows(query = sql(
+          query = "SELECT id, name, value, description FROM variables")):
+        showOutput(message = indent(s = alignLeft(s = row[0], count = 4) & " " &
+            alignLeft(s = row[1], count = nameLength) & " " & alignLeft(s = row[
+                2], count = valueLength) & " " & row[3], count = spacesAmount))
     except DbError as e:
-      discard showError("Can't read data about variables from database. Reason: " & e.msg)
-      historyIndex = updateHistory("variable " & arguments, db, QuitFailure)
+      discard showError(message = "Can't read data about variables from database. Reason: " & e.msg)
+      historyIndex = updateHistory(commandToAdd = "variable " & arguments,
+          db = db, returnCode = QuitFailure)
       return
-  historyIndex = updateHistory("variable " & arguments, db)
+  historyIndex = updateHistory(commandToAdd = "variable " & arguments, db = db)
 
 proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
