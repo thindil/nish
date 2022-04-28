@@ -16,3 +16,4 @@ if parseInt(db.getValue(sql"SELECT COUNT(*) FROM variables")) == 0:
 setVariables("/home", db)
 assert getEnv("TESTS") == "test_variable"
 assert not existsEnv("TESTS2")
+quitShell(QuitSuccess, db)
