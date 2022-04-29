@@ -239,9 +239,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
       discard showError(message = "Can't draw header for variables. Reason: " & e.msg)
     try:
       for row in db.fastRows(query = sql(query = buildQuery(
-          directory = getCurrentDir(),
-
-fields = "id, name, value, description"))):
+          directory = getCurrentDir(), fields = "id, name, value, description"))):
         showOutput(message = indent(s = alignLeft(s = row[0], count = 4) & " " &
             alignLeft(s = row[1], count = nameLength) & " " & alignLeft(s = row[
                 2], count = valueLength) & " " & row[3], count = spacesAmount))
@@ -286,12 +284,12 @@ proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput("""Available subcommands are: list, delete, add, edit
+  showOutput(message = """Available subcommands are: list, delete, add, edit
 
         To see more information about the subcommand, type help variable [command],
         for example: help variable list.
 """)
-  return updateHistory("variable", db)
+  return updateHistory(commandToAdd = "variable", db = db)
 
 proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
@@ -312,25 +310,28 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   ## QuitFailure. Also, updated parameter historyIndex with new length of the
   ## shell's history
   if arguments.len() < 8:
-    historyIndex = updateHistory("variable delete", db, QuitFailure)
-    return showError("Enter the Id of the variable to delete.")
+    historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
+        returnCode = QuitFailure)
+    return showError(message = "Enter the Id of the variable to delete.")
   let varId: DatabaseId = (try: parseInt(arguments[7 ..
       ^1]) except ValueError: 0)
   if varId == 0:
-    return showError("The Id of the variable must be a positive number.")
+    return showError(message = "The Id of the variable must be a positive number.")
   try:
-    if db.execAffectedRows(sql"DELETE FROM variables WHERE id=?",
-        varId) == 0:
-      historyIndex = updateHistory("variable delete", db, QuitFailure)
-      return showError("The variable with the Id: " & $varId &
+    if db.execAffectedRows(query = sql(query = (
+        "DELETE FROM variables WHERE id=?")), varId) == 0:
+      historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
+          returnCode = QuitFailure)
+      return showError(message = "The variable with the Id: " & $varId &
         " doesn't exist.")
   except DbError as e:
-    return showError("Can't delete variable from database. Reason: " & e.msg)
-  historyIndex = updateHistory("variable delete", db)
+    return showError(message = "Can't delete variable from database. Reason: " & e.msg)
+  historyIndex = updateHistory(commandToAdd = "variable delete", db = db)
   try:
-    setVariables(getCurrentDir(), db, getCurrentDir())
+    setVariables(newDirectory = getCurrentDir(), db = db,
+        oldDirectory = getCurrentDir())
   except OSError as e:
-    return showError("Can't set environment variables in the current directory. Reason: " & e.msg)
+    return showError(message = "Can't set environment variables in the current directory. Reason: " & e.msg)
   showOutput(message = "Deleted the variable with Id: " & $varId,
       fgColor = fgGreen)
   return QuitSuccess
