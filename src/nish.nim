@@ -477,10 +477,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     if inputString.len() > 0 and ((returnCode != QuitSuccess and
         conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
       inputString = ""
-      cursorPosition = 0
     # Run only one command, quit from the shell
     if oneTimeCommand and inputString.len() == 0:
       quitShell(returnCode = returnCode, db = db)
+    cursorPosition = inputString.len()
 
 when isMainModule:
   main()
