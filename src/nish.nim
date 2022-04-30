@@ -175,7 +175,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: HistoryRange
-    oneTimeCommand, conjCommands: bool = false
+    oneTimeCommand, conjCommands, keyWasArrow: bool = false
     returnCode: ResultCode = QuitSuccess
     aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
@@ -254,6 +254,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       while inputChar.ord() != 13 and inputString.len() < maxInputLength:
         # Backspace pressed, delete the last character from the user input
         if inputChar.ord() == 127:
+          keyWasArrow = false
           if inputString.len() > 0:
             inputString = inputString[0..^2]
             try:
@@ -271,7 +272,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               inputChar = getch()
               if inputChar == 'A' and historyIndex > 0:
                 inputString = getHistory(historyIndex = historyIndex, db = db,
-                    searchFor = inputString)
+                    searchFor = (if keyWasArrow: "" else: inputString))
                 stdout.eraseLine()
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
@@ -286,16 +287,18 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
                 inputString = getHistory(historyIndex = historyIndex, db = db,
-                    searchFor = inputString)
+                    searchFor = (if keyWasArrow: "" else: inputString))
                 stdout.eraseLine()
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
                     previousCommand = commandName, returnCode = returnCode)
+              keyWasArrow = true
           except ValueError, IOError:
             discard
         elif inputChar.ord() > 31:
           stdout.write(c = inputChar)
           inputString.add(y = inputChar)
+          keyWasArrow = false
         try:
           inputChar = getch()
         except IOError:
