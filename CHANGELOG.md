@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 - Checks for valid name and path during creating or editing the shell's aliases
 - Checks for valid name and path during creating or editing the shell's
   environment variables
+- When there is partial input, looking in the shell's history returns the first
+  command which starts with the input
 
 ### Changed
 - Updated README.md
