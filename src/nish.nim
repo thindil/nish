@@ -270,7 +270,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               # Arrow up key pressed
               inputChar = getch()
               if inputChar == 'A' and historyIndex > 0:
-                inputString = getHistory(historyIndex = historyIndex, db = db)
+                inputString = getHistory(historyIndex = historyIndex, db = db,
+                    searchFor = inputString)
                 stdout.eraseLine()
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
@@ -284,7 +285,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 let currentHistoryLength: HistoryRange = historyLength(db = db)
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
-                inputString = getHistory(historyIndex = historyIndex, db = db)
+                inputString = getHistory(historyIndex = historyIndex, db = db,
+                    searchFor = inputString)
                 stdout.eraseLine()
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
