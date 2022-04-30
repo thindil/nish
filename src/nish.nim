@@ -180,6 +180,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, HelpEntry]()
+    cursorPosition: Positive = 1
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -257,6 +258,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           keyWasArrow = false
           if inputString.len() > 0:
             inputString = inputString[0..^2]
+            cursorPosition.dec()
             try:
               stdout.cursorBackward()
               stdout.write(s = " ")
@@ -292,6 +294,16 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
                     previousCommand = commandName, returnCode = returnCode)
+              # Arrow left key pressed
+              elif inputChar == 'D' and inputString.len() > 0 and
+                  cursorPosition > 1:
+                stdout.cursorBackward()
+                cursorPosition.dec()
+              # Arrow right key pressed
+              elif inputChar == 'C' and inputString.len() > 0 and
+                  cursorPosition <= inputString.len():
+                stdout.cursorForward()
+                cursorPosition.inc()
               keyWasArrow = true
           except ValueError, IOError:
             discard
@@ -299,6 +311,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           stdout.write(c = inputChar)
           inputString.add(y = inputChar)
           keyWasArrow = false
+          cursorPosition.inc()
         try:
           inputChar = getch()
         except IOError:
@@ -459,6 +472,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     if inputString.len() > 0 and ((returnCode != QuitSuccess and
         conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
       inputString = ""
+      cursorPosition = 1
     # Run only one command, quit from the shell
     if oneTimeCommand and inputString.len() == 0:
       quitShell(returnCode = returnCode, db = db)
