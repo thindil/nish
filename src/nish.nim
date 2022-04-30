@@ -180,7 +180,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, HelpEntry]()
-    cursorPosition: Positive = 1
+    cursorPosition: Natural = 0
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -275,6 +275,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               if inputChar == 'A' and historyIndex > 0:
                 inputString = getHistory(historyIndex = historyIndex, db = db,
                     searchFor = (if keyWasArrow: "" else: inputString))
+                cursorPosition = inputString.len()
                 stdout.eraseLine()
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
@@ -290,18 +291,19 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                   historyIndex = currentHistoryLength
                 inputString = getHistory(historyIndex = historyIndex, db = db,
                     searchFor = (if keyWasArrow: "" else: inputString))
+                cursorPosition = inputString.len()
                 stdout.eraseLine()
                 showOutput(message = inputString, newLine = false,
                     promptEnabled = not oneTimeCommand,
                     previousCommand = commandName, returnCode = returnCode)
               # Arrow left key pressed
               elif inputChar == 'D' and inputString.len() > 0 and
-                  cursorPosition > 1:
+                  cursorPosition > 0:
                 stdout.cursorBackward()
                 cursorPosition.dec()
               # Arrow right key pressed
               elif inputChar == 'C' and inputString.len() > 0 and
-                  cursorPosition <= inputString.len():
+                  cursorPosition < inputString.len():
                 stdout.cursorForward()
                 cursorPosition.inc()
               keyWasArrow = true
@@ -309,7 +311,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             discard
         elif inputChar.ord() > 31:
           stdout.write(c = inputChar)
-          inputString.add(y = inputChar)
+          if cursorPosition == inputString.len():
+            inputString.add(y = inputChar)
+          else:
+            inputString[cursorPosition] = inputChar
           keyWasArrow = false
           cursorPosition.inc()
         try:
@@ -472,7 +477,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     if inputString.len() > 0 and ((returnCode != QuitSuccess and
         conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
       inputString = ""
-      cursorPosition = 1
+      cursorPosition = 0
     # Run only one command, quit from the shell
     if oneTimeCommand and inputString.len() == 0:
       quitShell(returnCode = returnCode, db = db)
