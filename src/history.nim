@@ -170,13 +170,15 @@ func getHistory*(historyIndex: HistoryRange; db;
   ## The selected command from the shell's commands' history.
   try:
     if searchFor.len() == 0:
-      return db.getValue(query = sql(query = "SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?"),
+      result = db.getValue(query = sql(query = "SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?"),
           $(historyIndex - 1));
     else:
-      return db.getValue(query = sql(query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused, amount DESC"),
+      result = db.getValue(query = sql(query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused, amount DESC"),
           searchFor & "%");
+      if result.len() == 0:
+        result = searchFor
   except DbError as e:
-    return "Can't get the selected command from the shell's history. Reason: " & e.msg
+    result = "Can't get the selected command from the shell's history. Reason: " & e.msg
 
 proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect].} =
