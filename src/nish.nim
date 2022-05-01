@@ -175,7 +175,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: HistoryRange
-    oneTimeCommand, conjCommands, keyWasArrow: bool = false
+    oneTimeCommand, conjCommands, keyWasArrow, insertMode: bool = false
     returnCode: ResultCode = QuitSuccess
     aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
@@ -265,9 +265,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               stdout.cursorBackward()
             except ValueError, IOError:
               discard
-        # Escape or arrows keys pressed
+        # Special keys pressed
         elif inputChar.ord() == 27:
-          # Arrow key pressed
           try:
             if getch() == '[':
               # Arrow up key pressed
@@ -306,6 +305,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                   cursorPosition < inputString.len():
                 stdout.cursorForward()
                 cursorPosition.inc()
+              # Insert key pressed
+              elif inputChar == '2' and getch() == '~':
+                insertMode = not insertMode
               keyWasArrow = true
           except ValueError, IOError:
             discard
