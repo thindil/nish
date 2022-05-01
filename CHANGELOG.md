@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
   environment variables
 - When there is partial input, looking in the shell's history returns the first
   command which starts with the input
+- Ability to insert characters into the current input of the user
 
 ### Changed
 - Updated README.md
