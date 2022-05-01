@@ -315,7 +315,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           stdout.write(c = inputChar)
           if cursorPosition == inputString.len():
             inputString.add(y = inputChar)
-          else:
+          elif insertMode:
             inputString[cursorPosition] = inputChar
           keyWasArrow = false
           cursorPosition.inc()
