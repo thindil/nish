@@ -483,6 +483,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             aliases = aliases, db = db)
         historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
             returnCode = returnCode)
+        cursorPosition = inputString.len()
         continue
       # Execute external command
       returnCode = execCmd(command = commandToExecute)
