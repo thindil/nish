@@ -241,6 +241,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
 
   proc refreshInput() {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
       ReadIOEffect].} =
+    ## FUNCTION
+    ##
+    ## Refresh the user input, clear the old and show the new
     try:
       stdout.eraseLine()
       showOutput(message = inputString, newLine = false,
