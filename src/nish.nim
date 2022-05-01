@@ -324,6 +324,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               showOutput(message = inputString, newLine = false,
                   promptEnabled = not oneTimeCommand,
                   previousCommand = commandName, returnCode = returnCode)
+              stdout.write(s = " ")
               for i in countdown(inputString.len(), cursorPosition + 1):
                 stdout.cursorBackward()
             except ValueError, IOError:
