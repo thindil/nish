@@ -239,6 +239,16 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   updateHelp(helpContent = helpContent, db = db)
   setMainHelp(helpContent = helpContent)
 
+  proc refreshInput() {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
+      ReadIOEffect].} =
+    try:
+      stdout.eraseLine()
+      showOutput(message = inputString, newLine = false,
+          promptEnabled = not oneTimeCommand,
+          previousCommand = commandName, returnCode = returnCode)
+    except ValueError, IOError:
+      discard
+
   # Start the shell
   while true:
     # Run only one command, don't show prompt and wait for the user input,
@@ -275,10 +285,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 inputString = getHistory(historyIndex = historyIndex, db = db,
                     searchFor = (if keyWasArrow: "" else: inputString))
                 cursorPosition = inputString.len()
-                stdout.eraseLine()
-                showOutput(message = inputString, newLine = false,
-                    promptEnabled = not oneTimeCommand,
-                    previousCommand = commandName, returnCode = returnCode)
+                refreshInput()
                 historyIndex.dec()
                 if historyIndex < 1:
                   historyIndex = 1;
@@ -291,10 +298,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 inputString = getHistory(historyIndex = historyIndex, db = db,
                     searchFor = (if keyWasArrow: "" else: inputString))
                 cursorPosition = inputString.len()
-                stdout.eraseLine()
-                showOutput(message = inputString, newLine = false,
-                    promptEnabled = not oneTimeCommand,
-                    previousCommand = commandName, returnCode = returnCode)
+                refreshInput()
               # Arrow left key pressed
               elif inputChar == 'D' and inputString.len() > 0 and
                   cursorPosition > 0:
@@ -320,10 +324,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           else:
             inputString.insert($inputChar, cursorPosition)
             try:
-              stdout.eraseLine()
-              showOutput(message = inputString, newLine = false,
-                  promptEnabled = not oneTimeCommand,
-                  previousCommand = commandName, returnCode = returnCode)
+              refreshInput()
               stdout.write(s = " ")
               for i in countdown(inputString.len(), cursorPosition + 1):
                 stdout.cursorBackward()
