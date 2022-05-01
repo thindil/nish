@@ -317,6 +317,17 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             inputString.add(y = inputChar)
           elif insertMode:
             inputString[cursorPosition] = inputChar
+          else:
+            inputString.insert($inputChar, cursorPosition)
+            try:
+              stdout.eraseLine()
+              showOutput(message = inputString, newLine = false,
+                  promptEnabled = not oneTimeCommand,
+                  previousCommand = commandName, returnCode = returnCode)
+              for i in countdown(inputString.len(), cursorPosition + 1):
+                stdout.cursorBackward()
+            except ValueError, IOError:
+              discard
           keyWasArrow = false
           cursorPosition.inc()
         try:
