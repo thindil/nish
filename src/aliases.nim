@@ -528,7 +528,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     argumentPosition: ExtendedNatural = inputString.find(item = '$')
   while argumentPosition > -1:
     var argumentNumber: ExtendedNatural = (try: parseInt(s = inputString[
-        argumentPosition + 1] & "") except ValueError: -1)
+        argumentPosition + 1] & "") except ValueError, IndexDefect: -1)
     if argumentNumber == -1:
       return showError(message = "Can't get argument number for alias. Reason: " &
           getCurrentExceptionMsg())
