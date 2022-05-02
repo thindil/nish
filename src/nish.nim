@@ -337,8 +337,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             try:
               refreshInput()
               stdout.write(s = " ")
-              for i in countdown(inputString.len(), cursorPosition + 1):
-                stdout.cursorBackward()
+              stdout.cursorBackward(count = inputString.len() - cursorPosition)
             except ValueError, IOError:
               discard
           keyWasArrow = false
