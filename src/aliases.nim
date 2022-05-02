@@ -162,10 +162,10 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
         returnCode = QuitFailure)
     return showError(message = "Enter the Id of the alias to delete.")
-  let id: DatabaseId = (try: parseInt(s = arguments[7 ..
-      ^1]) except ValueError: 0)
-  if id == 0:
-    return showError(message = "The Id of the alias must be a positive number.")
+  let id: DatabaseId = try:
+      parseInt(s = arguments[7 .. ^1])
+    except ValueError:
+      return showError(message = "The Id of the alias must be a positive number.")
   try:
     if db.execAffectedRows(query = sql(query = "DELETE FROM aliases WHERE id=?"),
         id) == 0:
@@ -208,22 +208,24 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
         returnCode = QuitFailure)
     return showError(message = "Enter the ID of the alias to show.")
-  let id: DatabaseId = (try: parseInt(s = arguments[5 ..
-      ^1]) except ValueError: 0)
-  if id == 0:
-    return showError(message = "The Id of the alias must be a positive number.")
-  let row: Row = (try: db.getRow(query = sql(query =
-    "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"),
-    args = id) except DbError as e: return showError(
-        message = "Can't read alias data from database. Reason: " & e.msg))
+  let id: DatabaseId = try:
+      parseInt(s = arguments[5 .. ^1])
+    except ValueError:
+      return showError(message = "The Id of the alias must be a positive number.")
+  let row: Row = try:
+        db.getRow(query = sql(query = "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"), args = id)
+    except DbError as e:
+      return showError(message = "Can't read alias data from database. Reason: " & e.msg)
   if row[0] == "":
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
         returnCode = QuitFailure)
     return showError(message = "The alias with the ID: " & $id &
       " doesn't exists.")
   historyIndex = updateHistory(commandToAdd = "alias show", db = db)
-  let spacesAmount: ColumnAmount = (try: (terminalWidth() /
-      12).ColumnAmount except ValueError: 6)
+  let spacesAmount: ColumnAmount = try:
+      (terminalWidth() / 12).ColumnAmount
+    except ValueError:
+      6
   showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
       count = spacesAmount), newLine = false, fgColor = fgMagenta)
   showOutput(message = $id)
@@ -325,9 +327,15 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showFormHeader(message = "(4/5) Recursiveness")
   showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput(message = "Recursive(y/n): ", newLine = false)
-  var inputChar: char = (try: getch() except IOError: 'y')
+  var inputChar: char = try:
+      getch()
+    except IOError:
+      'y'
   while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = (try: getch() except IOError: 'y')
+    inputChar = try:
+      getch()
+    except IOError:
+      'y'
   showOutput(message = $inputChar)
   let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
   showFormHeader(message = "(5/5) Commands")
@@ -386,16 +394,14 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ## Also, updated parameters historyIndex and aliases.
   if arguments.len() < 6:
     return showError(message = "Enter the ID of the alias to edit.")
-  let id: DatabaseId = (try: parseInt(s = arguments[5 ..
-      ^1]) except ValueError: 0)
-  if id == 0:
-    return showError(message = "The Id of the alias must be a positive number.")
-  let
-    row: Row = (try: db.getRow(query = sql(query =
-      "SELECT name, path, commands, description FROM aliases WHERE id=?"),
-    id) except DbError: @["", "", "", ""])
-  if row[0] == "":
-    return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
+  let id: DatabaseId = try:
+      parseInt(s = arguments[5 .. ^1])
+    except ValueError:
+      return showError(message = "The Id of the alias must be a positive number.")
+  let row: Row = try:
+        db.getRow(query = sql(query = "SELECT name, path, commands, description FROM aliases WHERE id=?"), id)
+    except DbError:
+      return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
   showOutput(message = "You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showFormHeader(message = "(1/5) Name")
   showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
@@ -438,9 +444,15 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   showFormHeader(message = "(4/5) Recursiveness")
   showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput(message = "Recursive(y/n): ", newLine = false)
-  var inputChar: char = (try: getch() except IOError: 'y')
+  var inputChar: char = try:
+      getch()
+    except IOError:
+      'y'
   while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = (try: getch() except IOError: 'y')
+    inputChar = try:
+      getch()
+    except IOError:
+      'y'
   let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   showOutput(message = "")
   showFormHeader(message = "(5/5) Commands")
@@ -496,41 +508,41 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           ReadIOEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect,
               TimeEffect].} =
     ## Change the current directory for the shell
-    let path: DirectoryPath = (try: expandFilename(filename = absolutePath(
-        path = expandTilde(path = newDirectory))) except OSError,
-            ValueError: "")
-    if path.len() == 0:
-      return showError(message = "Can't change directory. Reason: " &
-          getCurrentExceptionMsg())
+    let path: DirectoryPath = try:
+        expandFilename(filename = absolutePath(path = expandTilde(
+            path = newDirectory)))
+      except OSError, ValueError:
+        return showError(message = "Can't change directory. Reason: " &
+            getCurrentExceptionMsg())
     try:
       setCurrentDir(newDir = path)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess
     except OSError as e:
       return showError("Can't change directory. Reason: " & e.msg)
-
   let
-    currentDirectory: DirectoryPath = (try: getCurrentDir() except OSError: "")
+    currentDirectory: DirectoryPath = try:
+        getCurrentDir()
+      except OSError:
+        return showError(message = "Can't get the current directory name. Reason: " &
+            getCurrentExceptionMsg())
     commandArguments: seq[string] = initOptParser(
         cmdline = arguments).remainingArgs()
-  if currentDirectory.len() == 0:
-    return showError(message = "Can't get the current directory name. Reason: " &
-        getCurrentExceptionMsg())
-  var inputString: string = (try: db.getValue(
-      query = sql(query = "SELECT commands FROM aliases WHERE id=?"), aliases[
-          aliasId]) except KeyError, DbError: "")
-  if inputString.len() == 0:
-    return showError(message = "Can't get commands for alias. Reason: " &
-        getCurrentExceptionMsg())
+  var inputString: string = try:
+      db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
+          aliases[aliasId])
+    except KeyError, DbError:
+      return showError(message = "Can't get commands for alias. Reason: " &
+          getCurrentExceptionMsg())
   # Convert all $number in commands to arguments taken from the user
   # input
   var
     argumentPosition: ExtendedNatural = inputString.find(item = '$')
   while argumentPosition > -1:
-    var argumentNumber: ExtendedNatural = (try: parseInt(s = inputString[
-        argumentPosition + 1] & "") except ValueError: -1)
-    if argumentNumber == -1:
-      return showError(message = "Can't get argument number for alias.")
+    var argumentNumber: ExtendedNatural = try:
+        parseInt(s = inputString[argumentPosition + 1] & "")
+      except ValueError:
+        return showError(message = "Can't get argument number for alias.")
     # Not enough argument entered by the user, quit with error
     if argumentNumber > commandArguments.len():
       return showError(message = "Not enough arguments entered")
