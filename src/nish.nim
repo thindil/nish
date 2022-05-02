@@ -315,6 +315,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               # Insert key pressed
               elif inputChar == '2' and getch() == '~':
                 insertMode = not insertMode
+              # Home key pressed
+              elif inputChar == 'H' and cursorPosition > 0:
+                stdout.cursorBackward(count = cursorPosition)
+                cursorPosition = 0
+              # End key pressed
+              elif inputChar == 'F' and cursorPosition <= inputString.len():
+                stdout.cursorForward(count = inputString.len() - cursorPosition)
+                cursorPosition = inputString.len()
               keyWasArrow = true
           except ValueError, IOError:
             discard
