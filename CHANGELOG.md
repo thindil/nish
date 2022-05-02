@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - When there is partial input, looking in the shell's history returns the first
   command which starts with the input
 - Ability to insert characters into the current input of the user
+- Ability to move between start and end of the current input of the user with
+  Home and End keys
 
 ### Changed
 - Updated README.md
