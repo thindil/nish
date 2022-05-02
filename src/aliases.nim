@@ -528,10 +528,9 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     argumentPosition: ExtendedNatural = inputString.find(item = '$')
   while argumentPosition > -1:
     var argumentNumber: ExtendedNatural = (try: parseInt(s = inputString[
-        argumentPosition + 1] & "") except ValueError, IndexDefect: -1)
+        argumentPosition + 1] & "") except ValueError: -1)
     if argumentNumber == -1:
-      return showError(message = "Can't get argument number for alias. Reason: " &
-          getCurrentExceptionMsg())
+      return showError(message = "Can't get argument number for alias.")
     # Not enough argument entered by the user, quit with error
     if argumentNumber > commandArguments.len():
       return showError(message = "Not enough arguments entered")
@@ -542,7 +541,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     else:
       inputString = inputString.replace(sub = inputString[
         argumentPosition..argumentPosition + 1], by = commandArguments.join(sep = " "))
-    argumentPosition = inputString.find(item = '$')
+    argumentPosition = inputString.find(sub = '$', start = argumentPosition + 1)
   while inputString.len() > 0:
     var
       conjCommands: bool
