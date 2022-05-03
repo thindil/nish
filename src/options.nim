@@ -111,8 +111,10 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
   ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
-  let spacesAmount: ColumnAmount = (try: (terminalWidth() /
-      12).int except ValueError: 4)
+  let spacesAmount: ColumnAmount = try:
+      (terminalWidth() / 12).int
+    except ValueError:
+      4
   showFormHeader(message = "Available options are:")
   showOutput(message = indent(s = "Name               Value   Default Type    Description",
       count = spacesAmount), fgColor = fgMagenta)

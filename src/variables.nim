@@ -217,18 +217,20 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
   ##
   ## Updated value for the historyIndex argument
   let
-    nameLength: ColumnAmount = (try: db.getValue(query =
-      sql(query = "SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1")).len() except DbError: 0)
-    valueLength: ColumnAmount = (try: db.getValue(query =
-      sql(query = "SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1")).len() except DbError: 0)
-    spacesAmount: ColumnAmount = (try: (terminalWidth() /
-        12).int except ValueError: 6)
-  if nameLength == 0:
-    discard showError(message = "Can't get the maximum length of the variables names from database.")
-    return
-  if valueLength == 0:
-    discard showError(message = "Can't get the maximum length of the variables values from database.")
-    return
+    nameLength: ColumnAmount = try:
+        db.getValue(query = sql(query = "SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1")).len()
+    except DbError:
+      discard showError(message = "Can't get the maximum length of the variables names from database.")
+      return
+    valueLength: ColumnAmount = try:
+        db.getValue(query = sql(query = "SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1")).len()
+    except DbError:
+      discard showError(message = "Can't get the maximum length of the variables values from database.")
+      return
+    spacesAmount: ColumnAmount = try:
+        (terminalWidth() / 12).int
+      except ValueError:
+        6
   if arguments == "list":
     showFormHeader(message = "Declared environent variables are:")
     try:
@@ -313,10 +315,10 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
         returnCode = QuitFailure)
     return showError(message = "Enter the Id of the variable to delete.")
-  let varId: DatabaseId = (try: parseInt(arguments[7 ..
-      ^1]) except ValueError: 0)
-  if varId == 0:
-    return showError(message = "The Id of the variable must be a positive number.")
+  let varId: DatabaseId = try:
+      parseInt(arguments[7 .. ^1])
+    except ValueError:
+      return showError(message = "The Id of the variable must be a positive number.")
   try:
     if db.execAffectedRows(query = sql(query = (
         "DELETE FROM variables WHERE id=?")), varId) == 0:
@@ -394,9 +396,15 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showFormHeader(message = "(4/5) Recursiveness")
   showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput(message = "Recursive(y/n): ", newLine = false)
-  var inputChar: char = (try: getch() except IOError: 'y')
+  var inputChar: char = try:
+      getch()
+    except IOError:
+      'y'
   while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = (try: getch() except IOError: 'y')
+    inputChar = try:
+      getch()
+    except IOError:
+      'y'
   let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   try:
     stdout.writeLine(x = "")
@@ -459,17 +467,15 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   ## shell's history
   if arguments.len() < 6:
     return showError(message = "Enter the ID of the variable to edit.")
-  let varId: DatabaseId = (try: parseInt(arguments[7 ..
-      ^1]) except ValueError: 0)
-  if varId == 0:
-    return showError(message = "The Id of the variable must be a positive number.")
+  let varId: DatabaseId = try:
+      parseInt(arguments[7 .. ^1])
+    except ValueError:
+      return showError(message = "The Id of the variable must be a positive number.")
   let
-    row: Row = (try: db.getRow(query = sql(
-        query = "SELECT name, path, value, description FROM variables WHERE id=?"),
-    varId) except DbError: @["", "", "", ""])
-  if row[0] == "":
-    return showError(message = "The variable with the ID: " & $varId &
-      " doesn't exists.")
+    row: Row = try:
+        db.getRow(query = sql(query = "SELECT name, path, value, description FROM variables WHERE id=?"), varId)
+      except DbError:
+        return showError(message = "The variable with the ID: " & $varId & " doesn't exists.")
   showOutput(message = "You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showFormHeader(message = "(1/5) Name")
   showOutput(message = "The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
@@ -512,9 +518,15 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     path = row[1]
   showFormHeader(message = "(4/5) Recursiveness")
   showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
-  var inputChar: char = (try: getch() except IOError: 'y')
+  var inputChar: char = try:
+      getch()
+    except IOError:
+      'y'
   while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = (try: getch() except IOError: 'y')
+    inputChar = try:
+      getch()
+    except IOError:
+      'y'
   let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
   try:
     stdout.writeLine(x = "")
