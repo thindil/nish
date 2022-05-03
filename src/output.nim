@@ -47,7 +47,10 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   if not promptEnabled:
     return
   let
-    currentDirectory: DirectoryPath = (try: getCurrentDir() except OSError: "[unknown dir]")
+    currentDirectory: DirectoryPath = try:
+      getCurrentDir()
+    except OSError:
+      "[unknown dir]"
     homeDirectory: DirectoryPath = getHomeDir()
   if endsWith(s = currentDirectory & "/", suffix = homeDirectory):
     try:
