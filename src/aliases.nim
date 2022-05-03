@@ -526,8 +526,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       except OSError:
         return showError(message = "Can't get the current directory name. Reason: " &
             getCurrentExceptionMsg())
-    commandArguments: seq[string] = initOptParser(
-        cmdline = arguments).remainingArgs()
+    commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
+        cmdline = arguments).remainingArgs() else: @[])
   var inputString: string = try:
       db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
           aliases[aliasId])
@@ -539,10 +539,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   var
     argumentPosition: ExtendedNatural = inputString.find(item = '$')
   while argumentPosition > -1:
-    var argumentNumber: Positive = try:
+    var argumentNumber: Natural = try:
         parseInt(s = inputString[argumentPosition + 1] & "")
       except ValueError:
-        return showError(message = "Can't get argument number for alias.")
+        0
     # Not enough argument entered by the user, quit with error
     if argumentNumber > commandArguments.len():
       return showError(message = "Not enough arguments entered")
