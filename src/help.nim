@@ -111,8 +111,10 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
     var
       content: string = "    "
       index: Positive = 4
-    let maxLength: ColumnAmount = (try: terminalWidth() -
-        8 except ValueError: 72);
+    let maxLength: ColumnAmount = try:
+        terminalWidth() - 8
+      except ValueError:
+          72;
     for ch in helpEntry.content:
       content.add(y = ch)
       index.inc()
