@@ -554,6 +554,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       inputString = inputString.replace(sub = inputString[
         argumentPosition..argumentPosition + 1], by = commandArguments.join(sep = " "))
     argumentPosition = inputString.find(sub = '$', start = argumentPosition + 1)
+  # Execute the selected alias
   while inputString.len() > 0:
     var
       conjCommands: bool
