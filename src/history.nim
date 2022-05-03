@@ -239,15 +239,16 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## The new length of the shell's commands' history.
   let
-    amount: HistoryRange = (try: parseInt(s = getOption(
-       optionName = "historyAmount",
-       db = db)) except ValueError: HistoryRange.low())
-    spacesAmount: ColumnAmount = (try: (terminalWidth() /
-        12).int except ValueError: 6)
-  if amount == HistoryRange.low():
-    discard showError(message = "Can't get setting for the amount of history commands to show.")
-    return updateHistory(commandToAdd = "history show", db = db,
-        returnCode = QuitFailure)
+    amount: HistoryRange = try:
+        parseInt(s = getOption(optionName = "historyAmount", db = db))
+      except ValueError:
+        discard showError(message = "Can't get setting for the amount of history commands to show.")
+        return updateHistory(commandToAdd = "history show", db = db,
+            returnCode = QuitFailure)
+    spacesAmount: ColumnAmount = try:
+          (terminalWidth() / 12).int
+      except ValueError:
+        6
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent(s = "Last used                Times      Command",
       count = spacesAmount), fgColor = fgMagenta)
