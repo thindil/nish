@@ -284,7 +284,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             spaceIndex: int = inputString.rfind(sub = ' ')
             prefix: string = (if spaceIndex == -1: "" else: inputString[
                 spaceIndex + 1..^1])
-            completion: string = getCompletion(startsWith = prefix)
+            completion: string = getCompletion(prefix = prefix)
           if completion.len() > 0:
             try:
               stdout.cursorBackward(count = inputString.len() - spaceIndex - 1)
