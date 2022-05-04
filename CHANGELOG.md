@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - Merging commands with || in aliases doesn't work properly
 - Information about unknown help topic
 - Parsing aliases arguments when the user input contains $ sign
+- Handling aliases arguments with whitespaces
 
 ## [0.1.0] - 2022-02-23
 - Initial release
