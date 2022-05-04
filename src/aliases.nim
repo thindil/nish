@@ -537,7 +537,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   # Convert all $number in commands to arguments taken from the user
   # input
   var
-    argumentPosition: ExtendedNatural = inputString.find(item = '$')
+    argumentPosition: ExtendedNatural = inputString.find(sub = '$')
   while argumentPosition > -1:
     var argumentNumber: Natural = try:
         parseInt(s = inputString[argumentPosition + 1] & "")
