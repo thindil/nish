@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases, commands, constants, help, history, input, options, output,
+import aliases, commands, completion, constants, help, history, input, options, output,
   variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
@@ -276,6 +276,21 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               stdout.cursorBackward()
               stdout.write(s = " ")
               stdout.cursorBackward()
+            except ValueError, IOError:
+              discard
+        # Tab key pressed, do autocompletion if possible
+        elif inputChar.ord() == 9:
+          let
+            spaceIndex: int = inputString.rfind(sub = ' ')
+            prefix: string = (if spaceIndex == -1: "" else: inputString[
+                spaceIndex + 1..^1])
+            completion: string = getCompletion(startsWith = prefix)
+          if completion.len() > 0:
+            try:
+              stdout.cursorBackward(count = inputString.len() - spaceIndex - 1)
+              stdout.write(s = completion)
+              inputString = inputString[0..spaceIndex] & completion
+              cursorPosition = inputString.len()
             except ValueError, IOError:
               discard
         # Special keys pressed
