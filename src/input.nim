@@ -105,22 +105,31 @@ func getArguments*(userInput: var OptParser;
   ## Properly converted user input and parameter conjCommands
   userInput.next()
   conjCommands = false
+  var key: string
   while userInput.kind != cmdEnd:
     if userInput.key == "&&":
       conjCommands = true
       break
     if userInput.key == "||":
       break
+    if userInput.key.contains(sub = " "):
+      key = "\"" & userInput.key & "\""
+    else:
+      key = userInput.key
     case userInput.kind
     of cmdLongOption:
       if userInput.val.len() > 0:
-        result.add(y = "--" & userInput.key & "=" & userInput.val)
+        result.add(y = "--" & key & "=")
+        if userInput.val.contains(sub = " "):
+          result.add(y = "\"" & userInput.val & "\"")
+        else:
+          result.add(userInput.val)
       else:
-        result.add(y = "--" & userInput.key)
+        result.add(y = "--" & key)
     of cmdShortOption:
-      result.add(y = "-" & userInput.key)
+      result.add(y = "-" & key)
     of cmdArgument:
-      result.add(y = userInput.key)
+      result.add(y = key)
     of cmdEnd:
       discard
     result.add(y = " ")
