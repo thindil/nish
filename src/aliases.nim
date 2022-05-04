@@ -503,11 +503,26 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   ##
   ## QuitSuccess if the alias was properly executed, otherwise QuitFailure.
   ## Also, updated parameter aliases.
+
   proc changeDirectory(newDirectory: DirectoryPath; aliases;
       db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadEnvEffect,
           ReadIOEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect,
               TimeEffect].} =
+    ## FUNCTION
+    ##
     ## Change the current directory for the shell
+    ##
+    ## PARAMETERS
+    ##
+    ## * newDirectory - the new directory to which the current directory will
+    ##                  be changed
+    ## * aliases      - the list of aliases available in the current directory
+    ## * db           - the connection to the shell's database
+    ##
+    ## RETURNS
+    ##
+    ## QuitSuccess if the current directory was successfully changed, otherwise
+    ## QuitFailure. Also, updated parameter aliases.
     let path: DirectoryPath = try:
         expandFilename(filename = absolutePath(path = expandTilde(
             path = newDirectory)))
