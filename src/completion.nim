@@ -29,8 +29,14 @@ proc getCompletion*(prefix: string): string =
   if prefix.len() == 0:
     return
   try:
-    for item in walkDir(dir = getCurrentDir(), relative = true):
-      if item.path.startsWith(prefix = prefix):
+    let
+      parent: string = parentDir(path = prefix)
+      dirToCheck = getCurrentDir() & (if dirExists(dir = parent): DirSep &
+          parent else: "")
+      newPrefix: string = (if dirToCheck != getCurrentDir(): lastPathPart(
+          path = prefix) else: prefix)
+    for item in walkDir(dir = dirToCheck, relative = true):
+      if item.path.startsWith(prefix = newPrefix):
         return item.path
   except OSError:
     return
