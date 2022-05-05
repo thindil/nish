@@ -140,7 +140,7 @@ proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
   stdout.flushFile()
 
 proc showError*(message: OutputMessage): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    raises: [], tags: [WriteIOEffect].} =
   ## FUNCTION
   ##
   ## Print the message to standard error and set the shell return
