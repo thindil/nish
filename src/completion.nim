@@ -37,7 +37,7 @@ proc getCompletion*(prefix: string): string =
           path = prefix) else: prefix)
     for item in walkDir(dir = dirToCheck, relative = true):
       if item.path.startsWith(prefix = newPrefix):
-        return item.path
+        return (if parent != ".": parent & DirSep else: "") & item.path & DirSep
   except OSError:
     return
   return
