@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[os, strutils]
+import output
 
 proc getCompletion*(prefix: string): string =
   if prefix.len() == 0:
@@ -38,6 +39,6 @@ proc getCompletion*(prefix: string): string =
     for item in walkDir(dir = dirToCheck, relative = true):
       if item.path.startsWith(prefix = newPrefix):
         return (if parent != ".": parent & DirSep else: "") & item.path & DirSep
-  except OSError:
-    return
+  except OSError as e:
+    discard showError(message = "Can't get completion. Reason: " & e.msg)
   return
