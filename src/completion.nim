@@ -28,6 +28,20 @@ import output
 
 proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
     tags: [ReadDirEffect, WriteIOEffect].} =
+  ## FUNCTION
+  ##
+  ## Get the relative path of file or directory, based on the selected prefix
+  ## in the current directory.
+  ##
+  ## PARAMETERS
+  ##
+  ## * prefix - the prefix which will be looking for in the current directory
+  ##
+  ## RETURNS
+  ##
+  ## The relative path to the first file or directory which match the parameter
+  ## prefix. If prefix is empty, or there is no matching file or directory,
+  ## returns empty string.
   if prefix.len() == 0:
     return
   try:
