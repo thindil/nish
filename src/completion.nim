@@ -26,7 +26,8 @@
 import std/[os, strutils]
 import output
 
-proc getCompletion*(prefix: string): string =
+proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDirEffect, WriteIOEffect].} =
   if prefix.len() == 0:
     return
   try:
