@@ -130,6 +130,9 @@ manipulate the shell's commands' history like show history or clear it. It is
 also possible to set the amount of commands to store in the shell's history
 or the shell should store also invalid commands or not.
 
+When there is some text entered by the user, the history search only commands
+which starts with the entered text.
+
 #### Advanced shell's configuration
 
 All shell's options can be previewed from the shell. Additionally, it is
@@ -181,6 +184,11 @@ work in any of its subdirectory.
 specific environment variables presented above. They work only with the
 standard environment variables. To manage the shell's specific environment
 variables use subcommands of the `variable` command.
+
+#### Other features
+
+* Simple Tab completion for commands with names of files and directories
+  relative to the current directory
 
 ### How to install
 
