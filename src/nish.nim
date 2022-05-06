@@ -246,8 +246,25 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     ## Refresh the user input, clear the old and show the new
     try:
       stdout.eraseLine()
-      showOutput(message = inputString, newLine = false,
-          promptEnabled = not oneTimeCommand,
+      let
+        spaceIndex: ExtendedNatural = inputString.find(sub = ' ')
+        command: UserInput = (if spaceIndex < 1: "" else: inputString[0..spaceIndex - 1])
+        commandArguments: UserInput = (if spaceIndex < 1: inputString else: inputString[spaceIndex..^1])
+      var promptEnabled: bool = not oneTimeCommand
+      if command.len() > 0:
+        let color: ForegroundColor = try:
+            if findExe(exe = command).len() > 0:
+              fgGreen
+            else:
+              fgRed
+          except OSError:
+            fgDefault
+        showOutput(message = command, newLine = false,
+            promptEnabled = not oneTimeCommand,
+            previousCommand = commandName, returnCode = returnCode, fgColor = color)
+        promptEnabled = false
+      showOutput(message = commandArguments, newLine = false,
+          promptEnabled = promptEnabled,
           previousCommand = commandName, returnCode = returnCode)
     except ValueError, IOError:
       discard
@@ -350,11 +367,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           else:
             inputString.insert(item = $inputChar, i = cursorPosition)
             try:
-              refreshInput()
               stdout.write(s = " ")
               stdout.cursorBackward(count = inputString.len() - cursorPosition)
             except ValueError, IOError:
               discard
+          refreshInput()
           keyWasArrow = false
           cursorPosition.inc()
         try:
