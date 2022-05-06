@@ -248,20 +248,29 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       stdout.eraseLine()
       let
         spaceIndex: ExtendedNatural = inputString.find(sub = ' ')
-        command: UserInput = (if spaceIndex < 1: "" else: inputString[0..spaceIndex - 1])
-        commandArguments: UserInput = (if spaceIndex < 1: inputString else: inputString[spaceIndex..^1])
+        command: UserInput = (if spaceIndex < 1: "" else: inputString[
+            0..spaceIndex - 1])
+        commandArguments: UserInput = (if spaceIndex <
+            1: inputString else: inputString[spaceIndex..^1])
       var promptEnabled: bool = not oneTimeCommand
       if command.len() > 0:
-        let color: ForegroundColor = try:
+        var color: ForegroundColor = try:
             if findExe(exe = command).len() > 0:
               fgGreen
             else:
               fgRed
           except OSError:
-            fgDefault
+            fgGreen
+        if color == fgRed:
+          if command in ["exit", "cd", "help", "history", "variable", "options",
+              "set", "unset"]:
+            color = fgGreen
+          elif aliases.contains(key = command):
+            color = fgGreen
         showOutput(message = command, newLine = false,
             promptEnabled = not oneTimeCommand,
-            previousCommand = commandName, returnCode = returnCode, fgColor = color)
+            previousCommand = commandName, returnCode = returnCode,
+            fgColor = color)
         promptEnabled = false
       showOutput(message = commandArguments, newLine = false,
           promptEnabled = promptEnabled,
