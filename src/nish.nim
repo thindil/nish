@@ -281,7 +281,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         # Tab key pressed, do autocompletion if possible
         elif inputChar.ord() == 9:
           let
-            spaceIndex: int = inputString.rfind(sub = ' ')
+            spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             prefix: string = (if spaceIndex == -1: "" else: inputString[
                 spaceIndex + 1..^1])
             completion: string = getCompletion(prefix = prefix)
