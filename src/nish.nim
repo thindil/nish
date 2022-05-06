@@ -348,7 +348,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           elif insertMode:
             inputString[cursorPosition] = inputChar
           else:
-            inputString.insert($inputChar, cursorPosition)
+            inputString.insert(item = $inputChar, i = cursorPosition)
             try:
               refreshInput()
               stdout.write(s = " ")
