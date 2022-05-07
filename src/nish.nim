@@ -243,7 +243,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       ReadIOEffect].} =
     ## FUNCTION
     ##
-    ## Refresh the user input, clear the old and show the new
+    ## Refresh the user input, clear the old and show the new. Color the entered
+    ## command on green if it is valid or red if invalid
     try:
       stdout.eraseLine()
       let
