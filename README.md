@@ -189,6 +189,8 @@ variables use subcommands of the `variable` command.
 
 * Simple Tab completion for commands with names of files and directories
   relative to the current directory
+* Coloring the user entered command on green when it is valid or red when it is
+  invalid
 
 ### How to install
 
@@ -196,7 +198,7 @@ At this moment, the only option is to build it from the source. You will need a
 [Nim compiler](https://nim-lang.org/install.html). After installing it, type
 in the root directory of the project (where this file is) `nim debug` for build
 the program in debug mode or `nim release` to build it in release (optimized)
-mode. You can also use *Nimble* package manager to install the shell:
+mode. You can also use [Nimble](https://github.com/nim-lang/nimble) package manager to install the shell:
 `nimble install https://github.com/thindil/nish`.
 
 ### Design goals
