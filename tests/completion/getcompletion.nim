@@ -2,6 +2,9 @@ discard """
   exitcode: 0
 """
 
+import os
 import ../../src/completion
 
-assert getCompletion("C") == "CHANGELOG.md"
+open("sometest.txt", fmWrite).close()
+assert getCompletion("somete") == "sometest.txt"
+removeFile("sometest.txt")
