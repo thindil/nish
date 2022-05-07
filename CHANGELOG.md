@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Ability to move between start and end of the current input of the user with
   Home and End keys
 - Simple Tab completion for command with names of files and directories
+- Coloring the user entered command on green when valid and red on invalid
 
 ### Changed
 - Updated README.md
