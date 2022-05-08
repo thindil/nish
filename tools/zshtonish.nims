@@ -3,6 +3,7 @@
 import std/[os, strutils]
 
 let zshConfig = readFile(getHomeDir() & ".zshrc")
+var sqlContent: seq[string]
 
 for line in zshConfig.splitLines():
   var query: string = ""
@@ -21,4 +22,6 @@ for line in zshConfig.splitLines():
         line[7..equalIndex - 1] & "', '/', 1, '" & line[equalIndex + 1..^1].strip(chars = {'"'}) &
         "', 'Variable imported from zsh')"
   if query.len() > 0:
-    echo query
+    sqlContent.add(query)
+
+writeFile("zsh.sql", sqlContent.join("\n"))
