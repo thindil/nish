@@ -34,7 +34,7 @@ using
   arguments: UserInput # The string with arguments entered by the user fot the command
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
-proc buildQuery*(directory: DirectoryPath; fields: string): string {.gcsafe,
+proc buildQuery*(directory: DirectoryPath; fields: string; where: string = ""): string {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect].} =
   ## FUNCTION
   ##
@@ -45,6 +45,8 @@ proc buildQuery*(directory: DirectoryPath; fields: string): string {.gcsafe,
   ##
   ## * directory - the directory path for which the database's query will be build
   ## * fields    - the database fields to retrieve by the database's query
+  ## * where     - the optional arguments for WHERE statement. Can be empty.
+  ##               Default value is empty.
   ##
   ## RETURNS
   ##
@@ -57,6 +59,10 @@ proc buildQuery*(directory: DirectoryPath; fields: string): string {.gcsafe,
   while remainingDirectory != "":
     result.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
     remainingDirectory = parentDir(remainingDirectory)
+
+  # If optional arguments entered, add them to the query
+  if where.len() > 0:
+    result.add(y = " " & where)
 
   result.add(y = " ORDER BY id ASC")
 
@@ -82,7 +88,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
       for dbResult in db.fastRows(query = sql(query = buildQuery(
           directory = oldDirectory, fields = "name"))):
         if db.getRow(query = sql(query = buildQuery(directory = newDirectory,
-            fields = "id"))) != @[]:
+            fields = "id", where = "AND name='" & dbResult[0] & "'"))) != @[]:
           continue
         try:
           delEnv(key = dbResult[0])
