@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, strutils, tables, terminal]
+import std/[db_sqlite, os, re, strutils, tables, terminal]
 import constants, history, input, output
 
 type
@@ -92,9 +92,20 @@ proc setVariables*(newDirectory: DirectoryPath; db;
     for dbResult in db.fastRows(query = sql(query = buildQuery(
         directory = newDirectory, fields = "name, value"))):
       try:
-        putEnv(key = dbResult[0], val = dbResult[1])
-      except OSError as e:
-        discard showError(message = "Can't set environment variables. Reason:" & e.msg)
+        var
+          value: string = dbResult[1]
+          variableIndex: ExtendedNatural = value.find(sub = '$')
+        # Convert all environment variables inside the variable to their values
+        while variableIndex > -1:
+          var variableEnd: ExtendedNatural = value.find(pattern = re"[^a-zA-Z0-9]", start = variableIndex + 1)
+          if variableEnd == -1:
+            variableEnd = value.len()
+          let variableName: string = value[variableIndex + 1..variableEnd - 1]
+          value[variableIndex..variableEnd - 1] = getEnv(variableName)
+          variableIndex = value.find(sub = '$', start = variableEnd)
+        putEnv(key = dbResult[0], val = value)
+      except OSError, RegexError:
+        discard showError(message = "Can't set environment variables. Reason:" & getCurrentExceptionMsg())
   except DbError as e:
     discard showError(message = "Can't read environment variables for the new directory. Reason:" & e.msg)
 
