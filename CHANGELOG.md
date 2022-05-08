@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
   Home and End keys
 - Simple Tab completion for command with names of files and directories
 - Coloring the user entered command on green when valid and red on invalid
+- Ability to use environment variables inside the shell's environment variables
 
 ### Changed
 - Updated README.md
