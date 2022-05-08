@@ -106,7 +106,6 @@ proc setVariables*(newDirectory: DirectoryPath; db;
             variableEnd = value.len()
           let variableName: string = value[variableIndex + 1..variableEnd - 1]
           value[variableIndex..variableEnd - 1] = getEnv(variableName)
-          echo value
           variableIndex = value.find(sub = '$', start = variableEnd)
         putEnv(key = dbResult[0], val = value)
       except OSError, RegexError:
