@@ -81,6 +81,9 @@ proc setVariables*(newDirectory: DirectoryPath; db;
     try:
       for dbResult in db.fastRows(query = sql(query = buildQuery(
           directory = oldDirectory, fields = "name"))):
+        if db.getRow(query = sql(query = buildQuery(directory = newDirectory,
+            fields = "id"))) != @[]:
+          continue
         try:
           delEnv(key = dbResult[0])
         except OSError as e:
@@ -103,6 +106,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
             variableEnd = value.len()
           let variableName: string = value[variableIndex + 1..variableEnd - 1]
           value[variableIndex..variableEnd - 1] = getEnv(variableName)
+          echo value
           variableIndex = value.find(sub = '$', start = variableEnd)
         putEnv(key = dbResult[0], val = value)
       except OSError, RegexError:
