@@ -84,22 +84,29 @@ proc setVariables*(newDirectory: DirectoryPath; db;
   ## * oldDirectory - the old directory in which environment variables will be
   ##                  removed. Can be empty. Default value is empty
 
+  var skipped: seq[string]
+
   # Remove the old environment variables if needed
   if oldDirectory.len() > 0:
     try:
       for dbResult in db.fastRows(query = sql(query = buildQuery(
           directory = oldDirectory, fields = "name, value"))):
-        if db.getRow(query = sql(query = buildQuery(directory = newDirectory,
-            fields = "id", where = "AND name='" & dbResult[0] &
-                "' AND value='" & dbResult[1] & "'"))) == @[]:
+        let existingVariable: Row = db.getRow(query = sql(query = buildQuery(
+            directory = newDirectory, fields = "id", where = "AND name='" &
+                dbResult[0] & "' AND value='" & dbResult[1] & "'")))
+        if existingVariable.len() == 0:
           delEnv(key = dbResult[0])
+        else:
+          skipped.add(y = existingVariable[0])
     except DbError, OSError:
       discard showError(message = "Can't delete environment variables from the old directory. Reason: " &
           getCurrentExceptionMsg())
   # Set the new environment variables
   try:
     for dbResult in db.fastRows(query = sql(query = buildQuery(
-        directory = newDirectory, fields = "name, value"))):
+        directory = newDirectory, fields = "name, value, id"))):
+      if dbResult[2] in skipped:
+        continue
       var
         value: string = dbResult[1]
         variableIndex: ExtendedNatural = value.find(sub = '$')
