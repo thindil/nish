@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.2.0] - 2022-05-09
 
 ### Added
 - Checks for valid name and path during creating or editing the shell's aliases
