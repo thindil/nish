@@ -91,12 +91,11 @@ proc setVariables*(newDirectory: DirectoryPath; db;
           directory = oldDirectory, fields = "name, value"))):
         if db.getRow(query = sql(query = buildQuery(directory = newDirectory,
             fields = "id", where = "AND name='" & dbResult[0] &
-                "' AND value='" & dbResult[1] & "'"))) != @[]:
-          continue
-        try:
-          delEnv(key = dbResult[0])
-        except OSError as e:
-          discard showError(message = "Can't delete environment variables. Reason:" & e.msg)
+                "' AND value='" & dbResult[1] & "'"))) == @[]:
+          try:
+            delEnv(key = dbResult[0])
+          except OSError as e:
+            discard showError(message = "Can't delete environment variables. Reason:" & e.msg)
     except DbError as e:
       discard showError(message = "Can't read environment variables for the old directory. Reason:" & e.msg)
   # Set the new environment variables
