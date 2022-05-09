@@ -92,35 +92,30 @@ proc setVariables*(newDirectory: DirectoryPath; db;
         if db.getRow(query = sql(query = buildQuery(directory = newDirectory,
             fields = "id", where = "AND name='" & dbResult[0] &
                 "' AND value='" & dbResult[1] & "'"))) == @[]:
-          try:
-            delEnv(key = dbResult[0])
-          except OSError as e:
-            discard showError(message = "Can't delete environment variables. Reason:" & e.msg)
-    except DbError as e:
-      discard showError(message = "Can't read environment variables for the old directory. Reason:" & e.msg)
+          delEnv(key = dbResult[0])
+    except DbError, OSError:
+      discard showError(message = "Can't delete environment variables from the old directory. Reason: " &
+          getCurrentExceptionMsg())
   # Set the new environment variables
   try:
     for dbResult in db.fastRows(query = sql(query = buildQuery(
         directory = newDirectory, fields = "name, value"))):
-      try:
-        var
-          value: string = dbResult[1]
-          variableIndex: ExtendedNatural = value.find(sub = '$')
-        # Convert all environment variables inside the variable to their values
-        while variableIndex > -1:
-          var variableEnd: ExtendedNatural = value.find(
-              pattern = re"[^a-zA-Z0-9]", start = variableIndex + 1)
-          if variableEnd == -1:
-            variableEnd = value.len()
-          let variableName: string = value[variableIndex + 1..variableEnd - 1]
-          value[variableIndex..variableEnd - 1] = getEnv(variableName)
-          variableIndex = value.find(sub = '$', start = variableEnd)
-        putEnv(key = dbResult[0], val = value)
-      except OSError, RegexError:
-        discard showError(message = "Can't set environment variables. Reason:" &
-            getCurrentExceptionMsg())
-  except DbError as e:
-    discard showError(message = "Can't read environment variables for the new directory. Reason:" & e.msg)
+      var
+        value: string = dbResult[1]
+        variableIndex: ExtendedNatural = value.find(sub = '$')
+      # Convert all environment variables inside the variable to their values
+      while variableIndex > -1:
+        var variableEnd: ExtendedNatural = value.find(
+            pattern = re"[^a-zA-Z0-9]", start = variableIndex + 1)
+        if variableEnd == -1:
+          variableEnd = value.len()
+        let variableName: string = value[variableIndex + 1..variableEnd - 1]
+        value[variableIndex..variableEnd - 1] = getEnv(variableName)
+        variableIndex = value.find(sub = '$', start = variableEnd)
+      putEnv(key = dbResult[0], val = value)
+  except DbError, OSError, RegexError:
+    discard showError(message = "Can't set environment variables for the new directory. Reason: " &
+        getCurrentExceptionMsg())
 
 proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
