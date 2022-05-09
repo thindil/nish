@@ -34,8 +34,10 @@ using
   arguments: UserInput # The string with arguments entered by the user fot the command
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
-proc buildQuery*(directory: DirectoryPath; fields: string; where: string = ""): string {.gcsafe,
-    sideEffect, raises: [], tags: [ReadDbEffect].} =
+proc buildQuery*(directory: DirectoryPath; fields: string;
+    where: string = ""): string {.gcsafe,
+
+sideEffect, raises: [], tags: [ReadDbEffect].} =
   ## FUNCTION
   ##
   ## Build database query for get environment variables for the selected
@@ -86,9 +88,10 @@ proc setVariables*(newDirectory: DirectoryPath; db;
   if oldDirectory.len() > 0:
     try:
       for dbResult in db.fastRows(query = sql(query = buildQuery(
-          directory = oldDirectory, fields = "name"))):
+          directory = oldDirectory, fields = "name, value"))):
         if db.getRow(query = sql(query = buildQuery(directory = newDirectory,
-            fields = "id", where = "AND name='" & dbResult[0] & "'"))) != @[]:
+            fields = "id", where = "AND name='" & dbResult[0] &
+                "' AND value='" & dbResult[1] & "'"))) != @[]:
           continue
         try:
           delEnv(key = dbResult[0])
