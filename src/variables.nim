@@ -388,7 +388,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   var name: VariableName = ""
   showOutput(message = "Name: ", newLine = false)
   while name.len() == 0:
-    name = readInput(maxLength = aliasNameLength)
+    name = readInput(maxLength = variableNameLength)
     if name.len() == 0:
       discard showError(message = "Please enter a name for the variable.")
     elif not name.validIdentifier:
@@ -508,7 +508,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   var name: VariableName = "exit"
   showOutput(message = "Name: ", newLine = false)
   while name.len() > 0:
-    name = readInput(maxLength = aliasNameLength)
+    name = readInput(maxLength = variableNameLength)
     if name.len() > 0 and not name.validIdentifier:
       discard showError(message = "Please enter a valid name for the variable.")
       showOutput(message = "Name: ", newLine = false)

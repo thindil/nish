@@ -147,7 +147,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     return nil
   sqlQuery = """CREATE TABLE IF NOT EXISTS variables (
                id          INTEGER       PRIMARY KEY,
-               name        VARCHAR(""" & $aliasNameLength &
+               name        VARCHAR(""" & $variableNameLength &
           """) NOT NULL,
                path        VARCHAR(""" & $maxInputLength &
           """) NOT NULL,
