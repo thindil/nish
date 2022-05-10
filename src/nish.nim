@@ -145,22 +145,6 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
   except DbError as e:
     discard showError(message = "Can't create 'options' table. Reason: " & e.msg)
     return nil
-  sqlQuery = """CREATE TABLE IF NOT EXISTS variables (
-               id          INTEGER       PRIMARY KEY,
-               name        VARCHAR(""" & $variableNameLength &
-          """) NOT NULL,
-               path        VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-               recursive   BOOLEAN       NOT NULL,
-               value       VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-               description VARCHAR(""" & $maxInputLength & """) NOT NULL
-            )"""
-  try:
-    result.exec(query = sql(query = sqlQuery))
-  except DbError as e:
-    discard showError(message = "Can't create 'variables' table. Reason: " & e.msg)
-    return nil
 
 proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     WriteIOEffect, ExecIOEffect, RootEffect].} =
