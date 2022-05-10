@@ -187,24 +187,24 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   # help about the shell's command line arguments, "-v" or "--version" to show
   # the shell's version info and "-db [path]" to set path to the shell's
   # database
-  for kind, key, value in options.getopt():
-    case kind
+  while true:
+    options.next()
+    case options.kind
+    of cmdEnd:
+      break
     of cmdShortOption, cmdLongOption:
-      case key
+      case options.key
       of "c":
         oneTimeCommand = true
+        options.next()
+        inputString = options.key
       of "h", "help":
         showCommandLineHelp()
       of "v", "version":
         showProgramVersion()
-    of cmdArgument:
-      if oneTimeCommand:
-        # Set the command to execute in shell
-        inputString = key
-      else:
-        # Set the path to the shell database
-        dbPath = key
-      break
+      of "db":
+        options.next()
+        dbPath = options.key
     else: discard
 
   # Connect to the shell database
