@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Reading command line parameters, when there is set database path and the
+  command to execute
+
 ## [0.2.0] - 2022-05-09
 
 ### Added
