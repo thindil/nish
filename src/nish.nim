@@ -189,19 +189,13 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   # database
   for kind, key, value in options.getopt():
     case kind
-    of cmdShortOption:
+    of cmdShortOption, cmdLongOption:
       case key
       of "c":
         oneTimeCommand = true
-      of "h":
+      of "h", "help":
         showCommandLineHelp()
-      of "v":
-        showProgramVersion()
-    of cmdLongOption:
-      case key
-      of "help":
-        showCommandLineHelp()
-      of "version":
+      of "v", "version":
         showProgramVersion()
     of cmdArgument:
       if oneTimeCommand:
