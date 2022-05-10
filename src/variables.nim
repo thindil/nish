@@ -126,11 +126,12 @@ proc setVariables*(newDirectory: DirectoryPath; db;
 
 proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect].} =
+    ReadEnvEffect, TimeEffect, WriteDbEffect].} =
   ## FUNCTION
   ##
   ## Initialize enviroment variables. Set help related to the variables and
-  ## load the local environment variables
+  ## load the local environment variables. Also, create database table for
+  ## variables if not exists.
   ##
   ## PARAMETERS
   ##
@@ -142,6 +143,21 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
   ## The list of available environment variables in the current directory and
   ## the updated helpContent with the help for the commands related to the
   ## variables.
+  try:
+    db.exec(query = sql(query = """CREATE TABLE IF NOT EXISTS variables (
+               id          INTEGER       PRIMARY KEY,
+               name        VARCHAR(""" & $variableNameLength &
+          """) NOT NULL,
+               path        VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+               recursive   BOOLEAN       NOT NULL,
+               value       VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+               description VARCHAR(""" & $maxInputLength & """) NOT NULL
+            )"""))
+  except DbError as e:
+    discard showError(message = "Can't create 'variables' table. Reason: " & e.msg)
+    return
   helpContent["set"] = HelpEntry(usage: "set [name=value]",
       content: "Set the environment variable with the selected name and value.")
   helpContent["unset"] = HelpEntry(usage: "unset [name]",
