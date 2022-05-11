@@ -40,7 +40,7 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
   try:
     stdout.writeLine("""Available arguments are:
     -c [command]  - Run the selected command in shell and quit
-    -db [path]    - Set the shell database to the selected file
+    --db [path]   - Set the shell database to the selected file
     -h, --help    - Show this help and quit
     -v, --version - Show the shell version info""")
     stdout.flushFile()
