@@ -170,10 +170,10 @@ func getHistory*(historyIndex: HistoryRange; db;
   ## The selected command from the shell's commands' history.
   try:
     if searchFor.len() == 0:
-      result = db.getValue(query = sql(query = "SELECT command FROM history ORDER BY lastused, amount ASC LIMIT 1 OFFSET ?"),
+      result = db.getValue(query = sql(query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
           $(historyIndex - 1));
     else:
-      result = db.getValue(query = sql(query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused, amount DESC"),
+      result = db.getValue(query = sql(query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
           searchFor & "%");
       if result.len() == 0:
         result = searchFor
