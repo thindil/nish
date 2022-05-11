@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Better getting commands from the shell's history
+
 ### Fixed
 - Reading command line parameters, when there is set database path and the
   command to execute
