@@ -187,8 +187,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       of "v", "version":
         showProgramVersion()
       of "db":
-        options.next()
-        dbPath = options.key
+        dbPath = options.val
     else: discard
 
   # Connect to the shell database
@@ -509,11 +508,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
             returnCode = returnCode)
         cursorPosition = inputString.len()
-        continue
-      # Execute external command
-      returnCode = execCmd(command = commandToExecute)
-      historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
-          returnCode = returnCode)
+      else:
+        # Execute external command
+        returnCode = execCmd(command = commandToExecute)
+        historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
+            returnCode = returnCode)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
