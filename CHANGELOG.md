@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Reading command line parameters, when there is set database path and the
   command to execute
+- The program's help about setting the database's path
 
 ## [0.2.0] - 2022-05-09
 
