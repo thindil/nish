@@ -27,7 +27,6 @@ import std/tables
 
 const
   maxInputLength*: Positive = 4096 # The maximum length of the user input
-  aliasNameLength*: Positive = 50  # The maximum length of the shell's alias name
   shellVersion*: string = "0.3.0"  # The current version of the project
 
 type
