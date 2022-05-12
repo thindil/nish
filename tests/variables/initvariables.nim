@@ -2,11 +2,9 @@ discard """
   exitcode: 0
 """
 
-import std/[tables]
-import ../../src/[constants, nish, variables]
+import ../../src/[nish, variables]
+import utils/helpers
 
-let db = startDb("test.db")
-var
-    helpContent = initTable[string, HelpEntry]()
+var (db, helpContent, _) = initTest()
 initVariables(helpContent, db)
 quitShell(QuitSuccess, db)
