@@ -2,14 +2,11 @@ discard """
   outputsub: Test variable.
 """
 
-import std/[db_sqlite, strutils, tables]
-import ../../src/[constants, history, nish, variables]
+import std/[db_sqlite, strutils]
+import ../../src/[nish, variables]
+import utils/helpers
 
-let db = startDb("test.db")
-var
-    helpContent = initTable[string, HelpEntry]()
-    historyIndex = initHistory(db, helpContent)
-initVariables(helpContent, db)
+var (db, _, historyIndex) = initTest()
 if parseInt(db.getValue(sql"SELECT COUNT(*) FROM variables")) == 0:
     if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
         "TESTS", "/", 1, "test_variable", "Test variable.") == -1:
