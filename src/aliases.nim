@@ -26,6 +26,8 @@
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, output
 
+const aliasNameLength*: Positive = 50  # The maximum length of the shell's alias name
+
 type
   AliasName* = string # Used to store aliases names in tables and database.
   AliasesList* = OrderedTable[AliasName,
