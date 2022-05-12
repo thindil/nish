@@ -26,6 +26,8 @@
 import std/[parseopt, strutils, terminal]
 import constants, output
 
+const maxInputLength*: Positive = 4096 # The maximum length of the user input
+
 proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect].} =
   ## FUNCTION
