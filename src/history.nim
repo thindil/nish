@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
-import constants, options, output
+import constants, input, options, output
 
 type
   HistoryRange* = ExtendedNatural # Used to store the amount of commands in the shell's history

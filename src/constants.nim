@@ -25,9 +25,7 @@
 
 import std/tables
 
-const
-  maxInputLength*: Positive = 4096 # The maximum length of the user input
-  shellVersion*: string = "0.3.0"  # The current version of the project
+const shellVersion*: string = "0.3.0"  # The current version of the project
 
 type
   HelpEntry* = object
