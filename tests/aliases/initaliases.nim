@@ -6,8 +6,7 @@ import std/[db_sqlite, strutils, tables]
 import ../../src/[aliases, constants, nish]
 
 let db = startDb("test.db")
-if db == nil:
-  quit QuitFailure
+assert db != nil
 if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
     if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
         "tests", "/", 1, "ls -a", "Test alias.") == -1:
