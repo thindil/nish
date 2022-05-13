@@ -25,8 +25,6 @@
 
 import std/tables
 
-const shellVersion*: string = "0.3.0"  # The current version of the project
-
 type
   HelpEntry* = object
     # Used to store the shell's help entries
