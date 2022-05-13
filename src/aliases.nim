@@ -162,7 +162,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ## QuitFailure. Also, updated parameters historyIndex and aliases
   if arguments.len() < 8:
     historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
-        returnCode = QuitFailure)
+        returnCode = ResultCode(QuitFailure))
     return showError(message = "Enter the Id of the alias to delete.")
   let id: DatabaseId = try:
       parseInt(s = arguments[7 .. ^1])
@@ -172,7 +172,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     if db.execAffectedRows(query = sql(query = "DELETE FROM aliases WHERE id=?"),
         id) == 0:
       historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
-          returnCode = QuitFailure)
+          returnCode = ResultCode(QuitFailure))
       return showError(message = "The alias with the Id: " & $id &
         " doesn't exists.")
   except DbError as e:
@@ -183,7 +183,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   except OSError as e:
     return showError(message = "Can't delete alias, setting a new aliases not work. Reason: " & e.msg)
   showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
-  return QuitSuccess
+  return ResultCode(QuitSuccess)
 
 proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
@@ -208,7 +208,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   ## QuitFailure. Also, updated parameter historyIndex
   if arguments.len() < 6:
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
-        returnCode = QuitFailure)
+        returnCode = ResultCode(QuitFailure))
     return showError(message = "Enter the ID of the alias to show.")
   let id: DatabaseId = try:
       parseInt(s = arguments[5 .. ^1])
@@ -220,7 +220,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
       return showError(message = "Can't read alias data from database. Reason: " & e.msg)
   if row[0] == "":
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
-        returnCode = QuitFailure)
+        returnCode = ResultCode(QuitFailure))
     return showError(message = "The alias with the ID: " & $id &
       " doesn't exists.")
   historyIndex = updateHistory(commandToAdd = "alias show", db = db)
@@ -248,7 +248,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   showOutput(message = indent(s = alignLeft(s = "Command(s):", count = 13),
       count = spacesAmount), newLine = false, fgColor = fgMagenta)
   showOutput(message = row[1])
-  return QuitSuccess
+  return ResultCode(QuitSuccess)
 
 proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
@@ -372,7 +372,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   except OSError as e:
     return showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
-  return QuitSuccess
+  return ResultCode(QuitSuccess)
 
 proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
@@ -483,7 +483,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     return showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
   showOutput(message = "The alias  with Id: '" & $id & "' edited.",
       fgColor = fgGreen)
-  return QuitSuccess
+  return ResultCode(QuitSuccess)
 
 proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
@@ -534,7 +534,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     try:
       setCurrentDir(newDir = path)
       aliases.setAliases(directory = path, db = db)
-      return QuitSuccess
+      return ResultCode(QuitSuccess)
     except OSError as e:
       return showError("Can't change directory. Reason: " & e.msg)
 
@@ -586,10 +586,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     if command[0..2] == "cd ":
       if changeDirectory(newDirectory = command[3..^1], aliases = aliases,
           db = db) != QuitSuccess and conjCommands:
-        return QuitFailure
+        return ResultCode(QuitFailure)
       continue
     if execCmd(command) != QuitSuccess and conjCommands:
-      return QuitFailure
+      return ResultCode(QuitFailure)
     if not conjCommands:
       break
   return changeDirectory(newDirectory = currentDirectory, aliases = aliases, db = db)

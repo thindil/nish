@@ -124,7 +124,7 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
     showOutput(message = content)
     discard updateHistory(commandToAdd = "help", db = db)
 
-  result = QuitSuccess
+  result = ResultCode(QuitSuccess)
   if topic.len == 0:
     try:
       showHelpEntry(helpEntry = helpContent["help"],

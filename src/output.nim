@@ -97,7 +97,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       discard
 
 proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
-    previousCommand: string = ""; returnCode: ResultCode = QuitSuccess;
+    previousCommand: string = ""; returnCode: ResultCode = ResultCode(QuitSuccess);
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
     locks: 0, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
@@ -159,7 +159,7 @@ proc showError*(message: OutputMessage): ResultCode {.gcsafe, sideEffect,
       stdout.writeLine(x = message)
     except IOError:
       discard
-  return QuitFailure
+  return ResultCode(QuitFailure)
 
 proc showFormHeader*(message) {.gcsafe, locks: 0,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =

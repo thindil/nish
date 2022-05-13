@@ -192,7 +192,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   setOption(optionName = optionName, value = value, db = db)
   showOutput(message = "Value for option '" & optionName & "' was set to '" &
       value & "'", fgColor = fgGreen);
-  return QuitSuccess
+  return ResultCode(QuitSuccess)
 
 proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
@@ -236,7 +236,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     except DbError as e:
       return showError(message = "Can't reset option '" & optionName &
           "' to its default value. Reason: " & e.msg)
-  return QuitSuccess
+  return ResultCode(QuitSuccess)
 
 func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
     raises: [], tags: [].} =

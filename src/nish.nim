@@ -82,8 +82,8 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
   try:
     db.close()
   except DbError as e:
-    quit showError(message = "Can't close properly the shell database. Reason:" & e.msg)
-  quit returnCode
+    quit int(showError(message = "Can't close properly the shell database. Reason:" & e.msg))
+  quit int(returnCode)
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
@@ -160,7 +160,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         "help", "version"])
     historyIndex: HistoryRange
     oneTimeCommand, conjCommands, keyWasArrow, insertMode: bool = false
-    returnCode: ResultCode = QuitSuccess
+    returnCode: ResultCode = ResultCode(QuitSuccess)
     aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
     helpContent = initTable[string, HelpEntry]()
@@ -369,7 +369,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         discard
     userInput = initOptParser(cmdLine = inputString)
     # Reset the return code of the program
-    returnCode = QuitSuccess
+    returnCode = ResultCode(QuitSuccess)
     # Go to the first token
     userInput.next()
     # If it looks like an argument, it must be command name
@@ -510,7 +510,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         cursorPosition = inputString.len()
       else:
         # Execute external command
-        returnCode = execCmd(command = commandToExecute)
+        returnCode = ResultCode(execCmd(command = commandToExecute))
         historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
             returnCode = returnCode)
     # If there is more commands to execute check if the next commands should

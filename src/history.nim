@@ -106,7 +106,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   return historyLength(db = db)
 
 proc updateHistory*(commandToAdd: string; db;
-    returnCode: ResultCode = QuitSuccess): HistoryRange {.gcsafe, sideEffect,
+    returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe, sideEffect,
         raises: [],
     tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
@@ -244,7 +244,7 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
       except ValueError:
         discard showError(message = "Can't get setting for the amount of history commands to show.")
         return updateHistory(commandToAdd = "history show", db = db,
-            returnCode = QuitFailure)
+            returnCode = ResultCode(QuitFailure))
     spacesAmount: ColumnAmount = try:
           (terminalWidth() / 12).int
       except ValueError:
@@ -261,4 +261,4 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   except DbError as e:
     discard showError(message = "Can't get the last commands from the shell's history. Reason: " & e.msg)
     return updateHistory(commandToAdd = "history show", db = db,
-        returnCode = QuitFailure)
+        returnCode = ResultCode(QuitFailure))
