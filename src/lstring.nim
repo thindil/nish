@@ -28,9 +28,23 @@ type
     text: string
     capacity: Positive
 
-proc `text=`*(s: var LimitedString; value: string) =
+func `text=`*(s: var LimitedString; value: string) =
+  if value.len() > s.capacity:
+    raise newException(RangeDefect, "New value for string is longer than its capacity.")
   s.text = value
 
-proc initLimitedString*(capacity: Positive): LimitedString =
-  let newLimitedString = LimitedString(text: "", capacity: capacity)
+func `$`*(s: LimitedString): string =
+  result = s.text
+
+func len*(s: LimitedString): Natural =
+  result = s.text.len()
+
+func add*(s: var LimitedString; value: string) =
+  if value.len() + s.text.len() > s.capacity:
+    raise newException(RangeDefect, "New value for string will exceed its capacity.")
+  s.text = s.text & value
+
+func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
+  var newLimitedString = LimitedString(capacity: capacity)
+  newLimitedString.text = text
   return newLimitedString
