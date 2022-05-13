@@ -2,15 +2,10 @@ discard """
   exitcode: 0
 """
 
-import std/tables
-import ../../src/[constants, history, nish, options]
+import ../../src/[nish, options]
+import utils/helpers
 
-let db = startDb("test.db")
-assert db != nil
-var
-    historyIndex: int
-    helpContent = initTable[string, HelpEntry]()
-historyIndex = initHistory(db, helpContent)
+let db = initTest()
 assert setOptions("set historyLength 1000", db) == QuitSuccess
 assert getOption("historyLength", db) == "1000"
 quitShell(QuitSuccess, db)
