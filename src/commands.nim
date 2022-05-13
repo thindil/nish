@@ -60,7 +60,7 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
     setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDir())
     setCurrentDir(newDir = path)
     aliases.setAliases(directory = path, db = db)
-    return QuitSuccess
+    return ResultCode(QuitSuccess)
   except OSError as e:
     return showError("Can't change directory. Reason: " & e.msg)
 
