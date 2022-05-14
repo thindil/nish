@@ -2,6 +2,6 @@ discard """
   exitcode: 0
 """
 
-import ../../src/output
+import ../../src/[constants, output]
 
 assert showError("test error") == QuitFailure

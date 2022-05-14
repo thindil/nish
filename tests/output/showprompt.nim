@@ -2,6 +2,6 @@ discard """
   exitcode: 0
 """
 
-import ../../src/output
+import ../../src/[constants, output]
 
-showPrompt(true, "ls -a", QuitSuccess)
+showPrompt(true, "ls -a", ResultCode(QuitSuccess))
