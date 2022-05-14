@@ -11,4 +11,4 @@ var
     historyIndex: int
     helpContent = initTable[string, HelpEntry]()
 historyIndex = initHistory(db, helpContent)
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

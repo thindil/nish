@@ -11,4 +11,4 @@ var
     helpContent = initTable[string, HelpEntry]()
 initOptions(helpContent)
 assert helpContent.len() > 0
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)
