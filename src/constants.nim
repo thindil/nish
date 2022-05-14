@@ -39,5 +39,7 @@ type
   ExtendedNatural* = range[-1..high(int)] # Used to store various indexes
   BooleanInt* = range[0..1] # Used to store boolean values in database
 
-proc `==`*(x: ResultCode; y: int): bool {.borrow.}
-proc `$`*(x: ResultCode): string {.borrow.}
+
+# Subprograms related to ResultCode type
+proc `==`*(x: ResultCode; y: int): bool {.borrow.} # Used to compare ResultCode with int
+proc `$`*(x: ResultCode): string {.borrow.} # Get string representation of ResultCode
