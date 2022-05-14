@@ -2,13 +2,9 @@ discard """
   exitcode: 0
 """
 
-import std/[tables]
-import ../../src/[constants, history, nish]
+import ../../src/[constants, nish]
+import utils/helpers
 
-let db = startDb("test.db")
-assert db != nil
-var
-    helpContent = initTable[string, HelpEntry]()
-    amount = initHistory(db, helpContent)
+let (db, amount) = initTest()
 assert amount > -1
 quitShell(ResultCode(QuitSuccess), db)
