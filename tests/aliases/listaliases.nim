@@ -23,4 +23,4 @@ assert parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 2
 listAliases("list", historyIndex, myaliases, db)
 listAliases("list all", historyIndex, myaliases, db)
 listAliases("werwerew", historyIndex, myaliases, db)
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

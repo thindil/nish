@@ -12,4 +12,4 @@ var
 updateHelp(helpContent, db)
 assert showHelp("history show", helpContent, db) == QuitSuccess
 assert showHelp("srewfdsfs", helpContent, db) == QuitFailure
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

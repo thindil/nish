@@ -3,7 +3,7 @@ discard """
 """
 
 import std/[db_sqlite, os, strutils, tables]
-import ../../src/[aliases, nish]
+import ../../src/[aliases, constants, nish]
 
 let db = startDb("test.db")
 assert db != nil
@@ -18,4 +18,4 @@ var myaliases = initOrderedTable[string, int]()
 myaliases.setAliases(getCurrentDir(), db)
 assert parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 2
 assert myaliases.len() == 1
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

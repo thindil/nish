@@ -11,4 +11,4 @@ var
     helpContent = initTable[string, HelpEntry]()
     amount = initHistory(db, helpContent)
 assert amount > -1
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

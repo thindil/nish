@@ -3,7 +3,7 @@ discard """
 """
 
 import std/[db_sqlite, strutils, tables]
-import ../../src/[commands, nish]
+import ../../src/[constants, commands, nish]
 
 let db = startDb("test.db")
 assert db != nil
@@ -18,4 +18,4 @@ var
     myaliases = initOrderedTable[string, int]()
 assert changeDirectory("..", myaliases, db) == QuitSuccess
 assert changeDirectory("/adfwerewtr", myaliases, db) == QuitFailure
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

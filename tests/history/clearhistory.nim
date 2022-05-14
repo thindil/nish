@@ -15,4 +15,4 @@ if amount == 0:
     quit("Can't add test command to history.", QuitFailure)
 assert clearHistory(db) == 0
 assert historyLength(db) == 0
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

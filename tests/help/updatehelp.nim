@@ -11,4 +11,4 @@ var
     helpContent = initTable[string, HelpEntry]()
 updateHelp(helpContent, db)
 assert helpContent.len() == 1
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)
