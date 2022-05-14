@@ -20,4 +20,4 @@ var
 myaliases = initAliases(helpContent, db)
 assert myaliases.len() == 1
 assert helpContent.len() == 6
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

@@ -12,4 +12,4 @@ var
 updateHelp(helpContent, db)
 setMainHelp(helpContent)
 assert helpContent.len() == 2
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

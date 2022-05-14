@@ -3,7 +3,7 @@ discard """
 """
 
 import std/[db_sqlite, os, strutils, tables]
-import ../../src/[aliases, nish]
+import ../../src/[aliases, constants, nish]
 
 let db = startDb("test.db")
 assert db != nil
@@ -19,4 +19,4 @@ var
 myaliases.setAliases(getCurrentDir(), db)
 assert execAlias("", "tests", myaliases, db) == QuitSuccess
 assert execAlias("", "tests2", myaliases, db) == QuitFailure
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

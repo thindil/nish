@@ -25,4 +25,4 @@ if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, desc
     "tests2", "/", 0, "ls -a", "Test alias 2.") == -1:
   quit("Can't add test2 alias.", QuitFailure)
 assert parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 2
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)

@@ -2,6 +2,6 @@ discard """
   exitcode: 0
 """
 
-import ../../src/help
+import ../../src/[constants, help]
 
 assert showUnknownHelp("command", "subcommand", "helptype") == QuitFailure

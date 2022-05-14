@@ -14,4 +14,4 @@ if amount == 0:
   if db.tryInsertID(sql"INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))", "alias delete") == -1:
     quit("Can't add test command to history.", QuitFailure)
 assert showHistory(db) >= amount
-quitShell(QuitSuccess, db)
+quitShell(ResultCode(QuitSuccess), db)
