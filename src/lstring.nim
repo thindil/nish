@@ -51,3 +51,8 @@ func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
 
 func capacity*(s: LimitedString): Positive =
   return s.capacity
+
+func setString*(s: var LimitedString; text: string) =
+  if text.len() > s.capacity:
+    raise newException(RangeDefect, "New value for string will exceed its capacity.")
+  s.text = text
