@@ -2,13 +2,10 @@ discard """
   exitcode: 0
 """
 
-import std/tables
 import ../../src/[constants, help, nish]
+import utils/helpers
 
-let db = startDb("test.db")
-assert db != nil
-var
-    helpContent = initTable[string, HelpEntry]()
+var (db, helpContent) = initTest()
 updateHelp(helpContent, db)
 assert showHelp("history show", helpContent, db) == QuitSuccess
 assert showHelp("srewfdsfs", helpContent, db) == QuitFailure
