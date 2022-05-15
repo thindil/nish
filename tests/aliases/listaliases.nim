@@ -2,11 +2,11 @@ discard """
   outputsub: Test alias.
 """
 
-import std/[db_sqlite, os, strutils, tables]
-import ../../src/[aliases, constants, history, nish]
+import std/[db_sqlite, os, strutils]
+import ../../src/[aliases, constants, nish]
+import utils/helpers
 
-let db = startDb("test.db")
-assert db != nil
+var (db, _, historyIndex, myaliases) = initTest()
 if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
     if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
         "tests", "/", 1, "ls -a", "Test alias.") == -1:
@@ -14,10 +14,6 @@ if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
     if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
         "tests2", "/", 0, "ls -a", "Test alias 2.") == -1:
         quit("Can't add test2 alias.", QuitFailure)
-var
-    myaliases = initOrderedTable[string, int]()
-    helpContent = initTable[string, HelpEntry]()
-    historyIndex = initHistory(db, helpContent)
 myaliases.setAliases(getCurrentDir(), db)
 assert parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 2
 listAliases("list", historyIndex, myaliases, db)
