@@ -4,11 +4,9 @@ discard """
 
 import std/tables
 import ../../src/[constants, help, nish]
+import utils/helpers
 
-let db = startDb("test.db")
-assert db != nil
-var
-    helpContent = initTable[string, HelpEntry]()
+var (db, helpContent) = initTest()
 updateHelp(helpContent, db)
 setMainHelp(helpContent)
 assert helpContent.len() == 2
