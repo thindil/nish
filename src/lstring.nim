@@ -48,3 +48,6 @@ func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
   var newLimitedString = LimitedString(capacity: capacity)
   newLimitedString.text = text
   return newLimitedString
+
+func capacity*(s: LimitedString): Positive =
+  return s.capacity
