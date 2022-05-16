@@ -80,6 +80,9 @@ func strip*(s: LimitedString; leading: bool = true; trailing: bool = true;
 func `!=`*(x: LimitedString; y: string): bool =
   return x.text != y
 
+func `==`*(x: LimitedString; y: string): bool =
+  return x.text == y
+
 func `&`*(x: string; y: LimitedString): string =
   return x & y.text
 
