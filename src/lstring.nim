@@ -67,7 +67,7 @@ func setString*(s: var LimitedString; text: string) =
 func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
   let newValue: string = s.text[x]
   var newLimitedString = LimitedString(capacity: newValue.len())
-  newLimitedString.text = s.text[x]
+  newLimitedString.text = newValue
   return newLimitedString
 
 func strip*(s: LimitedString; leading: bool = true; trailing: bool = true;
