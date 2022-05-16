@@ -82,3 +82,6 @@ func `!=`*(x: LimitedString; y: string): bool =
 
 func `&`*(x: string; y: LimitedString): string =
   return x & y.text
+
+func find*(s: LimitedString; sub: char; start: Natural = 0; last = 0): int =
+  return s.text.find(sub = sub, start = start, last = last)
