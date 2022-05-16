@@ -39,10 +39,15 @@ func `$`*(s: LimitedString): string =
 func len*(s: LimitedString): Natural =
   result = s.text.len()
 
-func add*(s: var LimitedString; value: string) =
-  if value.len() + s.text.len() > s.capacity:
+func add*(s: var LimitedString; y: string) =
+  if y.len() + s.text.len() > s.capacity:
     raise newException(RangeDefect, "New value for string will exceed its capacity.")
-  s.text = s.text & value
+  s.text = s.text & y
+
+func add*(s: var LimitedString; y: char) =
+  if s.text.len() == s.capacity:
+    raise newException(RangeDefect, "New value for string will exceed its capacity.")
+  s.text = s.text & y
 
 func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
   var newLimitedString = LimitedString(capacity: capacity)
