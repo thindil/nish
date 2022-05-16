@@ -23,6 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import std/strutils
+
 type
   LimitedString* = object of RootObj
     text: string
@@ -66,4 +68,11 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
   let newValue: string = s.text[x]
   var newLimitedString = LimitedString(capacity: newValue.len())
   newLimitedString.text = s.text[x]
+  return newLimitedString
+
+func strip*(s: LimitedString; leading: bool = true; trailing: bool = true;
+    chars: set[char] = Whitespace): LimitedString =
+  let newValue: string = s.text.strip(leading = leading, trailing = trailing, chars = chars)
+  var newLimitedString = LimitedString(capacity: newValue.len())
+  newLimitedString.text = newValue
   return newLimitedString
