@@ -56,3 +56,9 @@ func setString*(s: var LimitedString; text: string) =
   if text.len() > s.capacity:
     raise newException(RangeDefect, "New value for string will exceed its capacity.")
   s.text = text
+
+func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
+  let newValue: string = s.text[x]
+  var newLimitedString = LimitedString(capacity: newValue.len())
+  newLimitedString.text = s.text[x]
+  return newLimitedString
