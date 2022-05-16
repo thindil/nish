@@ -76,3 +76,9 @@ func strip*(s: LimitedString; leading: bool = true; trailing: bool = true;
   var newLimitedString = LimitedString(capacity: newValue.len())
   newLimitedString.text = newValue
   return newLimitedString
+
+func `!=`*(x: LimitedString; y: string): bool =
+  return x.text != y
+
+func `&`*(x: string; y: LimitedString): string =
+  return x & y.text
