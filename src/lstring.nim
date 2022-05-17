@@ -100,3 +100,6 @@ func rfind*(s: LimitedString; sub: char; start: Natural = 0; last = -1): int =
 
 func insert*(x: var LimitedString; item: string; i: Natural = 0) =
   x.text.insert(item = item, i = i)
+
+func startsWith*(s: LimitedString; prefix: string): bool =
+  return s.text.startsWith(prefix = prefix)
