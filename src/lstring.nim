@@ -91,3 +91,6 @@ func `&`*(x: LimitedString; y: string): string =
 
 func find*(s: LimitedString; sub: char; start: Natural = 0; last = 0): int =
   return s.text.find(sub = sub, start = start, last = last)
+
+func rfind*(s: LimitedString; sub: char; start: Natural = 0; last = -1): int =
+  return s.text.rfind(sub = sub, start = start, last = last)
