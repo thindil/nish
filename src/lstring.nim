@@ -97,3 +97,6 @@ func find*(s: LimitedString; sub: char; start: Natural = 0; last = 0): int =
 
 func rfind*(s: LimitedString; sub: char; start: Natural = 0; last = -1): int =
   return s.text.rfind(sub = sub, start = start, last = last)
+
+func insert*(x: var LimitedString; item: string; i: Natural = 0) =
+  x.text.insert(item = item, i = i)
