@@ -65,12 +65,14 @@ func setString*(s: var LimitedString; text: string) =
   s.text = text
 
 func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
-  let newValue: string = s.text[x]
-  var newLimitedString = LimitedString(capacity: newValue.len())
+  let
+    newValue: string = s.text[x]
+    length: Positive = (if newValue.len() == 0: 1 else: newValue.len())
+  var newLimitedString = LimitedString(capacity: length)
   newLimitedString.text = newValue
   return newLimitedString
 
-func `[]=`*(s: var LimitedString; i: int, val: char) =
+func `[]=`*(s: var LimitedString; i: int; val: char) =
   s.text[i] = val
 
 func `!=`*(x: LimitedString; y: string): bool =
