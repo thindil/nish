@@ -73,13 +73,6 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
 func `[]=`*(s: var LimitedString; i: int, val: char) =
   s.text[i] = val
 
-func strip*(s: LimitedString; leading: bool = true; trailing: bool = true;
-    chars: set[char] = Whitespace): LimitedString =
-  let newValue: string = s.text.strip(leading = leading, trailing = trailing, chars = chars)
-  var newLimitedString = LimitedString(capacity: newValue.len())
-  newLimitedString.text = newValue
-  return newLimitedString
-
 func `!=`*(x: LimitedString; y: string): bool =
   return x.text != y
 
