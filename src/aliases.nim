@@ -24,12 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import constants, history, input, output
+import constants, history, input, lstring, output
 
 const aliasNameLength*: Positive = 50  # The maximum length of the shell's alias name
 
 type
-  AliasName* = string # Used to store aliases names in tables and database.
+  AliasName* = LimitedString # Used to store aliases names in tables and database.
   AliasesList* = OrderedTable[AliasName,
       int] # Used to store the available aliases in the selected directory
 
@@ -54,7 +54,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
   ## RETURNS
   ##
   ## The parameter aliases with the new list of available aliases
-  aliases.clear()
+  aliases = initOrderedTable[AliasName, int]()
   var
     dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
     remainingDirectory: DirectoryPath = parentDir(path = directory)
@@ -68,8 +68,9 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
   # Set the aliases
   try:
     for dbResult in db.fastRows(query = sql(query = dbQuery)):
+      let index = initLimitedString(capacity = dbResult[1].len, text = dbResult[1])
       try:
-        aliases[dbResult[1]] = parseInt(s = dbResult[0])
+        aliases[index] = parseInt(s = dbResult[0])
       except ValueError:
         discard showError("Can't set alias, invalid Id: " & dbResult[0])
   except DbError as e:
@@ -165,7 +166,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
         returnCode = ResultCode(QuitFailure))
     return showError(message = "Enter the Id of the alias to delete.")
   let id: DatabaseId = try:
-      parseInt(s = arguments[7 .. ^1])
+      parseInt(s = $arguments[7 .. ^1])
     except ValueError:
       return showError(message = "The Id of the alias must be a positive number.")
   try:
@@ -211,7 +212,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
         returnCode = ResultCode(QuitFailure))
     return showError(message = "Enter the ID of the alias to show.")
   let id: DatabaseId = try:
-      parseInt(s = arguments[5 .. ^1])
+      parseInt(s = $arguments[5 .. ^1])
     except ValueError:
       return showError(message = "The Id of the alias must be a positive number.")
   let row: Row = try:
@@ -293,13 +294,13 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showFormHeader(message = "(1/5) Name")
   showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
   showOutput(message = "Name: ", newLine = false)
-  var name: AliasName = ""
+  var name: AliasName = initLimitedString(capacity = aliasNameLength)
   while name.len() == 0:
     name = readInput(maxLength = aliasNameLength)
     if name.len() == 0:
       discard showError(message = "Please enter a name for the alias.")
-    elif not name.validIdentifier:
-      name = ""
+    elif not validIdentifier(s = $name):
+      name.setString("")
       discard showError(message = "Please enter a valid name for the alias.")
     if name.len() == 0:
       showOutput(message = "Name: ", newLine = false)
@@ -316,7 +317,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showOutput(message = "Path: ", newLine = false)
   var path: DirectoryPath = ""
   while path.len() == 0:
-    path = readInput()
+    path = $readInput()
     if path.len() == 0:
       discard showError(message = "Please enter a path for the alias.")
     elif not dirExists(dir = path) and path != "exit":
@@ -343,7 +344,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showFormHeader(message = "(5/5) Commands")
   showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
   showOutput(message = "Command(s): ", newLine = false)
-  var commands: UserInput = ""
+  var commands: UserInput = initLimitedString(capacity = maxInputLength)
   while commands.len() == 0:
     commands = readInput()
     if commands.len() == 0:
@@ -397,7 +398,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if arguments.len() < 6:
     return showError(message = "Enter the ID of the alias to edit.")
   let id: DatabaseId = try:
-      parseInt(s = arguments[5 .. ^1])
+      parseInt(s = $arguments[5 .. ^1])
     except ValueError:
       return showError(message = "The Id of the alias must be a positive number.")
   let row: Row = try:
@@ -412,13 +413,13 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   showOutput(message = "'. Can contains only letters, numbers and underscores.")
   showOutput(message = "Name: ", newLine = false)
   var name: AliasName = readInput(maxLength = aliasNameLength)
-  while name.len() > 0 and not name.validIdentifier:
+  while name.len() > 0 and not validIdentifier(s = $name):
     discard showError(message = "Please enter a valid name for the alias.")
     name = readInput(maxLength = aliasNameLength)
   if name == "exit":
     return showError(message = "Editing the alias cancelled.")
   elif name == "":
-    name = row[0]
+    name.setString(text = row[0])
   showFormHeader(message = "(2/5) Description")
   showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
       newLine = false)
@@ -429,16 +430,16 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if description == "exit":
     return showError(message = "Editing the alias cancelled.")
   elif description == "":
-    description = row[3]
+    description.setString(text = row[3])
   showFormHeader(message = "(3/5) Working directory")
   showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
       newLine = false)
   showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
   showOutput(message = "'. Must be a path to the existing directory.")
-  var path: DirectoryPath = readInput()
+  var path: DirectoryPath = $readInput()
   while path.len() > 0 and (path != "exit" and not dirExists(dir = path)):
     discard showError(message = "Please enter a path to the existing directory")
-    path = readInput()
+    path = $readInput()
   if path == "exit":
     return showError(message = "Editing the alias cancelled.")
   elif path == "":
@@ -467,7 +468,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if commands == "exit":
     return showError(message = "Editing the alias cancelled.")
   elif commands == "":
-    commands = row[2]
+    commands.setString(text = row[2])
   # Save the alias to the database
   try:
     if db.execAffectedRows(query = sql(query = "UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?"),
@@ -545,10 +546,11 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         return showError(message = "Can't get the current directory name. Reason: " &
             getCurrentExceptionMsg())
     commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
-        cmdline = arguments).remainingArgs() else: @[])
+        cmdline = $arguments).remainingArgs() else: @[])
+    aliasIndex: LimitedString = initLimitedString(capacity = aliasId.len, text = aliasId)
   var inputString: string = try:
       db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
-          aliases[aliasId])
+          aliases[aliasIndex])
     except KeyError, DbError:
       return showError(message = "Can't get commands for alias. Reason: " &
           getCurrentExceptionMsg())
@@ -584,11 +586,11 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     # Threat cd command specially, it should just change the current
     # directory for the alias
     if command[0..2] == "cd ":
-      if changeDirectory(newDirectory = command[3..^1], aliases = aliases,
+      if changeDirectory(newDirectory = $command[3..^1], aliases = aliases,
           db = db) != QuitSuccess and conjCommands:
         return ResultCode(QuitFailure)
       continue
-    if execCmd(command) != QuitSuccess and conjCommands:
+    if execCmd($command) != QuitSuccess and conjCommands:
       return ResultCode(QuitFailure)
     if not conjCommands:
       break
