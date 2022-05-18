@@ -52,6 +52,17 @@ func `text=`*(s: var LimitedString; value: string) =
   s.text = value
 
 func `$`*(s: LimitedString): string =
+  ## FUNCTION
+  ##
+  ## Convert LimitedString to string
+  ##
+  ## PARAMETERS
+  ##
+  ## * s - The LimitedString which will be converted
+  ##
+  ## RETURNS
+  ##
+  ## The converted LimitedString, its value of field text
   result = s.text
 
 func len*(s: LimitedString): Natural =
