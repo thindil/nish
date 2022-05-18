@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/tables
+import lstring
 
 type
   HelpEntry* = object
@@ -32,7 +33,7 @@ type
     content*: string # The content of the selected entry
   HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
   DirectoryPath* = string # Used to store paths to directories
-  UserInput* = string # Used to store text entered by the user
+  UserInput* = LimitedString # Used to store text entered by the user
   ResultCode* = distinct Natural # Used to store result code from commands entered by the user
   ColumnAmount* = Natural # Used to store length or amount of terminal's characters columns
   DatabaseId* = Natural # Used to store ids from or to the shell's database
