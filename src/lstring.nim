@@ -66,6 +66,17 @@ func `$`*(s: LimitedString): string =
   result = s.text
 
 func len*(s: LimitedString): Natural =
+  ## FUNCTION
+  ##
+  ## Get the length of the selected LimitedString
+  ##
+  ## PARAMETERS
+  ##
+  ## * s - the LimitedString which length will be get
+  ##
+  ## RETURNS
+  ##
+  ## The length of the LimitedString, the length of its field text
   result = s.text.len()
 
 func add*(s: var LimitedString; y: string) =
