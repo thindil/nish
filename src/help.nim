@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
-import constants, history, options, output
+import constants, history, input, lstring, options, output
 
 using
   db: DbConn # Connection to the shell's database
@@ -47,8 +47,10 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   ##
   ## The argument helpContent with updated help for command 'history show'.
   helpContent["history show"] = HelpEntry(usage: "history show",
-      content: "Show the last " & getOption(optionName = "historyAmount",
-          db = db) & " commands from the shell's history.")
+      content: "Show the last " & getOption(optionName = initLimitedString(
+          capacity = 13, text = "historyAmount"),
+
+db = db) & " commands from the shell's history.")
 
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
@@ -133,9 +135,11 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
       return showError(message = "Can't show list of available help topics. Reason: " & e.msg)
   else:
     let
-      tokens: seq[string] = split(s = topic)
-      args: string = join(a = tokens[1 .. ^1], " ")
-      command: string = tokens[0]
+      tokens: seq[string] = split(s = $topic)
+      args: UserInput = initLimitedString(capacity = maxInputLength,
+          text = join(a = tokens[1 .. ^1], " "))
+      command: UserInput = initLimitedString(capacity = maxInputLength,
+          text = tokens[0])
       key: string = command & (if args.len() > 0: " " & args else: "")
     if helpContent.hasKey(key = key):
       try:
@@ -143,16 +147,17 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
       except KeyError as e:
         return showError(message = "Can't show the help topic for '" & key &
             "'. Reason: " & e.msg)
-    elif helpContent.hasKey(key = command):
-      if key == command:
+    elif helpContent.hasKey(key = $command):
+      if command == key:
         try:
-          showHelpEntry(helpEntry = helpContent[command])
+          showHelpEntry(helpEntry = helpContent[$command])
         except KeyError as e:
           return showError(message = "Cam't show the help topic for '" &
               command & "'. Reason: " & e.msg)
       else:
         result = showUnknownHelp(subCommand = args, command = command,
-            helpType = (if command == "alias": "aliases" else: command))
+            helpType = initLimitedString(capacity = maxInputLength, text = (
+                if command == "alias": "aliases" else: $command)))
         discard updateHistory(commandToAdd = "help " & key, db = db,
             returnCode = result)
     else:
