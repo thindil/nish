@@ -27,10 +27,26 @@ import std/strutils
 
 type
   LimitedString* = object of RootObj
-    text: string
-    capacity: Positive
+    ## Store all data related to the string
+    text: string ## The text of the LimitedString
+    capacity: Positive ## The maximum capacity of the LimitedString
 
 func `text=`*(s: var LimitedString; value: string) =
+  ## FUNCTION
+  ##
+  ## The setter for the text of LimitedString. Check if the new value isn't
+  ## bigger than the capacity of the string and if not, assing the new value
+  ## to it. Raise RangeDefect exception if the new value is longer than allowed
+  ## capacity of the LimitedString.
+  ##
+  ## PARAMETERS
+  ##
+  ## * s     - The LimitedString to which the new value of text will be assigned
+  ## * value - The string which will be assigned as the new value of text
+  ##
+  ## RETURNS
+  ##
+  ## Updated LimitedString with the new value of the text field.
   if value.len() > s.capacity:
     raise newException(RangeDefect, "New value for string is longer than its capacity.")
   s.text = value
