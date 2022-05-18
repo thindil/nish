@@ -80,6 +80,21 @@ func len*(s: LimitedString): Natural =
   result = s.text.len()
 
 func add*(s: var LimitedString; y: string) =
+  ## FUNCTION
+  ##
+  ## Add a string to the selected LimitedString. Check if the new value isn't
+  ## bigger than the capacity of the LimitedString and if not, add the string
+  ## to the field text of LimitedString. Raise RangeDefect exception if the
+  ## new value of LimitedString will be longer than allowed capacity.
+  ##
+  ## PARAMETERS
+  ##
+  ## * s - The LimitedString to which the new string will be added
+  ## * y - The string to add
+  ##
+  ## RETURNS
+  ##
+  ## Updated parameter s
   if y.len() + s.text.len() > s.capacity:
     raise newException(RangeDefect, "New value for string will exceed its capacity.")
   s.text = s.text & y
