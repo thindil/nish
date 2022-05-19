@@ -100,6 +100,21 @@ func add*(s: var LimitedString; y: string) =
   s.text = s.text & y
 
 func add*(s: var LimitedString; y: char) =
+  ## FUNCTION
+  ##
+  ## Add a character to the selected LimitedString. Check if the new value
+  ## isn't bigger than the capacity of the LimitedString and if not, add the
+  ## character to the field text of LimitedString. Raise RangeDefect exception
+  ## if the new value of LimitedString will be longer than allowed capacity.
+  ##
+  ## PARAMETERS
+  ##
+  ## * s - The LimitedString to which the new string will be added
+  ## * y - The character to add
+  ##
+  ## RETURNS
+  ##
+  ## Updated parameter s
   if s.text.len() == s.capacity:
     raise newException(RangeDefect, "New value for string will exceed its capacity.")
   s.text = s.text & y
