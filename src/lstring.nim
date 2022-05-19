@@ -139,6 +139,17 @@ func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
   return newLimitedString
 
 func capacity*(s: LimitedString): Positive =
+  ## FUNCTION
+  ##
+  ## Get the maximum allowed capacity of the selected LimitedString
+  ##
+  ## PARAMETERS
+  ##
+  ## * s - The LimitedString which the capacity will be get
+  ##
+  ## RETURNS
+  ##
+  ## The maximum allowed capacity of the selected LimitedString
   return s.capacity
 
 func setString*(s: var LimitedString; text: string) =
