@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[parseopt, strutils, terminal]
-import constants, output
+import constants, lstring, output
 
 const maxInputLength*: Positive = 4096 # The maximum length of the user input
 
@@ -60,17 +60,17 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
         except IOError, ValueError:
           discard showError(message = "Can't delete character. Reason: " &
               getCurrentExceptionMsg())
-          return "exit"
+          return initLimitedString(4, "exit")
     # Special key pressed (all starts like Escape key), check which one
     elif inputChar.ord() == 27:
       try:
         inputChar = getch()
       except IOError as e:
         discard showError(message = "Can't get the next character after Escape. Reason: " & e.msg)
-        return "exit"
+        return initLimitedString(4, "exit")
       # Escape key pressed, return "exit" as input value
       if inputChar.ord() == 27:
-        return "exit"
+        return initLimitedString(4, "exit")
       else:
         continue
     # Visible character, add it to the user input string and show it in the
@@ -82,12 +82,12 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
       inputChar = getch()
     except IOError as e:
       discard showError(message = "Can't get the next character. Reason: " & e.msg)
-      return "exit"
+      return initLimitedString(4, "exit")
   try:
     stdout.writeLine(x = "")
   except IOError as e:
     discard showError(message = "Can't add a new line. Reason: " & e.msg)
-    return "exit"
+    return initLimitedString(4, "exit")
 
 func getArguments*(userInput: var OptParser;
     conjCommands: var bool): UserInput {.gcsafe, raises: [], tags: [].} =
@@ -105,6 +105,7 @@ func getArguments*(userInput: var OptParser;
   ## RETURNS
   ##
   ## Properly converted user input and parameter conjCommands
+  result = initLimitedString(capacity = maxInputLength)
   userInput.next()
   conjCommands = false
   var key: string
@@ -136,4 +137,4 @@ func getArguments*(userInput: var OptParser;
       discard
     result.add(y = " ")
     userInput.next()
-  result = strip(s = result)
+  result.setString(text = strip(s = $result))
