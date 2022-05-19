@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
-import constants, input, options, output
+import constants, input, lstring, options, output
 
 type
   HistoryRange* = ExtendedNatural # Used to store the amount of commands in the shell's history
@@ -74,17 +74,25 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   ## history's table in the shell's database
 
   # Set the history related options
-  if getOption(optionName = "historyLength", db = db) == "":
-    setOption(optionName = "historyLength", value = "500",
-        description = "Max amount of entries in shell commands history.",
+  var
+    optionName: LimitedString = initLimitedString(capacity = 20,
+        text = "historyLength")
+  if getOption(optionName = optionName, db = db) == "":
+    setOption(optionName = optionName, value = initLimitedString(capacity = 3,
+        text = "500"), description = initLimitedString(capacity = 48,
+            text = "Max amount of entries in shell commands history."),
         valueType = ValueType.integer, db = db)
-  if getOption(optionName = "historyAmount", db = db) == "":
-    setOption(optionName = "historyAmount", value = "20",
-        description = "Amount of entries in shell commands history to show with history show command.",
+  optionName.setString(text = "historyAmount")
+  if getOption(optionName = optionName, db = db) == "":
+    setOption(optionName = optionName, value = initLimitedString(capacity = 2,
+        text = "20"), description = initLimitedString(capacity = 78,
+            text = "Amount of entries in shell commands history to show with history show command."),
          valueType = ValueType.integer, db = db)
-  if getOption(optionName = "historySaveInvalid", db = db) == "":
-    setOption(optionName = "historySaveInvalid", value = "false",
-        description = "Save in shell command history also invalid commands.",
+  optionName.setString(text = "historySaveInvalid")
+  if getOption(optionName = optionName, db = db) == "":
+    setOption(optionName = optionName, value = initLimitedString(capacity = 5,
+        text = "false"), description = initLimitedString(capacity = 52,
+            text = "Save in shell command history also invalid commands."),
         valueType = ValueType.boolean, db = db)
   # Create history table if not exists
   try:
@@ -106,8 +114,8 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   return historyLength(db = db)
 
 proc updateHistory*(commandToAdd: string; db;
-    returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe, sideEffect,
-        raises: [],
+    returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
+        sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -153,8 +161,9 @@ proc updateHistory*(commandToAdd: string; db;
     return
 
 func getHistory*(historyIndex: HistoryRange; db;
-    searchFor: UserInput = ""): string {.gcsafe, locks: 0, raises: [], tags: [
-        ReadDbEffect].} =
+    searchFor: UserInput = initLimitedString(
+        capacity = maxInputLength)): string {.gcsafe, locks: 0, raises: [],
+        tags: [ReadDbEffect].} =
   ## FUNCTION
   ##
   ## Get the command with the selected index from the shell history
@@ -176,7 +185,7 @@ func getHistory*(historyIndex: HistoryRange; db;
       result = db.getValue(query = sql(query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
           searchFor & "%");
       if result.len() == 0:
-        result = searchFor
+        result = $searchFor
   except DbError as e:
     result = "Can't get the selected command from the shell's history. Reason: " & e.msg
 
@@ -240,7 +249,8 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## The new length of the shell's commands' history.
   let
     amount: HistoryRange = try:
-        parseInt(s = getOption(optionName = "historyAmount", db = db))
+        parseInt(s = $getOption(optionName = initLimitedString(capacity = 13,
+            text = "historyAmount"), db = db))
       except ValueError:
         discard showError(message = "Can't get setting for the amount of history commands to show.")
         return updateHistory(commandToAdd = "history show", db = db,
