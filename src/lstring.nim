@@ -123,6 +123,8 @@ func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
   ## FUNCTION
   ##
   ## Initialize the new LimitedString with the selected capacity and content.
+  ## Raises RangeDefect if the selected text is longer than the selected
+  ## capacity.
   ##
   ## PARAMETERS
   ##
@@ -132,8 +134,7 @@ func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
   ##
   ## RETURNS
   ##
-  ## The new LimitedString or RangeDefect exception if the selected text is
-  ## longer than the selected capacity of the LimitedString.
+  ## The new LimitedString with the selected capacity and content
   var newLimitedString = LimitedString(capacity: capacity)
   newLimitedString.text = text
   return newLimitedString
@@ -153,6 +154,19 @@ func capacity*(s: LimitedString): Positive =
   return s.capacity
 
 func setString*(s: var LimitedString; text: string) =
+  ## FUNCTION
+  ##
+  ## Set the new value for the selected LimitedString. Raised RangeDefect if
+  ## the new text is longer than the maximum capacity of the LimitedString
+  ##
+  ## PARAMETERS
+  ##
+  ## * s    - The LimitedString which content will be replaced
+  ## * text - The new value of the LimitedString content
+  ##
+  ## RETURNS
+  ##
+  ## The updated LimitedString
   if text.len() > s.capacity:
     raise newException(RangeDefect, "New value for string will exceed its capacity.")
   s.text = text
