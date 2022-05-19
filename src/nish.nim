@@ -24,7 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases, commands, completion, constants, help, history, input, options, output,
+import aliases, commands, completion, constants, help, history, input, lstring,
+    options, output,
   variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
@@ -155,7 +156,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   var
     userInput: OptParser
     commandName: string = ""
-    inputString: UserInput = ""
+    inputString: UserInput = initLimitedString(capacity = maxInputLength)
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: HistoryRange
@@ -181,7 +182,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       of "c":
         oneTimeCommand = true
         options.next()
-        inputString = options.key
+        inputString.setString(text = options.key)
       of "h", "help":
         showCommandLineHelp()
       of "v", "version":
@@ -225,30 +226,32 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     try:
       stdout.eraseLine()
       let
-        input: UserInput = inputString.strip(trailing = false)
+        input: UserInput = initLimitedString(capacity = maxInputLength,
+            text = strip(s = $inputString, trailing = false))
         spaceIndex: ExtendedNatural = input.find(sub = ' ')
         command: UserInput = (if spaceIndex < 1: input else: input[
             0..spaceIndex - 1])
-        commandArguments: UserInput = (if spaceIndex < 1: "" else: input[
-            spaceIndex..^1])
+        commandArguments: UserInput = initLimitedString(
+            capacity = maxInputLength, text = (if spaceIndex <
+            1: "" else: $input[spaceIndex..^1]))
       var color: ForegroundColor = try:
-          if findExe(exe = command).len() > 0:
+          if findExe(exe = $command).len() > 0:
             fgGreen
           else:
             fgRed
         except OSError:
           fgGreen
       if color == fgRed:
-        if command in ["exit", "cd", "help", "history", "variable", "options",
+        if $command in ["exit", "cd", "help", "history", "variable", "options",
             "set", "unset"]:
           color = fgGreen
         elif aliases.contains(key = command):
           color = fgGreen
-      showOutput(message = command, newLine = false,
+      showOutput(message = $command, newLine = false,
           promptEnabled = not oneTimeCommand,
           previousCommand = commandName, returnCode = returnCode,
           fgColor = color)
-      showOutput(message = commandArguments, newLine = false,
+      showOutput(message = $commandArguments, newLine = false,
           promptEnabled = false,
           previousCommand = commandName, returnCode = returnCode)
     except ValueError, IOError:
@@ -272,7 +275,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         if inputChar.ord() == 127:
           keyWasArrow = false
           if inputString.len() > 0:
-            inputString = inputString[0..^2]
+            inputString.setString(text = $inputString[0..^2])
             cursorPosition.dec()
             try:
               stdout.cursorBackward()
@@ -284,14 +287,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         elif inputChar.ord() == 9:
           let
             spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-            prefix: string = (if spaceIndex == -1: "" else: inputString[
+            prefix: string = (if spaceIndex == -1: "" else: $inputString[
                 spaceIndex + 1..^1])
             completion: string = getCompletion(prefix = prefix)
           if completion.len() > 0:
             try:
               stdout.cursorBackward(count = inputString.len() - spaceIndex - 1)
               stdout.write(s = completion)
-              inputString = inputString[0..spaceIndex] & completion
+              inputString.setString(text = inputString[0..spaceIndex] & completion)
               cursorPosition = inputString.len()
             except ValueError, IOError:
               discard
@@ -302,8 +305,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               # Arrow up key pressed
               inputChar = getch()
               if inputChar == 'A' and historyIndex > 0:
-                inputString = getHistory(historyIndex = historyIndex, db = db,
-                    searchFor = (if keyWasArrow: "" else: inputString))
+                inputString.setString(text = getHistory(
+                    historyIndex = historyIndex, db = db,
+                    searchFor = initLimitedString(capacity = maxInputLength,
+                        text = (if keyWasArrow: "" else: $inputString))))
                 cursorPosition = inputString.len()
                 refreshInput()
                 historyIndex.dec()
@@ -315,8 +320,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 let currentHistoryLength: HistoryRange = historyLength(db = db)
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
-                inputString = getHistory(historyIndex = historyIndex, db = db,
-                    searchFor = (if keyWasArrow: "" else: inputString))
+                inputString.setString(text = getHistory(
+                    historyIndex = historyIndex, db = db,
+                    searchFor = initLimitedString(capacity = maxInputLength,
+                        text = (if keyWasArrow: "" else: $inputString))))
                 cursorPosition = inputString.len()
                 refreshInput()
               # Arrow left key pressed
@@ -367,7 +374,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         stdout.writeLine(x = "")
       except IOError:
         discard
-    userInput = initOptParser(cmdLine = inputString)
+    userInput = initOptParser(cmdLine = $inputString)
     # Reset the return code of the program
     returnCode = ResultCode(QuitSuccess)
     # Go to the first token
@@ -379,9 +386,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     if commandName == "":
       continue
     # Set the command arguments
-    let arguments: UserInput = getArguments(userInput = userInput,
-        conjCommands = conjCommands)
-    inputString = join(a = userInput.remainingArgs(), sep = " ");
+    let arguments: UserInput = initLimitedString(capacity = maxInputLength,
+        text = $getArguments(userInput = userInput,
+            conjCommands = conjCommands))
+    inputString.setString(text = join(a = userInput.remainingArgs(), sep = " "))
     # Parse commands
     case commandName
     # Quit from shell
@@ -393,7 +401,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       returnCode = showHelp(topic = arguments, helpContent = helpContent, db = db)
     # Change current directory
     of "cd":
-      returnCode = cdCommand(newDirectory = arguments, aliases = aliases, db = db)
+      returnCode = cdCommand(newDirectory = $arguments, aliases = aliases, db = db)
       historyIndex = historyLength(db = db)
     # Set the environment variable
     of "set":
@@ -424,7 +432,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             historyIndex = historyIndex, db = db)
       else:
         returnCode = showUnknownHelp(subCommand = arguments,
-            command = "variable", helpType = "variables")
+            command = initLimitedString(capacity = 8, text = "variable"),
+                helpType = initLimitedString(capacity = 9, text = "variables"))
         historyIndex = updateHistory(commandToAdd = "variable " & arguments,
             db = db, returnCode = returnCode)
     # Various commands related to the shell's commands' history
@@ -440,7 +449,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         historyIndex = showHistory(db = db)
       else:
         returnCode = showUnknownHelp(subCommand = arguments,
-            command = "history", helpType = "history")
+            command = initLimitedString(capacity = 7, text = "history"),
+                helpType = initLimitedString(capacity = 7, text = "history"))
         historyIndex = updateHistory(commandToAdd = "history " & arguments,
             db = db, returnCode = returnCode)
     # Various commands related to the shell's options
@@ -465,7 +475,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         updateHelp(helpContent = helpContent, db = db)
       else:
         returnCode = showUnknownHelp(subCommand = arguments,
-            command = "options", helpType = "options")
+            command = initLimitedString(capacity = 7, text = "options"),
+                helpType = initLimitedString(capacity = 7, text = "options"))
         historyIndex = updateHistory(commandToAdd = "options " & arguments,
             db = db, returnCode = returnCode)
     # Various commands related to the aliases (like show list of available
@@ -495,14 +506,15 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             historyIndex = historyIndex, aliases = aliases, db = db)
       else:
         returnCode = showUnknownHelp(subCommand = arguments,
-            command = "alias", helpType = "aliases")
+            command = initLimitedString(capacity = 5, text = "alias"),
+                helpType = initLimitedString(capacity = 7, text = "aliases"))
         historyIndex = updateHistory(commandToAdd = "alias " & arguments,
             db = db, returnCode = returnCode)
     # Execute external command or alias
     else:
       let commandToExecute: string = commandName & " " & arguments
       # Check if command is an alias, if yes, execute it
-      if commandName in aliases:
+      if initLimitedString(capacity = maxInputLength, text = commandName) in aliases:
         returnCode = execAlias(arguments = arguments, aliasId = commandName,
             aliases = aliases, db = db)
         historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
@@ -519,7 +531,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     # the input, don't execute more commands.
     if inputString.len() > 0 and ((returnCode != QuitSuccess and
         conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
-      inputString = ""
+      inputString = initLimitedString(capacity = maxInputLength)
     # Run only one command, quit from the shell
     if oneTimeCommand and inputString.len() == 0:
       quitShell(returnCode = returnCode, db = db)
