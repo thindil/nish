@@ -120,6 +120,20 @@ func add*(s: var LimitedString; y: char) =
   s.text = s.text & y
 
 func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
+  ## FUNCTION
+  ##
+  ## Initialize the new LimitedString with the selected capacity and content.
+  ##
+  ## PARAMETERS
+  ##
+  ## * capacity - The maximum length of the newly created LimitedString
+  ## * text     - The content of the newly created LimitedString. Can be empty.
+  ##              The default value is empty.
+  ##
+  ## RETURNS
+  ##
+  ## The new LimitedString or RangeDefect exception if the selected text is
+  ## longer than the selected capacity of the LimitedString.
   var newLimitedString = LimitedString(capacity: capacity)
   newLimitedString.text = text
   return newLimitedString
