@@ -24,11 +24,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
-import constants, output
+import constants, input, lstring, output
 
 type
-  OptionName* = string # Used to store options names in the database.
-  OptionValue* = string # Used to set or get the option's values
+  OptionName* = LimitedString # Used to store options names in the database.
+  OptionValue* = LimitedString # Used to set or get the option's values
   ValueType* = enum # Used to set the type of option's value
     integer, float, boolean, none
 
@@ -37,7 +37,7 @@ using
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
-proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.gcsafe,
+proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(capacity = maxInputLength)): OptionValue {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
@@ -57,7 +57,8 @@ proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.g
   ## The value of the selected option or empty string if there is no that
   ## option in the database.
   try:
-    result = db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"), optionName)
+    let value = db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"), optionName)
+    result = initLimitedString(capacity = value.len, text = value)
   except DbError as e:
     discard showError(message = "Can't get value for option '" & optionName &
         "' from database. Reason: " & e.msg)
@@ -65,8 +66,8 @@ proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.g
   if result == "":
     result = defaultValue
 
-proc setOption*(optionName; value: OptionValue = "";
-    description: UserInput = ""; valuetype: ValueType = none; db) {.gcsafe,
+proc setOption*(optionName; value: OptionValue = initLimitedString(capacity = maxInputLength);
+    description: UserInput = initLimitedString(capacity = maxInputLength); valuetype: ValueType = none; db) {.gcsafe,
         sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
             WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTIONS
@@ -170,17 +171,17 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     case db.getValue(query = sql(query = "SELECT valuetype FROM options WHERE option=?"), optionName)
     of "integer":
       try:
-        discard parseInt(s = value)
+        discard parseInt(s = $value)
       except:
         return showError(message = "Value for option '" & optionName &
             "' should be integer type.")
     of "float":
       try:
-        discard parseFloat(s = value)
+        discard parseFloat(s = $value)
       except:
         return showError(message = "Value for option '" & optionName & "' should be float type.")
     of "boolean":
-      value = toLowerAscii(s = value)
+      value.setString(text = toLowerAscii(s = $value))
       if value != "true" and value != "false":
         return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
     of "":
