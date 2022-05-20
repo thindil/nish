@@ -208,6 +208,17 @@ func `[]=`*(s: var LimitedString; i: int; val: char) =
   s.text[i] = val
 
 func `!=`*(x: LimitedString; y: string): bool =
+  ## FUNCTION
+  ##
+  ## Compare the selected LimitedString and string
+  ##
+  ## PARAMETERS
+  ## * x - The LimitedString to compare
+  ## * y - The string to compare
+  ##
+  ## RETURNS
+  ##
+  ## False if string and field text of LimitedString are equal, otherwise true
   return x.text != y
 
 func `==`*(x: LimitedString; y: string): bool =
