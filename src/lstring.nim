@@ -236,6 +236,17 @@ func `==`*(x: LimitedString; y: string): bool =
   return x.text == y
 
 func `&`*(x: string; y: LimitedString): string =
+  ## FUNCTION
+  ##
+  ## Concatenates string and LimitedString into one string
+  ##
+  ## PARAMETERS
+  ##
+  ## * x - The string to concatenate
+  ## * y - The LimitedString which field text will be concatenate
+  ##
+  ## RETURNS
+  ## The newly created string with merged both strings
   return x & y.text
 
 func `&`*(x: LimitedString; y: string): string =
