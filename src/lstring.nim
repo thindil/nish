@@ -222,6 +222,17 @@ func `!=`*(x: LimitedString; y: string): bool =
   return x.text != y
 
 func `==`*(x: LimitedString; y: string): bool =
+  ## FUNCTION
+  ##
+  ## Compare the selected LimitedString and string
+  ##
+  ## PARAMETERS
+  ## * x - The LimitedString to compare
+  ## * y - The string to compare
+  ##
+  ## RETURNS
+  ##
+  ## True if string and field text of LimitedString are equal, otherwise false
   return x.text == y
 
 func `&`*(x: string; y: LimitedString): string =
