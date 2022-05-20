@@ -24,12 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, re, strutils, tables, terminal]
-import constants, history, input, output
+import constants, history, input, lstring, output
 
-const variableNameLength*: Positive = 50  # The maximum length of the shell's environment variable name
+const variableNameLength*: Positive = 50 # The maximum length of the shell's environment variable name
 
 type
-  VariableName = string # Used to store variables names in the database.
+  VariableName = LimitedString # Used to store variables names in the database.
 
 using
   db: DbConn # Connection to the shell's database
@@ -155,7 +155,8 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
                recursive   BOOLEAN       NOT NULL,
                value       VARCHAR(""" & $maxInputLength &
           """) NOT NULL,
-               description VARCHAR(""" & $maxInputLength & """) NOT NULL
+               description VARCHAR(""" & $maxInputLength &
+          """) NOT NULL
             )"""))
   except DbError as e:
     discard showError(message = "Can't create 'variables' table. Reason: " & e.msg)
@@ -196,7 +197,7 @@ proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitSuccess if the environment variable was successfully set, otherwise
   ## QuitFailure
   if arguments.len() > 0:
-    let varValues: seq[string] = arguments.split(sep = '=')
+    let varValues: seq[string] = split(s = $arguments, sep = '=')
     if varValues.len() > 1:
       try:
         putEnv(key = varValues[0], val = varValues[1])
@@ -231,7 +232,7 @@ proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitFailure
   if arguments.len() > 0:
     try:
-      delEnv(key = arguments)
+      delEnv(key = $arguments)
       showOutput(message = "Environment variable '" & arguments & "' removed",
           fgColor = fgGreen)
       result = ResultCode(QuitSuccess)
@@ -360,7 +361,7 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
         returnCode = ResultCode(QuitFailure))
     return showError(message = "Enter the Id of the variable to delete.")
   let varId: DatabaseId = try:
-      parseInt(arguments[7 .. ^1])
+      parseInt($arguments[7 .. ^1])
     except ValueError:
       return showError(message = "The Id of the variable must be a positive number.")
   try:
@@ -403,14 +404,14 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showOutput(message = "You can cancel adding a new variable at any time by double press Escape key.")
   showFormHeader(message = "(1/5) Name")
   showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
-  var name: VariableName = ""
+  var name: VariableName = initLimitedString(capacity = variableNameLength)
   showOutput(message = "Name: ", newLine = false)
   while name.len() == 0:
     name = readInput(maxLength = variableNameLength)
     if name.len() == 0:
       discard showError(message = "Please enter a name for the variable.")
-    elif not name.validIdentifier:
-      name = ""
+    elif not validIdentifier(s = $name):
+      name.setString(text = "")
       discard showError(message = "Please enter a valid name for the variable.")
     if name.len() == 0:
       showOutput(message = "Name: ", newLine = false)
@@ -427,7 +428,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showOutput(message = "Path: ", newLine = false)
   var path: DirectoryPath = ""
   while path.len() == 0:
-    path = readInput()
+    path = $readInput()
     if path.len() == 0:
       discard showError(message = "Please enter a path for the alias.")
     elif not dirExists(dir = path) and path != "exit":
@@ -457,7 +458,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showFormHeader(message = "(5/5) Value")
   showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
   showOutput(message = "Value: ", newLine = false)
-  var value: UserInput = ""
+  var value: UserInput = initLimitedString(capacity = maxInputLength)
   while value.len() == 0:
     value = readInput()
     if value.len() == 0:
@@ -512,7 +513,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if arguments.len() < 6:
     return showError(message = "Enter the ID of the variable to edit.")
   let varId: DatabaseId = try:
-      parseInt(arguments[7 .. ^1])
+      parseInt($arguments[7 .. ^1])
     except ValueError:
       return showError(message = "The Id of the variable must be a positive number.")
   let
@@ -523,11 +524,11 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   showOutput(message = "You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showFormHeader(message = "(1/5) Name")
   showOutput(message = "The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
-  var name: VariableName = "exit"
+  var name: VariableName = initLimitedString(capacity = variableNameLength, text = "exit")
   showOutput(message = "Name: ", newLine = false)
   while name.len() > 0:
     name = readInput(maxLength = variableNameLength)
-    if name.len() > 0 and not name.validIdentifier:
+    if name.len() > 0 and not validIdentifier(s = $name):
       discard showError(message = "Please enter a valid name for the variable.")
       showOutput(message = "Name: ", newLine = false)
     else:
@@ -535,7 +536,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if name == "exit":
     return showError(message = "Editing the variable cancelled.")
   elif name == "":
-    name = row[0]
+    name.setString(text = row[0])
   showFormHeader(message = "(2/5) Description")
   showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '" &
       row[3] & "'. Can't contains a new line character.: ")
@@ -543,14 +544,14 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if description == "exit":
     return showError(message = "Editing the variable cancelled.")
   elif description == "":
-    description = row[3]
+    description.setString(text = row[3])
   showFormHeader(message = "(3/5) Working directory")
   showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
       row[1] & "'. Must be a path to the existing directory.:")
   showOutput(message = "Path: ", newLine = false)
   var path: DirectoryPath = "exit"
   while path.len() > 0:
-    path = readInput()
+    path = $readInput()
     if path.len() > 0 and not dirExists(dir = path) and path != "exit":
       discard showError(message = "Please enter a path to the existing directory")
       showOutput(message = "Path: ", newLine = false)
@@ -583,7 +584,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if value == "exit":
     return showError(message = "Editing the variable cancelled.")
   elif value == "":
-    value = row[2]
+    value.setString(text = row[2])
   # Save the variable to the database
   try:
     if db.execAffectedRows(query = sql(query = "UPDATE variables SET name=?, path=?, recursive=?, value=?, description=? where id=?"),
