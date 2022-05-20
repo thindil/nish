@@ -172,6 +172,18 @@ func setString*(s: var LimitedString; text: string) =
   s.text = text
 
 func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
+  ## FUNCTION
+  ##
+  ## Get the slice of the selected LimitedString
+  ##
+  ## PARAMETERS
+  ##
+  ## * s - The LimitedString which slice of text will be get
+  ## * x - The range of the slice of text to get
+  ##
+  ## RETURNS
+  ##
+  ## The new LimitedString with the slice with the selected range
   let
     newValue: string = s.text[x]
     length: Positive = (if newValue.len() == 0: 1 else: newValue.len())
