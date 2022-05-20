@@ -192,6 +192,19 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
   return newLimitedString
 
 func `[]=`*(s: var LimitedString; i: int; val: char) =
+  ## FUNCTION
+  ##
+  ## Replace the selected character in LimitedString
+  ##
+  ## PARAMETERS
+  ##
+  ## * s   - The LimitedString in which the character will be replaced
+  ## * i   - The index on which the character will be replaced. Starts from 0
+  ## * val - The new value for the character
+  ##
+  ## RETURNS
+  ##
+  ## The updated parameter s
   s.text[i] = val
 
 func `!=`*(x: LimitedString; y: string): bool =
