@@ -250,6 +250,17 @@ func `&`*(x: string; y: LimitedString): string =
   return x & y.text
 
 func `&`*(x: LimitedString; y: string): string =
+  ## FUNCTION
+  ##
+  ## Concatenates LimitedString and string into one string
+  ##
+  ## PARAMETERS
+  ##
+  ## * x - The LimitedString which field text will be concatenate
+  ## * y - The string to concatenate
+  ##
+  ## RETURNS
+  ## The newly created string with merged both strings
   return x.text & y
 
 func find*(s: LimitedString; sub: char; start: Natural = 0; last = 0): int =
