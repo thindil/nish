@@ -286,6 +286,24 @@ func find*(s: LimitedString; sub: char; start: Natural = 0; last = 0): int =
   return s.text.find(sub = sub, start = start, last = last)
 
 func rfind*(s: LimitedString; sub: char; start: Natural = 0; last = -1): int =
+  ## FUNCTION
+  ##
+  ## Reverse find the selected character in the selected LimitedString. Start
+  ## looking from the end of the LimitedString.
+  ##
+  ## PARAMETERS
+  ##
+  ## * s     - The LimitedString which will be check for the selected character
+  ## * sub   - The character which will be looked for in the LimitedString
+  ## * start - The position from which search should start. Can be empty.
+  ##           Default value is 0, start from the beginning of the LimitedString.
+  ## * last  - The position to which search should go. Can be empty. Default
+  ##           value is 0, which means no limit.
+  ##
+  ## RETURNS
+  ##
+  ## The position of the character in the LimitedString or -1 if character not
+  ## found
   return s.text.rfind(sub = sub, start = start, last = last)
 
 func insert*(x: var LimitedString; item: string; i: Natural = 0) =
