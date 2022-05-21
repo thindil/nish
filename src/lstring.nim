@@ -246,6 +246,7 @@ func `&`*(x: string; y: LimitedString): string =
   ## * y - The LimitedString which field text will be concatenate
   ##
   ## RETURNS
+  ##
   ## The newly created string with merged both strings
   return x & y.text
 
@@ -260,10 +261,28 @@ func `&`*(x: LimitedString; y: string): string =
   ## * y - The string to concatenate
   ##
   ## RETURNS
+  ##
   ## The newly created string with merged both strings
   return x.text & y
 
 func find*(s: LimitedString; sub: char; start: Natural = 0; last = 0): int =
+  ## FUNCTION
+  ##
+  ## Find the selected character in the selected LimitedString.
+  ##
+  ## PARAMETERS
+  ##
+  ## * s     - The LimitedString which will be check for the selected character
+  ## * sub   - The character which will be looked for in the LimitedString
+  ## * start - The position from which search should start. Can be empty.
+  ##           Default value is 0, start from the beginning of the LimitedString.
+  ## * last  - The position to which search should go. Can be empty. Default
+  ##           value is 0, which means no limit.
+  ##
+  ## RETURNS
+  ##
+  ## The position of the character in the LimitedString or -1 if character not
+  ## found
   return s.text.find(sub = sub, start = start, last = last)
 
 func rfind*(s: LimitedString; sub: char; start: Natural = 0; last = -1): int =
