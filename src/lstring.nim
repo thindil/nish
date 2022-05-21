@@ -307,6 +307,20 @@ func rfind*(s: LimitedString; sub: char; start: Natural = 0; last = -1): int =
   return s.text.rfind(sub = sub, start = start, last = last)
 
 func insert*(x: var LimitedString; item: string; i: Natural = 0) =
+  ## FUNCTION
+  ##
+  ## Insert the selected string into LimitedString at the selected position
+  ##
+  ## PARAMETERS
+  ##
+  ## * x    - The LimitedString to which the string will be inserted
+  ## * item - The string to insert
+  ## * i    - The position at which the string will be inserted. Can be empty.
+  ##          Default value is 0, at start of the LimitedString
+  ##
+  ## RETURNS
+  ##
+  ## The updated paramater x
   x.text.insert(item = item, i = i)
 
 func startsWith*(s: LimitedString; prefix: string): bool =
