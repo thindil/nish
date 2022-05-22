@@ -28,10 +28,10 @@ import std/strutils
 type
   LimitedString* = object of RootObj
     ## Store all data related to the string
-    text: string ## The text of the LimitedString
+    text: string       ## The text of the LimitedString
     capacity: Positive ## The maximum capacity of the LimitedString
 
-func `text=`*(s: var LimitedString; value: string) =
+func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## The setter for the text of LimitedString. Check if the new value isn't
