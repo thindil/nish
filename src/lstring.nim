@@ -321,7 +321,11 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) =
   ## RETURNS
   ##
   ## The updated paramater x
+  let oldValue: string = x.text
   x.text.insert(item = item, i = i)
+  if x.text.len() > x.capacity:
+    x.text = oldValue
+    raise newException(RangeDefect, "New value for string will exceed its capacity.")
 
 func startsWith*(s: LimitedString; prefix: string): bool =
   ## FUNCTION
