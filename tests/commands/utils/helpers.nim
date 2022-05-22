@@ -1,5 +1,5 @@
 import std/[db_sqlite, strutils, tables]
-import ../../../src/[aliases, nish]
+import ../../../src/[aliases, lstring, nish]
 
 proc initTest*(): tuple[db: DbConn, aliases: AliasesList] =
   let db = startDb("test.db")
@@ -11,4 +11,4 @@ proc initTest*(): tuple[db: DbConn, aliases: AliasesList] =
       if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
           "tests2", "/", 0, "ls -a", "Test alias 2.") == -1:
         quit("Can't add test2 alias.", QuitFailure)
-  return (db, initOrderedTable[string, int]())
+  return (db, initOrderedTable[LimitedString, int]())
