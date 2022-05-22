@@ -324,4 +324,17 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) =
   x.text.insert(item = item, i = i)
 
 func startsWith*(s: LimitedString; prefix: string): bool =
+  ## FUNCTION
+  ##
+  ## Check if the selected LimitedString starts with the selected string
+  ##
+  ## PARAMETERS
+  ##
+  ## * s      - The LimitedString which will be checked
+  ## * prefix - The string which will be looking for at the start of the
+  ##            LimitedString
+  ##
+  ## RETURNS
+  ##
+  ## True if the LimitedString starts with the prefix, otherwise false
   return s.text.startsWith(prefix = prefix)
