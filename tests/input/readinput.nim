@@ -2,6 +2,6 @@ discard """
   exitcode: 0
 """
 
-import ../../src/input
+import ../../src/[input, lstring]
 
-assert readInput() == "exit"
+assert readInput() == initLimitedString(capacity = 4, text = "exit")
