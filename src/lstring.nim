@@ -79,7 +79,7 @@ func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [].} =
   ## The length of the LimitedString, the length of its field text
   result = s.text.len()
 
-func add*(s: var LimitedString; y: string) =
+func add*(s: var LimitedString; y: string) {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Add a string to the selected LimitedString. Check if the new value isn't
