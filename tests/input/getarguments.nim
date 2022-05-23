@@ -3,11 +3,12 @@ discard """
 """
 
 import std/parseopt
-import ../../src/[constants, input]
+import ../../src/[constants, input, lstring]
 
 var
   userCommand: OptParser = initOptParser("ls -ab --foo --bar=20 file.txt")
   conjCommands: bool = true
   arguments: UserInput = getArguments(userCommand, conjCommands)
 
-assert arguments == "ls -a -b --foo --bar=20 file.txt"
+assert arguments == initLimitedString(capacity = maxInputLength,
+    text = "ls -a -b --foo --bar=20 file.txt")
