@@ -65,7 +65,7 @@ func `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [].} =
   ## The converted LimitedString, its value of field text
   result = s.text
 
-func len*(s: LimitedString): Natural =
+func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Get the length of the selected LimitedString
