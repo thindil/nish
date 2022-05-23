@@ -11,4 +11,4 @@ binDir        = "bin"
 
 # Dependencies
 
-requires "nim >= 1.6.2"
+requires "nim >= 1.6.6"
