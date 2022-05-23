@@ -51,7 +51,7 @@ func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [], tags: [
     raise newException(RangeDefect, "New value for string is longer than its capacity.")
   s.text = value
 
-func `$`*(s: LimitedString): string =
+func `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Convert LimitedString to string
