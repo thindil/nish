@@ -58,7 +58,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(ca
   ## option in the database.
   try:
     let value = db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"), optionName)
-    result = initLimitedString(capacity = value.len, text = value)
+    result = initLimitedString(capacity = (if value.len() == 0: 1 else: value.len()), text = value)
   except DbError as e:
     discard showError(message = "Can't get value for option '" & optionName &
         "' from database. Reason: " & e.msg)
