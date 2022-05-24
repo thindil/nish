@@ -99,7 +99,7 @@ func add*(s: var LimitedString; y: string) {.gcsafe, raises: [], tags: [].} =
     raise newException(RangeDefect, "New value for string will exceed its capacity.")
   s.text = s.text & y
 
-func add*(s: var LimitedString; y: char) =
+func add*(s: var LimitedString; y: char) {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Add a character to the selected LimitedString. Check if the new value
