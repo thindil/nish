@@ -119,7 +119,8 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [], tags: [].} =
     raise newException(RangeDefect, "New value for string will exceed its capacity.")
   s.text = s.text & y
 
-func initLimitedString*(capacity: Positive; text: string = ""): LimitedString =
+func initLimitedString*(capacity: Positive;
+    text: string = ""): LimitedString {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Initialize the new LimitedString with the selected capacity and content.
