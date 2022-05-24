@@ -2,10 +2,12 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[constants, nish, options]
+import ../../src/[constants, lstring, nish, options]
 import utils/helpers
 
 let db = initTest()
-assert resetOptions("reset historyLength", db) == QuitSuccess
-assert getOption("historyLength", db) == "500"
+assert resetOptions(initLimitedString(capacity = 19,
+    text = "reset historyLength"), db) == QuitSuccess
+assert getOption(initLimitedString(capacity = 13, text = "historyLength"),
+    db) == "500"
 quitShell(ResultCode(QuitSuccess), db)
