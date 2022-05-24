@@ -140,7 +140,7 @@ func initLimitedString*(capacity: Positive;
   newLimitedString.text = text
   return newLimitedString
 
-func capacity*(s: LimitedString): Positive =
+func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Get the maximum allowed capacity of the selected LimitedString
