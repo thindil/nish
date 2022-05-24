@@ -37,8 +37,9 @@ using
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
-proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(capacity = maxInputLength)): OptionValue {.gcsafe,
-    sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
+proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(
+    capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+        WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
   ##
@@ -57,8 +58,10 @@ proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(ca
   ## The value of the selected option or empty string if there is no that
   ## option in the database.
   try:
-    let value = db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"), optionName)
-    result = initLimitedString(capacity = (if value.len() == 0: 1 else: value.len()), text = value)
+    let value = db.getValue(query = sql(
+        query = "SELECT value FROM options WHERE option=?"), optionName)
+    result = initLimitedString(capacity = (if value.len() ==
+        0: 1 else: value.len()), text = value)
   except DbError as e:
     discard showError(message = "Can't get value for option '" & optionName &
         "' from database. Reason: " & e.msg)
@@ -66,10 +69,10 @@ proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(ca
   if result == "":
     result = defaultValue
 
-proc setOption*(optionName; value: OptionValue = initLimitedString(capacity = maxInputLength);
-    description: UserInput = initLimitedString(capacity = maxInputLength); valuetype: ValueType = none; db) {.gcsafe,
-        sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
-            WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc setOption*(optionName; value: OptionValue = initLimitedString(
+    capacity = maxInputLength);description: UserInput = initLimitedString(
+        capacity = maxInputLength); valuetype: ValueType = none; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+            WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTIONS
   ##
   ## Set the value and or description of the selected option. If the option
