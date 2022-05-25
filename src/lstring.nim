@@ -154,7 +154,8 @@ func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [].} =
   ## The maximum allowed capacity of the selected LimitedString
   return s.capacity
 
-func setString*(s: var LimitedString; text: string) =
+func setString*(s: var LimitedString; text: string) {.gcsafe, raises: [],
+    tags: [].} =
   ## FUNCTION
   ##
   ## Set the new value for the selected LimitedString. Raised RangeDefect if
