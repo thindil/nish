@@ -30,8 +30,10 @@ type
     ## Store all data related to the string
     text: string       ## The text of the LimitedString
     capacity: Positive ## The maximum capacity of the LimitedString
+  CapacityError* = object of CatchableError # Raised when the new value of string will be longer than allowed maximum
 
-func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [], tags: [].} =
+func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
+    CapacityError], tags: [].} =
   ## FUNCTION
   ##
   ## The setter for the text of LimitedString. Check if the new value isn't
@@ -48,7 +50,7 @@ func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [], tags: [
   ##
   ## Updated LimitedString with the new value of the text field.
   if value.len() > s.capacity:
-    raise newException(exceptn = RangeDefect,
+    raise newException(exceptn = CapacityError,
         message = "New value for string is longer than its capacity.")
   s.text = value
 
@@ -80,7 +82,8 @@ func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [].} =
   ## The length of the LimitedString, the length of its field text
   result = s.text.len()
 
-func add*(s: var LimitedString; y: string) {.gcsafe, raises: [], tags: [].} =
+func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
+    tags: [].} =
   ## FUNCTION
   ##
   ## Add a string to the selected LimitedString. Check if the new value isn't
@@ -97,11 +100,12 @@ func add*(s: var LimitedString; y: string) {.gcsafe, raises: [], tags: [].} =
   ##
   ## Updated parameter s
   if y.len() + s.text.len() > s.capacity:
-    raise newException(exceptn = RangeDefect,
+    raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
   s.text = s.text & y
 
-func add*(s: var LimitedString; y: char) {.gcsafe, raises: [], tags: [].} =
+func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
+    tags: [].} =
   ## FUNCTION
   ##
   ## Add a character to the selected LimitedString. Check if the new value
@@ -118,7 +122,7 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [], tags: [].} =
   ##
   ## Updated parameter s
   if s.text.len() == s.capacity:
-    raise newException(exceptn = RangeDefect,
+    raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
   s.text = s.text & y
 
@@ -157,8 +161,8 @@ func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [].} =
   ## The maximum allowed capacity of the selected LimitedString
   return s.capacity
 
-func setString*(s: var LimitedString; text: string) {.gcsafe, raises: [],
-    tags: [].} =
+func setString*(s: var LimitedString; text: string) {.gcsafe, raises: [
+    CapacityError], tags: [].} =
   ## FUNCTION
   ##
   ## Set the new value for the selected LimitedString. Raised RangeDefect if
@@ -173,7 +177,7 @@ func setString*(s: var LimitedString; text: string) {.gcsafe, raises: [],
   ##
   ## The updated LimitedString
   if text.len() > s.capacity:
-    raise newException(exceptn = RangeDefect,
+    raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
   s.text = text
 
@@ -331,7 +335,7 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) =
   x.text.insert(item = item, i = i)
   if x.text.len() > x.capacity:
     x.text = oldValue
-    raise newException(exceptn = RangeDefect,
+    raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
 
 func startsWith*(s: LimitedString; prefix: string): bool =
