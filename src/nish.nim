@@ -182,7 +182,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       of "c":
         oneTimeCommand = true
         options.next()
-        inputString.setString(text = options.key)
+        try:
+          inputString.setString(text = options.key)
+        except CapacityError:
+          quit int(showError(message = "The entered command is too long."))
       of "h", "help":
         showCommandLineHelp()
       of "v", "version":
@@ -275,8 +278,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         if inputChar.ord() == 127:
           keyWasArrow = false
           if inputString.len() > 0:
-            inputString.setString(text = $inputString[0..^2])
-            cursorPosition.dec()
+            try:
+              inputString.setString(text = $inputString[0..^2])
+              cursorPosition.dec()
+            except CapacityError:
+              discard
             try:
               stdout.cursorBackward()
               stdout.write(s = " ")
@@ -294,7 +300,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             try:
               stdout.cursorBackward(count = inputString.len() - spaceIndex - 1)
               stdout.write(s = completion)
-              inputString.setString(text = inputString[0..spaceIndex] & completion)
+              try:
+                inputString.setString(text = inputString[0..spaceIndex] & completion)
+              except CapacityError:
+                discard
               cursorPosition = inputString.len()
             except ValueError, IOError:
               discard
@@ -305,10 +314,13 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               # Arrow up key pressed
               inputChar = getch()
               if inputChar == 'A' and historyIndex > 0:
-                inputString.setString(text = getHistory(
-                    historyIndex = historyIndex, db = db,
-                    searchFor = initLimitedString(capacity = maxInputLength,
-                        text = (if keyWasArrow: "" else: $inputString))))
+                try:
+                  inputString.setString(text = getHistory(
+                      historyIndex = historyIndex, db = db,
+                      searchFor = initLimitedString(capacity = maxInputLength,
+                          text = (if keyWasArrow: "" else: $inputString))))
+                except CapacityError:
+                  discard
                 cursorPosition = inputString.len()
                 refreshInput()
                 historyIndex.dec()
@@ -320,10 +332,13 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 let currentHistoryLength: HistoryRange = historyLength(db = db)
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
-                inputString.setString(text = getHistory(
-                    historyIndex = historyIndex, db = db,
-                    searchFor = initLimitedString(capacity = maxInputLength,
-                        text = (if keyWasArrow: "" else: $inputString))))
+                try:
+                  inputString.setString(text = getHistory(
+                      historyIndex = historyIndex, db = db,
+                      searchFor = initLimitedString(capacity = maxInputLength,
+                          text = (if keyWasArrow: "" else: $inputString))))
+                except CapacityError:
+                  discard
                 cursorPosition = inputString.len()
                 refreshInput()
               # Arrow left key pressed
@@ -353,15 +368,18 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         elif inputChar.ord() > 31:
           stdout.write(c = inputChar)
           if cursorPosition == inputString.len():
-            inputString.add(y = inputChar)
+            try:
+              inputString.add(y = inputChar)
+            except CapacityError:
+              discard
           elif insertMode:
             inputString[cursorPosition] = inputChar
           else:
-            inputString.insert(item = $inputChar, i = cursorPosition)
             try:
+              inputString.insert(item = $inputChar, i = cursorPosition)
               stdout.write(s = " ")
               stdout.cursorBackward(count = inputString.len() - cursorPosition)
-            except ValueError, IOError:
+            except ValueError, IOError, CapacityError:
               discard
           refreshInput()
           keyWasArrow = false
@@ -389,7 +407,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     let arguments: UserInput = initLimitedString(capacity = maxInputLength,
         text = $getArguments(userInput = userInput,
             conjCommands = conjCommands))
-    inputString.setString(text = join(a = userInput.remainingArgs(), sep = " "))
+    try:
+      inputString.setString(text = join(a = userInput.remainingArgs(), sep = " "))
+    except CapacityError:
+      discard
     # Parse commands
     case commandName
     # Quit from shell

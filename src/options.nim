@@ -38,8 +38,8 @@ using
   arguments: UserInput # The user entered agruments for set or reset option
 
 proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(
-    capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-        WriteIOEffect, ReadEnvEffect,
+    capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
+        tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
   ## FUNCTION
   ##
@@ -70,9 +70,11 @@ proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(
     result = defaultValue
 
 proc setOption*(optionName; value: OptionValue = initLimitedString(
-    capacity = maxInputLength);description: UserInput = initLimitedString(
-        capacity = maxInputLength); valuetype: ValueType = none; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-            WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    capacity = maxInputLength); description: UserInput = initLimitedString(
+        capacity = maxInputLength); valuetype: ValueType = none; db) {.gcsafe,
+            sideEffect, raises: [], tags: [ReadDbEffect,
+
+WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTIONS
   ##
   ## Set the value and or description of the selected option. If the option
@@ -184,7 +186,10 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       except:
         return showError(message = "Value for option '" & optionName & "' should be float type.")
     of "boolean":
-      value.setString(text = toLowerAscii(s = $value))
+      try:
+        value.setString(text = toLowerAscii(s = $value))
+      except CapacityError:
+        return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
       if value != "true" and value != "false":
         return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
     of "":

@@ -26,7 +26,7 @@
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, lstring, output
 
-const aliasNameLength*: Positive = 50  # The maximum length of the shell's alias name
+const aliasNameLength*: Positive = 50 # The maximum length of the shell's alias name
 
 type
   AliasName* = LimitedString # Used to store aliases names in tables and database.
@@ -300,8 +300,11 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     if name.len() == 0:
       discard showError(message = "Please enter a name for the alias.")
     elif not validIdentifier(s = $name):
-      name.setString("")
-      discard showError(message = "Please enter a valid name for the alias.")
+      try:
+        name.setString("")
+        discard showError(message = "Please enter a valid name for the alias.")
+      except CapacityError:
+        discard showError(message = "Can't set empty name for alias.")
     if name.len() == 0:
       showOutput(message = "Name: ", newLine = false)
   if name == "exit":
@@ -419,7 +422,10 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if name == "exit":
     return showError(message = "Editing the alias cancelled.")
   elif name == "":
-    name.setString(text = row[0])
+    try:
+      name.setString(text = row[0])
+    except CapacityError:
+      return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
   showFormHeader(message = "(2/5) Description")
   showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
       newLine = false)
@@ -430,7 +436,10 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if description == "exit":
     return showError(message = "Editing the alias cancelled.")
   elif description == "":
-    description.setString(text = row[3])
+    try:
+      description.setString(text = row[3])
+    except CapacityError:
+      return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
   showFormHeader(message = "(3/5) Working directory")
   showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
       newLine = false)
@@ -468,7 +477,10 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if commands == "exit":
     return showError(message = "Editing the alias cancelled.")
   elif commands == "":
-    commands.setString(text = row[2])
+    try:
+      commands.setString(text = row[2])
+    except CapacityError:
+      return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
   # Save the alias to the database
   try:
     if db.execAffectedRows(query = sql(query = "UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?"),
@@ -547,7 +559,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             getCurrentExceptionMsg())
     commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
         cmdline = $arguments).remainingArgs() else: @[])
-    aliasIndex: LimitedString = initLimitedString(capacity = aliasId.len, text = aliasId)
+    aliasIndex: LimitedString = initLimitedString(capacity = aliasId.len,
+        text = aliasId)
   var inputString: string = try:
       db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
           aliases[aliasIndex])
