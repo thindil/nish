@@ -77,7 +77,10 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
     # console
     elif inputChar.ord() > 31:
       stdout.write(c = inputChar)
-      result.add(y = inputChar)
+      try:
+        result.add(y = inputChar)
+      except CapacityError:
+        return result
     try:
       inputChar = getch()
     except IOError as e:
@@ -119,22 +122,28 @@ func getArguments*(userInput: var OptParser;
       key = "\"" & userInput.key & "\""
     else:
       key = userInput.key
-    case userInput.kind
-    of cmdLongOption:
-      if userInput.val.len() > 0:
-        result.add(y = "--" & key & "=")
-        if userInput.val.contains(sub = " "):
-          result.add(y = "\"" & userInput.val & "\"")
+    try:
+      case userInput.kind
+      of cmdLongOption:
+        if userInput.val.len() > 0:
+          result.add(y = "--" & key & "=")
+          if userInput.val.contains(sub = " "):
+            result.add(y = "\"" & userInput.val & "\"")
+          else:
+            result.add(userInput.val)
         else:
-          result.add(userInput.val)
-      else:
-        result.add(y = "--" & key)
-    of cmdShortOption:
-      result.add(y = "-" & key)
-    of cmdArgument:
-      result.add(y = key)
-    of cmdEnd:
-      discard
-    result.add(y = " ")
-    userInput.next()
-  result.setString(text = strip(s = $result))
+          result.add(y = "--" & key)
+      of cmdShortOption:
+        result.add(y = "-" & key)
+      of cmdArgument:
+        result.add(y = key)
+      of cmdEnd:
+        discard
+      result.add(y = " ")
+      userInput.next()
+    except CapacityError:
+      break
+  try:
+    result.setString(text = strip(s = $result))
+  except CapacityError:
+    return

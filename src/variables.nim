@@ -411,8 +411,11 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
     if name.len() == 0:
       discard showError(message = "Please enter a name for the variable.")
     elif not validIdentifier(s = $name):
-      name.setString(text = "")
-      discard showError(message = "Please enter a valid name for the variable.")
+      try:
+        name.setString(text = "")
+        discard showError(message = "Please enter a valid name for the variable.")
+      except CapacityError:
+        discard showError(message = "Can't set empty name for variable.")
     if name.len() == 0:
       showOutput(message = "Name: ", newLine = false)
   if name == "exit":
@@ -536,7 +539,10 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if name == "exit":
     return showError(message = "Editing the variable cancelled.")
   elif name == "":
-    name.setString(text = row[0])
+    try:
+      name.setString(text = row[0])
+    except CapacityError:
+      return showError("Editing the variable cancelled. Reason: can't set name for the variable.")
   showFormHeader(message = "(2/5) Description")
   showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '" &
       row[3] & "'. Can't contains a new line character.: ")
@@ -544,7 +550,10 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if description == "exit":
     return showError(message = "Editing the variable cancelled.")
   elif description == "":
-    description.setString(text = row[3])
+    try:
+      description.setString(text = row[3])
+    except CapacityError:
+      return showError("Editing the variable cancelled. Reason: can't set description for the variable.")
   showFormHeader(message = "(3/5) Working directory")
   showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
       row[1] & "'. Must be a path to the existing directory.:")
@@ -584,7 +593,10 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if value == "exit":
     return showError(message = "Editing the variable cancelled.")
   elif value == "":
-    value.setString(text = row[2])
+    try:
+      value.setString(text = row[2])
+    except CapacityError:
+      return showError("Editing the variable cancelled. Reason: can't set value for the variable.")
   # Save the variable to the database
   try:
     if db.execAffectedRows(query = sql(query = "UPDATE variables SET name=?, path=?, recursive=?, value=?, description=? where id=?"),

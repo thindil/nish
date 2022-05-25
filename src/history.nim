@@ -82,13 +82,21 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
         text = "500"), description = initLimitedString(capacity = 48,
             text = "Max amount of entries in shell commands history."),
         valueType = ValueType.integer, db = db)
-  optionName.setString(text = "historyAmount")
+  try:
+    optionName.setString(text = "historyAmount")
+  except CapacityError:
+    discard showError(message = "Can't set name of the option historyAmount to set.")
+    return HistoryRange.low()
   if getOption(optionName = optionName, db = db) == "":
     setOption(optionName = optionName, value = initLimitedString(capacity = 2,
         text = "20"), description = initLimitedString(capacity = 78,
             text = "Amount of entries in shell commands history to show with history show command."),
          valueType = ValueType.integer, db = db)
-  optionName.setString(text = "historySaveInvalid")
+  try:
+    optionName.setString(text = "historySaveInvalid")
+  except CapacityError:
+    discard showError(message = "Can't set name of the option historySaveInvalid to set.")
+    return HistoryRange.low()
   if getOption(optionName = optionName, db = db) == "":
     setOption(optionName = optionName, value = initLimitedString(capacity = 5,
         text = "false"), description = initLimitedString(capacity = 52,
