@@ -48,7 +48,8 @@ func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [], tags: [
   ##
   ## Updated LimitedString with the new value of the text field.
   if value.len() > s.capacity:
-    raise newException(RangeDefect, "New value for string is longer than its capacity.")
+    raise newException(exceptn = RangeDefect,
+        message = "New value for string is longer than its capacity.")
   s.text = value
 
 func `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [].} =
@@ -96,7 +97,8 @@ func add*(s: var LimitedString; y: string) {.gcsafe, raises: [], tags: [].} =
   ##
   ## Updated parameter s
   if y.len() + s.text.len() > s.capacity:
-    raise newException(RangeDefect, "New value for string will exceed its capacity.")
+    raise newException(exceptn = RangeDefect,
+        message = "New value for string will exceed its capacity.")
   s.text = s.text & y
 
 func add*(s: var LimitedString; y: char) {.gcsafe, raises: [], tags: [].} =
@@ -116,7 +118,8 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [], tags: [].} =
   ##
   ## Updated parameter s
   if s.text.len() == s.capacity:
-    raise newException(RangeDefect, "New value for string will exceed its capacity.")
+    raise newException(exceptn = RangeDefect,
+        message = "New value for string will exceed its capacity.")
   s.text = s.text & y
 
 func initLimitedString*(capacity: Positive;
@@ -170,7 +173,8 @@ func setString*(s: var LimitedString; text: string) {.gcsafe, raises: [],
   ##
   ## The updated LimitedString
   if text.len() > s.capacity:
-    raise newException(RangeDefect, "New value for string will exceed its capacity.")
+    raise newException(exceptn = RangeDefect,
+        message = "New value for string will exceed its capacity.")
   s.text = text
 
 func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
@@ -327,7 +331,8 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) =
   x.text.insert(item = item, i = i)
   if x.text.len() > x.capacity:
     x.text = oldValue
-    raise newException(RangeDefect, "New value for string will exceed its capacity.")
+    raise newException(exceptn = RangeDefect,
+        message = "New value for string will exceed its capacity.")
 
 func startsWith*(s: LimitedString; prefix: string): bool =
   ## FUNCTION
