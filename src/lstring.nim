@@ -316,7 +316,8 @@ func rfind*(s: LimitedString; sub: char; start: Natural = 0; last = -1): int =
   ## found
   return s.text.rfind(sub = sub, start = start, last = last)
 
-func insert*(x: var LimitedString; item: string; i: Natural = 0) =
+func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
+    raises: [CapacityError], tags: [].} =
   ## FUNCTION
   ##
   ## Insert the selected string into LimitedString at the selected position
