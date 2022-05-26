@@ -533,7 +533,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             db = db, returnCode = returnCode)
     # Execute external command or alias
     else:
-      let commandToExecute: string = commandName & " " & arguments
+      let commandToExecute: string = commandName & (if arguments.len() >
+          0: " " & arguments else: "")
       # Check if command is an alias, if yes, execute it
       if initLimitedString(capacity = maxInputLength, text = commandName) in aliases:
         returnCode = execAlias(arguments = arguments, aliasId = commandName,
