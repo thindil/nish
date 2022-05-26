@@ -232,8 +232,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         input: UserInput = initLimitedString(capacity = maxInputLength,
             text = strip(s = $inputString, trailing = false))
         spaceIndex: ExtendedNatural = input.find(sub = ' ')
-        command: UserInput = (if spaceIndex < 1: input else: input[
-            0..spaceIndex - 1])
+        command: UserInput = initLimitedString(capacity = maxInputLength,
+            text = (if spaceIndex < 1: $input else: $input[0..spaceIndex - 1]))
         commandArguments: UserInput = initLimitedString(
             capacity = maxInputLength, text = (if spaceIndex <
             1: "" else: $input[spaceIndex..^1]))
