@@ -202,7 +202,8 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
   newLimitedString.text = newValue
   return newLimitedString
 
-func `[]=`*(s: var LimitedString; i: int; val: char) =
+func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
+    tags: [].} =
   ## FUNCTION
   ##
   ## Replace the selected character in LimitedString
