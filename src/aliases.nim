@@ -68,7 +68,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
   # Set the aliases
   try:
     for dbResult in db.fastRows(query = sql(query = dbQuery)):
-      let index = initLimitedString(capacity = dbResult[1].len, text = dbResult[1])
+      let index = initLimitedString(capacity = maxInputLength, text = dbResult[1])
       try:
         aliases[index] = parseInt(s = dbResult[0])
       except ValueError:
@@ -559,7 +559,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             getCurrentExceptionMsg())
     commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
         cmdline = $arguments).remainingArgs() else: @[])
-    aliasIndex: LimitedString = initLimitedString(capacity = aliasId.len,
+    aliasIndex: LimitedString = initLimitedString(capacity = maxInputLength,
         text = aliasId)
   var inputString: string = try:
       db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
