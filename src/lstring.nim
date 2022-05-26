@@ -181,7 +181,8 @@ func setString*(s: var LimitedString; text: string) {.gcsafe, raises: [
         message = "New value for string will exceed its capacity.")
   s.text = text
 
-func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T, U]): LimitedString =
+func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
+    U]): LimitedString {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Get the slice of the selected LimitedString
