@@ -219,7 +219,7 @@ func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
   ## The updated parameter s
   s.text[i] = val
 
-func `!=`*(x: LimitedString; y: string): bool =
+func `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Compare the selected LimitedString and string
