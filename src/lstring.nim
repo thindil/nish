@@ -233,7 +233,7 @@ func `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [].} =
   ## False if string and field text of LimitedString are equal, otherwise true
   return x.text != y
 
-func `==`*(x: LimitedString; y: string): bool =
+func `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Compare the selected LimitedString and string
