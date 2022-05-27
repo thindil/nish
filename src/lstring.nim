@@ -247,7 +247,7 @@ func `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [].} =
   ## True if string and field text of LimitedString are equal, otherwise false
   return x.text == y
 
-func `&`*(x: string; y: LimitedString): string =
+func `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Concatenates string and LimitedString into one string
