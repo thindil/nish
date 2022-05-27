@@ -277,7 +277,8 @@ func `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [].} 
   ## The newly created string with merged both strings
   return x.text & y
 
-func find*(s: LimitedString; sub: char; start: Natural = 0; last = 0): int =
+func find*(s: LimitedString; sub: char; start: Natural = 0;
+    last = 0): int {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Find the selected character in the selected LimitedString.
