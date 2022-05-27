@@ -262,7 +262,7 @@ func `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [].} 
   ## The newly created string with merged both strings
   return x & y.text
 
-func `&`*(x: LimitedString; y: string): string =
+func `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Concatenates LimitedString and string into one string
