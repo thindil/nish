@@ -359,3 +359,6 @@ func startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
   ##
   ## True if the LimitedString starts with the prefix, otherwise false
   return s.text.startsWith(prefix = prefix)
+
+let emptyLimitedString*: LimitedString = initLimitedString(
+    capacity = 1) ## Empty LimitedString
