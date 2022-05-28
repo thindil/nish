@@ -168,10 +168,11 @@ proc updateHistory*(commandToAdd: string; db;
     discard showError(message = "Can't update the shell's history. Reason: " & e.msg)
     return
 
-func getHistory*(historyIndex: HistoryRange; db;
+proc getHistory*(historyIndex: HistoryRange; db;
     searchFor: UserInput = initLimitedString(
-        capacity = maxInputLength)): string {.gcsafe, locks: 0, raises: [],
-        tags: [ReadDbEffect].} =
+        capacity = maxInputLength)): string {.gcsafe, sideEffect, locks: 0,
+            raises: [], tags: [ReadDbEffect, ReadEnvEffect, WriteIOEffect,
+                TimeEffect].} =
   ## FUNCTION
   ##
   ## Get the command with the selected index from the shell history
@@ -188,7 +189,7 @@ func getHistory*(historyIndex: HistoryRange; db;
   try:
     if searchFor.len() == 0:
       result = db.getValue(query = sql(query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-          $(historyIndex - 1));
+          $(historyLength(db = db) - historyIndex));
     else:
       result = db.getValue(query = sql(query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
           searchFor & "%");
