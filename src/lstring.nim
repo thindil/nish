@@ -343,7 +343,8 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
     raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
 
-func startsWith*(s: LimitedString; prefix: string): bool =
+func startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
+    tags: [].} =
   ## FUNCTION
   ##
   ## Check if the selected LimitedString starts with the selected string
