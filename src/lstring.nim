@@ -298,7 +298,8 @@ func find*(s: LimitedString; sub: char; start: Natural = 0;
   ## found
   return s.text.find(sub = sub, start = start, last = last)
 
-func rfind*(s: LimitedString; sub: char; start: Natural = 0; last = -1): int =
+func rfind*(s: LimitedString; sub: char; start: Natural = 0;
+    last = -1): int {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
   ## Reverse find the selected character in the selected LimitedString. Start
