@@ -68,7 +68,11 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
   # Set the aliases
   try:
     for dbResult in db.fastRows(query = sql(query = dbQuery)):
-      let index = initLimitedString(capacity = maxInputLength, text = dbResult[1])
+      let index = try:
+          initLimitedString(capacity = maxInputLength, text = dbResult[1])
+        except CapacityError:
+          discard showError("Can't set index from " & dbResult[1])
+          return
       try:
         aliases[index] = parseInt(s = dbResult[0])
       except ValueError:
@@ -294,7 +298,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showFormHeader(message = "(1/5) Name")
   showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
   showOutput(message = "Name: ", newLine = false)
-  var name: AliasName = initLimitedString(capacity = aliasNameLength)
+  var name: AliasName = emptyLimitedString(capacity = aliasNameLength)
   while name.len() == 0:
     name = readInput(maxLength = aliasNameLength)
     if name.len() == 0:
@@ -347,7 +351,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showFormHeader(message = "(5/5) Commands")
   showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
   showOutput(message = "Command(s): ", newLine = false)
-  var commands: UserInput = initLimitedString(capacity = maxInputLength)
+  var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
   while commands.len() == 0:
     commands = readInput()
     if commands.len() == 0:
@@ -559,8 +563,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             getCurrentExceptionMsg())
     commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
         cmdline = $arguments).remainingArgs() else: @[])
-    aliasIndex: LimitedString = initLimitedString(capacity = maxInputLength,
-        text = aliasId)
+    aliasIndex: LimitedString = try:
+        initLimitedString(capacity = maxInputLength, text = aliasId)
+      except CapacityError:
+        return showError(message = "Can't set alias index for " & aliasId)
   var inputString: string = try:
       db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
           aliases[aliasIndex])

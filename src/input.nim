@@ -113,11 +113,7 @@ func getArguments*(userInput: var OptParser;
   ## RETURNS
   ##
   ## Properly converted user input and parameter conjCommands
-  result =
-    try:
-      initLimitedString(capacity = maxInputLength)
-    except CapacityError:
-      return
+  result = emptyLimitedString(capacity = maxInputLength)
   userInput.next()
   conjCommands = false
   var key: string

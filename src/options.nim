@@ -37,7 +37,7 @@ using
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
-proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(
+proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
         tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect].} =
@@ -69,8 +69,8 @@ proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(
   if result == "":
     result = defaultValue
 
-proc setOption*(optionName; value: OptionValue = initLimitedString(
-    capacity = maxInputLength); description: UserInput = initLimitedString(
+proc setOption*(optionName; value: OptionValue = emptyLimitedString(
+    capacity = maxInputLength); description: UserInput = emptyLimitedString(
         capacity = maxInputLength); valuetype: ValueType = none; db) {.gcsafe,
             sideEffect, raises: [], tags: [ReadDbEffect,
 
