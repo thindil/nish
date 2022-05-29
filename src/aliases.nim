@@ -71,12 +71,12 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
       let index = try:
           initLimitedString(capacity = maxInputLength, text = dbResult[1])
         except CapacityError:
-          discard showError("Can't set index from " & dbResult[1])
+          discard showError(message = "Can't set index from " & dbResult[1])
           return
       try:
         aliases[index] = parseInt(s = dbResult[0])
       except ValueError:
-        discard showError("Can't set alias, invalid Id: " & dbResult[0])
+        discard showError(message = "Can't set alias, invalid Id: " & dbResult[0])
   except DbError as e:
     discard showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
 
