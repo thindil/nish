@@ -62,9 +62,9 @@ proc getOption*(optionName; db; defaultValue: OptionValue = initLimitedString(
         query = "SELECT value FROM options WHERE option=?"), optionName)
     result = initLimitedString(capacity = (if value.len() ==
         0: 1 else: value.len()), text = value)
-  except DbError as e:
+  except DbError, CapacityError:
     discard showError(message = "Can't get value for option '" & optionName &
-        "' from database. Reason: " & e.msg)
+        "' from database. Reason: " & getCurrentExceptionMsg())
     result = defaultValue
   if result == "":
     result = defaultValue
