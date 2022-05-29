@@ -360,13 +360,18 @@ func startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
   ## True if the LimitedString starts with the prefix, otherwise false
   return s.text.startsWith(prefix = prefix)
 
-func emptyLimitedString*(): LimitedString {.gcsafe, raises: [], tags: [].} =
+func emptyLimitedString*(capacity: Positive = 1): LimitedString {.gcsafe, raises: [], tags: [].} =
   ## FUNCTION
   ##
-  ## Create the new empty LimitedString with the capacity of 1.
+  ## Create the new empty LimitedString with the the selected capacity.
+  ##
+  ## PARAMETERS
+  ##
+  ## * capacity - The maximum length of the newly created empty LimitedString.
+  ##              Can be empty. Default value is 1
   ##
   ## RETURNS
   ##
-  ## The new empty LimitedString with capacity of 1.
-  return LimitedString(capacity: 1, text: "")
+  ## The new empty LimitedString with the selected capacity.
+  return LimitedString(capacity: capacity, text: "")
 
