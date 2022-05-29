@@ -127,7 +127,7 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
   s.text = s.text & y
 
 func initLimitedString*(capacity: Positive;
-    text: string = ""): LimitedString {.gcsafe, raises: [CapacityError], tags: [].} =
+    text: string): LimitedString {.gcsafe, raises: [CapacityError], tags: [].} =
   ## FUNCTION
   ##
   ## Initialize the new LimitedString with the selected capacity and content.
@@ -137,8 +137,7 @@ func initLimitedString*(capacity: Positive;
   ## PARAMETERS
   ##
   ## * capacity - The maximum length of the newly created LimitedString
-  ## * text     - The content of the newly created LimitedString. Can be empty.
-  ##              The default value is empty.
+  ## * text     - The content of the newly created LimitedString.
   ##
   ## RETURNS
   ##
