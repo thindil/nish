@@ -75,33 +75,48 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
 
   # Set the history related options
   var
-    optionName: LimitedString = initLimitedString(capacity = 20,
-        text = "historyLength")
+    optionName: LimitedString = try:
+        initLimitedString(capacity = 20, text = "historyLength")
+      except CapacityError:
+        discard showError(message = "Can't set name of the option historyLength to set.")
+        return HistoryRange.low()
   if getOption(optionName = optionName, db = db) == "":
-    setOption(optionName = optionName, value = initLimitedString(capacity = 3,
-        text = "500"), description = initLimitedString(capacity = 48,
-            text = "Max amount of entries in shell commands history."),
-        valueType = ValueType.integer, db = db)
+    try:
+      setOption(optionName = optionName, value = initLimitedString(capacity = 3,
+          text = "500"), description = initLimitedString(capacity = 48,
+              text = "Max amount of entries in shell commands history."),
+          valueType = ValueType.integer, db = db)
+    except CapacityError:
+      discard showError(message = "Can't set values of the option historyLength.")
+      return HistoryRange.low()
   try:
     optionName.setString(text = "historyAmount")
   except CapacityError:
     discard showError(message = "Can't set name of the option historyAmount to set.")
     return HistoryRange.low()
   if getOption(optionName = optionName, db = db) == "":
-    setOption(optionName = optionName, value = initLimitedString(capacity = 2,
-        text = "20"), description = initLimitedString(capacity = 78,
-            text = "Amount of entries in shell commands history to show with history show command."),
-         valueType = ValueType.integer, db = db)
+    try:
+      setOption(optionName = optionName, value = initLimitedString(capacity = 2,
+          text = "20"), description = initLimitedString(capacity = 78,
+              text = "Amount of entries in shell commands history to show with history show command."),
+           valueType = ValueType.integer, db = db)
+    except:
+      discard showError(message = "Can't set values of the option historyAmount.")
+      return HistoryRange.low()
   try:
     optionName.setString(text = "historySaveInvalid")
   except CapacityError:
     discard showError(message = "Can't set name of the option historySaveInvalid to set.")
     return HistoryRange.low()
   if getOption(optionName = optionName, db = db) == "":
-    setOption(optionName = optionName, value = initLimitedString(capacity = 5,
-        text = "false"), description = initLimitedString(capacity = 52,
-            text = "Save in shell command history also invalid commands."),
-        valueType = ValueType.boolean, db = db)
+    try:
+      setOption(optionName = optionName, value = initLimitedString(capacity = 5,
+          text = "false"), description = initLimitedString(capacity = 52,
+              text = "Save in shell command history also invalid commands."),
+          valueType = ValueType.boolean, db = db)
+    except CapacityError:
+      discard showError(message = "Can't set values of the option historySaveInvalid.")
+      return HistoryRange.low()
   # Create history table if not exists
   try:
     db.exec(query = sql(query = """CREATE TABLE IF NOT EXISTS history (
@@ -169,7 +184,7 @@ proc updateHistory*(commandToAdd: string; db;
     return
 
 proc getHistory*(historyIndex: HistoryRange; db;
-    searchFor: UserInput = initLimitedString(
+    searchFor: UserInput = emptyLimitedString(
         capacity = maxInputLength)): string {.gcsafe, sideEffect, locks: 0,
             raises: [], tags: [ReadDbEffect, ReadEnvEffect, WriteIOEffect,
                 TimeEffect].} =
@@ -260,7 +275,7 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     amount: HistoryRange = try:
         parseInt(s = $getOption(optionName = initLimitedString(capacity = 13,
             text = "historyAmount"), db = db))
-      except ValueError:
+      except ValueError, CapacityError:
         discard showError(message = "Can't get setting for the amount of history commands to show.")
         return updateHistory(commandToAdd = "history show", db = db,
             returnCode = ResultCode(QuitFailure))
