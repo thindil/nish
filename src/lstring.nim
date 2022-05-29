@@ -127,7 +127,7 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
   s.text = s.text & y
 
 func initLimitedString*(capacity: Positive;
-    text: string = ""): LimitedString {.gcsafe, raises: [], tags: [].} =
+    text: string = ""): LimitedString {.gcsafe, raises: [CapacityError], tags: [].} =
   ## FUNCTION
   ##
   ## Initialize the new LimitedString with the selected capacity and content.
@@ -143,6 +143,9 @@ func initLimitedString*(capacity: Positive;
   ## RETURNS
   ##
   ## The new LimitedString with the selected capacity and content
+  if text.len() > capacity:
+    raise newException(exceptn = CapacityError,
+        message = "New value for string will exceed its capacity.")
   var newLimitedString = LimitedString(capacity: capacity)
   newLimitedString.text = text
   return newLimitedString
