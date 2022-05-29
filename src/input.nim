@@ -45,6 +45,11 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
   ## The user input text or "exit" if there was an error or the user pressed
   ## Escape key
   # Get the user input and parse it
+  let exitString: LimitedString =
+    try:
+      initLimitedString(capacity = 4, text = "exit")
+    except CapacityError:
+      return
   var inputChar: char = '\0'
   # Read the user input until not meet new line character or the input
   # reach the maximum length
@@ -60,17 +65,17 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
         except IOError, ValueError:
           discard showError(message = "Can't delete character. Reason: " &
               getCurrentExceptionMsg())
-          return initLimitedString(4, "exit")
+          return exitString
     # Special key pressed (all starts like Escape key), check which one
     elif inputChar.ord() == 27:
       try:
         inputChar = getch()
       except IOError as e:
         discard showError(message = "Can't get the next character after Escape. Reason: " & e.msg)
-        return initLimitedString(4, "exit")
+        return exitString
       # Escape key pressed, return "exit" as input value
       if inputChar.ord() == 27:
-        return initLimitedString(4, "exit")
+        return exitString
       else:
         continue
     # Visible character, add it to the user input string and show it in the
@@ -85,12 +90,12 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
       inputChar = getch()
     except IOError as e:
       discard showError(message = "Can't get the next character. Reason: " & e.msg)
-      return initLimitedString(4, "exit")
+      return exitString
   try:
     stdout.writeLine(x = "")
   except IOError as e:
     discard showError(message = "Can't add a new line. Reason: " & e.msg)
-    return initLimitedString(4, "exit")
+    return exitString
 
 func getArguments*(userInput: var OptParser;
     conjCommands: var bool): UserInput {.gcsafe, raises: [], tags: [].} =
@@ -108,7 +113,11 @@ func getArguments*(userInput: var OptParser;
   ## RETURNS
   ##
   ## Properly converted user input and parameter conjCommands
-  result = initLimitedString(capacity = maxInputLength)
+  result =
+    try:
+      initLimitedString(capacity = maxInputLength)
+    except CapacityError:
+      return
   userInput.next()
   conjCommands = false
   var key: string
