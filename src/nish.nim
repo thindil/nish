@@ -156,7 +156,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   var
     userInput: OptParser
     commandName: string = ""
-    inputString: UserInput = initLimitedString(capacity = maxInputLength)
+    inputString: UserInput = emptyLimitedString(capacity = maxInputLength)
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: HistoryRange
@@ -229,14 +229,19 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     try:
       stdout.eraseLine()
       let
-        input: UserInput = initLimitedString(capacity = maxInputLength,
-            text = strip(s = $inputString, trailing = false))
+        input: UserInput = try:
+            initLimitedString(capacity = maxInputLength, text = strip(s = $inputString, trailing = false))
+          except CapacityError:
+            emptyLimitedString(capacity = maxInputLength)
         spaceIndex: ExtendedNatural = input.find(sub = ' ')
-        command: UserInput = initLimitedString(capacity = maxInputLength,
-            text = (if spaceIndex < 1: $input else: $input[0..spaceIndex - 1]))
-        commandArguments: UserInput = initLimitedString(
-            capacity = maxInputLength, text = (if spaceIndex <
-            1: "" else: $input[spaceIndex..^1]))
+        command: UserInput = try:
+            initLimitedString(capacity = maxInputLength, text = (if spaceIndex < 1: $input else: $input[0..spaceIndex - 1]))
+          except CapacityError:
+            emptyLimitedString(capacity = maxInputLength)
+        commandArguments: UserInput = try:
+            initLimitedString(capacity = maxInputLength, text = (if spaceIndex < 1: "" else: $input[spaceIndex..^1]))
+          except CapacityError:
+            emptyLimitedString(capacity = maxInputLength)
       var color: ForegroundColor = try:
           if findExe(exe = $command).len() > 0:
             fgGreen
@@ -404,9 +409,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     if commandName == "":
       continue
     # Set the command arguments
-    let arguments: UserInput = initLimitedString(capacity = maxInputLength,
-        text = $getArguments(userInput = userInput,
-            conjCommands = conjCommands))
+    let arguments: UserInput = try:
+        initLimitedString(capacity = maxInputLength, text = $getArguments(userInput = userInput, conjCommands = conjCommands))
+      except CapacityError:
+        emptyLimitedString(capacity = maxInputLength)
     try:
       inputString.setString(text = join(a = userInput.remainingArgs(), sep = " "))
     except CapacityError:
@@ -452,11 +458,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = editVariable(arguments = arguments,
             historyIndex = historyIndex, db = db)
       else:
-        returnCode = showUnknownHelp(subCommand = arguments,
-            command = initLimitedString(capacity = 8, text = "variable"),
-                helpType = initLimitedString(capacity = 9, text = "variables"))
-        historyIndex = updateHistory(commandToAdd = "variable " & arguments,
-            db = db, returnCode = returnCode)
+        try:
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 8, text = "variable"),
+                  helpType = initLimitedString(capacity = 9, text = "variables"))
+          historyIndex = updateHistory(commandToAdd = "variable " & arguments,
+              db = db, returnCode = returnCode)
+        except CapacityError:
+          returnCode = ResultCode(QuitFailure)
     # Various commands related to the shell's commands' history
     of "history":
       # No subcommand entered, show available options
@@ -469,11 +478,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       elif arguments == "show":
         historyIndex = showHistory(db = db)
       else:
-        returnCode = showUnknownHelp(subCommand = arguments,
-            command = initLimitedString(capacity = 7, text = "history"),
-                helpType = initLimitedString(capacity = 7, text = "history"))
-        historyIndex = updateHistory(commandToAdd = "history " & arguments,
-            db = db, returnCode = returnCode)
+        try:
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 7, text = "history"),
+                  helpType = initLimitedString(capacity = 7, text = "history"))
+          historyIndex = updateHistory(commandToAdd = "history " & arguments,
+              db = db, returnCode = returnCode)
+        except CapacityError:
+          returnCode = ResultCode(QuitFailure)
     # Various commands related to the shell's options
     of "options":
       # No subcommand entered, show available options
@@ -495,11 +507,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             returnCode = returnCode)
         updateHelp(helpContent = helpContent, db = db)
       else:
-        returnCode = showUnknownHelp(subCommand = arguments,
-            command = initLimitedString(capacity = 7, text = "options"),
-                helpType = initLimitedString(capacity = 7, text = "options"))
-        historyIndex = updateHistory(commandToAdd = "options " & arguments,
-            db = db, returnCode = returnCode)
+        try:
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 7, text = "options"),
+                  helpType = initLimitedString(capacity = 7, text = "options"))
+          historyIndex = updateHistory(commandToAdd = "options " & arguments,
+              db = db, returnCode = returnCode)
+        except CapacityError:
+          returnCode = ResultCode(QuitFailure)
     # Various commands related to the aliases (like show list of available
     # aliases, add, delete, edit them)
     of "alias":
@@ -526,34 +541,40 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = editAlias(arguments = arguments,
             historyIndex = historyIndex, aliases = aliases, db = db)
       else:
-        returnCode = showUnknownHelp(subCommand = arguments,
-            command = initLimitedString(capacity = 5, text = "alias"),
-                helpType = initLimitedString(capacity = 7, text = "aliases"))
-        historyIndex = updateHistory(commandToAdd = "alias " & arguments,
-            db = db, returnCode = returnCode)
+        try:
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 5, text = "alias"),
+                  helpType = initLimitedString(capacity = 7, text = "aliases"))
+          historyIndex = updateHistory(commandToAdd = "alias " & arguments,
+              db = db, returnCode = returnCode)
+        except CapacityError:
+          returnCode = ResultCode(QuitFailure)
     # Execute external command or alias
     else:
       let commandToExecute: string = commandName & (if arguments.len() >
           0: " " & arguments else: "")
-      # Check if command is an alias, if yes, execute it
-      if initLimitedString(capacity = maxInputLength, text = commandName) in aliases:
-        returnCode = execAlias(arguments = arguments, aliasId = commandName,
-            aliases = aliases, db = db)
-        historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
-            returnCode = returnCode)
-        cursorPosition = inputString.len()
-      else:
-        # Execute external command
-        returnCode = ResultCode(execCmd(command = commandToExecute))
-        historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
-            returnCode = returnCode)
+      try:
+        # Check if command is an alias, if yes, execute it
+        if initLimitedString(capacity = maxInputLength, text = commandName) in aliases:
+          returnCode = execAlias(arguments = arguments, aliasId = commandName,
+              aliases = aliases, db = db)
+          historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
+              returnCode = returnCode)
+          cursorPosition = inputString.len()
+        else:
+          # Execute external command
+          returnCode = ResultCode(execCmd(command = commandToExecute))
+          historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
+              returnCode = returnCode)
+      except CapacityError:
+        returnCode = ResultCode(QuitFailure)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
     # the input, don't execute more commands.
     if inputString.len() > 0 and ((returnCode != QuitSuccess and
         conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
-      inputString = initLimitedString(capacity = maxInputLength)
+      inputString = emptyLimitedString(capacity = maxInputLength)
     # Run only one command, quit from the shell
     if oneTimeCommand and inputString.len() == 0:
       quitShell(returnCode = returnCode, db = db)
