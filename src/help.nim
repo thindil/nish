@@ -46,11 +46,12 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   ## RETURNS
   ##
   ## The argument helpContent with updated help for command 'history show'.
-  helpContent["history show"] = HelpEntry(usage: "history show",
-      content: "Show the last " & getOption(optionName = initLimitedString(
-          capacity = 13, text = "historyAmount"),
-
-db = db) & " commands from the shell's history.")
+  helpContent["history show"] = try:
+      HelpEntry(usage: "history show", content: "Show the last " & getOption(
+          optionName = initLimitedString(capacity = 13, text = "historyAmount"),
+          db = db) & " commands from the shell's history.")
+    except CapacityError:
+      HelpEntry(usage: "history show", content: "Show the last commands from the shell's history.")
 
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
@@ -136,10 +137,15 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
   else:
     let
       tokens: seq[string] = split(s = $topic)
-      args: UserInput = initLimitedString(capacity = maxInputLength,
-          text = join(a = tokens[1 .. ^1], " "))
-      command: UserInput = initLimitedString(capacity = maxInputLength,
-          text = tokens[0])
+      args: UserInput = try:
+          initLimitedString(capacity = maxInputLength, text = join(a = tokens[
+              1 .. ^1], " "))
+        except CapacityError:
+          return showError(message = "Can't set arguments for help")
+      command: UserInput = try:
+          initLimitedString(capacity = maxInputLength, text = tokens[0])
+        except CapacityError:
+          return showError(message = "Can't set command for help")
       key: string = command & (if args.len() > 0: " " & args else: "")
     if helpContent.hasKey(key = key):
       try:
@@ -155,11 +161,14 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
           return showError(message = "Cam't show the help topic for '" &
               command & "'. Reason: " & e.msg)
       else:
-        result = showUnknownHelp(subCommand = args, command = command,
-            helpType = initLimitedString(capacity = maxInputLength, text = (
-                if command == "alias": "aliases" else: $command)))
-        discard updateHistory(commandToAdd = "help " & key, db = db,
-            returnCode = result)
+        try:
+          result = showUnknownHelp(subCommand = args, command = command,
+              helpType = initLimitedString(capacity = maxInputLength, text = (
+                  if command == "alias": "aliases" else: $command)))
+          discard updateHistory(commandToAdd = "help " & key, db = db,
+              returnCode = result)
+        except CapacityError:
+          return showError(message = "Can't show help for unknown command")
     else:
       result = showError(message = "Unknown help topic '" & key & "'")
       discard updateHistory(commandToAdd = "help " & key, db = db,

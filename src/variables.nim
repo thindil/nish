@@ -404,7 +404,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showOutput(message = "You can cancel adding a new variable at any time by double press Escape key.")
   showFormHeader(message = "(1/5) Name")
   showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
-  var name: VariableName = initLimitedString(capacity = variableNameLength)
+  var name: VariableName = emptyLimitedString(capacity = variableNameLength)
   showOutput(message = "Name: ", newLine = false)
   while name.len() == 0:
     name = readInput(maxLength = variableNameLength)
@@ -461,7 +461,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showFormHeader(message = "(5/5) Value")
   showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
   showOutput(message = "Value: ", newLine = false)
-  var value: UserInput = initLimitedString(capacity = maxInputLength)
+  var value: UserInput = emptyLimitedString(capacity = maxInputLength)
   while value.len() == 0:
     value = readInput()
     if value.len() == 0:
@@ -527,7 +527,10 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   showOutput(message = "You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
   showFormHeader(message = "(1/5) Name")
   showOutput(message = "The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
-  var name: VariableName = initLimitedString(capacity = variableNameLength, text = "exit")
+  var name: VariableName = try:
+      initLimitedString(capacity = variableNameLength, text = "exit")
+    except CapacityError:
+      return showError(message = "Can't set name of the variable")
   showOutput(message = "Name: ", newLine = false)
   while name.len() > 0:
     name = readInput(maxLength = variableNameLength)
