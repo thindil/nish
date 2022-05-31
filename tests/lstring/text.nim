@@ -4,7 +4,7 @@ discard """
 
 import ../../src/lstring
 
-var testString: LimitedString = initLimitedString(capacity = 10)
+var testString: LimitedString = initLimitedString(capacity = 10, text = "old text")
 testString.text = "new text"
 assert testString == "new text"
 try:
