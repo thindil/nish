@@ -56,4 +56,4 @@ proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
         return (if parent != ".": parent & DirSep else: "") & item.path
   except OSError as e:
     discard showError(message = "Can't get completion. Reason: " & e.msg)
-  return
+    return
