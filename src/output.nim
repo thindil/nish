@@ -156,7 +156,7 @@ proc showError*(message: OutputMessage): ResultCode {.gcsafe, sideEffect,
     stderr.styledWriteLine(fgRed, message)
   except IOError, ValueError:
     try:
-      stdout.writeLine(x = message)
+      stderr.writeLine(x = message)
     except IOError:
       discard
   return ResultCode(QuitFailure)
