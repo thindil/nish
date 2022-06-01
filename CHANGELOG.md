@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Reading command line parameters, when there is set database path and the
   command to execute
 - The program's help about setting the database's path
+- Showing error information during Tab completion
 
 ## [0.2.0] - 2022-05-09
 
