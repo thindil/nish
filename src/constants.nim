@@ -26,8 +26,8 @@
 import std/tables
 import lstring
 
- # Max allowed length of various names (options, variables, etc). Can be
- # customized separately for each name's type either in the proper modules.
+# Max allowed length of various names (options, variables, etc). Can be
+# customized separately for each name's type either in the proper modules.
 const maxNameLength*: Positive = 50
 
 type
