@@ -280,17 +280,17 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
         return updateHistory(commandToAdd = "history show", db = db,
             returnCode = ResultCode(QuitFailure))
     spacesAmount: ColumnAmount = try:
-          (terminalWidth() / 12).int
+          ColumnAmount(terminalWidth()) / 12
       except ValueError:
-        6
+        ColumnAmount(6)
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent(s = "Last used                Times      Command",
-      count = spacesAmount), fgColor = fgMagenta)
+      count = int(spacesAmount)), fgColor = fgMagenta)
   try:
     for row in db.fastRows(query = sql(query = "SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)"),
         amount, amount):
       showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
-          width = 5) & "      " & row[0], count = spacesAmount))
+          width = 5) & "      " & row[0], count = int(spacesAmount)))
     return updateHistory(commandToAdd = "history show", db = db)
   except DbError as e:
     discard showError(message = "Can't get the last commands from the shell's history. Reason: " & e.msg)
