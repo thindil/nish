@@ -115,13 +115,13 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
       content: string = "    "
       index: Positive = 4
     let maxLength: ColumnAmount = try:
-        terminalWidth() - 8
+        (terminalWidth() - 8).ColumnAmount
       except ValueError:
-          72;
+          72.ColumnAmount;
     for ch in helpEntry.content:
       content.add(y = ch)
       index.inc()
-      if index == maxLength:
+      if index == maxLength.int:
         content.add(y = "\n    ")
         index = 4
     showOutput(message = content)
