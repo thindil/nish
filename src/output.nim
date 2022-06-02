@@ -171,10 +171,10 @@ proc showFormHeader*(message) {.gcsafe, locks: 0,
   ##
   ## * message - the text which will be shown in the header
   let
-    length: ColumnAmount = try: terminalWidth() except ValueError: 80
-    spacesAmount: ColumnAmount = (length / 12).int
+    length: ColumnAmount = try: ColumnAmount(terminalWidth()) except ValueError: ColumnAmount(80)
+    spacesAmount: ColumnAmount = length / 12
   showOutput(message = indent(s = repeat(c = '=', count = length - (
-      spacesAmount * 2)), count = spacesAmount), fgColor = fgYellow)
-  showOutput(message = center(s = message, width = length), fgColor = fgYellow)
+      spacesAmount * 2)), count = int(spacesAmount)), fgColor = fgYellow)
+  showOutput(message = center(s = message, width = int(length)), fgColor = fgYellow)
   showOutput(message = indent(s = repeat(c = '=', count = length - (
-      spacesAmount * 2)), count = spacesAmount), fgColor = fgYellow)
+      spacesAmount * 2)), count = int(spacesAmount)), fgColor = fgYellow)

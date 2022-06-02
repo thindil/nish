@@ -118,18 +118,18 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
   ##
   ## * db - the connection to the shell's database
   let spacesAmount: ColumnAmount = try:
-      (terminalWidth() / 12).int
+      ColumnAmount(terminalWidth()) / 12
     except ValueError:
-      4
+      ColumnAmount(4)
   showFormHeader(message = "Available options are:")
   showOutput(message = indent(s = "Name               Value   Default Type    Description",
-      count = spacesAmount), fgColor = fgMagenta)
+      count = int(spacesAmount)), fgColor = fgMagenta)
   try:
     for row in db.fastRows(query = sql(query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
       showOutput(message = indent(s = alignLeft(s = row[0], count = 18) & " " &
           alignLeft(s = row[1], count = 7) & " " & alignLeft(s = row[2],
               count = 7) & " " & alignLeft(s = row[3], count = 7) & " " & row[
-                  4], count = spacesAmount))
+                  4], count = int(spacesAmount)))
   except DbError as e:
     discard showError(message = "Can't show the shell's options. Reason: " & e.msg)
 
