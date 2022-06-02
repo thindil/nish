@@ -26,7 +26,7 @@
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import constants, history, input, lstring, output
 
-const aliasNameLength*: Positive = 50 # The maximum length of the shell's alias name
+const aliasNameLength*: Positive = maxNameLength # The maximum length of the shell's alias name
 
 type
   AliasName* = LimitedString # Used to store aliases names in tables and database.
