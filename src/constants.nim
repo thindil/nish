@@ -48,3 +48,11 @@ type
 # Subprograms related to ResultCode type
 proc `==`*(x: ResultCode; y: int): bool {.borrow.} # Used to compare ResultCode with int
 proc `$`*(x: ResultCode): string {.borrow.} # Get string representation of ResultCode
+
+# Subprograms related to ColumnAmount type
+proc `/`*(x: ColumnAmount; y: int): ColumnAmount =
+  # Used to divide ColumnAmount by integer
+  return ColumnAmount(int(x) / y)
+proc `-`*(x: ColumnAmount; y: int): int {.borrow.}
+proc `*`*(x: ColumnAmount; y: int): int {.borrow.}
+
