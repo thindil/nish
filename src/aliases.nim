@@ -234,24 +234,24 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     except ValueError:
       ColumnAmount(6)
   showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
-      count = spacesAmount), newLine = false, fgColor = fgMagenta)
+      count = int(spacesAmount)), newLine = false, fgColor = fgMagenta)
   showOutput(message = $id)
   showOutput(message = indent(s = alignLeft(s = "Name:", count = 13),
-      count = spacesAmount), newLine = false, fgColor = fgMagenta)
+      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = row[0])
-  showOutput(message = indent(s = "Description: ", count = spacesAmount),
+  showOutput(message = indent(s = "Description: ", count = spacesAmount.int),
       newLine = false, fgColor = fgMagenta)
   showOutput(message = row[2])
   if row[4] == "1":
     showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
-        count = spacesAmount), newLine = false, fgColor = fgMagenta)
+        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
     showOutput(message = row[3] & " (recursive)")
   else:
     showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
-        count = spacesAmount), newLine = false, fgColor = fgMagenta)
+        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
     showOutput(message = row[3])
   showOutput(message = indent(s = alignLeft(s = "Command(s):", count = 13),
-      count = spacesAmount), newLine = false, fgColor = fgMagenta)
+      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = row[1])
   return ResultCode(QuitSuccess)
 
