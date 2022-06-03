@@ -56,3 +56,5 @@ proc `/`*(x: ColumnAmount; y: int): ColumnAmount =
 proc `-`*(x: ColumnAmount; y: int): int {.borrow.} # Used to substraction int from ColumnAmount
 proc `*`*(x: ColumnAmount; y: int): int {.borrow.} # Uset to multiply ColumnAmount by int
 
+# Subprograms related to DatabaseId type
+proc `$`*(x: DatabaseId): string {.borrow.} # Get string representation of ResultCode
