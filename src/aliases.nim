@@ -100,28 +100,28 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   ## The parameter historyIndex updated after execution of showing the aliases'
   ## list
   let
-    columnLength: ColumnAmount = try: ColumnAmount(db.getValue(query =
-        sql(query = "SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1")).len()) except DbError: ColumnAmount(10)
-    spacesAmount: ColumnAmount = try: ColumnAmount(terminalWidth()) /
-        12 except ValueError: ColumnAmount(6)
+    columnLength: ColumnAmount = try: db.getValue(query =
+        sql(query = "SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1")).len().ColumnAmount except DbError: 10.ColumnAmount
+    spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
+        12 except ValueError: 6.ColumnAmount
   if arguments == "list":
     showFormHeader(message = "Available aliases are:")
     try:
       showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
         s = "Name",
-        count = int(columnLength))], count = int(spacesAmount)),
+        count = columnLength.int)], count = spacesAmount.int),
             fgColor = fgMagenta)
     except ValueError:
       showOutput(message = indent(s = "ID   Name Description",
-          count = int(spacesAmount)), fgColor = fgMagenta)
+          count = spacesAmount.int), fgColor = fgMagenta)
     for alias in aliases.values:
       try:
         let row: Row = db.getRow(query = sql(
             query = "SELECT id, name, description FROM aliases WHERE id=?"),
           args = alias)
         showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-            alignLeft(s = row[1], count = int(columnLength)) & " " & row[2],
-                count = int(spacesAmount)))
+            alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
+                count = spacesAmount.int))
       except DbError as e:
         discard showError(message = "Can't read info about alias from database. Reason:" & e.msg)
         return
@@ -130,17 +130,17 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
     showFormHeader(message = "All available aliases are:")
     try:
       showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
-          s = "Name", count = int(columnLength))], count = int(spacesAmount)),
+          s = "Name", count = columnLength.int)], count = spacesAmount.int),
               fgColor = fgMagenta)
     except ValueError:
       showOutput(message = indent(s = "ID   Name Description",
-          count = int(spacesAmount)), fgColor = fgMagenta)
+          count = spacesAmount.int), fgColor = fgMagenta)
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT id, name, description FROM aliases")):
         showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-            alignLeft(s = row[1], count = int(columnLength)) & " " & row[2],
-                count = int(spacesAmount)))
+            alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
+                count = spacesAmount.int))
     except DbError as e:
       discard showError(message = "Can't read info about alias from database. Reason:" & e.msg)
       return
@@ -168,7 +168,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ## QuitFailure. Also, updated parameters historyIndex and aliases
   if arguments.len() < 8:
     historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
-        returnCode = ResultCode(QuitFailure))
+        returnCode = QuitFailure.ResultCode)
     return showError(message = "Enter the Id of the alias to delete.")
   let id: DatabaseId = try:
       parseInt(s = $arguments[7 .. ^1])
@@ -178,7 +178,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     if db.execAffectedRows(query = sql(query = "DELETE FROM aliases WHERE id=?"),
         id) == 0:
       historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
-          returnCode = ResultCode(QuitFailure))
+          returnCode = QuitFailure.ResultCode)
       return showError(message = "The alias with the Id: " & $id &
         " doesn't exists.")
   except DbError as e:
@@ -189,7 +189,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   except OSError as e:
     return showError(message = "Can't delete alias, setting a new aliases not work. Reason: " & e.msg)
   showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
 
 proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
@@ -214,7 +214,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   ## QuitFailure. Also, updated parameter historyIndex
   if arguments.len() < 6:
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
-        returnCode = ResultCode(QuitFailure))
+        returnCode = QuitFailure.ResultCode)
     return showError(message = "Enter the ID of the alias to show.")
   let id: DatabaseId = try:
       parseInt(s = $arguments[5 .. ^1])
@@ -226,16 +226,16 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
       return showError(message = "Can't read alias data from database. Reason: " & e.msg)
   if row[0] == "":
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
-        returnCode = ResultCode(QuitFailure))
+        returnCode = QuitFailure.ResultCode)
     return showError(message = "The alias with the ID: " & $id &
       " doesn't exists.")
   historyIndex = updateHistory(commandToAdd = "alias show", db = db)
   let spacesAmount: ColumnAmount = try:
-      ColumnAmount(terminalWidth()) / 12
+      terminalWidth().ColumnAmount / 12
     except ValueError:
-      ColumnAmount(6)
+      6.ColumnAmount
   showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
-      count = int(spacesAmount)), newLine = false, fgColor = fgMagenta)
+      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = $id)
   showOutput(message = indent(s = alignLeft(s = "Name:", count = 13),
       count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
@@ -254,7 +254,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   showOutput(message = indent(s = alignLeft(s = "Command(s):", count = 13),
       count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = row[1])
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
 
 proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
@@ -381,7 +381,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   except OSError as e:
     return showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
 
 proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
@@ -501,7 +501,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     return showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
   showOutput(message = "The alias  with Id: '" & $id & "' edited.",
       fgColor = fgGreen)
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
 
 proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
@@ -552,7 +552,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     try:
       setCurrentDir(newDir = path)
       aliases.setAliases(directory = path, db = db)
-      return ResultCode(QuitSuccess)
+      return QuitSuccess.ResultCode
     except OSError as e:
       return showError("Can't change directory. Reason: " & e.msg)
 
@@ -608,10 +608,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     if command[0..2] == "cd ":
       if changeDirectory(newDirectory = $command[3..^1], aliases = aliases,
           db = db) != QuitSuccess and conjCommands:
-        return ResultCode(QuitFailure)
+        return QuitFailure.ResultCode
       continue
     if execCmd($command) != QuitSuccess and conjCommands:
-      return ResultCode(QuitFailure)
+      return QuitFailure.ResultCode
     if not conjCommands:
       break
   return changeDirectory(newDirectory = currentDirectory, aliases = aliases, db = db)
