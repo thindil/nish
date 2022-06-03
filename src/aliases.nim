@@ -109,7 +109,8 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
     try:
       showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
         s = "Name",
-        count = int(columnLength))], count = int(spacesAmount)), fgColor = fgMagenta)
+        count = int(columnLength))], count = int(spacesAmount)),
+            fgColor = fgMagenta)
     except ValueError:
       showOutput(message = indent(s = "ID   Name Description",
           count = int(spacesAmount)), fgColor = fgMagenta)
