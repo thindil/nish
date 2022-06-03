@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, re, strutils, tables, terminal]
+import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, history, input, lstring, output
 
 const variableNameLength*: Positive = maxNameLength # The maximum length of the shell's environment variable name
@@ -113,16 +113,22 @@ proc setVariables*(newDirectory: DirectoryPath; db;
         value: string = dbResult[1]
         variableIndex: ExtendedNatural = value.find(sub = '$')
       # Convert all environment variables inside the variable to their values
-      while variableIndex > -1:
-        var variableEnd: ExtendedNatural = value.find(
-            pattern = re"[^a-zA-Z0-9]", start = variableIndex + 1)
-        if variableEnd == -1:
+      while variableIndex in 0..(value.len() - 1):
+        var variableEnd: ExtendedNatural = variableIndex + 1
+        # Variables names can start only with letters
+        if not isAlphaAscii(value[variableEnd]):
+          variableIndex = value.find(sub = '$', start = variableEnd)
+          continue
+        # Variables names can contain only letters and numbers
+        while variableEnd < value.len() and value[variableEnd].isAlphaNumeric():
+          variableEnd.inc()
+        if variableEnd > value.len():
           variableEnd = value.len()
         let variableName: string = value[variableIndex + 1..variableEnd - 1]
         value[variableIndex..variableEnd - 1] = getEnv(variableName)
         variableIndex = value.find(sub = '$', start = variableEnd)
       putEnv(key = dbResult[0], val = value)
-  except DbError, OSError, RegexError:
+  except DbError, OSError:
     discard showError(message = "Can't set environment variables for the new directory. Reason: " &
         getCurrentExceptionMsg())
 
