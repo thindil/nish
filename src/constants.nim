@@ -53,6 +53,6 @@ proc `$`*(x: ResultCode): string {.borrow.} # Get string representation of Resul
 proc `/`*(x: ColumnAmount; y: int): ColumnAmount =
   # Used to divide ColumnAmount by integer
   return ColumnAmount(int(x) / y)
-proc `-`*(x: ColumnAmount; y: int): int {.borrow.}
-proc `*`*(x: ColumnAmount; y: int): int {.borrow.}
+proc `-`*(x: ColumnAmount; y: int): int {.borrow.} # Used to substraction int from ColumnAmount
+proc `*`*(x: ColumnAmount; y: int): int {.borrow.} # Uset to multiply ColumnAmount by int
 
