@@ -97,7 +97,8 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       discard
 
 proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
-    previousCommand: string = ""; returnCode: ResultCode = ResultCode(QuitSuccess);
+    previousCommand: string = ""; returnCode: ResultCode = ResultCode(
+        QuitSuccess);
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
     locks: 0, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
@@ -175,6 +176,7 @@ proc showFormHeader*(message) {.gcsafe, locks: 0,
     spacesAmount: ColumnAmount = length / 12
   showOutput(message = indent(s = repeat(c = '=', count = length - (
       spacesAmount * 2)), count = int(spacesAmount)), fgColor = fgYellow)
-  showOutput(message = center(s = message, width = int(length)), fgColor = fgYellow)
+  showOutput(message = center(s = message, width = int(length)),
+      fgColor = fgYellow)
   showOutput(message = indent(s = repeat(c = '=', count = length - (
       spacesAmount * 2)), count = int(spacesAmount)), fgColor = fgYellow)
