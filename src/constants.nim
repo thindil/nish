@@ -36,7 +36,7 @@ type
     usage*: string   # The shell's command to enter for the selected entry
     content*: string # The content of the selected entry
   HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
-  DirectoryPath* = string # Used to store paths to directories
+  DirectoryPath* = distinct string # Used to store paths to directories
   UserInput* = LimitedString # Used to store text entered by the user
   ResultCode* = distinct Natural # Used to store result code from commands entered by the user
   ColumnAmount* = distinct Natural # Used to store length or amount of terminal's characters columns
