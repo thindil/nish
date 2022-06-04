@@ -50,7 +50,7 @@ proc `==`*(x: ResultCode; y: int): bool {.borrow.} # Used to compare ResultCode 
 proc `$`*(x: ResultCode): string {.borrow.} # Get string representation of ResultCode
 
 # Subprograms related to ColumnAmount type
-proc `/`*(x: ColumnAmount; y: int): ColumnAmount =
+func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [].} =
   # Used to divide ColumnAmount by integer
   return ColumnAmount(int(x) / y)
 proc `-`*(x: ColumnAmount; y: int): int {.borrow.} # Used to substraction int from ColumnAmount
