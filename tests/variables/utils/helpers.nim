@@ -17,4 +17,8 @@ proc setTestVariables*(db: DbConn): int =
       if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
           "TESTS2", "/", 0, "test_variable2", "Test variable 2.") == -1:
         return QuitFailure
+  if parseInt(db.getValue(sql"SELECT COUNT(*) FROM variables")) == 1:
+      if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
+          "TESTS2", "/", 0, "test_variable2", "Test variable 2.") == -1:
+        return QuitFailure
   return QuitSuccess
