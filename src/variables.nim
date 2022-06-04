@@ -371,7 +371,7 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
         returnCode = ResultCode(QuitFailure))
     return showError(message = "Enter the Id of the variable to delete.")
   let varId: DatabaseId = try:
-      parseInt($arguments[7 .. ^1])
+      parseInt($arguments[7 .. ^1]).DatabaseId
     except ValueError:
       return showError(message = "The Id of the variable must be a positive number.")
   try:
@@ -526,7 +526,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if arguments.len() < 6:
     return showError(message = "Enter the ID of the variable to edit.")
   let varId: DatabaseId = try:
-      parseInt($arguments[7 .. ^1])
+      parseInt($arguments[7 .. ^1]).DatabaseId
     except ValueError:
       return showError(message = "The Id of the variable must be a positive number.")
   let

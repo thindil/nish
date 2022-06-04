@@ -171,12 +171,12 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
         returnCode = QuitFailure.ResultCode)
     return showError(message = "Enter the Id of the alias to delete.")
   let id: DatabaseId = try:
-      parseInt(s = $arguments[7 .. ^1])
+      parseInt(s = $arguments[7 .. ^1]).DatabaseId
     except ValueError:
       return showError(message = "The Id of the alias must be a positive number.")
   try:
     if db.execAffectedRows(query = sql(query = "DELETE FROM aliases WHERE id=?"),
-        id) == 0:
+        id.int) == 0:
       historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
           returnCode = QuitFailure.ResultCode)
       return showError(message = "The alias with the Id: " & $id &
@@ -217,7 +217,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
         returnCode = QuitFailure.ResultCode)
     return showError(message = "Enter the ID of the alias to show.")
   let id: DatabaseId = try:
-      parseInt(s = $arguments[5 .. ^1])
+      parseInt(s = $arguments[5 .. ^1]).DatabaseId
     except ValueError:
       return showError(message = "The Id of the alias must be a positive number.")
   let row: Row = try:
@@ -406,7 +406,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   if arguments.len() < 6:
     return showError(message = "Enter the ID of the alias to edit.")
   let id: DatabaseId = try:
-      parseInt(s = $arguments[5 .. ^1])
+      parseInt(s = $arguments[5 .. ^1]).DatabaseId
     except ValueError:
       return showError(message = "The Id of the alias must be a positive number.")
   let row: Row = try:
