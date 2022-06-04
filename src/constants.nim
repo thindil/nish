@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/tables
+import std/[strutils, tables]
 import lstring
 
 # Max allowed length of various names (options, variables, etc). Can be
@@ -58,3 +58,14 @@ proc `*`*(x: ColumnAmount; y: int): int {.borrow.} # Uset to multiply ColumnAmou
 
 # Subprograms related to DatabaseId type
 proc `$`*(x: DatabaseId): string {.borrow.} # Get string representation of ResultCode
+
+# Subprograms related to DirectoryPath type
+proc `$`*(x: DirectoryPath): string {.borrow.} # Get string representation of DirectoryPath
+proc find*(s, sub: DirectoryPath; start: Natural = 0;
+    last = 0): int {.borrow.} # Find substring position in DirectoryPath
+proc len*(s: DirectoryPath): int {.borrow.} # Get the length of DirectoryPath
+proc `[]`*[T, U: Ordinal](s: DirectoryPath; x: HSlice[T,
+    U]): DirectoryPath = # Get the slice from the DirectoryPath
+  return s[x].DirectoryPath
+proc `&`*(x: DirectoryPath; y: string): string {.borrow.} # Concatenates DirectoryPath and string into one string
+proc `&`*(x: string; y: DirectoryPath): string {.borrow.} # Concatenates string and DirectoryPath into one string
