@@ -5,7 +5,7 @@ discard """
 import std/[tables]
 import ../../src/[constants, options, nish]
 
-let db = startDb("test.db")
+let db = startDb("test.db".DirectoryPath)
 assert db != nil
 var
     helpContent = initTable[string, HelpEntry]()
