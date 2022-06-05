@@ -64,8 +64,9 @@ proc `$`*(x: DirectoryPath): string {.borrow.} # Get string representation of Di
 proc find*(s, sub: DirectoryPath; start: Natural = 0;
     last = 0): int {.borrow.} # Find substring position in DirectoryPath
 proc len*(s: DirectoryPath): int {.borrow.} # Get the length of DirectoryPath
-proc `[]`*[T, U: Ordinal](s: DirectoryPath; x: HSlice[T,
-    U]): DirectoryPath = # Get the slice from the DirectoryPath
-  return s[x].DirectoryPath
 proc `&`*(x: DirectoryPath; y: string): string {.borrow.} # Concatenates DirectoryPath and string into one string
 proc `&`*(x: string; y: DirectoryPath): string {.borrow.} # Concatenates string and DirectoryPath into one string
+func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [].} = # Compare the DirectoryPath and string
+  return $x != y
+func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [].} = # Compare the DirectoryPath and string
+  return $x == y
