@@ -198,9 +198,7 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
   let
     newValue: string = s.text[x]
     length: Positive = (if newValue.len() == 0: 1 else: newValue.len())
-  var newLimitedString = LimitedString(capacity: length)
-  newLimitedString.text = newValue
-  return newLimitedString
+  return LimitedString(capacity: length, text: newValue)
 
 func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
     tags: [].} =
