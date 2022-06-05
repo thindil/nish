@@ -8,7 +8,7 @@ import utils/helpers
 
 var (db, _, _, myaliases) = initTest()
 assert setTestAliases(db) == QuitSuccess
-myaliases.setAliases(getCurrentDir(), db)
+myaliases.setAliases(getCurrentDir().DirectoryPath, db)
 assert execAlias(emptyLimitedString(), "tests", myaliases, db) == QuitSuccess
 assert execAlias(emptyLimitedString(), "tests2", myaliases, db) == QuitFailure
 quitShell(ResultCode(QuitSuccess), db)

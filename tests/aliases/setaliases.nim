@@ -8,7 +8,7 @@ import utils/helpers
 
 var (db, _, _, myaliases) = initTest()
 assert setTestAliases(db) == QuitSuccess
-myaliases.setAliases(getCurrentDir(), db)
+myaliases.setAliases(getCurrentDir().DirectoryPath, db)
 assert parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 2
 assert myaliases.len() == 1
 quitShell(ResultCode(QuitSuccess), db)
