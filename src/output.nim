@@ -33,7 +33,7 @@ using
   message: OutputMessage # The message to show to the user
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: ResultCode) {.gcsafe, locks: 0, sideEffect, raises: [],
+    resultCode: ResultCode) {.gcsafe, sideEffect, raises: [],
         tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
   ##
@@ -48,11 +48,11 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     return
   let
     currentDirectory: DirectoryPath = try:
-      getCurrentDir()
+      getCurrentDir().DirectoryPath
     except OSError:
-      "[unknown dir]"
-    homeDirectory: DirectoryPath = getHomeDir()
-  if endsWith(s = currentDirectory & "/", suffix = homeDirectory):
+      "[unknown dir]".DirectoryPath
+    homeDirectory: DirectoryPath = getHomeDir().DirectoryPath
+  if endsWith(s = currentDirectory & "/", suffix = $homeDirectory):
     try:
       stdout.styledWrite(fgBlue, "~")
     except ValueError, IOError:
@@ -61,23 +61,24 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       except IOError:
         discard
   else:
-    let homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
+    let
+      homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
+      promptPath: string = currentDirectory.string[homeIndex +
+              homeDirectory.len()..^1]
     if homeIndex > -1:
       try:
-        stdout.styledWrite(fgBlue, "~/" & currentDirectory[homeIndex +
-            homeDirectory.len()..^1])
+        stdout.styledWrite(fgBlue, "~/" & promptPath)
       except ValueError, IOError:
         try:
-          stdout.write(s = "~/" & currentDirectory[homeIndex +
-              homeDirectory.len()..^1])
+          stdout.write(s = "~/" & promptPath)
         except IOError:
           discard
     else:
       try:
-        stdout.styledWrite(fgBlue, currentDirectory)
+        stdout.styledWrite(fgBlue, $currentDirectory)
       except ValueError, IOError:
         try:
-          stdout.write(s = currentDirectory)
+          stdout.write(s = $currentDirectory)
         except IOError:
           discard
   if previousCommand != "" and resultCode != QuitSuccess:
@@ -100,7 +101,7 @@ proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
     previousCommand: string = ""; returnCode: ResultCode = ResultCode(
         QuitSuccess);
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
-    locks: 0, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
   ##
   ## Show the selected message and prompt (if enabled, default) to the user.
@@ -162,7 +163,7 @@ proc showError*(message: OutputMessage): ResultCode {.gcsafe, sideEffect,
       discard
   return ResultCode(QuitFailure)
 
-proc showFormHeader*(message) {.gcsafe, locks: 0,
+proc showFormHeader*(message) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
   ##

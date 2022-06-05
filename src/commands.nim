@@ -51,14 +51,14 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
   ## QuitFailure. Also, updated parameter aliases.
   try:
     var path: DirectoryPath = try:
-        absolutePath(path = expandTilde(path = newDirectory))
+        absolutePath(path = expandTilde(path = $newDirectory)).DirectoryPath
       except ValueError:
         return showError(message = "Can't get absolute path to the new directory.")
-    if not dirExists(dir = path):
+    if not dirExists(dir = $path):
       return showError(message = "Directory '" & path & "' doesn't exist.")
-    path = expandFilename(filename = path)
-    setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDir())
-    setCurrentDir(newDir = path)
+    path = expandFilename(filename = $path).DirectoryPath
+    setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDir().DirectoryPath)
+    setCurrentDir(newDir = $path)
     aliases.setAliases(directory = path, db = db)
     return QuitSuccess.ResultCode
   except OSError as e:
@@ -83,7 +83,7 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   if newDirectory.len() == 0:
-    result = changeDirectory(newDirectory = "~", aliases = aliases, db = db)
+    result = changeDirectory(newDirectory = "~".DirectoryPath, aliases = aliases, db = db)
     discard updateHistory(commandToAdd = "cd ~", db = db, returnCode = result)
   else:
     result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)

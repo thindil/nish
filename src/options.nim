@@ -133,7 +133,7 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
   except DbError as e:
     discard showError(message = "Can't show the shell's options. Reason: " & e.msg)
 
-proc helpOptions*(db) {.gcsafe, sideEffect, locks: 0, raises: [],
+proc helpOptions*(db) {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
   ##
