@@ -3,7 +3,7 @@ import ../../../src/[aliases, constants, history, lstring, nish]
 
 proc initTest*(): tuple[db: DbConn, helpContent: HelpTable,
     historyIndex: HistoryRange, aliases: AliasesList] =
-  let db = startDb("test.db")
+  let db = startDb("test.db".DirectoryPath)
   assert db != nil
   var helpContent = initTable[string, HelpEntry]()
   return (db, helpContent, initHistory(db, helpContent), initOrderedTable[

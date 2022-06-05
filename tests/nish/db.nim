@@ -5,7 +5,7 @@ discard """
 import std/tables
 import ../../src/[constants, history, nish]
 
-let db = startDb("test.db")
+let db = startDb("test.db".DirectoryPath)
 assert db != nil
 var
     historyIndex: int

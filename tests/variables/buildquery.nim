@@ -2,6 +2,6 @@ discard """
   exitcode: 0
 """
 
-import ../../src/variables
+import ../../src/[constants, variables]
 
-assert buildQuery("/", "name") == "SELECT name FROM variables WHERE path='/' ORDER BY id ASC"
+assert buildQuery("/".DirectoryPath, "name") == "SELECT name FROM variables WHERE path='/' ORDER BY id ASC"
