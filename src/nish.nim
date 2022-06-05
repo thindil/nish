@@ -82,7 +82,7 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
   try:
     db.close()
   except DbError as e:
-    quit int(showError(message = "Can't close properly the shell database. Reason:" & e.msg))
+    quit showError(message = "Can't close properly the shell database. Reason:" & e.msg).int
   quit int(returnCode)
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
@@ -160,7 +160,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         "help", "version"])
     historyIndex: HistoryRange
     oneTimeCommand, conjCommands, keyWasArrow, insertMode: bool = false
-    returnCode: ResultCode = ResultCode(QuitSuccess)
+    returnCode: ResultCode = QuitSuccess.ResultCode
     aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" & DirSep & "nish.db")
     helpContent = initTable[string, HelpEntry]()
@@ -184,7 +184,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         try:
           inputString.setString(text = options.key)
         except CapacityError:
-          quit int(showError(message = "The entered command is too long."))
+          quit showError(message = "The entered command is too long.").int
       of "h", "help":
         showCommandLineHelp()
       of "v", "version":
@@ -398,7 +398,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         discard
     userInput = initOptParser(cmdLine = $inputString)
     # Reset the return code of the program
-    returnCode = ResultCode(QuitSuccess)
+    returnCode = QuitSuccess.ResultCode
     # Go to the first token
     userInput.next()
     # If it looks like an argument, it must be command name
@@ -464,7 +464,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           historyIndex = updateHistory(commandToAdd = "variable " & arguments,
               db = db, returnCode = returnCode)
         except CapacityError:
-          returnCode = ResultCode(QuitFailure)
+          returnCode = QuitFailure.ResultCode
     # Various commands related to the shell's commands' history
     of "history":
       # No subcommand entered, show available options
@@ -484,7 +484,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           historyIndex = updateHistory(commandToAdd = "history " & arguments,
               db = db, returnCode = returnCode)
         except CapacityError:
-          returnCode = ResultCode(QuitFailure)
+          returnCode = QuitFailure.ResultCode
     # Various commands related to the shell's options
     of "options":
       # No subcommand entered, show available options
@@ -513,7 +513,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           historyIndex = updateHistory(commandToAdd = "options " & arguments,
               db = db, returnCode = returnCode)
         except CapacityError:
-          returnCode = ResultCode(QuitFailure)
+          returnCode = QuitFailure.ResultCode
     # Various commands related to the aliases (like show list of available
     # aliases, add, delete, edit them)
     of "alias":
@@ -547,7 +547,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           historyIndex = updateHistory(commandToAdd = "alias " & arguments,
               db = db, returnCode = returnCode)
         except CapacityError:
-          returnCode = ResultCode(QuitFailure)
+          returnCode = QuitFailure.ResultCode
     # Execute external command or alias
     else:
       let commandToExecute: string = commandName & (if arguments.len() >
@@ -566,7 +566,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
               returnCode = returnCode)
       except CapacityError:
-        returnCode = ResultCode(QuitFailure)
+        returnCode = QuitFailure.ResultCode
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
