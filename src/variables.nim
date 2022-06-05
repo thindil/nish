@@ -56,13 +56,13 @@ sideEffect, raises: [], tags: [ReadDbEffect].} =
   ##
   ## The string with database's query for the selected directory and fields
   result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
-  var remainingDirectory: DirectoryPath = parentDir(path = directory)
+  var remainingDirectory: DirectoryPath = parentDir(path = $directory).DirectoryPath
 
   # Construct SQL querry, search for variables also defined in parent directories
   # if they are recursive
   while remainingDirectory != "":
     result.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
-    remainingDirectory = parentDir(remainingDirectory)
+    remainingDirectory = parentDir($remainingDirectory).DirectoryPath
 
   # If optional arguments entered, add them to the query
   if where.len() > 0:
@@ -71,7 +71,7 @@ sideEffect, raises: [], tags: [ReadDbEffect].} =
   result.add(y = " ORDER BY id ASC")
 
 proc setVariables*(newDirectory: DirectoryPath; db;
-    oldDirectory: DirectoryPath = "") {.gcsafe, sideEffect, raises: [], tags: [
+    oldDirectory: DirectoryPath = "".DirectoryPath) {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -182,7 +182,7 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
   helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
       content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
   try:
-    setVariables(getCurrentDir(), db)
+    setVariables(getCurrentDir().DirectoryPath, db)
   except OSError as e:
     discard showError("Can't set environment variables for the current directory. Reason:" & e.msg)
 
@@ -293,7 +293,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
       discard showError(message = "Can't draw header for variables. Reason: " & e.msg)
     try:
       for row in db.fastRows(query = sql(query = buildQuery(
-          directory = getCurrentDir(), fields = "id, name, value, description"))):
+          directory = getCurrentDir().DirectoryPath, fields = "id, name, value, description"))):
         showOutput(message = indent(s = alignLeft(s = row[0], count = 4) & " " &
             alignLeft(s = row[1], count = nameLength.int) & " " & alignLeft(
                 s = row[2], count = valueLength.int) & " " & row[3],
@@ -385,8 +385,8 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     return showError(message = "Can't delete variable from database. Reason: " & e.msg)
   historyIndex = updateHistory(commandToAdd = "variable delete", db = db)
   try:
-    setVariables(newDirectory = getCurrentDir(), db = db,
-        oldDirectory = getCurrentDir())
+    setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
+        oldDirectory = getCurrentDir().DirectoryPath)
   except OSError as e:
     return showError(message = "Can't set environment variables in the current directory. Reason: " & e.msg)
   showOutput(message = "Deleted the variable with Id: " & $varId,
@@ -439,13 +439,13 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   showFormHeader(message = "(3/5) Working directory")
   showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput(message = "Path: ", newLine = false)
-  var path: DirectoryPath = ""
+  var path: DirectoryPath = "".DirectoryPath
   while path.len() == 0:
-    path = $readInput()
+    path = DirectoryPath($readInput())
     if path.len() == 0:
       discard showError(message = "Please enter a path for the alias.")
-    elif not dirExists(dir = path) and path != "exit":
-      path = ""
+    elif not dirExists(dir = $path) and path != "exit":
+      path = "".DirectoryPath
       discard showError(message = "Please enter a path to the existing directory")
     if path.len() == 0:
       showOutput(message = "Path: ", newLine = false)
@@ -496,8 +496,8 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory(commandToAdd = "variable add", db = db)
   try:
-    setVariables(newDirectory = getCurrentDir(), db = db,
-        oldDirectory = getCurrentDir())
+    setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
+        oldDirectory = getCurrentDir().DirectoryPath)
   except OSError as e:
     return showError(message = "Can't set variables for the current directory. Reason: " & e.msg)
   showOutput(message = "The new variable '" & name & "' added.",
@@ -571,10 +571,10 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
       row[1] & "'. Must be a path to the existing directory.:")
   showOutput(message = "Path: ", newLine = false)
-  var path: DirectoryPath = "exit"
+  var path: DirectoryPath = "exit".DirectoryPath
   while path.len() > 0:
-    path = $readInput()
-    if path.len() > 0 and not dirExists(dir = path) and path != "exit":
+    path = DirectoryPath($readInput())
+    if path.len() > 0 and not dirExists(dir = $path) and path != "exit":
       discard showError(message = "Please enter a path to the existing directory")
       showOutput(message = "Path: ", newLine = false)
     else:
@@ -582,7 +582,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   if path == "exit":
     return showError(message = "Editing the variable cancelled.")
   elif path == "":
-    path = row[1]
+    path = row[1].DirectoryPath
   showFormHeader(message = "(4/5) Recursiveness")
   showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   var inputChar: char = try:
@@ -620,8 +620,8 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory(commandToAdd = "variable edit", db = db)
   try:
-    setVariables(newDirectory = getCurrentDir(), db = db,
-        oldDirectory = getCurrentDir())
+    setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
+        oldDirectory = getCurrentDir().DirectoryPath)
   except OSError as e:
     return showError(message = "Can't set variables for the current directory. Reason: " & e.msg)
   showOutput(message = "The variable  with Id: '" & $varId & "' edited.",

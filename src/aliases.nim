@@ -57,13 +57,13 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
   aliases = initOrderedTable[AliasName, int]()
   var
     dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
-    remainingDirectory: DirectoryPath = parentDir(path = directory)
+    remainingDirectory: DirectoryPath = parentDir(path = $directory).DirectoryPath
 
   # Construct SQL querry, search for aliases also defined in parent directories
   # if they are recursive
   while remainingDirectory != "":
     dbQuery.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
-    remainingDirectory = parentDir(path = remainingDirectory)
+    remainingDirectory = parentDir(path = $remainingDirectory).DirectoryPath
   dbQuery.add(y = " ORDER BY id ASC")
   # Set the aliases
   try:
@@ -185,7 +185,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     return showError(message = "Can't delete alias from database. Reason: " & e.msg)
   historyIndex = updateHistory(commandToAdd = "alias delete", db = db)
   try:
-    aliases.setAliases(directory = getCurrentDir(), db = db)
+    aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
   except OSError as e:
     return showError(message = "Can't delete alias, setting a new aliases not work. Reason: " & e.msg)
   showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
@@ -323,13 +323,13 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   showFormHeader(message = "(3/5) Working directory")
   showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput(message = "Path: ", newLine = false)
-  var path: DirectoryPath = ""
+  var path: DirectoryPath = "".DirectoryPath
   while path.len() == 0:
-    path = $readInput()
+    path = DirectoryPath($readInput())
     if path.len() == 0:
       discard showError(message = "Please enter a path for the alias.")
-    elif not dirExists(dir = path) and path != "exit":
-      path = ""
+    elif not dirExists(dir = $path) and path != "exit":
+      path = "".DirectoryPath
       discard showError(message = "Please enter a path to the existing directory")
     if path.len() == 0:
       showOutput(message = "Path: ", newLine = false)
@@ -377,7 +377,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory(commandToAdd = "alias add", db = db)
   try:
-    aliases.setAliases(directory = getCurrentDir(), db = db)
+    aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
   except OSError as e:
     return showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
@@ -450,14 +450,14 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
       newLine = false)
   showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
   showOutput(message = "'. Must be a path to the existing directory.")
-  var path: DirectoryPath = $readInput()
-  while path.len() > 0 and (path != "exit" and not dirExists(dir = path)):
+  var path: DirectoryPath = DirectoryPath($readInput())
+  while path.len() > 0 and (path != "exit" and not dirExists(dir = $path)):
     discard showError(message = "Please enter a path to the existing directory")
-    path = $readInput()
+    path = DirectoryPath($readInput())
   if path == "exit":
     return showError(message = "Editing the alias cancelled.")
   elif path == "":
-    path = row[1]
+    path = row[1].DirectoryPath
   showFormHeader(message = "(4/5) Recursiveness")
   showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput(message = "Recursive(y/n): ", newLine = false)
@@ -496,7 +496,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory(commandToAdd = "alias edit", db = db)
   try:
-    aliases.setAliases(directory = getCurrentDir(), db = db)
+    aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
   except OSError as e:
     return showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
   showOutput(message = "The alias  with Id: '" & $id & "' edited.",
@@ -545,12 +545,12 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     ## QuitFailure. Also, updated parameter aliases.
     let path: DirectoryPath = try:
         expandFilename(filename = absolutePath(path = expandTilde(
-            path = newDirectory)))
+            path = $newDirectory))).DirectoryPath
       except OSError, ValueError:
         return showError(message = "Can't change directory. Reason: " &
             getCurrentExceptionMsg())
     try:
-      setCurrentDir(newDir = path)
+      setCurrentDir(newDir = $path)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess.ResultCode
     except OSError as e:
@@ -558,7 +558,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
 
   let
     currentDirectory: DirectoryPath = try:
-        getCurrentDir()
+        getCurrentDir().DirectoryPath
       except OSError:
         return showError(message = "Can't get the current directory name. Reason: " &
             getCurrentExceptionMsg())
@@ -606,7 +606,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     # Threat cd command specially, it should just change the current
     # directory for the alias
     if command[0..2] == "cd ":
-      if changeDirectory(newDirectory = $command[3..^1], aliases = aliases,
+      if changeDirectory(newDirectory = DirectoryPath($command[3..^1]), aliases = aliases,
           db = db) != QuitSuccess and conjCommands:
         return QuitFailure.ResultCode
       continue
@@ -647,6 +647,6 @@ proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
   helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
       content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
   try:
-    result.setAliases(directory = getCurrentDir(), db = db)
+    result.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
   except OSError as e:
     discard showError(message = "Can't initialize aliases. Reason: " & e.msg)

@@ -102,13 +102,13 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
   ## Pointer to the database connection. If connection cannot be established,
   ## returns nil.
   try:
-    discard existsOrCreateDir(dir = parentDir(path = dbPath))
+    discard existsOrCreateDir(dir = parentDir(path = $dbPath))
   except OSError, IOError:
     discard showError(message = "Can't create directory for the shell's database. Reason: " &
         getCurrentExceptionMsg())
     return nil
   try:
-    result = open(connection = dbPath, user = "", password = "", database = "")
+    result = open(connection = $dbPath, user = "", password = "", database = "")
   except DbError as e:
     discard showError(message = "Can't open the shell's database. Reason: " & e.msg)
     return nil
@@ -162,7 +162,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     oneTimeCommand, conjCommands, keyWasArrow, insertMode: bool = false
     returnCode: ResultCode = ResultCode(QuitSuccess)
     aliases: AliasesList = initOrderedTable[AliasName, int]()
-    dbPath: DirectoryPath = getConfigDir() & DirSep & "nish" & DirSep & "nish.db"
+    dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" & DirSep & "nish.db")
     helpContent = initTable[string, HelpEntry]()
     cursorPosition: Natural = 0
 
@@ -190,7 +190,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       of "v", "version":
         showProgramVersion()
       of "db":
-        dbPath = options.val
+        dbPath = DirectoryPath(options.val)
     else: discard
 
   # Connect to the shell database
@@ -427,7 +427,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       returnCode = showHelp(topic = arguments, helpContent = helpContent, db = db)
     # Change current directory
     of "cd":
-      returnCode = cdCommand(newDirectory = $arguments, aliases = aliases, db = db)
+      returnCode = cdCommand(newDirectory = DirectoryPath($arguments), aliases = aliases, db = db)
       historyIndex = historyLength(db = db)
     # Set the environment variable
     of "set":
