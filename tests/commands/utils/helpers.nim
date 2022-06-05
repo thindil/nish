@@ -1,8 +1,8 @@
 import std/[db_sqlite, strutils, tables]
-import ../../../src/[aliases, lstring, nish]
+import ../../../src/[aliases, constants, lstring, nish]
 
 proc initTest*(): tuple[db: DbConn, aliases: AliasesList] =
-  let db = startDb("test.db")
+  let db = startDb("test.db".DirectoryPath)
   assert db != nil
   if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
       if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",

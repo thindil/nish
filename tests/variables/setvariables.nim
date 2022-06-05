@@ -8,7 +8,7 @@ import utils/helpers
 
 let (db, _, _) = initTest()
 assert setTestVariables(db) == QuitSuccess
-setVariables("/home", db)
+setVariables("/home".DirectoryPath, db)
 assert getEnv("TESTS") == "test_variable"
 assert not existsEnv("TESTS2")
 quitShell(ResultCode(QuitSuccess), db)
