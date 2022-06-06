@@ -65,7 +65,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
   except DbError, CapacityError:
     discard showError(message = "Can't get value for option '" & optionName &
         "' from database. Reason: " & getCurrentExceptionMsg())
-    result = defaultValue
+    return defaultValue
   if result == "":
     result = defaultValue
 
