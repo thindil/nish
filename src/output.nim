@@ -98,8 +98,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       discard
 
 proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
-    previousCommand: string = ""; returnCode: ResultCode = ResultCode(
-        QuitSuccess);
+    previousCommand: string = ""; returnCode: ResultCode = QuitSuccess.ResultCode;
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
@@ -161,7 +160,7 @@ proc showError*(message: OutputMessage): ResultCode {.gcsafe, sideEffect,
       stderr.writeLine(x = message)
     except IOError:
       discard
-  return ResultCode(QuitFailure)
+  return QuitFailure.ResultCode
 
 proc showFormHeader*(message) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
@@ -173,11 +172,11 @@ proc showFormHeader*(message) {.gcsafe,
   ##
   ## * message - the text which will be shown in the header
   let
-    length: ColumnAmount = try: ColumnAmount(terminalWidth()) except ValueError: ColumnAmount(80)
+    length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
     spacesAmount: ColumnAmount = length / 12
   showOutput(message = indent(s = repeat(c = '=', count = length - (
-      spacesAmount * 2)), count = int(spacesAmount)), fgColor = fgYellow)
-  showOutput(message = center(s = message, width = int(length)),
+      spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
+  showOutput(message = center(s = message, width = length.int),
       fgColor = fgYellow)
   showOutput(message = indent(s = repeat(c = '=', count = length - (
-      spacesAmount * 2)), count = int(spacesAmount)), fgColor = fgYellow)
+      spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
