@@ -66,7 +66,9 @@ proc find*(s, sub: DirectoryPath; start: Natural = 0;
 proc len*(s: DirectoryPath): int {.borrow.} # Get the length of DirectoryPath
 proc `&`*(x: DirectoryPath; y: string): string {.borrow.} # Concatenates DirectoryPath and string into one string
 proc `&`*(x: string; y: DirectoryPath): string {.borrow.} # Concatenates string and DirectoryPath into one string
-func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [].} = # Compare the DirectoryPath and string
+func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [],
+    locks: 0.} = # Compare the DirectoryPath and string
   return $x != y
-func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [].} = # Compare the DirectoryPath and string
+func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [],
+    locks: 0.} = # Compare the DirectoryPath and string
   return $x == y
