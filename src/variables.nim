@@ -209,7 +209,7 @@ proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         putEnv(key = varValues[0], val = varValues[1])
         showOutput(message = "Environment variable '" & varValues[0] &
             "' set to '" & varValues[1] & "'", fgColor = fgGreen)
-        result = ResultCode(QuitSuccess)
+        result = QuitSuccess.ResultCode
       except OSError as e:
         result = showError(message = "Can't set the environment variable '" &
             varValues[0] & "'. Reason:" & e.msg)
@@ -241,7 +241,7 @@ proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       delEnv(key = $arguments)
       showOutput(message = "Environment variable '" & arguments & "' removed",
           fgColor = fgGreen)
-      result = ResultCode(QuitSuccess)
+      result = QuitSuccess.ResultCode
     except OSError as e:
       result = showError(message = "Can't unset the environment variable '" &
           arguments & "'. Reason:" & e.msg)
@@ -302,7 +302,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
       discard showError(message = "Can't get the current directory name. Reason: " &
           getCurrentExceptionMsg())
       historyIndex = updateHistory(commandToAdd = "variable " & arguments,
-          db = db, returnCode = ResultCode(QuitFailure))
+          db = db, returnCode = QuitFailure.ResultCode)
       return
   elif arguments == "list all":
     showFormHeader(message = "All declared environent variables are:")
@@ -323,7 +323,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
     except DbError as e:
       discard showError(message = "Can't read data about variables from database. Reason: " & e.msg)
       historyIndex = updateHistory(commandToAdd = "variable " & arguments,
-          db = db, returnCode = ResultCode(QuitFailure))
+          db = db, returnCode = QuitFailure.ResultCode)
       return
   historyIndex = updateHistory(commandToAdd = "variable " & arguments, db = db)
 
@@ -368,7 +368,7 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   ## shell's history
   if arguments.len() < 8:
     historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
-        returnCode = ResultCode(QuitFailure))
+        returnCode = QuitFailure.ResultCode)
     return showError(message = "Enter the Id of the variable to delete.")
   let varId: DatabaseId = try:
       parseInt($arguments[7 .. ^1]).DatabaseId
@@ -378,7 +378,7 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     if db.execAffectedRows(query = sql(query = (
         "DELETE FROM variables WHERE id=?")), varId) == 0:
       historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
-          returnCode = ResultCode(QuitFailure))
+          returnCode = QuitFailure.ResultCode)
       return showError(message = "The variable with the Id: " & $varId &
         " doesn't exist.")
   except DbError as e:
@@ -391,7 +391,7 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     return showError(message = "Can't set environment variables in the current directory. Reason: " & e.msg)
   showOutput(message = "Deleted the variable with Id: " & $varId,
       fgColor = fgGreen)
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
 
 proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
     ], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
@@ -502,7 +502,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
     return showError(message = "Can't set variables for the current directory. Reason: " & e.msg)
   showOutput(message = "The new variable '" & name & "' added.",
       fgColor = fgGreen)
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
 
 proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
@@ -626,4 +626,4 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     return showError(message = "Can't set variables for the current directory. Reason: " & e.msg)
   showOutput(message = "The variable  with Id: '" & $varId & "' edited.",
       fgColor = fgGreen)
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
