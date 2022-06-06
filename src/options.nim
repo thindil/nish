@@ -118,18 +118,18 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
   ##
   ## * db - the connection to the shell's database
   let spacesAmount: ColumnAmount = try:
-      ColumnAmount(terminalWidth()) / 12
+      terminalWidth().ColumnAmount / 12
     except ValueError:
-      ColumnAmount(4)
+      4.ColumnAmount
   showFormHeader(message = "Available options are:")
   showOutput(message = indent(s = "Name               Value   Default Type    Description",
-      count = int(spacesAmount)), fgColor = fgMagenta)
+      count = spacesAmount.int), fgColor = fgMagenta)
   try:
     for row in db.fastRows(query = sql(query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
       showOutput(message = indent(s = alignLeft(s = row[0], count = 18) & " " &
           alignLeft(s = row[1], count = 7) & " " & alignLeft(s = row[2],
               count = 7) & " " & alignLeft(s = row[3], count = 7) & " " & row[
-                  4], count = int(spacesAmount)))
+                  4], count = spacesAmount.int))
   except DbError as e:
     discard showError(message = "Can't show the shell's options. Reason: " & e.msg)
 
@@ -201,7 +201,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   setOption(optionName = optionName, value = value, db = db)
   showOutput(message = "Value for option '" & optionName & "' was set to '" &
       value & "'", fgColor = fgGreen);
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
 
 proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
@@ -245,7 +245,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     except DbError as e:
       return showError(message = "Can't reset option '" & optionName &
           "' to its default value. Reason: " & e.msg)
-  return ResultCode(QuitSuccess)
+  return QuitSuccess.ResultCode
 
 func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
     raises: [], tags: [].} =
