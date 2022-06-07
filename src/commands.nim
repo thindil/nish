@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, tables]
-import aliases, constants, history, output, variables
+import aliases, constants, history, output, resultcode, variables
 
 using
   db: DbConn # Connection to the shell's database
