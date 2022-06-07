@@ -2,7 +2,7 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[constants, lstring, nish, variables]
+import ../../src/[lstring, nish, variables, resultcode]
 import utils/helpers
 
 var (db, _, historyIndex) = initTest()

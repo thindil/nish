@@ -2,7 +2,7 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[constants, history, nish]
+import ../../src/[history, nish, resultcode]
 import utils/helpers
 
 let (db, amount) = initTest()

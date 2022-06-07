@@ -2,7 +2,7 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[constants, nish, variables]
+import ../../src/[nish, variables, resultcode]
 import utils/helpers
 
 var (db, helpContent, _) = initTest()

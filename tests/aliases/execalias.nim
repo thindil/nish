@@ -3,7 +3,7 @@ discard """
 """
 
 import std/os
-import ../../src/[aliases, constants, lstring, nish]
+import ../../src/[aliases, constants, lstring, nish, resultcode]
 import utils/helpers
 
 var (db, _, _, myaliases) = initTest()
