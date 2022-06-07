@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
-import constants, input, lstring, output, resultcode
+import columnamount, constants, input, lstring, output, resultcode
 
 type
   OptionName* = LimitedString # Used to store options names in the database.

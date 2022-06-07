@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[os, strutils, terminal]
-import constants, resultcode
+import columnamount, constants, resultcode
 
 type
   OutputMessage* = string # Used to store message to show to the user
