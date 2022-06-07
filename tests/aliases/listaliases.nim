@@ -3,7 +3,7 @@ discard """
 """
 
 import std/[db_sqlite, os, strutils]
-import ../../src/[aliases, constants, lstring, nish]
+import ../../src/[aliases, constants, lstring, nish, resultcode]
 import utils/helpers
 
 var (db, _, historyIndex, myaliases) = initTest()

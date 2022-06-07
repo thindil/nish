@@ -3,7 +3,7 @@ discard """
 """
 
 import std/os
-import ../../src/[constants, lstring, nish, variables]
+import ../../src/[constants, lstring, nish, variables, resultcode]
 
 let db = startDb("test.db".DirectoryPath)
 assert db != nil
