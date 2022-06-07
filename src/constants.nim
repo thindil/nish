@@ -38,16 +38,10 @@ type
   HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
   DirectoryPath* = distinct string # Used to store paths to directories
   UserInput* = LimitedString # Used to store text entered by the user
-  ResultCode* = distinct Natural # Used to store result code from commands entered by the user
   ColumnAmount* = distinct Natural # Used to store length or amount of terminal's characters columns
   DatabaseId* = distinct Natural # Used to store ids from or to the shell's database
   ExtendedNatural* = range[-1..high(int)] # Used to store various indexes
   BooleanInt* = range[0..1] # Used to store boolean values in database
-
-
-# Subprograms related to ResultCode type
-proc `==`*(x: ResultCode; y: int): bool {.borrow.} # Used to compare ResultCode with int
-proc `$`*(x: ResultCode): string {.borrow.} # Get string representation of ResultCode
 
 # Subprograms related to ColumnAmount type
 func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [].} =
