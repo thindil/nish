@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
-import constants, history, input, lstring, options, output
+import constants, history, input, lstring, options, output, resultcode
 
 using
   db: DbConn # Connection to the shell's database
