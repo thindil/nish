@@ -23,19 +23,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/tables
-import lstring
+import std/strutils
 
-# Max allowed length of various names (options, variables, etc). Can be
-# customized separately for each name's type either in the proper modules.
-const maxNameLength*: Positive = 50
+type DirectoryPath* = distinct string # Used to store paths to directories
 
-type
-  HelpEntry* = object
-    # Used to store the shell's help entries
-    usage*: string   # The shell's command to enter for the selected entry
-    content*: string # The content of the selected entry
-  HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
-  UserInput* = LimitedString # Used to store text entered by the user
-  ExtendedNatural* = range[-1..high(int)] # Used to store various indexes
-  BooleanInt* = range[0..1] # Used to store boolean values in database
+proc `$`*(x: DirectoryPath): string {.borrow.} # Get string representation of DirectoryPath
+proc find*(s, sub: DirectoryPath; start: Natural = 0;
+    last = 0): int {.borrow.} # Find substring position in DirectoryPath
+proc len*(s: DirectoryPath): int {.borrow.} # Get the length of DirectoryPath
+proc `&`*(x: DirectoryPath; y: string): string {.borrow.} # Concatenates DirectoryPath and string into one string
+proc `&`*(x: string; y: DirectoryPath): string {.borrow.} # Concatenates string and DirectoryPath into one string
+func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [],
+    locks: 0.} = # Compare the DirectoryPath and string
+  return $x != y
+func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [],
+    locks: 0.} = # Compare the DirectoryPath and string
+  return $x == y
