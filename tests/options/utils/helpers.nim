@@ -1,5 +1,5 @@
 import std/[db_sqlite, tables]
-import ../../../src/[constants, history, nish]
+import ../../../src/[constants, directorypath, history, nish]
 
 proc initTest*(): DbConn =
   result = startDb("test.db".DirectoryPath)

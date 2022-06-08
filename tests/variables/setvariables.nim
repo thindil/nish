@@ -3,7 +3,7 @@ discard """
 """
 
 import std/os
-import ../../src/[constants, nish, variables, resultcode]
+import ../../src/[directorypath, nish, variables, resultcode]
 import utils/helpers
 
 let (db, _, _) = initTest()
