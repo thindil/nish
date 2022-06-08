@@ -24,7 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
-import columnamount, constants, databaseid, history, input, lstring, output, resultcode
+import columnamount, constants, databaseid, directorypath, history, input,
+    lstring, output, resultcode
 
 const variableNameLength*: Positive = maxNameLength # The maximum length of the shell's environment variable name
 
@@ -56,7 +57,8 @@ sideEffect, raises: [], tags: [ReadDbEffect].} =
   ##
   ## The string with database's query for the selected directory and fields
   result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
-  var remainingDirectory: DirectoryPath = parentDir(path = $directory).DirectoryPath
+  var remainingDirectory: DirectoryPath = parentDir(
+      path = $directory).DirectoryPath
 
   # Construct SQL querry, search for variables also defined in parent directories
   # if they are recursive
@@ -71,7 +73,8 @@ sideEffect, raises: [], tags: [ReadDbEffect].} =
   result.add(y = " ORDER BY id ASC")
 
 proc setVariables*(newDirectory: DirectoryPath; db;
-    oldDirectory: DirectoryPath = "".DirectoryPath) {.gcsafe, sideEffect, raises: [], tags: [
+    oldDirectory: DirectoryPath = "".DirectoryPath) {.gcsafe, sideEffect,
+        raises: [], tags: [
     ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
@@ -293,7 +296,8 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
       discard showError(message = "Can't draw header for variables. Reason: " & e.msg)
     try:
       for row in db.fastRows(query = sql(query = buildQuery(
-          directory = getCurrentDir().DirectoryPath, fields = "id, name, value, description"))):
+          directory = getCurrentDir().DirectoryPath,
+              fields = "id, name, value, description"))):
         showOutput(message = indent(s = alignLeft(s = row[0], count = 4) & " " &
             alignLeft(s = row[1], count = nameLength.int) & " " & alignLeft(
                 s = row[2], count = valueLength.int) & " " & row[3],

@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, tables]
-import aliases, constants, history, output, resultcode, variables
+import aliases, constants, directorypath, history, output, resultcode, variables
 
 using
   db: DbConn # Connection to the shell's database
@@ -83,7 +83,8 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   if newDirectory.len() == 0:
-    result = changeDirectory(newDirectory = "~".DirectoryPath, aliases = aliases, db = db)
+    result = changeDirectory(newDirectory = "~".DirectoryPath,
+        aliases = aliases, db = db)
     discard updateHistory(commandToAdd = "cd ~", db = db, returnCode = result)
   else:
     result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)

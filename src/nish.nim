@@ -24,8 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import aliases, commands, completion, constants, help, history, input, lstring,
-    options, output, resultcode, variables
+import aliases, commands, completion, constants, directorypath, help, history,
+    input, lstring, options, output, resultcode, variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =
@@ -162,7 +162,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     oneTimeCommand, conjCommands, keyWasArrow, insertMode: bool = false
     returnCode: ResultCode = QuitSuccess.ResultCode
     aliases: AliasesList = initOrderedTable[AliasName, int]()
-    dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" & DirSep & "nish.db")
+    dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
+        DirSep & "nish.db")
     helpContent = initTable[string, HelpEntry]()
     cursorPosition: Natural = 0
 
@@ -229,16 +230,19 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       stdout.eraseLine()
       let
         input: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = strip(s = $inputString, trailing = false))
+            initLimitedString(capacity = maxInputLength, text = strip(
+                s = $inputString, trailing = false))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
         spaceIndex: ExtendedNatural = input.find(sub = ' ')
         command: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = (if spaceIndex < 1: $input else: $input[0..spaceIndex - 1]))
+            initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
+                1: $input else: $input[0..spaceIndex - 1]))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
         commandArguments: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = (if spaceIndex < 1: "" else: $input[spaceIndex..^1]))
+            initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
+                1: "" else: $input[spaceIndex..^1]))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
       var color: ForegroundColor = try:
@@ -409,7 +413,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       continue
     # Set the command arguments
     let arguments: UserInput = try:
-        initLimitedString(capacity = maxInputLength, text = $getArguments(userInput = userInput, conjCommands = conjCommands))
+        initLimitedString(capacity = maxInputLength, text = $getArguments(
+            userInput = userInput, conjCommands = conjCommands))
       except CapacityError:
         emptyLimitedString(capacity = maxInputLength)
     try:
@@ -427,7 +432,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       returnCode = showHelp(topic = arguments, helpContent = helpContent, db = db)
     # Change current directory
     of "cd":
-      returnCode = cdCommand(newDirectory = DirectoryPath($arguments), aliases = aliases, db = db)
+      returnCode = cdCommand(newDirectory = DirectoryPath($arguments),
+          aliases = aliases, db = db)
       historyIndex = historyLength(db = db)
     # Set the environment variable
     of "set":
@@ -460,7 +466,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 8, text = "variable"),
-                  helpType = initLimitedString(capacity = 9, text = "variables"))
+                  helpType = initLimitedString(capacity = 9,
+                      text = "variables"))
           historyIndex = updateHistory(commandToAdd = "variable " & arguments,
               db = db, returnCode = returnCode)
         except CapacityError:
