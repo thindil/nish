@@ -1,5 +1,5 @@
 import std/[db_sqlite, tables]
-import ../../../src/[constants, history, nish]
+import ../../../src/[constants, directorypath, history, nish]
 
 proc initTest*(): tuple[db: DbConn, historyIndex: HistoryRange] =
   let db = startDb("test.db".DirectoryPath)

@@ -3,7 +3,7 @@ discard """
 """
 
 import std/[tables]
-import ../../src/[constants, options, nish, resultcode]
+import ../../src/[constants, directorypath, options, nish, resultcode]
 
 let db = startDb("test.db".DirectoryPath)
 assert db != nil
