@@ -38,12 +38,8 @@ type
   HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
   DirectoryPath* = distinct string # Used to store paths to directories
   UserInput* = LimitedString # Used to store text entered by the user
-  DatabaseId* = distinct Natural # Used to store ids from or to the shell's database
   ExtendedNatural* = range[-1..high(int)] # Used to store various indexes
   BooleanInt* = range[0..1] # Used to store boolean values in database
-
-# Subprograms related to DatabaseId type
-proc `$`*(x: DatabaseId): string {.borrow.} # Get string representation of ResultCode
 
 # Subprograms related to DirectoryPath type
 proc `$`*(x: DirectoryPath): string {.borrow.} # Get string representation of DirectoryPath
