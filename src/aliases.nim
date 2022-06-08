@@ -24,7 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import columnamount, constants, databaseid, history, input, lstring, output, resultcode
+import columnamount, constants, databaseid, directorypath, history, input,
+    lstring, output, resultcode
 
 const aliasNameLength*: Positive = maxNameLength # The maximum length of the shell's alias name
 
@@ -57,7 +58,8 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
   aliases = initOrderedTable[AliasName, int]()
   var
     dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
-    remainingDirectory: DirectoryPath = parentDir(path = $directory).DirectoryPath
+    remainingDirectory: DirectoryPath = parentDir(
+        path = $directory).DirectoryPath
 
   # Construct SQL querry, search for aliases also defined in parent directories
   # if they are recursive
@@ -606,8 +608,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     # Threat cd command specially, it should just change the current
     # directory for the alias
     if command[0..2] == "cd ":
-      if changeDirectory(newDirectory = DirectoryPath($command[3..^1]), aliases = aliases,
-          db = db) != QuitSuccess and conjCommands:
+      if changeDirectory(newDirectory = DirectoryPath($command[3..^1]),
+          aliases = aliases, db = db) != QuitSuccess and conjCommands:
         return QuitFailure.ResultCode
       continue
     if execCmd($command) != QuitSuccess and conjCommands:
