@@ -23,10 +23,22 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-type ColumnAmount* = distinct Natural # Used to store length or amount of terminal's characters columns
+type ColumnAmount* = distinct Natural
+## Used to store length or amount of terminal's characters columns
 
 func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [], locks: 0.} =
-  # Used to divide ColumnAmount by integer
+  ## FUNCTION
+  ##
+  ## Used to divide ColumnAmount by integer
+  ##
+  ## PARAMS
+  ##
+  ## * x - The ColumnAmount value which will be divided
+  ## * y - The int value which will be divider
+  ##
+  ## RESULT
+  ##
+  ## The result of dividing x by y converted to ColumnAmount
   return ColumnAmount(x.int / y)
 
 proc `-`*(x: ColumnAmount; y: int): int {.borrow.} # Used to substraction int from ColumnAmount
