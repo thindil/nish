@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import columnamount, constants, history, input, lstring, output, resultcode
+import columnamount, constants, databaseid, history, input, lstring, output, resultcode
 
 const aliasNameLength*: Positive = maxNameLength # The maximum length of the shell's alias name
 
