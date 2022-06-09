@@ -25,5 +25,16 @@
 
 type DatabaseId* = distinct Natural # Used to store ids from or to the shell's database
 
-proc `$`*(x: DatabaseId): string {.borrow.} # Get string representation of ResultCode
+proc `$`*(x: DatabaseId): string {.borrow.}
+## FUNCTION
+##
+## Get string representation of ResultCode. Borrowed from int type.
+##
+## PARAMETERS
+##
+## * x - The DatabaseId value which will be converted to string
+##
+## RESULT
+##
+## The string representation of x parameter
 
