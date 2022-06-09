@@ -41,7 +41,7 @@ func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [],
   ## The result of dividing x by y converted to ColumnAmount
   return ColumnAmount(x.int / y)
 
-proc `-`*(x: ColumnAmount; y: int): int {.borrow.} 
+proc `-`*(x: ColumnAmount; y: int): int {.borrow.}
 ## FUNCTION
 ##
 ## Used to substraction int from ColumnAmount. Borrowed from int type
@@ -55,5 +55,17 @@ proc `-`*(x: ColumnAmount; y: int): int {.borrow.}
 ##
 ## Substraction result of int from ColumnAmount
 
-proc `*`*(x: ColumnAmount; y: int): int {.borrow.} # Uset to multiply ColumnAmount by int
+proc `*`*(x: ColumnAmount; y: int): int {.borrow.}
+## FUNCTION
+##
+## Used to multiply ColumnAmount by int. Borrowed from int type
+##
+## PARAMETERS
+##
+## * x - The ColumnAmount which will be multiplied
+## * y - The int which will be multiplier
+##
+## RESULT
+##
+## The x multiplied by y
 
