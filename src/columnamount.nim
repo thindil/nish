@@ -31,7 +31,7 @@ func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [],
   ##
   ## Used to divide ColumnAmount by integer
   ##
-  ## PARAMS
+  ## PARAMETERS
   ##
   ## * x - The ColumnAmount value which will be divided
   ## * y - The int value which will be divider
@@ -41,7 +41,19 @@ func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [],
   ## The result of dividing x by y converted to ColumnAmount
   return ColumnAmount(x.int / y)
 
-proc `-`*(x: ColumnAmount; y: int): int {.borrow.} # Used to substraction int from ColumnAmount
+proc `-`*(x: ColumnAmount; y: int): int {.borrow.} 
+## FUNCTION
+##
+## Used to substraction int from ColumnAmount. Borrowed from int type
+##
+## PARAMETERS
+##
+## * x - The ColumnAmount from which will be value will be substracted
+## * y - The int which will be substracted from ColumnAmount value
+##
+## RESULT
+##
+## Substraction result of int from ColumnAmount
 
 proc `*`*(x: ColumnAmount; y: int): int {.borrow.} # Uset to multiply ColumnAmount by int
 
