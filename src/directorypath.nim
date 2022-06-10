@@ -28,7 +28,19 @@ import std/strutils
 type DirectoryPath* = distinct string
 ## Used to store paths to directories
 
-proc `$`*(x: DirectoryPath): string {.borrow.} # Get string representation of DirectoryPath
+proc `$`*(x: DirectoryPath): string {.borrow.}
+## FUNCTION
+##
+## Get string representation of DirectoryPath. Borrowed from string type.
+##
+## PARAMETERS
+##
+## * x - The DirectoryPath which will be converted to string
+##
+## RESULT
+##
+## The string representation of x parameter
+
 proc find*(s, sub: DirectoryPath; start: Natural = 0;
     last = 0): int {.borrow.} # Find substring position in DirectoryPath
 proc len*(s: DirectoryPath): int {.borrow.} # Get the length of DirectoryPath
