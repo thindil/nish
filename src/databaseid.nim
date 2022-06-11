@@ -24,6 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type DatabaseId* = distinct Natural
+## FUNCTION
+##
 ## Used to store ids from or to the shell's database
 
 proc `$`*(x: DatabaseId): string {.borrow.}
