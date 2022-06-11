@@ -26,6 +26,8 @@
 import std/strutils
 
 type DirectoryPath* = distinct string
+## FUNCTION
+##
 ## Used to store paths to directories
 
 proc `$`*(x: DirectoryPath): string {.borrow.}
@@ -41,8 +43,25 @@ proc `$`*(x: DirectoryPath): string {.borrow.}
 ##
 ## The string representation of x parameter
 
-proc find*(s, sub: DirectoryPath; start: Natural = 0;
-    last = 0): int {.borrow.} # Find substring position in DirectoryPath
+proc find*(s, sub: DirectoryPath; start: Natural = 0; last = 0): int {.borrow.}
+## FUNCTION
+##
+## Find substring position in DirectoryPath. Borrowed from string type.
+##
+## PARAMETERS
+##
+## * s     - The DirectoryPath which will be check for the selected character
+## * sub   - The character which will be looked for in the DirectoryPath
+## * start - The position from which search should start. Can be empty.
+##           Default value is 0, start from the beginning of the DirectoryPath.
+## * last  - The position to which search should go. Can be empty. Default
+##           value is 0, which means no limit.
+##
+## RETURNS
+##
+## The position of the character in the DirectoryPath or -1 if character not
+## found
+
 proc len*(s: DirectoryPath): int {.borrow.} # Get the length of DirectoryPath
 proc `&`*(x: DirectoryPath; y: string): string {.borrow.} # Concatenates DirectoryPath and string into one string
 proc `&`*(x: string; y: DirectoryPath): string {.borrow.} # Concatenates string and DirectoryPath into one string
