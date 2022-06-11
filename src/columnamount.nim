@@ -24,6 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type ColumnAmount* = distinct Natural
+## FUNCTION
+##
 ## Used to store length or amount of terminal's characters columns
 
 func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [], locks: 0.} =
