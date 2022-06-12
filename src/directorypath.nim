@@ -78,7 +78,8 @@ proc len*(s: DirectoryPath): int {.borrow.}
 proc `&`*(x: DirectoryPath; y: string): string {.borrow.}
 ## FUNCTION
 ##
-## Concatenates DirectoryPath and string into one string
+## Concatenates DirectoryPath and string into one string. Borrowed from string
+## type.
 ##
 ## PARAMETERS
 ##
@@ -92,7 +93,8 @@ proc `&`*(x: DirectoryPath; y: string): string {.borrow.}
 proc `&`*(x: string; y: DirectoryPath): string {.borrow.}
 ## FUNCTION
 ##
-## Concatenates DirectoryPath and string into one string
+## Concatenates DirectoryPath and string into one string. Borrowed from string
+## type.
 ##
 ## PARAMETERS
 ##
