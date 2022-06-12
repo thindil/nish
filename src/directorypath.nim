@@ -75,7 +75,20 @@ proc len*(s: DirectoryPath): int {.borrow.}
 ##
 ## The length of the selected DirectoryPath
 
-proc `&`*(x: DirectoryPath; y: string): string {.borrow.} # Concatenates DirectoryPath and string into one string
+proc `&`*(x: DirectoryPath; y: string): string {.borrow.}
+## FUNCTION
+##
+## Concatenates DirectoryPath and string into one string
+##
+## PARAMETERS
+##
+## * x - The DirectoryPath which will be concatenated
+## * y - The string which will be concatenated
+##
+## RETURNS
+##
+## The merged DirectoryPath and string into one string
+
 proc `&`*(x: string; y: DirectoryPath): string {.borrow.} # Concatenates string and DirectoryPath into one string
 func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [],
     locks: 0.} = # Compare the DirectoryPath and string
