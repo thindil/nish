@@ -62,7 +62,19 @@ proc find*(s, sub: DirectoryPath; start: Natural = 0; last = 0): int {.borrow.}
 ## The position of the character in the DirectoryPath or -1 if character not
 ## found
 
-proc len*(s: DirectoryPath): int {.borrow.} # Get the length of DirectoryPath
+proc len*(s: DirectoryPath): int {.borrow.}
+## FUNCTION
+##
+## Get the length of DirectoryPath. Borrowed from int type.
+##
+## PARAMETERS
+##
+## * s - The DirectoryPath which length will be count
+##
+## RETURNS
+##
+## The length of the selected DirectoryPath
+
 proc `&`*(x: DirectoryPath; y: string): string {.borrow.} # Concatenates DirectoryPath and string into one string
 proc `&`*(x: string; y: DirectoryPath): string {.borrow.} # Concatenates string and DirectoryPath into one string
 func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [],
