@@ -89,7 +89,20 @@ proc `&`*(x: DirectoryPath; y: string): string {.borrow.}
 ##
 ## The merged DirectoryPath and string into one string
 
-proc `&`*(x: string; y: DirectoryPath): string {.borrow.} # Concatenates string and DirectoryPath into one string
+proc `&`*(x: string; y: DirectoryPath): string {.borrow.}
+## FUNCTION
+##
+## Concatenates DirectoryPath and string into one string
+##
+## PARAMETERS
+##
+## * x - The string which will be concatenated
+## * y - The DirectoryPath which will be concatenated
+##
+## RETURNS
+##
+## The merged string and DirectoryPath into one string
+
 func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [],
     locks: 0.} = # Compare the DirectoryPath and string
   return $x != y
