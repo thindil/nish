@@ -119,4 +119,16 @@ func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [], lo
   return $x != y
 
 func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
+  ## FUNCTION
+  ##
+  ## Compare the DirectoryPath and string
+  ##
+  ## PARAMETERS
+  ##
+  ## * x - The DirectoryPath to compare
+  ## * y - The string to compare
+  ##
+  ## RETURNS
+  ##
+  ## True if both DirectoryPath and string are the same, otherwise false
   return $x == y
