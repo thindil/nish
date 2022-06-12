@@ -23,7 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-type ResultCode* = distinct Natural # Used to store result code from commands entered by the user
+type ResultCode* = distinct Natural
+## FUNCTION
+##
+## Used to store result code from commands entered by the user
 
 proc `==`*(x: ResultCode; y: int): bool {.borrow.} # Used to compare ResultCode with int
 
