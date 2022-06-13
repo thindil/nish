@@ -222,15 +222,30 @@ proc getHistory*(historyIndex: HistoryRange; db;
   ## The selected command from the shell's commands' history.
   try:
     if searchFor.len() == 0:
-      result = db.getValue(query = sql(query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-          $(historyLength(db = db) - historyIndex));
+      let value = db.getValue(query = sql(
+          query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
+          getCurrentDir(), $(historyLength(db = db) - historyIndex))
+      if value.len() == 0:
+        result = db.getValue(query = sql(
+            query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
+            getCurrentDir(), $(historyLength(db = db) - historyIndex))
+      else:
+        result = value
     else:
-      result = db.getValue(query = sql(query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
-          searchFor & "%");
+      let value = db.getValue(query = sql(
+          query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
+          searchFor & "%", getCurrentDir())
+      if value.len() == 0:
+        result = db.getValue(query = sql(
+            query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
+            searchFor & "%")
+      else:
+        result = value
       if result.len() == 0:
         result = $searchFor
-  except DbError as e:
-    result = "Can't get the selected command from the shell's history. Reason: " & e.msg
+  except DbError, OSError:
+    result = "Can't get the selected command from the shell's history. Reason: " &
+        getCurrentExceptionMsg()
 
 proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect].} =
