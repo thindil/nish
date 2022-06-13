@@ -42,5 +42,15 @@ proc `==`*(x: ResultCode; y: int): bool {.borrow.}
 ##
 ## True if both ResultCode and int are the same, otherwise false.
 
-proc `$`*(x: ResultCode): string {.borrow.} # Get string representation of ResultCode
-
+proc `$`*(x: ResultCode): string {.borrow.}
+## FUNCTION
+##
+## Get string representation of ResultCode. Borrowed from int type.
+##
+## PARAMETERS
+##
+## * x - The ResultCode which will be converted to string
+##
+## RETURNS
+##
+## The string representation of the x parameter
