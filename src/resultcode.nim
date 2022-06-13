@@ -28,7 +28,19 @@ type ResultCode* = distinct Natural
 ##
 ## Used to store result code from commands entered by the user
 
-proc `==`*(x: ResultCode; y: int): bool {.borrow.} # Used to compare ResultCode with int
+proc `==`*(x: ResultCode; y: int): bool {.borrow.}
+## FUNCTION
+##
+## Used to compare ResultCode with int. Borrowed from int type.
+##
+## PARAMETERS
+##
+## * x - The ResultCode to compare
+## * y - The int to compare
+##
+## RETURNS
+##
+## True if both ResultCode and int are the same, otherwise false.
 
 proc `$`*(x: ResultCode): string {.borrow.} # Get string representation of ResultCode
 
