@@ -244,8 +244,8 @@ proc getHistory*(historyIndex: HistoryRange; db;
       if result.len() == 0:
         result = $searchFor
   except DbError, OSError:
-    result = "Can't get the selected command from the shell's history. Reason: " &
-        getCurrentExceptionMsg()
+    discard showError("\pCan't get the selected command from the shell's history. Reason: " &
+        getCurrentExceptionMsg())
 
 proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect].} =
