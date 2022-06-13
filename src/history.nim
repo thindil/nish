@@ -185,12 +185,21 @@ proc updateHistory*(commandToAdd: string; db;
         getCurrentExceptionMsg())
     return
   try:
-    if db.execAffectedRows(query = sql(query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=?"),
-        commandToAdd) == 0:
-      db.exec(query = sql(query = "INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))"), commandToAdd)
-      result.inc()
-  except DbError as e:
-    discard showError(message = "Can't update the shell's history. Reason: " & e.msg)
+    # Update history if there is the command in the history in the same directory
+    let currentDir = getCurrentDir()
+    if db.execAffectedRows(query = sql(query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=? AND path=?"),
+        commandToAdd, currentDir) == 0:
+      # Update history if there is the command in the history
+      if db.execAffectedRows(query = sql(
+          query = "UPDATE history SET amount=amount+1, lastused=datetime('now'), path=? WHERE command=?"),
+           currentDir, commandToAdd) == 0:
+        # If command isn't in the history, add it
+        db.exec(query = sql(query = "INSERT INTO history (command, amount, lastused, path) VALUES (?, 1, datetime('now'), ?)"),
+            commandToAdd, currentDir)
+        result.inc()
+  except DbError, OSError:
+    discard showError(message = "Can't update the shell's history. Reason: " &
+        getCurrentExceptionMsg())
     return
 
 proc getHistory*(historyIndex: HistoryRange; db;
