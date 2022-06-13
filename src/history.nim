@@ -123,10 +123,20 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
                  command     VARCHAR(""" & $maxInputLength &
         """) PRIMARY KEY,
                  lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
-                 amount      INTEGER NOT NULL DEFAULT 1
+                 amount      INTEGER NOT NULL DEFAULT 1,
+                 path        VARCHAR(""" & $maxInputLength &
+          """)
               )"""))
   except DbError as e:
     discard showError(message = "Can't create table for the shell's history. Reason: " & e.msg)
+    return HistoryRange.low()
+  # Update history table if needed
+  try:
+    if db.getValue(query = sql(query = "SELECT INSTR(sql, 'path') FROM sqlite_master WHERE type='table' AND name='history'")) == "0":
+      db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
+          $maxInputLength & """)"""))
+  except DbError as e:
+    discard showError(message = "Can't update table for the shell's history. Reason: " & e.msg)
     return HistoryRange.low()
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
