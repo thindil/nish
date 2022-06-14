@@ -50,8 +50,8 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
     return parseInt(s = db.getValue(query = sql(query =
       "SELECT COUNT(*) FROM history")))
   except DbError, ValueError:
-    discard showError(message = "Can't get the length of the shell's commands history. Reason: " &
-        getCurrentExceptionMsg())
+    discard showError(message = "Can't get the length of the shell's commands history. Reason: ",
+        e = getCurrentException())
     return HistoryRange.low()
 
 proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
@@ -127,16 +127,18 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
                  path        VARCHAR(""" & $maxInputLength &
           """)
               )"""))
-  except DbError as e:
-    discard showError(message = "Can't create table for the shell's history. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't create table for the shell's history. Reason: ",
+        e = getCurrentException())
     return HistoryRange.low()
   # Update history table if needed
   try:
     if db.getValue(query = sql(query = "SELECT INSTR(sql, 'path') FROM sqlite_master WHERE type='table' AND name='history'")) == "0":
       db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
           $maxInputLength & """)"""))
-  except DbError as e:
-    discard showError(message = "Can't update table for the shell's history. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't update table for the shell's history. Reason: ",
+        e = getCurrentException())
     return HistoryRange.low()
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
@@ -172,8 +174,9 @@ proc updateHistory*(commandToAdd: string; db;
     if returnCode != QuitSuccess and db.getValue(query = sql(query =
       "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
       return
-  except DbError as e:
-    discard showError(message = "Can't get value of option historySaveInvalid. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't get value of option historySaveInvalid. Reason: ",
+        e = getCurrentException())
     return
   try:
     if result == parseInt(s = db.getValue(query = sql(query =
@@ -181,8 +184,8 @@ proc updateHistory*(commandToAdd: string; db;
       db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
       result.dec()
   except DbError, ValueError:
-    discard showError(message = "Can't get value of option historyLength. Reason: " &
-        getCurrentExceptionMsg())
+    discard showError(message = "Can't get value of option historyLength. Reason: ",
+        e = getCurrentException())
     return
   try:
     # Update history if there is the command in the history in the same directory
@@ -198,8 +201,8 @@ proc updateHistory*(commandToAdd: string; db;
             commandToAdd, currentDir)
         result.inc()
   except DbError, OSError:
-    discard showError(message = "Can't update the shell's history. Reason: " &
-        getCurrentExceptionMsg())
+    discard showError(message = "Can't update the shell's history. Reason: ",
+        e = getCurrentException())
     return
 
 proc getHistory*(historyIndex: HistoryRange; db;
@@ -244,8 +247,8 @@ proc getHistory*(historyIndex: HistoryRange; db;
       if result.len() == 0:
         result = $searchFor
   except DbError, OSError:
-    discard showError("\pCan't get the selected command from the shell's history. Reason: " &
-        getCurrentExceptionMsg())
+    discard showError("Can't get the selected command from the shell's history. Reason: ",
+        getCurrentException())
 
 proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect].} =
