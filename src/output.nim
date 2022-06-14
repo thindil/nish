@@ -140,21 +140,32 @@ proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
         discard
   stdout.flushFile()
 
-proc showError*(message: OutputMessage): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [WriteIOEffect].} =
+proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [WriteIOEffect].} =
   ## FUNCTION
   ##
   ## Print the message to standard error and set the shell return
-  ## code to error.
+  ## code to error. If parameter e is also supplied, it show stack trace for
+  ## the current exception in debug mode.
   ##
   ## PARAMETERS
   ##
   ## * message - the error message to show
+  ## * e       - the reference to an exception which occured. Can be empty.
+  ##             Default value is nil
   ##
   ## RETURNS
   ## Always QuitFailure
   try:
-    stderr.styledWriteLine(fgRed, message)
+    if e != nil:
+      stderr.writeLine(x = "")
+    stderr.styledWrite(fgRed, message)
+    if e != nil:
+      stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+      when defined(debug):
+        stderr.styledWrite(fgRed, getStackTrace())
+    else:
+      stderr.writeLine(x = "")
   except IOError, ValueError:
     try:
       stderr.writeLine(x = message)
