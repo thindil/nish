@@ -27,12 +27,20 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode
 
-const aliasNameLength*: Positive = maxNameLength # The maximum length of the shell's alias name
+const aliasNameLength*: Positive = maxNameLength
+ ## FUNCTION
+ ##
+ ## The maximum length of the shell's alias name
 
 type
-  AliasName* = LimitedString # Used to store aliases names in tables and database.
-  AliasesList* = OrderedTable[AliasName,
-      int] # Used to store the available aliases in the selected directory
+  AliasName* = LimitedString
+   ## FUNCTION
+   ##
+   ## Used to store aliases names in tables and database.
+  AliasesList* = OrderedTable[AliasName, int]
+   ## FUNCTION
+   ##
+   ## Used to store the available aliases in the selected directory
 
 using
   db: DbConn # Connection to the shell's database
