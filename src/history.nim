@@ -203,7 +203,6 @@ proc updateHistory*(commandToAdd: string; db;
   except DbError, OSError:
     discard showError(message = "Can't update the shell's history. Reason: ",
         e = getCurrentException())
-    return
 
 proc getHistory*(historyIndex: HistoryRange; db;
     searchFor: UserInput = emptyLimitedString(
