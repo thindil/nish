@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
   command to execute
 - The program's help about setting the database's path
 - Showing error information during Tab completion
+- Showing error information during getting command from the shell's history
 - Showing error message on standard output instead of standard error
 
 ## [0.2.0] - 2022-05-09
