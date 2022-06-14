@@ -228,7 +228,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
       if value.len() == 0:
         result = db.getValue(query = sql(
             query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-            getCurrentDir(), $(historyLength(db = db) - historyIndex))
+            $(historyLength(db = db) - historyIndex))
       else:
         result = value
     else:
