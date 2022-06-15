@@ -264,8 +264,9 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## The new last index in the shell's commands history
   try:
     db.exec(query = sql(query = "DELETE FROM history"));
-  except DbError as e:
-    discard showError(message = "Can't clear the shell's commands history. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't clear the shell's commands history. Reason: ",
+        e = getCurrentException())
     return historyLength(db = db)
   showOutput(message = "Shell's commands' history cleared.", fgColor = fgGreen)
   return 0;
@@ -328,7 +329,8 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
       showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
           width = 5) & "      " & row[0], count = spacesAmount.int))
     return updateHistory(commandToAdd = "history show", db = db)
-  except DbError as e:
-    discard showError(message = "Can't get the last commands from the shell's history. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't get the last commands from the shell's history. Reason: ",
+        e = getCurrentException())
     return updateHistory(commandToAdd = "history show", db = db,
         returnCode = QuitFailure.ResultCode)
