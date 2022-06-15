@@ -24,9 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type ColumnAmount* = distinct Natural
-## FUNCTION
-##
-## Used to store length or amount of terminal's characters columns
+ ## FUNCTION
+ ##
+ ## Used to store length or amount of terminal's characters columns
 
 func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [], locks: 0.} =
   ## FUNCTION
@@ -44,30 +44,30 @@ func `/`*(x: ColumnAmount; y: int): ColumnAmount {.gcsafe, raises: [], tags: [],
   return ColumnAmount(x.int / y)
 
 proc `-`*(x: ColumnAmount; y: int): int {.borrow.}
-## FUNCTION
-##
-## Used to substraction int from ColumnAmount. Borrowed from int type
-##
-## PARAMETERS
-##
-## * x - The ColumnAmount from which will be value will be substracted
-## * y - The int which will be substracted from ColumnAmount value
-##
-## RESULT
-##
-## Substraction result of int from ColumnAmount
+ ## FUNCTION
+ ##
+ ## Used to substraction int from ColumnAmount. Borrowed from int type
+ ##
+ ## PARAMETERS
+ ##
+ ## * x - The ColumnAmount from which will be value will be substracted
+ ## * y - The int which will be substracted from ColumnAmount value
+ ##
+ ## RESULT
+ ##
+ ## Substraction result of int from ColumnAmount
 
 proc `*`*(x: ColumnAmount; y: int): int {.borrow.}
-## FUNCTION
-##
-## Used to multiply ColumnAmount by int. Borrowed from int type
-##
-## PARAMETERS
-##
-## * x - The ColumnAmount which will be multiplied
-## * y - The int which will be multiplier
-##
-## RESULT
-##
-## The x multiplied by y
+ ## FUNCTION
+ ##
+ ## Used to multiply ColumnAmount by int. Borrowed from int type
+ ##
+ ## PARAMETERS
+ ##
+ ## * x - The ColumnAmount which will be multiplied
+ ## * y - The int which will be multiplier
+ ##
+ ## RESULT
+ ##
+ ## The x multiplied by y
 
