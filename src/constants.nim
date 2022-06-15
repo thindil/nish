@@ -26,16 +26,32 @@
 import std/tables
 import lstring
 
-# Max allowed length of various names (options, variables, etc). Can be
-# customized separately for each name's type either in the proper modules.
 const maxNameLength*: Positive = 50
+ ## FUNCTION
+ ##
+ ## Max allowed length of various names (options, variables, etc). Can be
+ ## customized separately for each name's type either in the proper modules.
 
 type
   HelpEntry* = object
-    # Used to store the shell's help entries
-    usage*: string   # The shell's command to enter for the selected entry
-    content*: string # The content of the selected entry
-  HelpTable* = Table[string, HelpEntry] # Used to store the shell's help content
-  UserInput* = LimitedString # Used to store text entered by the user
-  ExtendedNatural* = range[-1..high(int)] # Used to store various indexes
-  BooleanInt* = range[0..1] # Used to store boolean values in database
+    ## FUNCTION
+    ##
+    ## Used to store the shell's help entries
+    usage*: string   ## The shell's command to enter for the selected entry
+    content*: string ## The content of the selected entry
+  HelpTable* = Table[string, HelpEntry]
+    ## FUNCTION
+    ##
+    ## Used to store the shell's help content
+  UserInput* = LimitedString
+    ## FUNCTION
+    ##
+    ## Used to store text entered by the user
+  ExtendedNatural* = range[-1..high(int)]
+    ## FUNCTION
+    ##
+    ## Used to store various indexes
+  BooleanInt* = range[0..1]
+    ## FUNCTION
+    ##
+    ## Used to store boolean values in database
