@@ -28,19 +28,19 @@ import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode
 
 const aliasNameLength*: Positive = maxNameLength
- ## FUNCTION
- ##
- ## The maximum length of the shell's alias name
+  ## FUNCTION
+  ##
+  ## The maximum length of the shell's alias name
 
 type
   AliasName* = LimitedString
-   ## FUNCTION
-   ##
-   ## Used to store aliases names in tables and database.
+    ## FUNCTION
+    ##
+    ## Used to store aliases names in tables and database.
   AliasesList* = OrderedTable[AliasName, int]
-   ## FUNCTION
-   ##
-   ## Used to store the available aliases in the selected directory
+    ## FUNCTION
+    ##
+    ## Used to store the available aliases in the selected directory
 
 using
   db: DbConn # Connection to the shell's database
@@ -87,8 +87,9 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
         aliases[index] = parseInt(s = dbResult[0])
       except ValueError:
         discard showError(message = "Can't set alias, invalid Id: " & dbResult[0])
-  except DbError as e:
-    discard showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't set aliases for the current directory. Reason: ",
+        e = getCurrentException())
 
 proc listAliases*(arguments; historyIndex; aliases: AliasesList;
     db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
@@ -132,8 +133,9 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
         showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
             alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
                 count = spacesAmount.int))
-      except DbError as e:
-        discard showError(message = "Can't read info about alias from database. Reason:" & e.msg)
+      except DbError:
+        discard showError(message = "Can't read info about alias from database. Reason:",
+            e = getCurrentException())
         return
     historyIndex = updateHistory(commandToAdd = "alias list", db = db)
   elif arguments == "list all":
@@ -151,8 +153,9 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
         showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
             alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
                 count = spacesAmount.int))
-    except DbError as e:
-      discard showError(message = "Can't read info about alias from database. Reason:" & e.msg)
+    except DbError:
+      discard showError(message = "Can't read info about alias from database. Reason:",
+          e = getCurrentException())
       return
     historyIndex = updateHistory(commandToAdd = "alias list all", db = db)
 
@@ -191,13 +194,15 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
           returnCode = QuitFailure.ResultCode)
       return showError(message = "The alias with the Id: " & $id &
         " doesn't exists.")
-  except DbError as e:
-    return showError(message = "Can't delete alias from database. Reason: " & e.msg)
+  except DbError:
+    return showError(message = "Can't delete alias from database. Reason: ",
+        e = getCurrentException())
   historyIndex = updateHistory(commandToAdd = "alias delete", db = db)
   try:
     aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
-  except OSError as e:
-    return showError(message = "Can't delete alias, setting a new aliases not work. Reason: " & e.msg)
+  except OSError:
+    return showError(message = "Can't delete alias, setting a new aliases not work. Reason: ",
+        e = getCurrentException())
   showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
   return QuitSuccess.ResultCode
 
@@ -232,8 +237,9 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
       return showError(message = "The Id of the alias must be a positive number.")
   let row: Row = try:
         db.getRow(query = sql(query = "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"), args = id)
-    except DbError as e:
-      return showError(message = "Can't read alias data from database. Reason: " & e.msg)
+    except DbError:
+      return showError(message = "Can't read alias data from database. Reason: ",
+          e = getCurrentException())
   if row[0] == "":
     historyIndex = updateHistory(commandToAdd = "alias show", db = db,
         returnCode = QuitFailure.ResultCode)
@@ -375,21 +381,24 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     if db.getValue(query = sql(query = "SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?"),
         name, path, recursive, commands).len() > 0:
       return showError(message = "There is an alias with the same name, path and commands in the database.")
-  except DbError as e:
-    return showError(message = "Can't check if the similar alias exists. Reason: " & e.msg)
+  except DbError:
+    return showError(message = "Can't check if the similar alias exists. Reason: ",
+        e = getCurrentException())
   # Save the alias to the database
   try:
     if db.tryInsertID(query = sql(query = "INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)"),
         name, path, recursive, commands, description) == -1:
       return showError(message = "Can't add alias.")
-  except DbError as e:
-    return showError(message = "Can't add the alias to the database. Reason: " & e.msg)
+  except DbError:
+    return showError(message = "Can't add the alias to the database. Reason: ",
+        e = getCurrentException())
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory(commandToAdd = "alias add", db = db)
   try:
     aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
-  except OSError as e:
-    return showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
+  except OSError:
+    return showError(message = "Can't set aliases for the current directory. Reason: ",
+        e = getCurrentException())
   showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
   return QuitSuccess.ResultCode
 
@@ -501,14 +510,16 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     if db.execAffectedRows(query = sql(query = "UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=? where id=?"),
         name, path, recursive, commands, description, id) != 1:
       return showError(message = "Can't edit the alias.")
-  except DbError as e:
-    return showError(message = "Can't save the alias to database. Reason: " & e.msg)
+  except DbError:
+    return showError(message = "Can't save the alias to database. Reason: ",
+        e = getCurrentException())
   # Update history index and refresh the list of available aliases
   historyIndex = updateHistory(commandToAdd = "alias edit", db = db)
   try:
     aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
-  except OSError as e:
-    return showError(message = "Can't set aliases for the current directory. Reason: " & e.msg)
+  except OSError:
+    return showError(message = "Can't set aliases for the current directory. Reason: ",
+        e = getCurrentException())
   showOutput(message = "The alias  with Id: '" & $id & "' edited.",
       fgColor = fgGreen)
   return QuitSuccess.ResultCode
@@ -557,21 +568,22 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         expandFilename(filename = absolutePath(path = expandTilde(
             path = $newDirectory))).DirectoryPath
       except OSError, ValueError:
-        return showError(message = "Can't change directory. Reason: " &
-            getCurrentExceptionMsg())
+        return showError(message = "Can't change directory. Reason: ",
+            e = getCurrentException())
     try:
       setCurrentDir(newDir = $path)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess.ResultCode
-    except OSError as e:
-      return showError("Can't change directory. Reason: " & e.msg)
+    except OSError:
+      return showError(message = "Can't change directory. Reason: ",
+          e = getCurrentException())
 
   let
     currentDirectory: DirectoryPath = try:
         getCurrentDir().DirectoryPath
       except OSError:
-        return showError(message = "Can't get the current directory name. Reason: " &
-            getCurrentExceptionMsg())
+        return showError(message = "Can't get the current directory name. Reason: ",
+            e = getCurrentException())
     commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
         cmdline = $arguments).remainingArgs() else: @[])
     aliasIndex: LimitedString = try:
@@ -582,8 +594,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
           aliases[aliasIndex])
     except KeyError, DbError:
-      return showError(message = "Can't get commands for alias. Reason: " &
-          getCurrentExceptionMsg())
+      return showError(message = "Can't get commands for alias. Reason: ",
+          e = getCurrentException())
   # Convert all $number in commands to arguments taken from the user
   # input
   var
@@ -658,5 +670,6 @@ proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
       content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
   try:
     result.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
-  except OSError as e:
-    discard showError(message = "Can't initialize aliases. Reason: " & e.msg)
+  except OSError:
+    discard showError(message = "Can't initialize aliases. Reason: ",
+        e = getCurrentException())
