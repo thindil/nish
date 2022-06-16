@@ -26,84 +26,84 @@
 import std/strutils
 
 type DirectoryPath* = distinct string
-## FUNCTION
-##
-## Used to store paths to directories
+  ## FUNCTION
+  ##
+  ## Used to store paths to directories
 
 proc `$`*(x: DirectoryPath): string {.borrow.}
-## FUNCTION
-##
-## Get string representation of DirectoryPath. Borrowed from string type.
-##
-## PARAMETERS
-##
-## * x - The DirectoryPath which will be converted to string
-##
-## RESULT
-##
-## The string representation of x parameter
+  ## FUNCTION
+  ##
+  ## Get string representation of DirectoryPath. Borrowed from string type.
+  ##
+  ## PARAMETERS
+  ##
+  ## * x - The DirectoryPath which will be converted to string
+  ##
+  ## RESULT
+  ##
+  ## The string representation of x parameter
 
 proc find*(s, sub: DirectoryPath; start: Natural = 0; last = 0): int {.borrow.}
-## FUNCTION
-##
-## Find substring position in DirectoryPath. Borrowed from string type.
-##
-## PARAMETERS
-##
-## * s     - The DirectoryPath which will be check for the selected character
-## * sub   - The character which will be looked for in the DirectoryPath
-## * start - The position from which search should start. Can be empty.
-##           Default value is 0, start from the beginning of the DirectoryPath.
-## * last  - The position to which search should go. Can be empty. Default
-##           value is 0, which means no limit.
-##
-## RETURNS
-##
-## The position of the character in the DirectoryPath or -1 if character not
-## found
+  ## FUNCTION
+  ##
+  ## Find substring position in DirectoryPath. Borrowed from string type.
+  ##
+  ## PARAMETERS
+  ##
+  ## * s     - The DirectoryPath which will be check for the selected character
+  ## * sub   - The character which will be looked for in the DirectoryPath
+  ## * start - The position from which search should start. Can be empty.
+  ##           Default value is 0, start from the beginning of the DirectoryPath.
+  ## * last  - The position to which search should go. Can be empty. Default
+  ##           value is 0, which means no limit.
+  ##
+  ## RETURNS
+  ##
+  ## The position of the character in the DirectoryPath or -1 if character not
+  ## found
 
 proc len*(s: DirectoryPath): int {.borrow.}
-## FUNCTION
-##
-## Get the length of DirectoryPath. Borrowed from int type.
-##
-## PARAMETERS
-##
-## * s - The DirectoryPath which length will be count
-##
-## RETURNS
-##
-## The length of the selected DirectoryPath
+  ## FUNCTION
+  ##
+  ## Get the length of DirectoryPath. Borrowed from int type.
+  ##
+  ## PARAMETERS
+  ##
+  ## * s - The DirectoryPath which length will be count
+  ##
+  ## RETURNS
+  ##
+  ## The length of the selected DirectoryPath
 
 proc `&`*(x: DirectoryPath; y: string): string {.borrow.}
-## FUNCTION
-##
-## Concatenates DirectoryPath and string into one string. Borrowed from string
-## type.
-##
-## PARAMETERS
-##
-## * x - The DirectoryPath which will be concatenated
-## * y - The string which will be concatenated
-##
-## RETURNS
-##
-## The merged DirectoryPath and string into one string
+  ## FUNCTION
+  ##
+  ## Concatenates DirectoryPath and string into one string. Borrowed from string
+  ## type.
+  ##
+  ## PARAMETERS
+  ##
+  ## * x - The DirectoryPath which will be concatenated
+  ## * y - The string which will be concatenated
+  ##
+  ## RETURNS
+  ##
+  ## The merged DirectoryPath and string into one string
 
 proc `&`*(x: string; y: DirectoryPath): string {.borrow.}
-## FUNCTION
-##
-## Concatenates DirectoryPath and string into one string. Borrowed from string
-## type.
-##
-## PARAMETERS
-##
-## * x - The string which will be concatenated
-## * y - The DirectoryPath which will be concatenated
-##
-## RETURNS
-##
-## The merged string and DirectoryPath into one string
+  ## FUNCTION
+  ##
+  ## Concatenates DirectoryPath and string into one string. Borrowed from string
+  ## type.
+  ##
+  ## PARAMETERS
+  ##
+  ## * x - The string which will be concatenated
+  ## * y - The DirectoryPath which will be concatenated
+  ##
+  ## RETURNS
+  ##
+  ## The merged string and DirectoryPath into one string
 
 func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
   ## FUNCTION
