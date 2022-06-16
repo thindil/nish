@@ -26,8 +26,10 @@
 import std/[db_sqlite, os, strutils, tables, terminal]
 import columnamount, constants, input, lstring, options, output, resultcode
 
-type
-  HistoryRange* = ExtendedNatural # Used to store the amount of commands in the shell's history
+type HistoryRange* = ExtendedNatural
+  ## FUNCTION
+  ##
+  ## Used to store the amount of commands in the shell's history
 
 using
   db: DbConn # Connection to the shell's database
@@ -215,7 +217,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
   ##
   ## PARAMETERS
   ##
-  ## *historyIndex - the index of command in the shell's commands' history which
+  ## * historyIndex - the index of command in the shell's commands' history which
   ##                 will be get
   ## * db          - the connection to the shell's database
   ##
