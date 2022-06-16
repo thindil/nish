@@ -132,8 +132,9 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
     try:
       showHelpEntry(helpEntry = helpContent["help"],
           usageHeader = "Available help topics")
-    except KeyError as e:
-      return showError(message = "Can't show list of available help topics. Reason: " & e.msg)
+    except KeyError:
+      return showError(message = "Can't show list of available help topics. Reason: ",
+          e = getCurrentException())
   else:
     let
       tokens: seq[string] = split(s = $topic)
@@ -150,16 +151,16 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
     if helpContent.hasKey(key = key):
       try:
         showHelpEntry(helpEntry = helpContent[key])
-      except KeyError as e:
+      except KeyError:
         return showError(message = "Can't show the help topic for '" & key &
-            "'. Reason: " & e.msg)
+            "'. Reason: ", e = getCurrentException())
     elif helpContent.hasKey(key = $command):
       if command == key:
         try:
           showHelpEntry(helpEntry = helpContent[$command])
-        except KeyError as e:
+        except KeyError:
           return showError(message = "Cam't show the help topic for '" &
-              command & "'. Reason: " & e.msg)
+              command & "'. Reason: ", e = getCurrentException())
       else:
         try:
           result = showUnknownHelp(subCommand = args, command = command,
@@ -197,20 +198,22 @@ proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
   for key in keys:
     try:
       helpContent["help"].usage.add(y = alignLeft(s = key, count = 20))
-    except KeyError as e:
-      discard showError(message = "Can't set content of the help main screen. Reason: " & e.msg)
+    except KeyError:
+      discard showError(message = "Can't set content of the help main screen. Reason: ",
+          e = getCurrentException())
       return
     i.inc()
     if i == 4:
       try:
         helpContent["help"].usage.add(y = "\n    ")
-      except KeyError as e:
-        discard showError(message = "Can't set content of the help main screen. Reason: " & e.msg)
+      except KeyError:
+        discard showError(message = "Can't set content of the help main screen. Reason: ",
+            e = getCurrentException())
         return
       i = 1
   try:
     helpContent["help"].usage.removeSuffix(suffix = ", ")
     helpContent["help"].content.add(y = "To see more information about the selected topic, type help [topic], for example: help cd.")
-  except KeyError as e:
-    discard showError(message = "Can't set content of the help main screen. Reason: " & e.msg)
-    return
+  except KeyError:
+    discard showError(message = "Can't set content of the help main screen. Reason: ",
+        e = getCurrentException())
