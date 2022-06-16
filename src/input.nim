@@ -66,15 +66,16 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
           stdout.write(s = " ")
           stdout.cursorBackward()
         except IOError, ValueError:
-          discard showError(message = "Can't delete character. Reason: " &
-              getCurrentExceptionMsg())
+          discard showError(message = "Can't delete character. Reason: ",
+              e = getCurrentException())
           return exitString
     # Special key pressed (all starts like Escape key), check which one
     elif inputChar.ord() == 27:
       try:
         inputChar = getch()
-      except IOError as e:
-        discard showError(message = "Can't get the next character after Escape. Reason: " & e.msg)
+      except IOError:
+        discard showError(message = "Can't get the next character after Escape. Reason: ",
+            e = getCurrentException())
         return exitString
       # Escape key pressed, return "exit" as input value
       if inputChar.ord() == 27:
@@ -91,13 +92,15 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
         return result
     try:
       inputChar = getch()
-    except IOError as e:
-      discard showError(message = "Can't get the next character. Reason: " & e.msg)
+    except IOError:
+      discard showError(message = "Can't get the next character. Reason: ",
+          e = getCurrentException())
       return exitString
   try:
     stdout.writeLine(x = "")
-  except IOError as e:
-    discard showError(message = "Can't add a new line. Reason: " & e.msg)
+  except IOError:
+    discard showError(message = "Can't add a new line. Reason: ",
+        e = getCurrentException())
     return exitString
 
 func getArguments*(userInput: var OptParser;
