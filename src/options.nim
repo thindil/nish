@@ -27,9 +27,18 @@ import std/[db_sqlite, os, strutils, tables, terminal]
 import columnamount, constants, input, lstring, output, resultcode
 
 type
-  OptionName* = LimitedString # Used to store options names in the database.
-  OptionValue* = LimitedString # Used to set or get the option's values
-  ValueType* = enum # Used to set the type of option's value
+  OptionName* = LimitedString
+    ## FUNCTION
+    ##
+    ## Used to store options names in the database.
+  OptionValue* = LimitedString
+    ## FUNCTION
+    ##
+    ## Used to set or get the option's values
+  ValueType* = enum
+    ## FUNCTION
+    ##
+    ## Used to set the type of option's value
     integer, float, boolean, none
 
 using
