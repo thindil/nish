@@ -73,7 +73,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
         0: 1 else: value.len()), text = value)
   except DbError, CapacityError:
     discard showError(message = "Can't get value for option '" & optionName &
-        "' from database. Reason: " & getCurrentExceptionMsg())
+        "' from database. Reason: ", e = getCurrentException())
     return defaultValue
   if result == "":
     result = defaultValue
@@ -112,9 +112,9 @@ WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
     if db.execAffectedRows(query = sql(query = sqlQuery)) == 0:
       db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)"),
           optionName, value, description, valuetype, value)
-  except DbError as e:
+  except DbError:
     discard showError(message = "Can't set value for option '" & optionName &
-        "'. Reason: " & e.msg)
+        "'. Reason: ", e = getCurrentException())
 
 proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
@@ -139,8 +139,9 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
           alignLeft(s = row[1], count = 7) & " " & alignLeft(s = row[2],
               count = 7) & " " & alignLeft(s = row[3], count = 7) & " " & row[
                   4], count = spacesAmount.int))
-  except DbError as e:
-    discard showError(message = "Can't show the shell's options. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't show the shell's options. Reason: ",
+        e = getCurrentException())
 
 proc helpOptions*(db) {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect].} =
@@ -204,9 +205,9 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     of "":
       return showError(message = "Shell's option with name '" & optionName &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
-  except DbError as e:
+  except DbError:
     return showError(message = "Can't get type of value for option '" &
-        optionName & "'. Reason: " & e.msg)
+        optionName & "'. Reason: ", e = getCurrentException())
   setOption(optionName = optionName, value = value, db = db)
   showOutput(message = "Value for option '" & optionName & "' was set to '" &
       value & "'", fgColor = fgGreen);
@@ -236,24 +237,25 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     try:
       db.exec(query = sql(query = "UPDATE options SET value=defaultvalue"))
       showOutput(message = "All shell's options are reseted to their default values.")
-    except DbError as e:
-      return showError(message = "Can't reset the shell's options to their default values. Reason: " & e.msg)
+    except DbError:
+      return showError(message = "Can't reset the shell's options to their default values. Reason: ",
+          e = getCurrentException())
   else:
     try:
       if db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"),
           optionName) == "":
         return showError(message = "Shell's option with name '" & optionName &
           "' doesn't exists. Please use command 'options show' to see all available shell's options.")
-    except DbError as e:
+    except DbError:
       return showError(message = "Can't get value for option '" & optionName &
-          "'. Reason: " & e.msg)
+          "'. Reason: ", e = getCurrentException())
     try:
       db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE option=?"), optionName)
       showOutput(message = "The shell's option '" & optionName &
           "' reseted to its default value.", fgColor = fgGreen)
-    except DbError as e:
+    except DbError:
       return showError(message = "Can't reset option '" & optionName &
-          "' to its default value. Reason: " & e.msg)
+          "' to its default value. Reason: ", e = getCurrentException())
   return QuitSuccess.ResultCode
 
 func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
