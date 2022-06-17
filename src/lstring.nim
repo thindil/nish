@@ -27,10 +27,15 @@ import std/strutils
 
 type
   LimitedString* = object of RootObj
+    ## FUNCTION
+    ##
     ## Store all data related to the string
     text: string       ## The text of the LimitedString
     capacity: Positive ## The maximum capacity of the LimitedString
-  CapacityError* = object of CatchableError # Raised when the new value of string will be longer than allowed maximum
+  CapacityError* = object of CatchableError
+    ## FUNCTION
+    ##
+    ## Raised when the new value of string will be longer than allowed maximum
 
 func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
     CapacityError], tags: [], locks: 0.} =
