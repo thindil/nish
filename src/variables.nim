@@ -104,8 +104,8 @@ proc setVariables*(newDirectory: DirectoryPath; db;
         else:
           skipped.add(y = existingVariable[0])
     except DbError, OSError:
-      discard showError(message = "Can't delete environment variables from the old directory. Reason: " &
-          getCurrentExceptionMsg())
+      discard showError(message = "Can't delete environment variables from the old directory. Reason: ",
+          e = getCurrentException())
   # Set the new environment variables
   try:
     for dbResult in db.fastRows(query = sql(query = buildQuery(
@@ -132,8 +132,8 @@ proc setVariables*(newDirectory: DirectoryPath; db;
         variableIndex = value.find(sub = '$', start = variableEnd)
       putEnv(key = dbResult[0], val = value)
   except DbError, OSError:
-    discard showError(message = "Can't set environment variables for the new directory. Reason: " &
-        getCurrentExceptionMsg())
+    discard showError(message = "Can't set environment variables for the new directory. Reason: ",
+        e = getCurrentException())
 
 proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
@@ -167,8 +167,9 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
                description VARCHAR(""" & $maxInputLength &
           """) NOT NULL
             )"""))
-  except DbError as e:
-    discard showError(message = "Can't create 'variables' table. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't create 'variables' table. Reason: ",
+        e = getCurrentException())
     return
   helpContent["set"] = HelpEntry(usage: "set [name=value]",
       content: "Set the environment variable with the selected name and value.")
@@ -186,8 +187,9 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
       content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
   try:
     setVariables(getCurrentDir().DirectoryPath, db)
-  except OSError as e:
-    discard showError("Can't set environment variables for the current directory. Reason:" & e.msg)
+  except OSError:
+    discard showError("Can't set environment variables for the current directory. Reason:",
+        e = getCurrentException())
 
 proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
@@ -213,9 +215,9 @@ proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         showOutput(message = "Environment variable '" & varValues[0] &
             "' set to '" & varValues[1] & "'", fgColor = fgGreen)
         result = QuitSuccess.ResultCode
-      except OSError as e:
+      except OSError:
         result = showError(message = "Can't set the environment variable '" &
-            varValues[0] & "'. Reason:" & e.msg)
+            varValues[0] & "'. Reason:", e = getCurrentException())
     else:
       result = showError(message = "You have to enter the name of the variable and its value.")
   else:
@@ -245,9 +247,9 @@ proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       showOutput(message = "Environment variable '" & arguments & "' removed",
           fgColor = fgGreen)
       result = QuitSuccess.ResultCode
-    except OSError as e:
+    except OSError:
       result = showError(message = "Can't unset the environment variable '" &
-          arguments & "'. Reason:" & e.msg)
+          arguments & "'. Reason:", e = getCurrentException())
   else:
     result = showError(message = "You have to enter the name of the variable to unset.")
   discard updateHistory(commandToAdd = "unset " & arguments, db = db,
@@ -292,8 +294,9 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
           s = "Name", count = nameLength.int), alignLeft(s = "Value",
               count = valueLength.int)], count = spacesAmount.int),
               fgColor = fgMagenta)
-    except ValueError as e:
-      discard showError(message = "Can't draw header for variables. Reason: " & e.msg)
+    except ValueError:
+      discard showError(message = "Can't draw header for variables. Reason: ",
+          e = getCurrentException())
     try:
       for row in db.fastRows(query = sql(query = buildQuery(
           directory = getCurrentDir().DirectoryPath,
@@ -303,8 +306,8 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
                 s = row[2], count = valueLength.int) & " " & row[3],
                     count = spacesAmount.int))
     except DbError, OSError:
-      discard showError(message = "Can't get the current directory name. Reason: " &
-          getCurrentExceptionMsg())
+      discard showError(message = "Can't get the current directory name. Reason: ",
+          e = getCurrentException())
       historyIndex = updateHistory(commandToAdd = "variable " & arguments,
           db = db, returnCode = QuitFailure.ResultCode)
       return
@@ -315,8 +318,9 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
           s = "Name", count = nameLength.int), alignLeft(s = "Value",
               count = valueLength.int)], count = spacesAmount.int),
               fgColor = fgMagenta)
-    except ValueError as e:
-      discard showError(message = "Can't draw header for variables. Reason: " & e.msg)
+    except ValueError:
+      discard showError(message = "Can't draw header for variables. Reason: ",
+          e = getCurrentException())
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT id, name, value, description FROM variables")):
@@ -324,8 +328,9 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
             alignLeft(s = row[1], count = nameLength.int) & " " & alignLeft(
                 s = row[2], count = valueLength.int) & " " & row[3],
                     count = spacesAmount.int))
-    except DbError as e:
-      discard showError(message = "Can't read data about variables from database. Reason: " & e.msg)
+    except DbError:
+      discard showError(message = "Can't read data about variables from database. Reason: ",
+          e = getCurrentException())
       historyIndex = updateHistory(commandToAdd = "variable " & arguments,
           db = db, returnCode = QuitFailure.ResultCode)
       return
@@ -385,14 +390,16 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
           returnCode = QuitFailure.ResultCode)
       return showError(message = "The variable with the Id: " & $varId &
         " doesn't exist.")
-  except DbError as e:
-    return showError(message = "Can't delete variable from database. Reason: " & e.msg)
+  except DbError:
+    return showError(message = "Can't delete variable from database. Reason: ",
+        e = getCurrentException())
   historyIndex = updateHistory(commandToAdd = "variable delete", db = db)
   try:
     setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
         oldDirectory = getCurrentDir().DirectoryPath)
-  except OSError as e:
-    return showError(message = "Can't set environment variables in the current directory. Reason: " & e.msg)
+  except OSError:
+    return showError(message = "Can't set environment variables in the current directory. Reason: ",
+        e = getCurrentException())
   showOutput(message = "Deleted the variable with Id: " & $varId,
       fgColor = fgGreen)
   return QuitSuccess.ResultCode
@@ -488,22 +495,25 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
     if db.getValue(query = sql(query = "SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?"),
         name, path, recursive, value).len() > 0:
       return showError(message = "There is a variable with the same name, path and value in the database.")
-  except DbError as e:
-    return showError(message = "Can't check if the same variable exists in the database. Reason: " & e.msg)
+  except DbError:
+    return showError(message = "Can't check if the same variable exists in the database. Reason: ",
+        e = getCurrentException())
   # Save the variable to the database
   try:
     if db.tryInsertID(query = sql(query = "INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)"),
         name, path, recursive, value, description) == -1:
       return showError(message = "Can't add variable.")
-  except DbError as e:
-    return showError(message = "Can't add the variable to database. Reason: " & e.msg)
+  except DbError:
+    return showError(message = "Can't add the variable to database. Reason: ",
+        e = getCurrentException())
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory(commandToAdd = "variable add", db = db)
   try:
     setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
         oldDirectory = getCurrentDir().DirectoryPath)
-  except OSError as e:
-    return showError(message = "Can't set variables for the current directory. Reason: " & e.msg)
+  except OSError:
+    return showError(message = "Can't set variables for the current directory. Reason: ",
+        e = getCurrentException())
   showOutput(message = "The new variable '" & name & "' added.",
       fgColor = fgGreen)
   return QuitSuccess.ResultCode
@@ -619,15 +629,17 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     if db.execAffectedRows(query = sql(query = "UPDATE variables SET name=?, path=?, recursive=?, value=?, description=? where id=?"),
         name, path, recursive, value, description, varId) != 1:
       return showError(message = "Can't edit the variable.")
-  except DbError as e:
-    return showError(message = "Can't save the edits of the variable to database. Reason: " & e.msg)
+  except DbError:
+    return showError(message = "Can't save the edits of the variable to database. Reason: ",
+        e = getCurrentException())
   # Update history index and refresh the list of available variables
   historyIndex = updateHistory(commandToAdd = "variable edit", db = db)
   try:
     setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
         oldDirectory = getCurrentDir().DirectoryPath)
-  except OSError as e:
-    return showError(message = "Can't set variables for the current directory. Reason: " & e.msg)
+  except OSError:
+    return showError(message = "Can't set variables for the current directory. Reason: ",
+        e = getCurrentException())
   showOutput(message = "The variable  with Id: '" & $varId & "' edited.",
       fgColor = fgGreen)
   return QuitSuccess.ResultCode
