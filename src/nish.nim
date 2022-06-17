@@ -81,8 +81,9 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
   ## * db         - the connection to the shell's database
   try:
     db.close()
-  except DbError as e:
-    quit showError(message = "Can't close properly the shell database. Reason:" & e.msg).int
+  except DbError:
+    quit showError(message = "Can't close properly the shell database. Reason:",
+        e = getCurrentException()).int
   quit int(returnCode)
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
@@ -104,13 +105,14 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
   try:
     discard existsOrCreateDir(dir = parentDir(path = $dbPath))
   except OSError, IOError:
-    discard showError(message = "Can't create directory for the shell's database. Reason: " &
-        getCurrentExceptionMsg())
+    discard showError(message = "Can't create directory for the shell's database. Reason: ",
+        e = getCurrentException())
     return nil
   try:
     result = open(connection = $dbPath, user = "", password = "", database = "")
-  except DbError as e:
-    discard showError(message = "Can't open the shell's database. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't open the shell's database. Reason: ",
+        e = getCurrentException())
     return nil
   # Create a new database if not exists
   var sqlQuery: string = """CREATE TABLE IF NOT EXISTS aliases (
@@ -126,8 +128,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
             )"""
   try:
     result.exec(query = sql(query = sqlQuery))
-  except DbError as e:
-    discard showError(message = "Can't create 'aliases' table. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't create 'aliases' table. Reason: ",
+        e = getCurrentException())
     return nil
   sqlQuery = """CREATE TABLE IF NOT EXISTS options (
                 option VARCHAR(""" & $aliasNameLength &
@@ -142,8 +145,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
             )"""
   try:
     result.exec(query = sql(query = sqlQuery))
-  except DbError as e:
-    discard showError(message = "Can't create 'options' table. Reason: " & e.msg)
+  except DbError:
+    discard showError(message = "Can't create 'options' table. Reason: ",
+        e = getCurrentException())
     return nil
 
 proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
