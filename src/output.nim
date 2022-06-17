@@ -26,11 +26,12 @@
 import std/[os, strutils, terminal]
 import columnamount, constants, directorypath, resultcode
 
-type
-  OutputMessage* = string # Used to store message to show to the user
+type OutputMessage* = string
+  ## FUNCTION
+  ##
+  ## Used to store message to show to the user
 
-using
-  message: OutputMessage # The message to show to the user
+using message: OutputMessage # The message to show to the user
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode) {.gcsafe, sideEffect, raises: [],
@@ -155,6 +156,7 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
   ##             Default value is nil
   ##
   ## RETURNS
+  ##
   ## Always QuitFailure
   try:
     if e != nil:
