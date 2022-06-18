@@ -27,7 +27,10 @@ import std/[db_sqlite, os, strutils, tables, terminal]
 import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode
 
-const variableNameLength*: Positive = maxNameLength # The maximum length of the shell's environment variable name
+const variableNameLength*: Positive = maxNameLength
+  ## FUNCTION
+  ##
+  ## The maximum length of the shell's environment variable name
 
 type
   VariableName = LimitedString # Used to store variables names in the database.
