@@ -81,9 +81,8 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
 proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
         capacity = maxInputLength); valuetype: ValueType = none; db) {.gcsafe,
-            sideEffect, raises: [], tags: [ReadDbEffect,
-
-WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+            sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
+            WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTIONS
   ##
   ## Set the value and or description of the selected option. If the option
