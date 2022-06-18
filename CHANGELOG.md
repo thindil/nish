@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Shell's commands' history now remember directory in which the command used
+  last time and prioritize the local commands
+
 ### Changed
 - Better getting commands from the shell's history
 
