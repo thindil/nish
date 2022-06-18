@@ -102,7 +102,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     if sqlQuery.len() > 21:
       sqlQuery.add(y = ", ")
     sqlQuery.add(y = "description='" & description & "'")
-  if valuetype != none:
+  if valueType != none:
     if sqlQuery.len() > 21:
       sqlQuery.add(y = ", ")
     sqlQuery.add(y = "valuetype='" & $valueType & "'")
