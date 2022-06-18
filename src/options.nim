@@ -80,7 +80,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
 
 proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
-        capacity = maxInputLength); valuetype: ValueType = none; db) {.gcsafe,
+        capacity = maxInputLength); valueType: ValueType = none; db) {.gcsafe,
             sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
             WriteIOEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTIONS
@@ -105,12 +105,12 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
   if valuetype != none:
     if sqlQuery.len() > 21:
       sqlQuery.add(y = ", ")
-    sqlQuery.add(y = "valuetype='" & $valuetype & "'")
+    sqlQuery.add(y = "valuetype='" & $valueType & "'")
   sqlQuery.add(y = " WHERE option='" & optionName & "'")
   try:
     if db.execAffectedRows(query = sql(query = sqlQuery)) == 0:
       db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue) VALUES (?, ?, ?, ?, ?)"),
-          optionName, value, description, valuetype, value)
+          optionName, value, description, valueType, value)
   except DbError:
     discard showError(message = "Can't set value for option '" & optionName &
         "'. Reason: ", e = getCurrentException())
