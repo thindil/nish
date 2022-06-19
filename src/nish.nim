@@ -154,8 +154,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     let
       optionName: OptionName = initLimitedString(capacity = 9,
           text = "dbVersion")
-      optionValue: OptionValue = initLimitedString(capacity = 1,
-          text = $dbVersion)
+      optionValue: OptionValue = initLimitedString(capacity = 1, text = "2")
     if parseInt(s = $getOption(optionName = optionName, db = result,
         defaultValue = initLimitedString(capacity = 1, text = "0"))) < parseInt(
             s = $optionValue):
