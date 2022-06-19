@@ -159,6 +159,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     if parseInt(s = $getOption(optionName = optionName, db = result)) <
         parseInt(s = $optionValue):
       result.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
+      if updateHistoryDb(db = result) == QuitFailure:
+        return nil
       setOption(optionName = optionName, value = optionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),

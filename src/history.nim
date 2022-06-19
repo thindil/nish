@@ -133,15 +133,6 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     discard showError(message = "Can't create table for the shell's history. Reason: ",
         e = getCurrentException())
     return HistoryRange.low()
-  # Update history table if needed
-  try:
-    if db.getValue(query = sql(query = "SELECT INSTR(sql, 'path') FROM sqlite_master WHERE type='table' AND name='history'")) == "0":
-      db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
-          $maxInputLength & """)"""))
-  except DbError:
-    discard showError(message = "Can't update table for the shell's history. Reason: ",
-        e = getCurrentException())
-    return HistoryRange.low()
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
@@ -336,3 +327,12 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
         e = getCurrentException())
     return updateHistory(commandToAdd = "history show", db = db,
         returnCode = QuitFailure.ResultCode)
+
+proc updateHistoryDb*(db): ResultCode =
+  try:
+    db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
+        $maxInputLength & """)"""))
+  except DbError:
+    return showError(message = "Can't update table for the shell's history. Reason: ",
+        e = getCurrentException())
+  return QuitSuccess.ResultCode
