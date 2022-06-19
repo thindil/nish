@@ -155,13 +155,14 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       optionName: OptionName = initLimitedString(capacity = 9,
           text = "dbVersion")
       optionValue: OptionValue = initLimitedString(capacity = 1, text = "2")
-    if getOption(optionName = optionName, db = result) != $optionValue:
+    if parseInt(s = $getOption(optionName = optionName, db = result)) <
+        parseInt(s = $optionValue):
       result.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
       setOption(optionName = optionName, value = optionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),
           valueType = integer, db = result)
-  except CapacityError, DbError:
+  except CapacityError, DbError, ValueError:
     discard showError(message = "Can't update database. Reason: ",
         e = getCurrentException())
     return nil
