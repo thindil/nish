@@ -329,6 +329,18 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
         returnCode = QuitFailure.ResultCode)
 
 proc updateHistoryDb*(db): ResultCode =
+  ## FUNCTION
+  ##
+  ## Update the table history to the new version if needed
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## show message what wrong
   try:
     db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
         $maxInputLength & """)"""))
