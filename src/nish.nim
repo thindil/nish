@@ -154,7 +154,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     let
       optionName: OptionName = initLimitedString(capacity = 9,
           text = "dbVersion")
-      optionValue: OptionValue = initLimitedString(capacity = 1, text = "2")
+      optionValue: OptionValue = initLimitedString(capacity = 1,
+          text = $dbVersion)
     if parseInt(s = $getOption(optionName = optionName, db = result)) <
         parseInt(s = $optionValue):
       result.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
