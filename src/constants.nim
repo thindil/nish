@@ -26,11 +26,17 @@
 import std/tables
 import lstring
 
-const maxNameLength*: Positive = 50
- ## FUNCTION
- ##
- ## Max allowed length of various names (options, variables, etc). Can be
- ## customized separately for each name's type either in the proper modules.
+const
+  maxNameLength*: Positive = 50
+  ## FUNCTION
+  ##
+  ## Max allowed length of various names (options, variables, etc). Can be
+  ## customized separately for each name's type either in the proper modules.
+  dbVersion*: Positive = 2
+  ## FUNCTION
+  ##
+  ## The current version of the shell's database's schema, used in updating
+  ## the database
 
 type
   HelpEntry* = object
