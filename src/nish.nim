@@ -141,12 +141,28 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
           """) NOT NULL,
                 valuetype VARCHAR(""" & $maxInputLength &
           """) NOT NULL,
-                defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL
-            )"""
+                defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL,
+                readonly BOOLEAN DEFAULT 0)"""
   try:
     result.exec(query = sql(query = sqlQuery))
   except DbError:
     discard showError(message = "Can't create 'options' table. Reason: ",
+        e = getCurrentException())
+    return nil
+  # If database version is different than the newest, update database
+  try:
+    let
+      optionName: OptionName = initLimitedString(capacity = 9,
+          text = "dbVersion")
+      optionValue: OptionValue = initLimitedString(capacity = 1, text = "2")
+    if getOption(optionName = optionName, db = result) != $optionValue:
+      result.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
+      setOption(optionName = optionName, value = optionValue,
+          description = initLimitedString(capacity = 42,
+          text = "Version of the database schema (read only)"),
+          valueType = integer, db = result)
+  except CapacityError, DbError:
+    discard showError(message = "Can't update database. Reason: ",
         e = getCurrentException())
     return nil
 
