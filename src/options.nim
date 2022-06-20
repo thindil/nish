@@ -276,7 +276,8 @@ func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
   helpContent["options reset"] = HelpEntry(usage: "options reset [name or all]",
       content: "Reset the selected shell's option with name to the default value. If the name parameter is set to 'all', reset all shell's options to their default values.")
 
-proc updateOptionsDb*(db): ResultCode =
+proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Update the table options to the new version if needed
