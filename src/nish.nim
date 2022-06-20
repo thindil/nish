@@ -108,53 +108,68 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     discard showError(message = "Can't create directory for the shell's database. Reason: ",
         e = getCurrentException())
     return nil
+  let dbExists: bool = fileExists($dbPath)
   try:
     result = open(connection = $dbPath, user = "", password = "", database = "")
   except DbError:
     discard showError(message = "Can't open the shell's database. Reason: ",
         e = getCurrentException())
     return nil
+  let
+    optionName: OptionName = try:
+        initLimitedString(capacity = 9, text = "dbVersion")
+      except CapacityError:
+        discard showError(message = "Can't set optionName. Reason: ",
+            e = getCurrentException())
+        return nil
+    optionValue: OptionValue = try:
+        initLimitedString(capacity = 1, text = "2")
+      except CapacityError:
+        discard showError(message = "Can't set optionValue. Reason: ",
+            e = getCurrentException())
+        return nil
   # Create a new database if not exists
-  var sqlQuery: string = """CREATE TABLE IF NOT EXISTS aliases (
-               id          INTEGER       PRIMARY KEY,
-               name        VARCHAR(""" & $aliasNameLength &
-      """) NOT NULL,
-               path        VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-               recursive   BOOLEAN       NOT NULL,
-               commands    VARCHAR(""" & $maxInputLength &
-      """) NOT NULL,
-               description VARCHAR(""" & $maxInputLength & """) NOT NULL
-            )"""
-  try:
-    result.exec(query = sql(query = sqlQuery))
-  except DbError:
-    discard showError(message = "Can't create 'aliases' table. Reason: ",
-        e = getCurrentException())
-    return nil
-  sqlQuery = """CREATE TABLE IF NOT EXISTS options (
-                option VARCHAR(""" & $aliasNameLength &
-          """) NOT NULL PRIMARY KEY,
-                value	 VARCHAR(""" & $maxInputLength &
-              """) NOT NULL,
-                description VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-                valuetype VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-                defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL,
-                readonly BOOLEAN DEFAULT 0)"""
-  try:
-    result.exec(query = sql(query = sqlQuery))
-  except DbError:
-    discard showError(message = "Can't create 'options' table. Reason: ",
-        e = getCurrentException())
-    return nil
+  if not dbExists:
+    var sqlQuery: string = """CREATE TABLE aliases (
+                 id          INTEGER       PRIMARY KEY,
+                 name        VARCHAR(""" & $aliasNameLength &
+        """) NOT NULL,
+                 path        VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                 recursive   BOOLEAN       NOT NULL,
+                 commands    VARCHAR(""" & $maxInputLength &
+        """) NOT NULL,
+                 description VARCHAR(""" & $maxInputLength & """) NOT NULL
+              )"""
+    try:
+      result.exec(query = sql(query = sqlQuery))
+    except DbError:
+      discard showError(message = "Can't create 'aliases' table. Reason: ",
+          e = getCurrentException())
+      return nil
+    sqlQuery = """CREATE TABLE options (
+                  option VARCHAR(""" & $aliasNameLength &
+            """) NOT NULL PRIMARY KEY,
+                  value	 VARCHAR(""" & $maxInputLength &
+                """) NOT NULL,
+                  description VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                  valuetype VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                  defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL,
+                  readonly BOOLEAN DEFAULT 0)"""
+    try:
+      result.exec(query = sql(query = sqlQuery))
+      setOption(optionName = optionName, value = optionValue,
+          description = initLimitedString(capacity = 42,
+          text = "Version of the database schema (read only)"),
+          valueType = integer, db = result)
+    except DbError, CapacityError:
+      discard showError(message = "Can't create 'options' table. Reason: ",
+          e = getCurrentException())
+      return nil
   # If database version is different than the newest, update database
   try:
-    let
-      optionName: OptionName = initLimitedString(capacity = 9,
-          text = "dbVersion")
-      optionValue: OptionValue = initLimitedString(capacity = 1, text = "2")
     if parseInt(s = $getOption(optionName = optionName, db = result,
         defaultValue = initLimitedString(capacity = 1, text = "0"))) < parseInt(
             s = $optionValue):
