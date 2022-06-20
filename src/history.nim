@@ -35,7 +35,7 @@ using
   db: DbConn # Connection to the shell's database
 
 proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Get the current length of the shell's commmands' history
@@ -58,7 +58,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
 
 proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    WriteDbEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Initialize shell's commands history. Create history table if not exists,
@@ -143,9 +143,8 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
 
 proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
-        sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect].} =
+        sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
+        WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Add the selected command to the shell history and increase the current
@@ -243,7 +242,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
         getCurrentException())
 
 proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
-    ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect].} =
+    ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Clear the shell's history, don't add the command to the history
@@ -266,7 +265,7 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 
 proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect].} =
+    TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Show short help about available subcommands related to the shell's
@@ -288,7 +287,7 @@ proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 
 proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect].} =
+    TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Show the last X entries to the shell's history. X can be set in the shell's
