@@ -275,3 +275,23 @@ func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
       content: "Set the selected shell's option with name to the selected value. The value can't contain new line character.")
   helpContent["options reset"] = HelpEntry(usage: "options reset [name or all]",
       content: "Reset the selected shell's option with name to the default value. If the name parameter is set to 'all', reset all shell's options to their default values.")
+
+proc updateOptionsDb*(db): ResultCode =
+  ## FUNCTION
+  ##
+  ## Update the table options to the new version if needed
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  try:
+    db.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
+  except DbError:
+    return showError(message = "Can't update table for the shell's options. Reason: ",
+        e = getCurrentException())
+  return QuitSuccess.ResultCode
