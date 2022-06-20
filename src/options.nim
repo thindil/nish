@@ -48,8 +48,7 @@ using
 
 proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
-        tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect].} =
+        tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Get the selected option from the database. If the option doesn't exist,
@@ -82,7 +81,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
         capacity = maxInputLength); valueType: ValueType = none; db) {.gcsafe,
             sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
-            WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+            WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTIONS
   ##
   ## Set the value and or description of the selected option. If the option
@@ -115,9 +114,8 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     discard showError(message = "Can't set value for option '" & optionName &
         "'. Reason: ", e = getCurrentException())
 
-proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect].} =
+proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Show the shell's options
@@ -142,8 +140,8 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [],
     discard showError(message = "Can't show the shell's options. Reason: ",
         e = getCurrentException())
 
-proc helpOptions*(db) {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteIOEffect].} =
+proc helpOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
+    WriteIOEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Show short help about available subcommands related to the shell's
@@ -160,7 +158,7 @@ proc helpOptions*(db) {.gcsafe, sideEffect, raises: [],
 
 proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
-        ReadEnvEffect, TimeEffect].} =
+    ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Set the selected option's value
@@ -214,7 +212,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
 
 proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
-        ReadEnvEffect, TimeEffect].} =
+    ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Reset the selected option's value to default value. If name of the option
