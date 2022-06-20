@@ -328,7 +328,8 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     return updateHistory(commandToAdd = "history show", db = db,
         returnCode = QuitFailure.ResultCode)
 
-proc updateHistoryDb*(db): ResultCode =
+proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Update the table history to the new version if needed
