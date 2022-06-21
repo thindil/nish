@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Shell's commands' history now remember directory in which the command used
   last time and prioritize the local commands
+- Support for shell's read-only options
 
 ### Changed
 - Better getting commands from the shell's history
