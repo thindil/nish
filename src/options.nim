@@ -179,6 +179,13 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   if separatorIndex == -1:
     return showError(message = "Please enter a new value for the selected option.")
   let optionName: OptionName = arguments[4 .. (separatorIndex - 1)]
+  try:
+    if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
+        optionName) == "1":
+      return showError(message = "You can't set a new value for the selected option because it is read-only.")
+  except DbError:
+    return showError(message = "Can't check if the selected option is read only. Reason: ",
+        e = getCurrentException())
   var value: OptionValue = arguments[(separatorIndex + 1) .. ^1]
   try:
     case db.getValue(query = sql(query = "SELECT valuetype FROM options WHERE option=?"), optionName)
