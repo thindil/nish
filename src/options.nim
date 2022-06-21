@@ -233,13 +233,16 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   let optionName: OptionName = arguments[6 .. ^1]
   if optionName == "all":
     try:
-      db.exec(query = sql(query = "UPDATE options SET value=defaultvalue"))
+      db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
       showOutput(message = "All shell's options are reseted to their default values.")
     except DbError:
       return showError(message = "Can't reset the shell's options to their default values. Reason: ",
           e = getCurrentException())
   else:
     try:
+      if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
+          optionName) == "1":
+        return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.")
       if db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"),
           optionName) == "":
         return showError(message = "Shell's option with name '" & optionName &
