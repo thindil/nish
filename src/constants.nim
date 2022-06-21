@@ -55,3 +55,9 @@ type
     ## FUNCTION
     ##
     ## Used to store boolean values in database
+  HistorySort* = enum
+    ## FUNCTION
+    ##
+    ## Used to set the sort type for showing the last commands in the shell's
+    ## history
+    recent, mostused, amount, recentamount
