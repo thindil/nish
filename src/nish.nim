@@ -163,7 +163,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       setOption(optionName = optionName, value = optionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),
-          valueType = integer, db = result)
+          valueType = integer, db = result, readOnly = 1)
     except DbError, CapacityError:
       discard showError(message = "Can't create 'options' table. Reason: ",
           e = getCurrentException())
