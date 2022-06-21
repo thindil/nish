@@ -204,7 +204,8 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       try:
         value.setString(text = toLowerAscii(s = $value))
       except CapacityError:
-        return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
+        return showError(message = "Can't set a new value for option '" &
+            optionName & "'. Reason: ", e = getCurrentException())
       if value != "true" and value != "false":
         return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
     of "":
