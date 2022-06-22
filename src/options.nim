@@ -129,13 +129,13 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     except ValueError:
       4.ColumnAmount
   showFormHeader(message = "Available options are:")
-  showOutput(message = indent(s = "Name               Value   Default Type    Description",
+  showOutput(message = indent(s = "Name               Value        Default      Type    Description",
       count = spacesAmount.int), fgColor = fgMagenta)
   try:
     for row in db.fastRows(query = sql(query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
       showOutput(message = indent(s = alignLeft(s = row[0], count = 18) & " " &
-          alignLeft(s = row[1], count = 7) & " " & alignLeft(s = row[2],
-              count = 7) & " " & alignLeft(s = row[3], count = 7) & " " & row[
+          alignLeft(s = row[1], count = 12) & " " & alignLeft(s = row[2],
+              count = 12) & " " & alignLeft(s = row[3], count = 11) & " " & row[
                   4], count = spacesAmount.int))
   except DbError:
     discard showError(message = "Can't show the shell's options. Reason: ",
