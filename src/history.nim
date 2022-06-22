@@ -129,7 +129,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
       setOption(optionName = optionName, value = initLimitedString(
           capacity = 12, text = "recentamount"), description = initLimitedString(
               capacity = 63, text = "How to sort the list of the last commands from shell history."),
-          valueType = ValueType.boolean, db = db)
+          valueType = ValueType.historysort, db = db)
     except CapacityError:
       discard showError(message = "Can't set values of the option historySort.")
       return HistoryRange.low()
