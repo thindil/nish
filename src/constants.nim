@@ -60,4 +60,4 @@ type
     ##
     ## Used to set the sort type for showing the last commands in the shell's
     ## history
-    recent, mostused, amount, recentamount
+    recent, mostused, name, recentamount
