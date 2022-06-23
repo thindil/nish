@@ -211,8 +211,8 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       except CapacityError:
         return showError(message = "Can't set a new value for option '" &
             optionName & "'. Reason: ", e = getCurrentException())
-      if $value notin ["recent", "mostused", "name", "recentamount"]:
-        return showError(message = "Value for option '" & optionName & "' should be 'recent', 'mostused', 'name' or 'recentamount' (case insensitive)")
+      if $value notin ["recent", "amount", "name", "recentamount"]:
+        return showError(message = "Value for option '" & optionName & "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)")
     of "":
       return showError(message = "Shell's option with name '" & optionName &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
