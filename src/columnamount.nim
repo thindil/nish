@@ -71,3 +71,16 @@ proc `*`*(x: ColumnAmount; y: int): int {.borrow.}
  ##
  ## The x multiplied by y
 
+proc `==`*(x: ColumnAmount; y: int): bool {.borrow.}
+  ## FUNCTION
+  ##
+  ## Used to compare ColumnAmount with int. Borrowed from int type.
+  ##
+  ## PARAMETERS
+  ##
+  ## * x - The ColumnAmount to compare
+  ## * y - The int to compare
+  ##
+  ## RETURNS
+  ##
+  ## True if both ColumnAmount and int are the same, otherwise false.
