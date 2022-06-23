@@ -127,8 +127,9 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   if getOption(optionName = optionName, db = db) == "":
     try:
       setOption(optionName = optionName, value = initLimitedString(
-          capacity = 12, text = "recentamount"), description = initLimitedString(
-              capacity = 63, text = "How to sort the list of the last commands from shell history."),
+          capacity = 12, text = "recentamount"),
+          description = initLimitedString(capacity = 63,
+              text = "How to sort the list of the last commands from shell history."),
           valueType = ValueType.historysort, db = db)
     except CapacityError:
       discard showError(message = "Can't set values of the option historySort.")
@@ -326,12 +327,27 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
           (terminalWidth() / 12).ColumnAmount
       except ValueError:
         6.ColumnAmount
+    historyOrder: string = try:
+        case $getOption(optionName = initLimitedString(capacity = 11,
+            text = "historySort"), db = db)
+        of "recent": "lastused"
+        of "mostused": "amount"
+        of "name": "command"
+        of "recentamount": "lastused, amount"
+        else:
+          discard showError(message = "Unknown type of history sort order")
+          return updateHistory(commandToAdd = "history show", db = db,
+            returnCode = QuitFailure.ResultCode)
+      except CapacityError:
+        discard showError(message = "Can't get setting for the order of history commands to show.")
+        return updateHistory(commandToAdd = "history show", db = db,
+            returnCode = QuitFailure.ResultCode)
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent(s = "Last used                Times      Command",
       count = spacesAmount.int), fgColor = fgMagenta)
   try:
-    for row in db.fastRows(query = sql(query = "SELECT command, lastused, amount FROM history ORDER BY lastused, amount ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)"),
-        amount, amount):
+    for row in db.fastRows(query = sql(query = "SELECT command, lastused, amount FROM history ORDER BY ? ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)"),
+        historyOrder, amount, amount):
       showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
           width = 5) & "      " & row[0], count = spacesAmount.int))
     return updateHistory(commandToAdd = "history show", db = db)
