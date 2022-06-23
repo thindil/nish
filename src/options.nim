@@ -125,8 +125,8 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
   ##
   ## * db - the connection to the shell's database
   let spacesAmount: ColumnAmount = 2.ColumnAmount
-  showFormHeader(message = "Available options are:")
-  showOutput(message = indent(s = "Name               Value        Default      Type    Description",
+  showFormHeader(message = "Available options are:", spaces = spacesAmount)
+  showOutput(message = indent(s = "Name               Value        Default      Type        Description",
       count = spacesAmount.int), fgColor = fgMagenta)
   try:
     for row in db.fastRows(query = sql(query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
