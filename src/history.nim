@@ -330,10 +330,10 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     historyOrder: string = try:
         case $getOption(optionName = initLimitedString(capacity = 11,
             text = "historySort"), db = db)
-        of "recent": "lastused"
-        of "mostused": "amount"
-        of "name": "command"
-        of "recentamount": "lastused, amount"
+        of "recent": "lastused DESC"
+        of "amount": "amount DESC"
+        of "name": "command ASC"
+        of "recentamount": "lastused DESC, amount DESC"
         else:
           discard showError(message = "Unknown type of history sort order")
           return updateHistory(commandToAdd = "history show", db = db,
@@ -346,8 +346,8 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   showOutput(message = indent(s = "Last used                Times      Command",
       count = spacesAmount.int), fgColor = fgMagenta)
   try:
-    for row in db.fastRows(query = sql(query = "SELECT command, lastused, amount FROM history ORDER BY ? ASC LIMIT ? OFFSET (SELECT COUNT(*)-? from history)"),
-        historyOrder, amount, amount):
+    for row in db.fastRows(query = sql(query = "SELECT command, lastused, amount FROM history ORDER BY " &
+        historyOrder & " LIMIT 0, ?"), amount):
       showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
           width = 5) & "      " & row[0], count = spacesAmount.int))
     return updateHistory(commandToAdd = "history show", db = db)
