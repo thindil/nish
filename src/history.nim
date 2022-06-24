@@ -342,13 +342,21 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
           (terminalWidth() / 12).ColumnAmount
       except ValueError:
         6.ColumnAmount
+    historyDirection: string = try:
+        if $getOption(optionName = initLimitedString(capacity = 14,
+            text = "historyReverse"), db = db) == "true": "ASC" else: "DESC"
+      except CapacityError:
+        discard showError(message = "Can't get setting for the reverse order of history commands to show.")
+        return updateHistory(commandToAdd = "history show", db = db,
+            returnCode = QuitFailure.ResultCode)
     historyOrder: string = try:
         case $getOption(optionName = initLimitedString(capacity = 11,
             text = "historySort"), db = db)
-        of "recent": "lastused DESC"
-        of "amount": "amount DESC"
-        of "name": "command ASC"
-        of "recentamount": "lastused DESC, amount DESC"
+        of "recent": "lastused " & historyDirection
+        of "amount": "amount " & historyDirection
+        of "name": "command " & (if historyDirection ==
+            "DESC": "ASC" else: "DESC")
+        of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
         else:
           discard showError(message = "Unknown type of history sort order")
           return updateHistory(commandToAdd = "history show", db = db,
