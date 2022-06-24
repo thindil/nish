@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Better getting commands from the shell's history
+- Better help entry for `history show` command
 
 ### Fixed
 - Reading command line parameters, when there is set database path and the
