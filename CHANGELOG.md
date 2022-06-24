@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Shell's commands' history now remember directory in which the command used
   last time and prioritize the local commands
 - Support for shell's read-only options
+- Ability to select how the shell's history should be sorted
 
 ### Changed
 - Better getting commands from the shell's history
