@@ -46,10 +46,22 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   ## RETURNS
   ##
   ## The argument helpContent with updated help for command 'history show'.
+  let sortOrder: string = try:
+        case $getOption(optionName = initLimitedString(capacity = 11,
+            text = "historySort"), db = db)
+        of "recent": "recently used"
+        of "amount": "how many times used"
+        of "name": "name"
+        of "recentamount": "recently used and how many times"
+        else:
+          "unknown"
+    except CapacityError:
+      "recently used and how many times"
   helpContent["history show"] = try:
       HelpEntry(usage: "history show", content: "Show the last " & getOption(
           optionName = initLimitedString(capacity = 13, text = "historyAmount"),
-          db = db) & " commands from the shell's history.")
+          db = db) & " commands from the shell's history ordered by " &
+              sortOrder & ".")
     except CapacityError:
       HelpEntry(usage: "history show", content: "Show the last commands from the shell's history.")
 
