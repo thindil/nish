@@ -134,6 +134,21 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     except CapacityError:
       discard showError(message = "Can't set values of the option historySort.")
       return HistoryRange.low()
+  try:
+    optionName.setString(text = "historyReverse")
+  except CapacityError:
+    discard showError(message = "Can't set name of the option historyReverse to set.")
+    return HistoryRange.low()
+  if getOption(optionName = optionName, db = db) == "":
+    try:
+      setOption(optionName = optionName, value = initLimitedString(
+          capacity = 5, text = "false"),
+          description = initLimitedString(capacity = 64,
+              text = "Reverse order when showing the last commands from shell history."),
+          valueType = ValueType.boolean, db = db)
+    except CapacityError:
+      discard showError(message = "Can't set values of the option historySort.")
+      return HistoryRange.low()
   # Create history table if not exists
   try:
     db.exec(query = sql(query = """CREATE TABLE IF NOT EXISTS history (
