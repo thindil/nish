@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Better getting commands from the shell's history
 - Better help entry for `history show` command
+- Type of some the shell's options' to natural instead of integer
 
 ### Fixed
 - Reading command line parameters, when there is set database path and the
