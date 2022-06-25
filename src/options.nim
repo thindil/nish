@@ -39,7 +39,7 @@ type
     ## FUNCTION
     ##
     ## Used to set the type of option's value
-    integer, float, boolean, none, historysort
+    integer, float, boolean, none, historysort, natural
 
 using
   db: DbConn # Connection to the shell's database
@@ -213,6 +213,14 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             optionName & "'. Reason: ", e = getCurrentException())
       if $value notin ["recent", "amount", "name", "recentamount"]:
         return showError(message = "Value for option '" & optionName & "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)")
+    of "natural":
+      try:
+        if parseInt(s = $value) < 0:
+          return showError(message = "Value for option '" & optionName &
+              "' should be integer type and greater than zero.")
+      except:
+        return showError(message = "Value for option '" & optionName &
+            "' should be integer type.")
     of "":
       return showError(message = "Shell's option with name '" & optionName &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
