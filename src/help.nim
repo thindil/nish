@@ -57,11 +57,17 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
           "unknown"
     except CapacityError:
       "recently used and how many times"
+  let sortDirection: string = try:
+        if $getOption(optionName = initLimitedString(capacity = 14,
+          text = "historyReverse"), db = db) ==
+              "true": " in reversed order." else: "."
+    except CapacityError:
+      "."
   helpContent["history show"] = try:
       HelpEntry(usage: "history show", content: "Show the last " & getOption(
           optionName = initLimitedString(capacity = 13, text = "historyAmount"),
           db = db) & " commands from the shell's history ordered by " &
-              sortOrder & ".")
+              sortOrder & sortDirection)
     except CapacityError:
       HelpEntry(usage: "history show", content: "Show the last commands from the shell's history.")
 
