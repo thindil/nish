@@ -41,9 +41,8 @@ using
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
 proc buildQuery*(directory: DirectoryPath; fields: string;
-    where: string = ""): string {.gcsafe,
-
-sideEffect, raises: [], tags: [ReadDbEffect].} =
+    where: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect].} =
   ## FUNCTION
   ##
   ## Build database query for get environment variables for the selected
