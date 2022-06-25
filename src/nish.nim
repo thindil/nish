@@ -163,7 +163,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       setOption(optionName = optionName, value = optionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),
-          valueType = integer, db = result, readOnly = 1)
+          valueType = ValueType.natural, db = result, readOnly = 1)
     except DbError, CapacityError:
       discard showError(message = "Can't create 'options' table. Reason: ",
           e = getCurrentException())
@@ -180,7 +180,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       setOption(optionName = optionName, value = optionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),
-          valueType = integer, db = result)
+          valueType = ValueType.natural, db = result)
   except CapacityError, DbError, ValueError:
     discard showError(message = "Can't update database. Reason: ",
         e = getCurrentException())

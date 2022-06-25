@@ -87,7 +87,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
       setOption(optionName = optionName, value = initLimitedString(capacity = 3,
           text = "500"), description = initLimitedString(capacity = 48,
               text = "Max amount of entries in shell commands history."),
-          valueType = ValueType.integer, db = db)
+          valueType = ValueType.natural, db = db)
     except CapacityError:
       discard showError(message = "Can't set values of the option historyLength.")
       return HistoryRange.low()
@@ -101,7 +101,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
       setOption(optionName = optionName, value = initLimitedString(capacity = 2,
           text = "20"), description = initLimitedString(capacity = 78,
               text = "Amount of entries in shell commands history to show with history show command."),
-           valueType = ValueType.integer, db = db)
+           valueType = ValueType.natural, db = db)
     except:
       discard showError(message = "Can't set values of the option historyAmount.")
       return HistoryRange.low()
@@ -381,7 +381,7 @@ proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
         returnCode = QuitFailure.ResultCode)
 
 proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0.} =
+    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Update the table history to the new version if needed
@@ -397,7 +397,11 @@ proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   try:
     db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
         $maxInputLength & """)"""))
-  except DbError:
+    setOption(optionName = initLimitedString(capacity = 13,
+        text = "historyLength"), valueType = ValueType.natural, db = db)
+    setOption(optionName = initLimitedString(capacity = 13,
+        text = "historyAmount"), valueType = ValueType.natural, db = db)
+  except DbError, CapacityError:
     return showError(message = "Can't update table for the shell's history. Reason: ",
         e = getCurrentException())
   return QuitSuccess.ResultCode
