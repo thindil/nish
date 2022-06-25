@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
   last time and prioritize the local commands
 - Support for shell's read-only options
 - Ability to select how the shell's history should be sorted
+- Ability to revese direction of the shell's history last commands list
 
 ### Changed
 - Better getting commands from the shell's history
