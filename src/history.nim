@@ -315,25 +315,30 @@ proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory(commandToAdd = "history", db = db)
 
-proc showHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], locks: 0.} =
+proc showHistory*(db; arguments: UserInput = emptyLimitedString(
+    capacity = maxInputLength)): HistoryRange {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Show the last X entries to the shell's history. X can be set in the shell's
-  ## options as 'historyAmount' option.
+  ## options as 'historyAmount' option or as an argument by the user.
   ##
   ## PARAMETERS
   ##
-  ## * db - the connection to the shell's database
+  ## * db        - the connection to the shell's database
+  ## * arguments - the string with arguments entered by the user for the command.
+  ##               Can be empty. Default value is empty.
   ##
   ## RETURNS
   ##
-  ## The new length of the shell's commands' history.
+  ## The last X entries to the shell's history.
   let
+    argumentsList: seq[string] = split(s = $arguments)
     amount: HistoryRange = try:
-        parseInt(s = $getOption(optionName = initLimitedString(capacity = 13,
-            text = "historyAmount"), db = db))
+        parseInt(s = (if argumentsList.len() > 1: argumentsList[
+            1] else: $getOption(optionName = initLimitedString(capacity = 13,
+            text = "historyAmount"), db = db)))
       except ValueError, CapacityError:
         discard showError(message = "Can't get setting for the amount of history commands to show.")
         return updateHistory(commandToAdd = "history show", db = db,
