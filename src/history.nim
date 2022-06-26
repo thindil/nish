@@ -354,22 +354,24 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
         discard showError(message = "Can't get setting for the reverse order of history commands to show.")
         return updateHistory(commandToAdd = "history show", db = db,
             returnCode = QuitFailure.ResultCode)
-    historyOrder: string = try:
-        case $getOption(optionName = initLimitedString(capacity = 11,
-            text = "historySort"), db = db)
-        of "recent": "lastused " & historyDirection
-        of "amount": "amount " & historyDirection
-        of "name": "command " & (if historyDirection ==
-            "DESC": "ASC" else: "DESC")
-        of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
-        else:
-          discard showError(message = "Unknown type of history sort order")
-          return updateHistory(commandToAdd = "history show", db = db,
-            returnCode = QuitFailure.ResultCode)
+    orderText: string = try:
+        if argumentsList.len() > 2: argumentsList[2] else: $getOption(
+            optionName = initLimitedString(capacity = 11, text = "historySort"), db = db)
       except CapacityError:
         discard showError(message = "Can't get setting for the order of history commands to show.")
         return updateHistory(commandToAdd = "history show", db = db,
             returnCode = QuitFailure.ResultCode)
+    historyOrder: string =
+      case orderText
+      of "recent": "lastused " & historyDirection
+      of "amount": "amount " & historyDirection
+      of "name": "command " & (if historyDirection ==
+          "DESC": "ASC" else: "DESC")
+      of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
+      else:
+        discard showError(message = "Unknown type of history sort order")
+        return updateHistory(commandToAdd = "history show", db = db,
+          returnCode = QuitFailure.ResultCode)
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent(s = "Last used                Times      Command",
       count = spacesAmount.int), fgColor = fgMagenta)
