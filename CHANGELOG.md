@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 - Support for shell's read-only options
 - Ability to select how the shell's history should be sorted
 - Ability to revese direction of the shell's history last commands list
+- Ability to set the amount of the last commands to show for `history show`
+  command
 
 ### Changed
 - Better getting commands from the shell's history
