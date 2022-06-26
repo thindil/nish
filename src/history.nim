@@ -348,7 +348,9 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
       except ValueError:
         6.ColumnAmount
     historyDirection: string = try:
-        if $getOption(optionName = initLimitedString(capacity = 14,
+        if argumentsList.len() > 3: (if argumentsList[3] ==
+            "true": "ASC" else: "DESC") else:
+          if $getOption(optionName = initLimitedString(capacity = 14,
             text = "historyReverse"), db = db) == "true": "ASC" else: "DESC"
       except CapacityError:
         discard showError(message = "Can't get setting for the reverse order of history commands to show.")
