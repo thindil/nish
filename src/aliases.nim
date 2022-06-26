@@ -45,7 +45,7 @@ type
 using
   db: DbConn # Connection to the shell's database
   aliases: var AliasesList # The list of aliases available in the selected directory
-  arguments: UserInput # The string with arguments entered by the user fot the command
+  arguments: UserInput # The string with arguments entered by the user for the command
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
 proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
