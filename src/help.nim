@@ -64,11 +64,11 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
     except CapacityError:
       "."
   helpContent["history show"] = try:
-      HelpEntry(usage: "history show ?amount? ?order?", content: "Show the last " &
-          getOption(optionName = initLimitedString(capacity = 13,
-              text = "historyAmount"),
+      HelpEntry(usage: "history show ?amount? ?order? ?reverse?",
+          content: "Show the last " & getOption(optionName = initLimitedString(
+              capacity = 13, text = "historyAmount"),
           db = db) & " commands from the shell's history ordered by " &
-              sortOrder & sortDirection & " You can also set the amount and order of commands to show by adding optional parameter amount. For example, to show the last 10 commands sorted by name: history show 10 name. Available switches for order are: amount, recent, name, recentamount.")
+              sortOrder & sortDirection & " You can also set the amount, order and direction of order of commands to show by adding optional parameters amount, order and reverse. For example, to show the last 10 commands sorted by name in reversed order: history show 10 name true. Available switches for order are: amount, recent, name, recentamount. Available values for reverse are true or false.")
     except CapacityError:
       HelpEntry(usage: "history show", content: "Show the last commands from the shell's history.")
 
