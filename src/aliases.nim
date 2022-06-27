@@ -673,3 +673,25 @@ proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
   except OSError:
     discard showError(message = "Can't initialize aliases. Reason: ",
         e = getCurrentException())
+
+proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+  ## FUNCTION
+  ##
+  ## Update the table aliases to the new version if needed
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  try:
+    db.exec(query = sql(query = """ALTER TABLE aliases ADD output VARCHAR(""" & $maxInputLength &
+                """) NOT NULL DEFAULT 'stdout'"""))
+  except DbError:
+    return showError(message = "Can't update table for the shell's aliases. Reason: ",
+        e = getCurrentException())
+  return QuitSuccess.ResultCode

@@ -180,6 +180,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
         return nil
       if updateHistoryDb(db = result) == QuitFailure:
         return nil
+      if updateAliasesDb(db = result) == QuitFailure:
+        return nil
       setOption(optionName = optionName, value = optionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),
