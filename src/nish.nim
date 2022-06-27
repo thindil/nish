@@ -133,14 +133,16 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     var sqlQuery: string = """CREATE TABLE aliases (
                  id          INTEGER       PRIMARY KEY,
                  name        VARCHAR(""" & $aliasNameLength &
-        """) NOT NULL,
+            """) NOT NULL,
                  path        VARCHAR(""" & $maxInputLength &
             """) NOT NULL,
                  recursive   BOOLEAN       NOT NULL,
                  commands    VARCHAR(""" & $maxInputLength &
-        """) NOT NULL,
-                 description VARCHAR(""" & $maxInputLength & """) NOT NULL
-              )"""
+            """) NOT NULL,
+                 description VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                 output VARCHAR(""" & $maxInputLength &
+            """) NOT NULL DEFAULT 'stdout')"""
     try:
       result.exec(query = sql(query = sqlQuery))
     except DbError:
@@ -156,7 +158,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
             """) NOT NULL,
                   valuetype VARCHAR(""" & $maxInputLength &
             """) NOT NULL,
-                  defaultvalue VARCHAR(""" & $maxInputLength & """) NOT NULL,
+                  defaultvalue VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
                   readonly BOOLEAN DEFAULT 0)"""
     try:
       result.exec(query = sql(query = sqlQuery))
