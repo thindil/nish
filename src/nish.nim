@@ -149,26 +149,15 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       discard showError(message = "Can't create 'aliases' table. Reason: ",
           e = getCurrentException())
       return nil
-    sqlQuery = """CREATE TABLE options (
-                  option VARCHAR(""" & $aliasNameLength &
-            """) NOT NULL PRIMARY KEY,
-                  value	 VARCHAR(""" & $maxInputLength &
-                """) NOT NULL,
-                  description VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                  valuetype VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                  defaultvalue VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                  readonly BOOLEAN DEFAULT 0)"""
+    if createOptionsDb(db = result) == QuitFailure:
+      return nil;
     try:
-      result.exec(query = sql(query = sqlQuery))
       setOption(optionName = optionName, value = optionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),
           valueType = ValueType.natural, db = result, readOnly = 1)
-    except DbError, CapacityError:
-      discard showError(message = "Can't create 'options' table. Reason: ",
+    except CapacityError:
+      discard showError(message = "Can't set database schema. Reason: ",
           e = getCurrentException())
       return nil
   # If database version is different than the newest, update database

@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
-import columnamount, constants, input, lstring, output, resultcode
+import aliases, columnamount, constants, input, lstring, output, resultcode
 
 type
   OptionName* = LimitedString
@@ -319,3 +319,23 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return showError(message = "Can't update table for the shell's options. Reason: ",
         e = getCurrentException())
   return QuitSuccess.ResultCode
+
+proc createOptionsDb*(db): ResultCode =
+  try:
+    db.exec(query = sql(query = """CREATE TABLE options (
+                option VARCHAR(""" & $ aliasNameLength &
+          """) NOT NULL PRIMARY KEY,
+                value	 VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+                description VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+                valuetype VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+                defaultvalue VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+                readonly BOOLEAN DEFAULT 0)"""))
+  except DbError, CapacityError:
+    return showError(message = "Can't create 'options' table. Reason: ",
+        e = getCurrentException())
+  return QuitSuccess.ResultCode
+
