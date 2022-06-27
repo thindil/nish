@@ -321,6 +321,18 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   return QuitSuccess.ResultCode
 
 proc createOptionsDb*(db): ResultCode =
+  ## FUNCTION
+  ##
+  ## Create the table options
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## show message what wrong
   try:
     db.exec(query = sql(query = """CREATE TABLE options (
                 option VARCHAR(""" & $ aliasNameLength &
