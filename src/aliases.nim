@@ -307,7 +307,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   ## QuitSuccess if the new alias was properly set, otherwise QuitFailure.
   ## Also, updated parameter historyIndex and aliases.
   showOutput(message = "You can cancel adding a new alias at any time by double press Escape key.")
-  showFormHeader(message = "(1/5) Name")
+  showFormHeader(message = "(1/6) Name")
   showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
   showOutput(message = "Name: ", newLine = false)
   var name: AliasName = emptyLimitedString(capacity = aliasNameLength)
@@ -325,13 +325,13 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
       showOutput(message = "Name: ", newLine = false)
   if name == "exit":
     return showError(message = "Adding a new alias cancelled.")
-  showFormHeader(message = "(2/5) Description")
+  showFormHeader(message = "(2/6) Description")
   showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
   showOutput(message = "Description: ", newLine = false)
   let description: UserInput = readInput()
   if description == "exit":
     return showError(message = "Adding a new alias cancelled.")
-  showFormHeader(message = "(3/5) Working directory")
+  showFormHeader(message = "(3/6) Working directory")
   showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
   showOutput(message = "Path: ", newLine = false)
   var path: DirectoryPath = "".DirectoryPath
@@ -346,7 +346,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
       showOutput(message = "Path: ", newLine = false)
   if path == "exit":
     return showError(message = "Adding a new alias cancelled.")
-  showFormHeader(message = "(4/5) Recursiveness")
+  showFormHeader(message = "(4/6) Recursiveness")
   showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
   showOutput(message = "Recursive(y/n): ", newLine = false)
   var inputChar: char = try:
@@ -360,7 +360,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
       'y'
   showOutput(message = $inputChar)
   let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
-  showFormHeader(message = "(5/5) Commands")
+  showFormHeader(message = "(5/6) Commands")
   showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
   showOutput(message = "Command(s): ", newLine = false)
   var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
@@ -370,6 +370,11 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
       discard showError(message = "Please enter commands for the alias.")
       showOutput(message = "Command(s): ", newLine = false)
   if commands == "exit":
+    return showError(message = "Adding a new alias cancelled.")
+  showFormHeader(message = "(6/6) Output")
+  showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.")
+  let output: UserInput = readInput()
+  if output == "exit":
     return showError(message = "Adding a new alias cancelled.")
   # Check if alias with the same parameters exists in the database
   try:
@@ -381,8 +386,8 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
         e = getCurrentException())
   # Save the alias to the database
   try:
-    if db.tryInsertID(query = sql(query = "INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)"),
-        name, path, recursive, commands, description) == -1:
+    if db.tryInsertID(query = sql(query = "INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)"),
+        name, path, recursive, commands, description, output) == -1:
       return showError(message = "Can't add alias.")
   except DbError:
     return showError(message = "Can't add the alias to the database. Reason: ",
