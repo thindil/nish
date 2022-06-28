@@ -320,7 +320,8 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         e = getCurrentException())
   return QuitSuccess.ResultCode
 
-proc createOptionsDb*(db): ResultCode =
+proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Create the table options
