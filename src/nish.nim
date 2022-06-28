@@ -130,27 +130,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
         return nil
   # Create a new database if not exists
   if not dbExists:
-    var sqlQuery: string = """CREATE TABLE aliases (
-                 id          INTEGER       PRIMARY KEY,
-                 name        VARCHAR(""" & $aliasNameLength &
-            """) NOT NULL,
-                 path        VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 recursive   BOOLEAN       NOT NULL,
-                 commands    VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 description VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 output VARCHAR(""" & $maxInputLength &
-            """) NOT NULL DEFAULT 'stdout')"""
-    try:
-      result.exec(query = sql(query = sqlQuery))
-    except DbError:
-      discard showError(message = "Can't create 'aliases' table. Reason: ",
-          e = getCurrentException())
+    if createAliasesDb(db = result) == QuitFailure:
       return nil
     if createOptionsDb(db = result) == QuitFailure:
-      return nil;
+      return nil
     try:
       setOption(optionName = optionName, value = optionValue,
           description = initLimitedString(capacity = 42,
