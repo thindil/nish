@@ -373,9 +373,14 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     return showError(message = "Adding a new alias cancelled.")
   showFormHeader(message = "(6/6) Output")
   showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.")
-  let output: UserInput = readInput()
+  var output: UserInput = readInput()
   if output == "exit":
     return showError(message = "Adding a new alias cancelled.")
+  elif output == "":
+    try:
+      output.setString(text = "stdout")
+    except CapacityError:
+      return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
   # Check if alias with the same parameters exists in the database
   try:
     if db.getValue(query = sql(query = "SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?"),
