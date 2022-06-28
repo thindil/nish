@@ -27,11 +27,6 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode
 
-const aliasNameLength*: Positive = maxNameLength
-  ## FUNCTION
-  ##
-  ## The maximum length of the shell's alias name
-
 type
   AliasName* = LimitedString
     ## FUNCTION

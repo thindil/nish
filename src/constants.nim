@@ -26,11 +26,16 @@
 import std/tables
 import lstring
 
-const maxNameLength*: Positive = 50
+const 
+  maxNameLength*: Positive = 50
   ## FUNCTION
   ##
   ## Max allowed length of various names (options, variables, etc). Can be
   ## customized separately for each name's type either in the proper modules.
+  aliasNameLength*: Positive = maxNameLength
+  ## FUNCTION
+  ##
+  ## The maximum length of the shell's alias namev
 
 type
   HelpEntry* = object
