@@ -517,6 +517,8 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
       newLine = false)
   showOutput(message = row[4], newLine = false, fgColor = fgMagenta)
+  showOutput(message = "':")
+  showOutput(message = "Output to: ", newLine = false)
   var output: UserInput = readInput()
   if output == "exit":
     return showError(message = "Editing the alias cancelled.")
