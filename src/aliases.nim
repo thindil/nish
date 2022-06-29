@@ -113,21 +113,21 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   if arguments == "list":
     showFormHeader(message = "Available aliases are:")
     try:
-      showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
+      showOutput(message = indent(s = "ID   $1 Output Description" % [alignLeft(
         s = "Name",
         count = columnLength.int)], count = spacesAmount.int),
             fgColor = fgMagenta)
     except ValueError:
-      showOutput(message = indent(s = "ID   Name Description",
+      showOutput(message = indent(s = "ID   Name Output Description",
           count = spacesAmount.int), fgColor = fgMagenta)
     for alias in aliases.values:
       try:
         let row: Row = db.getRow(query = sql(
-            query = "SELECT id, name, description FROM aliases WHERE id=?"),
+            query = "SELECT id, name, output, description FROM aliases WHERE id=?"),
           args = alias)
         showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-            alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
-                count = spacesAmount.int))
+            alignLeft(s = row[1], count = columnLength.int) & " " & row[2] &
+                " " & row[3], count = spacesAmount.int))
       except DbError:
         discard showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
@@ -136,18 +136,18 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   elif arguments == "list all":
     showFormHeader(message = "All available aliases are:")
     try:
-      showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
+      showOutput(message = indent(s = "ID   $1 Output Description" % [alignLeft(
           s = "Name", count = columnLength.int)], count = spacesAmount.int),
               fgColor = fgMagenta)
     except ValueError:
-      showOutput(message = indent(s = "ID   Name Description",
+      showOutput(message = indent(s = "ID   Name Output Description",
           count = spacesAmount.int), fgColor = fgMagenta)
     try:
       for row in db.fastRows(query = sql(
-          query = "SELECT id, name, description FROM aliases")):
+          query = "SELECT id, name, output, description FROM aliases")):
         showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-            alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
-                count = spacesAmount.int))
+            alignLeft(s = row[1], count = columnLength.int) & " " & row[2] &
+                " " & row[3], count = spacesAmount.int))
     except DbError:
       discard showError(message = "Can't read info about alias from database. Reason:",
           e = getCurrentException())
