@@ -53,14 +53,16 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
       initLimitedString(capacity = 4, text = "exit")
     except CapacityError:
       return
-  var inputChar: char = '\0'
+  var
+    inputChar: char = '\0'
+    resultString: LimitedString = emptyLimitedString(capacity = maxLength)
   # Read the user input until not meet new line character or the input
   # reach the maximum length
-  while inputChar.ord() != 13 and result.len() < maxLength:
+  while inputChar.ord() != 13 and resultString.len() < maxLength:
     # Backspace pressed, delete the last character from the user input
     if inputChar.ord() == 127:
-      if result.len() > 0:
-        result = result[0..^2]
+      if resultString.len() > 0:
+        resultString = resultString[0..^2]
         try:
           stdout.cursorBackward()
           stdout.write(s = " ")
@@ -87,9 +89,9 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
     elif inputChar.ord() > 31:
       stdout.write(c = inputChar)
       try:
-        result.add(y = inputChar)
+        resultString.add(y = inputChar)
       except CapacityError:
-        return result
+        return resultString
     try:
       inputChar = getch()
     except IOError:
@@ -102,6 +104,7 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
     discard showError(message = "Can't add a new line. Reason: ",
         e = getCurrentException())
     return exitString
+  return resultString
 
 func getArguments*(userInput: var OptParser;
     conjCommands: var bool): UserInput {.gcsafe, raises: [], tags: [].} =
