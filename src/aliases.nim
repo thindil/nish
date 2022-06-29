@@ -231,7 +231,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     except ValueError:
       return showError(message = "The Id of the alias must be a positive number.")
   let row: Row = try:
-        db.getRow(query = sql(query = "SELECT name, commands, description, path, recursive FROM aliases WHERE id=?"), args = id)
+        db.getRow(query = sql(query = "SELECT name, commands, description, path, recursive, output FROM aliases WHERE id=?"), args = id)
     except DbError:
       return showError(message = "Can't read alias data from database. Reason: ",
           e = getCurrentException())
@@ -265,6 +265,9 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   showOutput(message = indent(s = alignLeft(s = "Command(s):", count = 13),
       count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = row[1])
+  showOutput(message = indent(s = alignLeft(s = "Output to:", count = 13),
+      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+  showOutput(message = row[5])
   return QuitSuccess.ResultCode
 
 proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
