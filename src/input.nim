@@ -62,12 +62,12 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
     # Backspace pressed, delete the last character from the user input
     if inputChar.ord() == 127:
       if resultString.len() > 0:
-        resultString = resultString[0..^2]
         try:
+          resultString.setString(text = $resultString[0..^2])
           stdout.cursorBackward()
           stdout.write(s = " ")
           stdout.cursorBackward()
-        except IOError, ValueError:
+        except IOError, ValueError, CapacityError:
           discard showError(message = "Can't delete character. Reason: ",
               e = getCurrentException())
           return exitString
