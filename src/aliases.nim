@@ -375,7 +375,8 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   if commands == "exit":
     return showError(message = "Adding a new alias cancelled.")
   showFormHeader(message = "(6/6) Output")
-  showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.")
+  showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.:")
+  showOutput(message = "Output to: ", newLine = false)
   var output: UserInput = readInput()
   if output == "exit":
     return showError(message = "Adding a new alias cancelled.")
