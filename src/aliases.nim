@@ -645,6 +645,13 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       inputString = inputString.replace(sub = inputString[
         argumentPosition..argumentPosition + 1], by = commandArguments.join(sep = " "))
     argumentPosition = inputString.find(sub = '$', start = argumentPosition + 1)
+  # If output location is set to file, create or open the file
+  let outputFile = try:
+        (if outputLocation notin ["stdout", "stderr"]: open(outputLocation,
+            fmWrite) else: nil)
+      except IOError:
+        return showError(message = "Can't open output file. Reason: ",
+            e = getCurrentException())
   # Execute the selected alias
   while inputString.len() > 0:
     var
@@ -662,19 +669,25 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         return QuitFailure.ResultCode
       continue
     try:
-      let commandProc: Process = startProcess(command = $command, options = {poStdErrToStdOut, poUsePath, poEvalCommand})
+      let commandProc: Process = startProcess(command = $command, options = {
+          poStdErrToStdOut, poUsePath, poEvalCommand})
       for line in commandProc.lines:
         if outputLocation == "stdout":
           showOutput(message = line)
         elif outputLocation == "stderr":
           discard showError(message = line)
+        else:
+          outputFile.writeLine(line)
       if commandProc.peekExitCode() != QuitSuccess and conjCommands:
         return QuitFailure.ResultCode
       commandProc.close()
     except OSError, IOError, Exception:
-      return showError(message = "Can't execute the command of the alias. Reason: ", e = getCurrentException())
+      return showError(message = "Can't execute the command of the alias. Reason: ",
+          e = getCurrentException())
     if not conjCommands:
       break
+  if outputLocation notin ["stdout", "stderr"]:
+    outputFile.close()
   return changeDirectory(newDirectory = currentDirectory, aliases = aliases, db = db)
 
 proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
