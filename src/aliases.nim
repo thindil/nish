@@ -613,6 +613,12 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         initLimitedString(capacity = maxInputLength, text = aliasId)
       except CapacityError:
         return showError(message = "Can't set alias index for " & aliasId)
+    output: string = try:
+      db.getValue(query = sql(query = "SELECT output FROM aliases WHERE id=?"),
+          aliases[aliasIndex])
+    except KeyError, DbError:
+      return showError(message = "Can't get output for alias. Reason: ",
+          e = getCurrentException())
   var inputString: string = try:
       db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
           aliases[aliasIndex])
@@ -655,7 +661,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           aliases = aliases, db = db) != QuitSuccess and conjCommands:
         return QuitFailure.ResultCode
       continue
-    if execCmd($command) != QuitSuccess and conjCommands:
+    if execCmd($command & (if output == "stderr": " 1>&2" elif output ==
+        "stdin": "" else: " >> " & output)) != QuitSuccess and conjCommands:
       return QuitFailure.ResultCode
     if not conjCommands:
       break
