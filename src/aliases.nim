@@ -613,7 +613,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         initLimitedString(capacity = maxInputLength, text = aliasId)
       except CapacityError:
         return showError(message = "Can't set alias index for " & aliasId)
-    output: string = try:
+    outputLocation: string = try:
       db.getValue(query = sql(query = "SELECT output FROM aliases WHERE id=?"),
           aliases[aliasIndex])
     except KeyError, DbError:
@@ -661,9 +661,18 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           aliases = aliases, db = db) != QuitSuccess and conjCommands:
         return QuitFailure.ResultCode
       continue
-    if execCmd($command & (if output == "stderr": " 1>&2" elif output ==
-        "stdin": "" else: " >> " & output)) != QuitSuccess and conjCommands:
-      return QuitFailure.ResultCode
+    try:
+      let commandProc: Process = startProcess(command = $command, options = {poStdErrToStdOut, poUsePath, poEvalCommand})
+      for line in commandProc.lines:
+        if outputLocation == "stdout":
+          showOutput(message = line)
+        elif outputLocation == "stderr":
+          discard showError(message = line)
+      if commandProc.peekExitCode() != QuitSuccess and conjCommands:
+        return QuitFailure.ResultCode
+      commandProc.close()
+    except OSError, IOError, Exception:
+      return showError(message = "Can't execute the command of the alias. Reason: ", e = getCurrentException())
     if not conjCommands:
       break
   return changeDirectory(newDirectory = currentDirectory, aliases = aliases, db = db)
