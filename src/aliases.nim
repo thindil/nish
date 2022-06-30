@@ -253,7 +253,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   showOutput(message = row[0])
   showOutput(message = indent(s = "Description: ", count = spacesAmount.int),
       newLine = false, fgColor = fgMagenta)
-  showOutput(message = row[2])
+  showOutput(message = (if row[2].len > 0: row[2] else: "(none)"))
   if row[4] == "1":
     showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
         count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
