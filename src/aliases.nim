@@ -642,10 +642,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           discard showError(message = line)
         else:
           outputFile.writeLine(line)
+      commandProc.close()
       if commandProc.peekExitCode() != QuitSuccess and conjCommands:
         result = QuitFailure.ResultCode
         break
-      commandProc.close()
     except OSError, IOError, Exception:
       discard showError(message = "Can't execute the command of the alias. Reason: ",
           e = getCurrentException())
