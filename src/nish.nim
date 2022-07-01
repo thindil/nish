@@ -184,6 +184,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     helpContent = initTable[string, HelpEntry]()
     cursorPosition: Natural = 0
 
+  proc ctrlC() {.noconv.} =
+    echo ""
+
+  setControlCHook(hook = ctrlC)
+
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command, "-h" or "--help" to show
   # help about the shell's command line arguments, "-v" or "--version" to show
