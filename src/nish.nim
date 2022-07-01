@@ -185,8 +185,13 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     cursorPosition: Natural = 0
 
   proc ctrlC() {.noconv.} =
+    ## FUNCTION
+    ##
+    ## Handle pressing Control+C by the user. Add empty line to output instead
+    ## of quit the shell.
     echo ""
 
+  # Set the handler for pressing Control+C by the user
   setControlCHook(hook = ctrlC)
 
   # Check the command line parameters entered by the user. Available options
