@@ -25,7 +25,7 @@
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import columnamount, constants, databaseid, directorypath, history, input,
-    lstring, output, resultcode
+    lstring, output, resultcode, variables
 
 type
   AliasName* = LimitedString
@@ -625,28 +625,20 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       command: UserInput = getArguments(userInput = userInput,
           conjCommands = conjCommands)
     inputString = join(a = userInput.remainingArgs(), sep = " ")
-    # Threat cd command specially, it should just change the current
-    # directory for the alias
-    if command[0..2] == "cd ":
-      workingDir = $command[3..^1]
-      aliases.setAliases(directory = workingDir.DirectoryPath, db = db)
-      continue
     try:
-      let commandProc: Process = startProcess(command = $command,
-          workingDir = workingDir, options = {poStdErrToStdOut, poUsePath,
-              poEvalCommand})
-      for line in commandProc.lines:
-        if outputLocation == "stdout":
-          showOutput(message = line)
-        elif outputLocation == "stderr":
-          discard showError(message = line)
-        else:
-          outputFile.writeLine(line)
-      commandProc.close()
-      if commandProc.peekExitCode() != QuitSuccess and conjCommands:
+      # Threat cd command specially, it should just change the current
+      # directory for the alias
+      if command[0..2] == "cd ":
+        workingDir = getCurrentDir()
+        setCurrentDir(newDir = $command[3..^1])
+        setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
+            oldDirectory = workingDir.DirectoryPath)
+        aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+        continue
+      if execCmd(command = $command) != QuitSuccess and conjCommands:
         result = QuitFailure.ResultCode
         break
-    except OSError, IOError, Exception:
+    except OSError:
       discard showError(message = "Can't execute the command of the alias. Reason: ",
           e = getCurrentException())
       break
@@ -654,9 +646,13 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       break
   if outputLocation notin ["stdout", "stderr"]:
     outputFile.close()
+  # Restore old variables and aliases
   if workingDir.len() > 0:
     try:
-      aliases.setAliases(directory = DirectoryPath(getCurrentDir()), db = db)
+      setVariables(newDirectory = workingDir.DirectoryPath, db = db,
+          oldDirectory = getCurrentDir().DirectoryPath)
+      setCurrentDir(newDir = workingDir)
+      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
     except OSError:
       return showError(message = "Can't restore aliases. Reason: ",
           e = getCurrentException())
