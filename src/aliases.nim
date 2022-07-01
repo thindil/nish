@@ -568,6 +568,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   ## QuitSuccess if the alias was properly executed, otherwise QuitFailure.
   ## Also, updated parameter aliases.
 
+  result = QuitSuccess.ResultCode
   let
     commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
         cmdline = $arguments).remainingArgs() else: @[])
@@ -642,16 +643,24 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         else:
           outputFile.writeLine(line)
       if commandProc.peekExitCode() != QuitSuccess and conjCommands:
-        return QuitFailure.ResultCode
+        result = QuitFailure.ResultCode
+        break
       commandProc.close()
     except OSError, IOError, Exception:
-      return showError(message = "Can't execute the command of the alias. Reason: ",
+      discard showError(message = "Can't execute the command of the alias. Reason: ",
           e = getCurrentException())
+      break
     if not conjCommands:
       break
   if outputLocation notin ["stdout", "stderr"]:
     outputFile.close()
-  return QuitSuccess.ResultCode
+  if workingDir.len() > 0:
+    try:
+      aliases.setAliases(directory = DirectoryPath(getCurrentDir()), db = db)
+    except OSError:
+      return showError(message = "Can't restore aliases. Reason: ",
+          e = getCurrentException())
+  return result
 
 proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
