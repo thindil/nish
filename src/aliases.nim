@@ -568,45 +568,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   ## QuitSuccess if the alias was properly executed, otherwise QuitFailure.
   ## Also, updated parameter aliases.
 
-  proc changeDirectory(newDirectory: DirectoryPath; aliases;
-      db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadEnvEffect,
-          ReadIOEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect,
-              TimeEffect].} =
-    ## FUNCTION
-    ##
-    ## Change the current directory for the shell
-    ##
-    ## PARAMETERS
-    ##
-    ## * newDirectory - the new directory to which the current directory will
-    ##                  be changed
-    ## * aliases      - the list of aliases available in the current directory
-    ## * db           - the connection to the shell's database
-    ##
-    ## RETURNS
-    ##
-    ## QuitSuccess if the current directory was successfully changed, otherwise
-    ## QuitFailure. Also, updated parameter aliases.
-    let path: DirectoryPath = try:
-        expandFilename(filename = absolutePath(path = expandTilde(
-            path = $newDirectory))).DirectoryPath
-      except OSError, ValueError:
-        return showError(message = "Can't change directory. Reason: ",
-            e = getCurrentException())
-    try:
-      setCurrentDir(newDir = $path)
-      aliases.setAliases(directory = path, db = db)
-      return QuitSuccess.ResultCode
-    except OSError:
-      return showError(message = "Can't change directory. Reason: ",
-          e = getCurrentException())
-
   let
-    currentDirectory: DirectoryPath = try:
-        getCurrentDir().DirectoryPath
-      except OSError:
-        return showError(message = "Can't get the current directory name. Reason: ",
-            e = getCurrentException())
     commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
         cmdline = $arguments).remainingArgs() else: @[])
     aliasIndex: LimitedString = try:
@@ -653,6 +615,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         return showError(message = "Can't open output file. Reason: ",
             e = getCurrentException())
   # Execute the selected alias
+  var workingDir: string = ""
   while inputString.len() > 0:
     var
       conjCommands: bool
@@ -664,13 +627,13 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     # Threat cd command specially, it should just change the current
     # directory for the alias
     if command[0..2] == "cd ":
-      if changeDirectory(newDirectory = DirectoryPath($command[3..^1]),
-          aliases = aliases, db = db) != QuitSuccess and conjCommands:
-        return QuitFailure.ResultCode
+      workingDir = $command[3..^1]
+      aliases.setAliases(directory = workingDir.DirectoryPath, db = db)
       continue
     try:
-      let commandProc: Process = startProcess(command = $command, options = {
-          poStdErrToStdOut, poUsePath, poEvalCommand})
+      let commandProc: Process = startProcess(command = $command,
+          workingDir = workingDir, options = {poStdErrToStdOut, poUsePath,
+              poEvalCommand})
       for line in commandProc.lines:
         if outputLocation == "stdout":
           showOutput(message = line)
@@ -688,7 +651,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       break
   if outputLocation notin ["stdout", "stderr"]:
     outputFile.close()
-  return changeDirectory(newDirectory = currentDirectory, aliases = aliases, db = db)
+  return QuitSuccess.ResultCode
 
 proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
