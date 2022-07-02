@@ -582,6 +582,11 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     except KeyError, DbError:
       return showError(message = "Can't get output for alias. Reason: ",
           e = getCurrentException())
+    currentDirectory: DirectoryPath = try:
+        getCurrentDir().DirectoryPath
+    except OSError:
+      return showError(message = "Can't get current directory. Reason: ",
+          e = getCurrentException())
   var inputString: string = try:
       db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
           aliases[aliasIndex])
@@ -659,10 +664,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   # Restore old variables and aliases
   if workingDir.len() > 0:
     try:
-      setVariables(newDirectory = workingDir.DirectoryPath, db = db,
+      setVariables(newDirectory = currentDirectory, db = db,
           oldDirectory = getCurrentDir().DirectoryPath)
-      setCurrentDir(newDir = workingDir)
-      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+      setCurrentDir(newDir = $currentDirectory)
+      aliases.setAliases(directory = currentDirectory, db = db)
     except OSError:
       return showError(message = "Can't restore aliases. Reason: ",
           e = getCurrentException())
