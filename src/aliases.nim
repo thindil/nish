@@ -644,7 +644,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       break
     if not conjCommands:
       break
-  if outputLocation notin ["stdout", "stderr"]:
+  if outputFile != nil:
     outputFile.close()
   # Restore old variables and aliases
   if workingDir.len() > 0:
