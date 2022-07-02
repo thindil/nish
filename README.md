@@ -6,10 +6,10 @@ multiplatform command-line shell. If you read this file on GitHub:
 Any code propositions should go to the
 [Fossil](https://www.laeran.pl/repositories/nish) repository.
 
-**IMPORTANT:** This version of the file is related to the future version
-of the shell. It may contain information not present in a released
-version of the program. For that information, please refer to the README.md
-file included into the release.
+**IMPORTANT:** If you read the file in the project code repository: This
+version of the file is related to the future version of the shell. It may
+contain information not present in released versions of the program. For
+that information, please refer to the README.md file included into the release.
 
 ### The project's goals
 
