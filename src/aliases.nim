@@ -621,6 +621,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     var
       conjCommands: bool
       userInput: OptParser = initOptParser(cmdline = inputString)
+      returnCode: int = QuitSuccess
+      resultOutput: string = ""
     let
       command: UserInput = getArguments(userInput = userInput,
           conjCommands = conjCommands)
@@ -635,10 +637,18 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             oldDirectory = workingDir.DirectoryPath)
         aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
         continue
-      if execCmd(command = $command) != QuitSuccess and conjCommands:
+      if outputLocation == "stdout":
+        returnCode = execCmd(command = $command)
+      else:
+        (resultOutput, returnCode) = execCmdEx(command = $command)
+        if outputFile != nil:
+          outputFile.write(resultOutput)
+        else:
+          discard showError(message = resultOutput)
+      if returnCode != QuitSuccess and conjCommands:
         result = QuitFailure.ResultCode
         break
-    except OSError:
+    except OSError, IOError, Exception:
       discard showError(message = "Can't execute the command of the alias. Reason: ",
           e = getCurrentException())
       break
