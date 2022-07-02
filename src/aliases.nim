@@ -669,7 +669,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       setCurrentDir(newDir = $currentDirectory)
       aliases.setAliases(directory = currentDirectory, db = db)
     except OSError:
-      return showError(message = "Can't restore aliases. Reason: ",
+      return showError(message = "Can't restore aliases and variables. Reason: ",
           e = getCurrentException())
   return result
 
