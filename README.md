@@ -150,9 +150,9 @@ When there is some text entered by the user, the history search only commands
 which starts with the entered text.
 
 The shell sorts the commands' history not only by most recently used but also by
-most frequently used. Additinally, the command allows to select the amount of
+most frequently used. Additionally, the command allows selecting the amount of
 commands to show, their sorting order and criteria. These settings cam be set
-as pernament in the shell's options or ad hoc for the one time.
+as permanent in the shell's options or ad hoc for the one time.
 
 #### Advanced shell's configuration
 
