@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Ability to revese direction of the shell's history last commands list
 - Ability to set the amount, order and direction of order of the last commands
   to show for `history show` command
+- Ability to redirect output of aliases to standard error or the selected file
 
 ### Changed
 - Better getting commands from the shell's history
