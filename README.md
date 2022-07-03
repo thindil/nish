@@ -150,6 +150,10 @@ or the shell should store also invalid commands or not.
 When there is some text entered by the user, the history search only commands
 which starts with the entered text.
 
+Additinally, the command to show the shell's history allows to select the
+amount of commands to show, their sorting order and criteria. These settings
+cam be set as pernament in the shell's options or ad hoc for the one time.
+
 #### Advanced shell's configuration
 
 All shell's options can be previewed from the shell. Additionally, it is
