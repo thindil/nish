@@ -39,7 +39,7 @@ type
     ## FUNCTION
     ##
     ## Used to set the type of option's value
-    integer, float, boolean, none, historysort, natural
+    integer, float, boolean, none, historysort, natural, text
 
 using
   db: DbConn # Connection to the shell's database
@@ -221,6 +221,8 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       except:
         return showError(message = "Value for option '" & optionName &
             "' should be integer type.")
+    of "text":
+      discard
     of "":
       return showError(message = "Shell's option with name '" & optionName &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
