@@ -158,8 +158,8 @@ as pernament in the shell's options or ad hoc for the one time.
 
 All shell's options can be previewed from the shell. Additionally, it is
 possible to set them inside the shell and reset options' values to the default
-values. At this moment, all options are related to the shell's commands'
-history, but with time there will be more things to set.
+values. Also, there are options which are read-only, like for example, the
+current version of the shell's database schema.
 
 #### Global and local environment variables
 
