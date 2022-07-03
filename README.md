@@ -59,6 +59,15 @@ this moment, available options for aliases are:
   execute a few commands, but then, each entry on the list have to be separated
   with new line.
 * Description: The alias description. Showed on the aliases list.
+* Output: Where to redirect the output of the commands executed by the alias.
+  By default, or if this option set to `stdout`, the output not redirected
+  at all. If set to `stderr`, then the standard output redirected to the
+  standard error. When set to any other value, it is the path (relative or
+  absolute) to the file to which the output will be saved. If the file exists,
+  the output will be added to its content. **IMPORTANT:** only default setting
+  allows interacting with the commands executed by the alias. Any other setting
+  allows only read without any ability to pass any input to the executed
+  commands.
 
 For example, the definition of the alias can look that:
 
@@ -69,10 +78,12 @@ For example, the definition of the alias can look that:
     Recursive: 1
     Commands: mc --nosubshell
     Description: Run MC without subshell
+    Output: stdout
 
 The alias will be executed when the user enters `mc` in the shell. The alias is
 the global alias, it is available for the main directory `/` and all
-subdirectories. It executes command `mc --nosubshell`.
+subdirectories. It executes command `mc --nosubshell`. The output of the alias
+will be as default, nothing is redirected.
 
 The definition of the local alias can look that:
 
@@ -82,13 +93,16 @@ The definition of the local alias can look that:
     Recursive: 0
     Commands: cd docs && ls -lh
     Description: Enter docs directory and list all files
+    Output: result.txt
 
 The alias will be executed when the user enters `listdocs` in the shell in the
 home directory. It doesn't work in any of its subdirectory. It enters `docs`
 directory and then runs the command `ls -lh`. If the next command should be
 executed only when the previous command was successful, use `&&` to merge them.
 If the next command should be executed only when the previous failed, use `||`
-to merge them.
+to merge them. The output of the alias will be redirected to the file
+`result.txt` which will be located in the same directory where the alias was
+executed.
 
 You can also pass arguments to the commands of the alias. The substitutes for
 arguments are start with `$` and have numbers from 1 to 9. Example: `$1`, `$5`.
@@ -100,13 +114,15 @@ The definition of alias which uses arguments can look that:
     Recursive: 0
     Commands: fossil open fossil/$1.fossil --workdir $1
     Description: Open fossil repo. Required parameter is the name of fossil repo.
+    Output: stderr
 
 The alias will be executed when the user enters `fossopen [reponame]` in the
 shell. If the user enter only `fossopen` the shell will report a problem. The
 alias is the local alias, which means it doesn't work in subdirectories. It
 runs command `fossil open fossil/[reponame].fossil --workdir [reponame]`. For
 example, entering the shell's command: `fossopen myrepo` will execute command:
-`fossil open fossil/myrepo.fossil --workdir myrepo`
+`fossil open fossil/myrepo.fossil --workdir myrepo`. The output of the command
+will be redirected to the standard error.
 
 There is also special argument `$0` which mean all remaining arguments entered
 by the user. The definition of alias which uses that argument can look that:
@@ -117,10 +133,11 @@ by the user. The definition of alias which uses that argument can look that:
     Recursive: 1
     Commands: fossil $0
     Description: Alias for command fossil.
+    Output: stdout
 
 The alias will be executed when the user enters `foss` or `foss [arguments]` in
 the shell. For example, entering the shell's command: `foss help` will execute
-command: `fossil help`
+command: `fossil help`. The output of the alias will not be redirected.
 
 #### Advanced shell's commands' history
 
