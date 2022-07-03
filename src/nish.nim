@@ -116,13 +116,13 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
         e = getCurrentException())
     return nil
   let
-    optionName: OptionName = try:
+    versionName: OptionName = try:
         initLimitedString(capacity = 9, text = "dbVersion")
       except CapacityError:
         discard showError(message = "Can't set optionName. Reason: ",
             e = getCurrentException())
         return nil
-    optionValue: OptionValue = try:
+    versionValue: OptionValue = try:
         initLimitedString(capacity = 1, text = "2")
       except CapacityError:
         discard showError(message = "Can't set optionValue. Reason: ",
@@ -135,7 +135,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     if createOptionsDb(db = result) == QuitFailure:
       return nil
     try:
-      setOption(optionName = optionName, value = optionValue,
+      setOption(optionName = versionName, value = versionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),
           valueType = ValueType.natural, db = result, readOnly = 1)
@@ -145,16 +145,16 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       return nil
   # If database version is different than the newest, update database
   try:
-    if parseInt(s = $getOption(optionName = optionName, db = result,
+    if parseInt(s = $getOption(optionName = versionName, db = result,
         defaultValue = initLimitedString(capacity = 1, text = "0"))) < parseInt(
-            s = $optionValue):
+            s = $versionValue):
       if updateOptionsDb(db = result) == QuitFailure:
         return nil
       if updateHistoryDb(db = result) == QuitFailure:
         return nil
       if updateAliasesDb(db = result) == QuitFailure:
         return nil
-      setOption(optionName = optionName, value = optionValue,
+      setOption(optionName = versionName, value = versionValue,
           description = initLimitedString(capacity = 42,
           text = "Version of the database schema (read only)"),
           valueType = ValueType.natural, db = result)
