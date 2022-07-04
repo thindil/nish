@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[strutils, terminal]
-import columnamount, prompt, resultcode
+import columnamount, resultcode
 
 type OutputMessage* = string
   ## FUNCTION
@@ -33,26 +33,20 @@ type OutputMessage* = string
 
 using message: OutputMessage # The message to show to the user
 
-proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
-    previousCommand: string = ""; returnCode: ResultCode = QuitSuccess.ResultCode;
+proc showOutput*(message; newLine: bool = true;
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
   ## FUNCTION
   ##
-  ## Show the selected message and prompt (if enabled, default) to the user.
-  ## If newLine is true, add a new line after message.
+  ## Show the selected message to the user. If newLine is true, add a new line
+  ## after message.
   ##
   ## PARAMETERS
   ##
   ## * message         - the message to show
   ## * newLine         - if true, add a new line after the message
-  ## * promptEnabled   - if true, show the prompt
-  ## * previousCommand - the previous command executed by the user
-  ## * resultCode      - the result of the previous command executed by the user
   ## * fgColor         - the color of the text (foreground)
   ## * centered        - if true, center the message on the screen
-  showPrompt(promptEnabled = promptEnabled, previousCommand = previousCommand,
-      resultCode = returnCode)
   if message != "":
     var newMessage: OutputMessage
     if centered:
