@@ -23,8 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[os, strutils, terminal]
-import columnamount, constants, directorypath, resultcode
+import std/[strutils, terminal]
+import columnamount, prompt, resultcode
 
 type OutputMessage* = string
   ## FUNCTION
@@ -32,71 +32,6 @@ type OutputMessage* = string
   ## Used to store message to show to the user
 
 using message: OutputMessage # The message to show to the user
-
-proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: ResultCode) {.gcsafe, sideEffect, raises: [],
-        tags: [ReadIOEffect, WriteIOEffect].} =
-  ## FUNCTION
-  ##
-  ## Show the shell prompt if the shell wasn't started in one command mode
-  ##
-  ## PARAMETERS
-  ##
-  ## * promptEnabled   - if true, show the prompt
-  ## * previousCommand - the previous command executed by the user
-  ## * resultCode      - the result of the previous command executed by the user
-  if not promptEnabled:
-    return
-  let
-    currentDirectory: DirectoryPath = try:
-      getCurrentDir().DirectoryPath
-    except OSError:
-      "[unknown dir]".DirectoryPath
-    homeDirectory: DirectoryPath = getHomeDir().DirectoryPath
-  if endsWith(s = currentDirectory & "/", suffix = $homeDirectory):
-    try:
-      stdout.styledWrite(fgBlue, "~")
-    except ValueError, IOError:
-      try:
-        stdout.write(s = "~")
-      except IOError:
-        discard
-  else:
-    let
-      homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
-      promptPath: string = currentDirectory.string[homeIndex +
-              homeDirectory.len()..^1]
-    if homeIndex > -1:
-      try:
-        stdout.styledWrite(fgBlue, "~/" & promptPath)
-      except ValueError, IOError:
-        try:
-          stdout.write(s = "~/" & promptPath)
-        except IOError:
-          discard
-    else:
-      try:
-        stdout.styledWrite(fgBlue, $currentDirectory)
-      except ValueError, IOError:
-        try:
-          stdout.write(s = $currentDirectory)
-        except IOError:
-          discard
-  if previousCommand != "" and resultCode != QuitSuccess:
-    try:
-      stdout.styledWrite(fgRed, "[" & $resultCode & "]")
-    except ValueError, IOError:
-      try:
-        stdout.write(s = "[" & $resultCode & "]")
-      except IOError:
-        discard
-  try:
-    stdout.styledWrite(fgBlue, "# ")
-  except ValueError, IOError:
-    try:
-      stdout.write(s = "# ")
-    except IOError:
-      discard
 
 proc showOutput*(message; newLine: bool = true; promptEnabled: bool = false;
     previousCommand: string = ""; returnCode: ResultCode = QuitSuccess.ResultCode;
