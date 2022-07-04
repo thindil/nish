@@ -119,13 +119,25 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     versionName: OptionName = try:
         initLimitedString(capacity = 9, text = "dbVersion")
       except CapacityError:
-        discard showError(message = "Can't set optionName. Reason: ",
+        discard showError(message = "Can't set versionName. Reason: ",
             e = getCurrentException())
         return nil
     versionValue: OptionValue = try:
         initLimitedString(capacity = 1, text = "2")
       except CapacityError:
-        discard showError(message = "Can't set optionValue. Reason: ",
+        discard showError(message = "Can't set versionValue. Reason: ",
+            e = getCurrentException())
+        return nil
+    promptName: OptionName = try:
+        initLimitedString(capacity = 13, text = "promptCommand")
+      except CapacityError:
+        discard showError(message = "Can't set promptName. Reason: ",
+            e = getCurrentException())
+        return nil
+    promptValue: OptionValue = try:
+        initLimitedString(capacity = 8, text = "built-in")
+      except CapacityError:
+        discard showError(message = "Can't set promptValue. Reason: ",
             e = getCurrentException())
         return nil
   # Create a new database if not exists
@@ -136,9 +148,13 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       return nil
     try:
       setOption(optionName = versionName, value = versionValue,
-          description = initLimitedString(capacity = 42,
-          text = "Version of the database schema (read only)"),
+          description = initLimitedString(capacity = 43,
+          text = "Version of the database schema (read only)."),
           valueType = ValueType.natural, db = result, readOnly = 1)
+      setOption(optionName = promptName, value = promptValue,
+          description = initLimitedString(capacity = 60,
+          text = "The command which output will be used as the shell's prompt."),
+          valueType = ValueType.text, db = result, readOnly = 1)
     except CapacityError:
       discard showError(message = "Can't set database schema. Reason: ",
           e = getCurrentException())
@@ -155,9 +171,13 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       if updateAliasesDb(db = result) == QuitFailure:
         return nil
       setOption(optionName = versionName, value = versionValue,
-          description = initLimitedString(capacity = 42,
-          text = "Version of the database schema (read only)"),
+          description = initLimitedString(capacity = 43,
+          text = "Version of the database schema (read only)."),
           valueType = ValueType.natural, db = result)
+      setOption(optionName = promptName, value = promptValue,
+          description = initLimitedString(capacity = 60,
+          text = "The command which output will be used as the shell's prompt."),
+          valueType = ValueType.text, db = result, readOnly = 1)
   except CapacityError, DbError, ValueError:
     discard showError(message = "Can't update database. Reason: ",
         e = getCurrentException())
