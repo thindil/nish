@@ -305,13 +305,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           color = fgGreen
         elif aliases.contains(key = command):
           color = fgGreen
-      showOutput(message = $command, newLine = false,
-          promptEnabled = not oneTimeCommand,
-          previousCommand = commandName, returnCode = returnCode,
-          fgColor = color)
-      showOutput(message = $commandArguments, newLine = false,
-          promptEnabled = false,
-          previousCommand = commandName, returnCode = returnCode)
+      showPrompt(promptEnabled = not oneTimeCommand,
+          previousCommand = $commandName, resultCode = returnCode)
+      showOutput(message = $command, newLine = false, fgColor = color)
+      showOutput(message = $commandArguments, newLine = false)
     except ValueError, IOError:
       discard
 
