@@ -23,12 +23,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[os, strutils, terminal]
-import constants, directorypath, resultcode
+import std/[db_sqlite, os, osproc, strutils, terminal]
+import constants, directorypath, lstring, options, output, resultcode
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: ResultCode) {.gcsafe, sideEffect, raises: [],
-        tags: [ReadIOEffect, WriteIOEffect].} =
+    resultCode: ResultCode; db: DbConn) {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect,
+        RootEffect].} =
   ## FUNCTION
   ##
   ## Show the shell prompt if the shell wasn't started in one command mode
@@ -38,7 +39,20 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   ## * promptEnabled   - if true, show the prompt
   ## * previousCommand - the previous command executed by the user
   ## * resultCode      - the result of the previous command executed by the user
+  ## * db              - the connection to the shell's database
   if not promptEnabled:
+    return
+  try:
+    let promptCommand: OptionValue = getOption(optionName = initLimitedString(
+        capacity = 13, text = "promptCommand"), db = db,
+            defaultValue = initLimitedString(
+        capacity = 8, text = "built-in"))
+    if promptCommand != "built-in":
+      discard execCmd(command = $promptCommand)
+      return
+  except CapacityError:
+    discard showError(message = "Can't get command for prompt. Reason: ",
+        e = getCurrentException())
     return
   let
     currentDirectory: DirectoryPath = try:
