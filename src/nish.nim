@@ -267,6 +267,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   updateHelp(helpContent = helpContent, db = db)
   setMainHelp(helpContent = helpContent)
 
+  # Initialize the shell's prompt system
+  initPrompt(helpContent = helpContent)
+
   proc refreshInput() {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
       ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
     ## FUNCTION

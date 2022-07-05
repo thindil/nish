@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, osproc, strutils, terminal]
+import std/[db_sqlite, os, osproc, strutils, tables, terminal]
 import constants, directorypath, lstring, options, output, resultcode
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
@@ -104,3 +104,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       stdout.write(s = "# ")
     except IOError:
       discard
+
+proc initPrompt*(helpContent: var HelpTable) =
+  helpContent["prompt"] = HelpEntry(usage: "set options promptCommand 'program ?arguments?'",
+      content: "The shell's prompt can be set as output of a command. It is possible by setting the shell's option promptCommand. For example, to set the prompt to listing the current directory, you can type options set promptCommand 'ls -a .'. Please remember, that the command will be executed every time before you execute another command.")
