@@ -268,7 +268,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   setMainHelp(helpContent = helpContent)
 
   proc refreshInput() {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
-      ReadIOEffect].} =
+      ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
     ## FUNCTION
     ##
     ## Refresh the user input, clear the old and show the new. Color the entered
@@ -306,7 +306,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         elif aliases.contains(key = command):
           color = fgGreen
       showPrompt(promptEnabled = not oneTimeCommand,
-          previousCommand = $commandName, resultCode = returnCode)
+          previousCommand = $commandName, resultCode = returnCode, db = db)
       showOutput(message = $command, newLine = false, fgColor = color)
       showOutput(message = $commandArguments, newLine = false)
     except ValueError, IOError:
@@ -320,7 +320,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     if not oneTimeCommand and inputString.len() == 0:
       # Write prompt
       showPrompt(promptEnabled = not oneTimeCommand,
-          previousCommand = commandName, resultCode = returnCode)
+          previousCommand = commandName, resultCode = returnCode, db = db)
       # Get the user input and parse it
       var inputChar: char = '\0'
       # Read the user input until not meet new line character or the input
