@@ -105,6 +105,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     except IOError:
       discard
 
-proc initPrompt*(helpContent: var HelpTable) =
+func initPrompt*(helpContent: var HelpTable) {.gcsafe, locks: 0,
+    raises: [], tags: [].} =
   helpContent["prompt"] = HelpEntry(usage: "set options promptCommand 'program ?arguments?'",
       content: "The shell's prompt can be set as output of a command. It is possible by setting the shell's option promptCommand. For example, to set the prompt to listing the current directory, you can type options set promptCommand 'ls -a .'. Please remember, that the command will be executed every time before you execute another command.")
