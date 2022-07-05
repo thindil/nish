@@ -2,6 +2,8 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[prompt, resultcode]
+import ../../src/[nish, directorypath, prompt, resultcode]
 
-showPrompt(true, "ls -a", ResultCode(QuitSuccess))
+let db = startDb("test.db".DirectoryPath)
+assert db != nil
+showPrompt(true, "ls -a", ResultCode(QuitSuccess), db)
