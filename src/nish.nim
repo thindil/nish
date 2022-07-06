@@ -447,6 +447,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         stdout.writeLine(x = "")
       except IOError:
         discard
+    # User just press Enter key, reset return code and back to beginning
+    if inputString.len() == 0:
+      returnCode = QuitSuccess.ResultCode
+      continue
     userInput = initOptParser(cmdLine = $inputString)
     # Reset the return code of the program
     returnCode = QuitSuccess.ResultCode
@@ -455,9 +459,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     # If it looks like an argument, it must be command name
     if userInput.kind == cmdArgument:
       commandName = userInput.key
-    # No command name, back to beginning
-    if commandName == "":
-      continue
     # Set the command arguments
     let arguments: UserInput = try:
         initLimitedString(capacity = maxInputLength, text = $getArguments(
