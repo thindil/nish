@@ -3,12 +3,8 @@ discard """
 """
 
 import std/[tables]
-import ../../src/[constants, directorypath, options, nish, resultcode]
+import ../../src/[constants, options]
 
-let db = startDb("test.db".DirectoryPath)
-assert db != nil
-var
-    helpContent = initTable[string, HelpEntry]()
+var helpContent = initTable[string, HelpEntry]()
 initOptions(helpContent)
 assert helpContent.len() > 0
-quitShell(ResultCode(QuitSuccess), db)
