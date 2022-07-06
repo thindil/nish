@@ -206,6 +206,20 @@ specific environment variables presented above. They work only with the
 standard environment variables. To manage the shell's specific environment
 variables use subcommands of the `variable` command.
 
+#### Setting the shell's prompt
+
+The shell's prompt can be set to the output of the selected program or script.
+To do this, set the value of the shell's option `promptCommand` to the command
+line with the desired program or script and its arguments. For example, to set
+prompt to show the current date, use command `options set promptCommand date`.
+If you want to reset the prompt to the original state set it vallue to
+`built-in` or just reset with command `options reset promptCommand`.
+
+**ATTENTION:** the command set as the shell's option `promptCommand` will be
+executed every time before you execute your command. Thus, be sure it isn't too
+heavy for your system, or it isn't dangerous, for example, it doesn't steal
+credentials, harm your system, etc.
+
 #### Other features
 
 * Simple Tab completion for commands with names of files and directories
