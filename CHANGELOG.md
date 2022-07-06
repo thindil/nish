@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - Showing error information during getting command from the shell's history
 - Showing error message on standard output instead of standard error
 - The look of `alias show` command when the description of the alias is empty
+- Pressing Enter key repeat the last entered command
 
 ## [0.2.0] - 2022-05-09
 
