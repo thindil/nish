@@ -154,7 +154,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       setOption(optionName = promptName, value = promptValue,
           description = initLimitedString(capacity = 60,
           text = "The command which output will be used as the shell's prompt."),
-          valueType = ValueType.text, db = result, readOnly = 1)
+          valueType = ValueType.command, db = result, readOnly = 1)
     except CapacityError:
       discard showError(message = "Can't set database schema. Reason: ",
           e = getCurrentException())
@@ -177,7 +177,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       setOption(optionName = promptName, value = promptValue,
           description = initLimitedString(capacity = 60,
           text = "The command which output will be used as the shell's prompt."),
-          valueType = ValueType.text, db = result, readOnly = 1)
+          valueType = ValueType.command, db = result, readOnly = 1)
   except CapacityError, DbError, ValueError:
     discard showError(message = "Can't update database. Reason: ",
         e = getCurrentException())
