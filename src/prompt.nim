@@ -48,11 +48,15 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
             defaultValue = initLimitedString(
         capacity = 8, text = "built-in"))
     if promptCommand != "built-in":
-      let (output, exitCode) = execCmdEx(command = $promptCommand)
+      var (output, exitCode) = execCmdEx(command = $promptCommand)
       if exitCode != QuitSuccess:
         discard showError(message = "Can't execute external command as the shell's prompt.")
         return
-      stdout.write(output)
+      if output.endsWith(suffix = '\n'):
+        output.stripLineEnd()
+        stdout.writeLine(output)
+      else:
+        stdout.write(output)
       return
   except CapacityError, Exception:
     discard showError(message = "Can't get command for prompt. Reason: ",
