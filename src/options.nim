@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, strutils, tables, terminal]
 import columnamount, constants, input, lstring, output, resultcode
 
 type
@@ -39,7 +39,7 @@ type
     ## FUNCTION
     ##
     ## Used to set the type of option's value
-    integer, float, boolean, none, historysort, natural, text
+    integer, float, boolean, none, historysort, natural, text, command
 
 using
   db: DbConn # Connection to the shell's database
@@ -156,7 +156,7 @@ proc helpOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
 
 proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
-    ReadEnvEffect, TimeEffect], locks: 0.} =
+    ReadEnvEffect, TimeEffect, RootEffect].} =
   ## FUNCTION
   ##
   ## Set the selected option's value
@@ -223,6 +223,14 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             "' should be integer type.")
     of "text":
       discard
+    of "command":
+      try:
+        let (_, exitCode) = execCmdEx(command = $value)
+        if exitCode != QuitSuccess:
+          return showError(message = "Value for option '" & optionName & "' should be valid command.")
+      except:
+        return showError(message = "Can't check the existence of command '" &
+            value & "'. Reason: ", e = getCurrentException())
     of "":
       return showError(message = "Shell's option with name '" & optionName &
         "' doesn't exists. Please use command 'options show' to see all available shell's options.")
