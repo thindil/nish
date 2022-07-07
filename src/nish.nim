@@ -312,6 +312,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           previousCommand = $commandName, resultCode = returnCode, db = db)
       showOutput(message = $command, newLine = false, fgColor = color)
       showOutput(message = $commandArguments, newLine = false)
+      if cursorPosition < input.len() - 1:
+        stdout.cursorBackward(count = input.len() - cursorPosition - 1)
     except ValueError, IOError:
       discard
 
