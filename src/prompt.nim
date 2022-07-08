@@ -27,9 +27,9 @@ import std/[db_sqlite, os, osproc, strutils, tables, terminal]
 import constants, directorypath, lstring, options, output, resultcode
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: ResultCode; db: DbConn) {.gcsafe, sideEffect, raises: [],
+    resultCode: ResultCode; db: DbConn): bool {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect,
-        RootEffect].} =
+        RootEffect], discardable.} =
   ## FUNCTION
   ##
   ## Show the shell prompt if the shell wasn't started in one command mode
@@ -40,6 +40,11 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   ## * previousCommand - the previous command executed by the user
   ## * resultCode      - the result of the previous command executed by the user
   ## * db              - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## True if the prompt is multiline prompt, otherwise false
+  result = false
   if not promptEnabled:
     return
   try:
@@ -55,6 +60,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       if output.endsWith(suffix = '\n'):
         output.stripLineEnd()
         stdout.writeLine(output)
+        return true
       else:
         stdout.write(output)
       return
