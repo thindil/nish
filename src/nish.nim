@@ -146,6 +146,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       return nil
     if createOptionsDb(db = result) == QuitFailure:
       return nil
+    if createHistoryDb(db = result) == QuitFailure:
+      return nil
     try:
       setOption(optionName = versionName, value = versionValue,
           description = initLimitedString(capacity = 43,
