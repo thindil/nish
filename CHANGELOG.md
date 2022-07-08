@@ -10,15 +10,17 @@ All notable changes to this project will be documented in this file.
 - Ability to select how the shell's history should be sorted
 - Ability to revese direction of the shell's history last commands list
 - Ability to set the amount, order and direction of order of the last commands
-  to show for `history show` command
+  to show for `history list` command
 - Ability to redirect output of aliases to standard error or the selected file
 - Ability to set the output of program or script as the shell's prompt
 
 ### Changed
 - Better getting commands from the shell's history
-- Better help entry for `history show` command
+- Better help entry for `history list` command
 - Type of some the shell's options' to natural instead of integer
 - Updated README.md
+- **BREAKING**: Renamed command `history show` to `history list` to match other
+  subcommands related to listings
 
 ### Fixed
 - Reading command line parameters, when there is set database path and the
