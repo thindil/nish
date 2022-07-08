@@ -270,7 +270,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   # Initialize the shell's prompt system
   initPrompt(helpContent = helpContent)
 
-  proc refreshInput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
+  proc refreshOutput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
       ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
     ## FUNCTION
     ##
@@ -385,7 +385,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 except CapacityError:
                   discard
                 cursorPosition = inputString.len()
-                refreshInput(multiLine)
+                refreshOutput(multiLine)
                 historyIndex.dec()
                 if historyIndex < 1:
                   historyIndex = 1;
@@ -403,7 +403,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 except CapacityError:
                   discard
                 cursorPosition = inputString.len()
-                refreshInput(multiLine)
+                refreshOutput(multiLine)
               # Arrow left key pressed
               elif inputChar == 'D' and inputString.len() > 0 and
                   cursorPosition > 0:
@@ -444,7 +444,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               stdout.cursorBackward(count = inputString.len() - cursorPosition)
             except ValueError, IOError, CapacityError:
               discard
-          refreshInput(multiLine)
+          refreshOutput(multiLine)
           keyWasArrow = false
           cursorPosition.inc()
         try:
