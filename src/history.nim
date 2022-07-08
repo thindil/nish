@@ -100,7 +100,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     try:
       setOption(optionName = optionName, value = initLimitedString(capacity = 2,
           text = "20"), description = initLimitedString(capacity = 78,
-              text = "Amount of entries in shell commands history to show with history show command."),
+              text = "Amount of entries in shell commands history to show with history list command."),
            valueType = ValueType.natural, db = db)
     except:
       discard showError(message = "Can't set values of the option historyAmount.")
@@ -294,7 +294,7 @@ proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput(message = """Available subcommands are: clear, show
+  showOutput(message = """Available subcommands are: clear, list
 
         To see more information about the subcommand, type help history [command],
         for example: help history clear.
@@ -327,7 +327,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
             text = "historyAmount"), db = db)))
       except ValueError, CapacityError:
         discard showError(message = "Can't get setting for the amount of history commands to show.")
-        return updateHistory(commandToAdd = "history show", db = db,
+        return updateHistory(commandToAdd = "history list", db = db,
             returnCode = QuitFailure.ResultCode)
     spacesAmount: ColumnAmount = try:
           (terminalWidth() / 12).ColumnAmount
@@ -340,14 +340,14 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
             text = "historyReverse"), db = db) == "true": "ASC" else: "DESC"
       except CapacityError:
         discard showError(message = "Can't get setting for the reverse order of history commands to show.")
-        return updateHistory(commandToAdd = "history show", db = db,
+        return updateHistory(commandToAdd = "history list", db = db,
             returnCode = QuitFailure.ResultCode)
     orderText: string = try:
         if argumentsList.len() > 2: argumentsList[2] else: $getOption(
             optionName = initLimitedString(capacity = 11, text = "historySort"), db = db)
       except CapacityError:
         discard showError(message = "Can't get setting for the order of history commands to show.")
-        return updateHistory(commandToAdd = "history show", db = db,
+        return updateHistory(commandToAdd = "history list", db = db,
             returnCode = QuitFailure.ResultCode)
     historyOrder: string =
       case orderText
@@ -358,7 +358,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
       of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
       else:
         discard showError(message = "Unknown type of history sort order")
-        return updateHistory(commandToAdd = "history show", db = db,
+        return updateHistory(commandToAdd = "history list", db = db,
           returnCode = QuitFailure.ResultCode)
   showFormHeader(message = "The last commands from the shell's history")
   showOutput(message = indent(s = "Last used                Times      Command",
@@ -368,11 +368,11 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
         historyOrder & " LIMIT 0, ?"), amount):
       showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
           width = 5) & "      " & row[0], count = spacesAmount.int))
-    return updateHistory(commandToAdd = "history show", db = db)
+    return updateHistory(commandToAdd = "history list", db = db)
   except DbError:
     discard showError(message = "Can't get the last commands from the shell's history. Reason: ",
         e = getCurrentException())
-    return updateHistory(commandToAdd = "history show", db = db,
+    return updateHistory(commandToAdd = "history list", db = db,
         returnCode = QuitFailure.ResultCode)
 
 proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [

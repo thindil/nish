@@ -45,7 +45,7 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
   ##
   ## RETURNS
   ##
-  ## The argument helpContent with updated help for command 'history show'.
+  ## The argument helpContent with updated help for command 'history list'.
   let sortOrder: string = try:
         case $getOption(optionName = initLimitedString(capacity = 11,
             text = "historySort"), db = db)
@@ -63,14 +63,14 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect,
               "true": " in reversed order." else: "."
     except CapacityError:
       "."
-  helpContent["history show"] = try:
-      HelpEntry(usage: "history show ?amount? ?order? ?reverse?",
+  helpContent["history list"] = try:
+      HelpEntry(usage: "history list ?amount? ?order? ?reverse?",
           content: "Show the last " & getOption(optionName = initLimitedString(
               capacity = 13, text = "historyAmount"),
           db = db) & " commands from the shell's history ordered by " &
-              sortOrder & sortDirection & " You can also set the amount, order and direction of order of commands to show by adding optional parameters amount, order and reverse. For example, to show the last 10 commands sorted by name in reversed order: history show 10 name true. Available switches for order are: amount, recent, name, recentamount. Available values for reverse are true or false.")
+              sortOrder & sortDirection & " You can also set the amount, order and direction of order of commands to show by adding optional parameters amount, order and reverse. For example, to show the last 10 commands sorted by name in reversed order: history list 10 name true. Available switches for order are: amount, recent, name, recentamount. Available values for reverse are true or false.")
     except CapacityError:
-      HelpEntry(usage: "history show", content: "Show the last commands from the shell's history.")
+      HelpEntry(usage: "history list", content: "Show the last commands from the shell's history.")
 
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [

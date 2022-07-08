@@ -539,7 +539,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       elif arguments == "clear":
         historyIndex = clearHistory(db = db)
       # Show the last executed shell's commands
-      elif arguments.len() > 3 and arguments[0 .. 3] == "show":
+      elif arguments.len() > 3 and arguments[0 .. 3] == "list":
         historyIndex = showHistory(db = db, arguments = arguments)
       else:
         try:
