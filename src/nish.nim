@@ -276,6 +276,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     ##
     ## Refresh the user input, clear the old and show the new. Color the entered
     ## command on green if it is valid or red if invalid
+    ##
+    ## PARAMETERS
+    ##
+    ## * multiLine - If true, then the shell's prompt is made of many lines and
+    ##               don't refresh it
     try:
       stdout.eraseLine()
       let
