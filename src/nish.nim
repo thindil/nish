@@ -270,7 +270,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   # Initialize the shell's prompt system
   initPrompt(helpContent = helpContent)
 
-  proc refreshInput() {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
+  proc refreshInput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
       ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
     ## FUNCTION
     ##
@@ -308,8 +308,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           color = fgGreen
         elif aliases.contains(key = command):
           color = fgGreen
-      showPrompt(promptEnabled = not oneTimeCommand,
-          previousCommand = $commandName, resultCode = returnCode, db = db)
+      if not multiLine:
+        showPrompt(promptEnabled = not oneTimeCommand,
+            previousCommand = $commandName, resultCode = returnCode, db = db)
       showOutput(message = $command, newLine = false, fgColor = color)
       showOutput(message = $commandArguments, newLine = false)
       if cursorPosition < input.len() - 1:
@@ -324,7 +325,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     # ask for more.
     if not oneTimeCommand and inputString.len() == 0:
       # Write prompt
-      showPrompt(promptEnabled = not oneTimeCommand,
+      let multiLine: bool = showPrompt(promptEnabled = not oneTimeCommand,
           previousCommand = commandName, resultCode = returnCode, db = db)
       # Get the user input and parse it
       var inputChar: char = '\0'
@@ -379,7 +380,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 except CapacityError:
                   discard
                 cursorPosition = inputString.len()
-                refreshInput()
+                refreshInput(multiLine)
                 historyIndex.dec()
                 if historyIndex < 1:
                   historyIndex = 1;
@@ -397,7 +398,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
                 except CapacityError:
                   discard
                 cursorPosition = inputString.len()
-                refreshInput()
+                refreshInput(multiLine)
               # Arrow left key pressed
               elif inputChar == 'D' and inputString.len() > 0 and
                   cursorPosition > 0:
@@ -438,7 +439,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               stdout.cursorBackward(count = inputString.len() - cursorPosition)
             except ValueError, IOError, CapacityError:
               discard
-          refreshInput()
+          refreshInput(multiLine)
           keyWasArrow = false
           cursorPosition.inc()
         try:
