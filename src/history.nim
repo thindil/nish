@@ -149,20 +149,6 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     except CapacityError:
       discard showError(message = "Can't set values of the option historySort.")
       return HistoryRange.low()
-  # Create history table if not exists
-  try:
-    db.exec(query = sql(query = """CREATE TABLE IF NOT EXISTS history (
-                 command     VARCHAR(""" & $maxInputLength &
-        """) PRIMARY KEY,
-                 lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
-                 amount      INTEGER NOT NULL DEFAULT 1,
-                 path        VARCHAR(""" & $maxInputLength &
-          """)
-              )"""))
-  except DbError:
-    discard showError(message = "Can't create table for the shell's history. Reason: ",
-        e = getCurrentException())
-    return HistoryRange.low()
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
@@ -412,5 +398,33 @@ proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         text = "historyAmount"), valueType = ValueType.natural, db = db)
   except DbError, CapacityError:
     return showError(message = "Can't update table for the shell's history. Reason: ",
+        e = getCurrentException())
+  return QuitSuccess.ResultCode
+
+proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+  ## FUNCTION
+  ##
+  ## Create the table history
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  try:
+    db.exec(query = sql(query = """CREATE TABLE history (
+                 command     VARCHAR(""" & $maxInputLength &
+        """) PRIMARY KEY,
+                 lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
+                 amount      INTEGER NOT NULL DEFAULT 1,
+                 path        VARCHAR(""" & $maxInputLength &
+          """)
+              )"""))
+  except DbError, CapacityError:
+    return showError(message = "Can't create 'history' table. Reason: ",
         e = getCurrentException())
   return QuitSuccess.ResultCode
