@@ -61,9 +61,8 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     WriteDbEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
-  ## Initialize shell's commands history. Create history table if not exists,
-  ## set the current historyIndex, options related to the history and help
-  ## related to the history commands
+  ## Initialize shell's commands history and set help related to the history
+  ## commands
   ##
   ## PARAMETERS
   ##
@@ -72,8 +71,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   ##
   ## RETURNS
   ##
-  ## The length of the shell's commands' history or -1 if can't create the
-  ## history's table in the shell's database
+  ## The length of the shell's commands' history
 
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
@@ -331,7 +329,7 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
-  ## Create the table history
+  ## Create the table history and set shell's options related to the history
   ##
   ## PARAMETERS
   ##
