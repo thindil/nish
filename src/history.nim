@@ -320,6 +320,16 @@ proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         text = "historyLength"), valueType = ValueType.natural, db = db)
     setOption(optionName = initLimitedString(capacity = 13,
         text = "historyAmount"), valueType = ValueType.natural, db = db)
+    setOption(optionName = initLimitedString(capacity = 11,
+        text = "historySort"), value = initLimitedString(capacity = 12,
+        text = "recentamount"), description = initLimitedString(capacity = 63,
+        text = "How to sort the list of the last commands from shell history."),
+        valueType = ValueType.historysort, db = db)
+    setOption(optionName = initLimitedString(capacity = 14,
+        text = "historyReverse"), value = initLimitedString(capacity = 5,
+        text = "false"), description = initLimitedString(capacity = 64,
+        text = "Reverse order when showing the last commands from shell history."),
+        valueType = ValueType.boolean, db = db)
   except DbError, CapacityError:
     return showError(message = "Can't update table for the shell's history. Reason: ",
         e = getCurrentException())
