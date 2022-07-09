@@ -148,10 +148,10 @@ proc helpOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
-  showOutput(message = """Available subcommands are: show, set, reset
+  showOutput(message = """Available subcommands are: list, set, reset
 
         To see more information about the subcommand, type help options [command],
-        for example: help options show.
+        for example: help options list.
 """)
 
 proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
@@ -233,7 +233,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             value & "'. Reason: ", e = getCurrentException())
     of "":
       return showError(message = "Shell's option with name '" & optionName &
-        "' doesn't exists. Please use command 'options show' to see all available shell's options.")
+        "' doesn't exists. Please use command 'options list' to see all available shell's options.")
   except DbError:
     return showError(message = "Can't get type of value for option '" &
         optionName & "'. Reason: ", e = getCurrentException())
@@ -277,7 +277,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       if db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"),
           optionName) == "":
         return showError(message = "Shell's option with name '" & optionName &
-          "' doesn't exists. Please use command 'options show' to see all available shell's options.")
+          "' doesn't exists. Please use command 'options list' to see all available shell's options.")
     except DbError:
       return showError(message = "Can't get value for option '" & optionName &
           "'. Reason: ", e = getCurrentException())
@@ -302,7 +302,7 @@ func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
   ## * helpContent - the HelpTable with help content of the shell
   helpContent["options"] = HelpEntry(usage: "options ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for options. Otherwise, execute the selected subcommand.")
-  helpContent["options show"] = HelpEntry(usage: "options show",
+  helpContent["options list"] = HelpEntry(usage: "options list",
       content: "Show the list of all available shell's options with detailed information about them.")
   helpContent["options set"] = HelpEntry(usage: "options set [name] [value]",
       content: "Set the selected shell's option with name to the selected value. The value can't contain new line character.")

@@ -557,9 +557,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         helpOptions(db = db)
         historyIndex = updateHistory(commandToAdd = "options", db = db)
       # Show the list of available options
-      elif arguments == "show":
+      elif arguments == "list":
         showOptions(db = db)
-        historyIndex = updateHistory(commandToAdd = "options show", db = db)
+        historyIndex = updateHistory(commandToAdd = "options list", db = db)
       elif arguments.startsWith(prefix = "set"):
         returnCode = setOptions(arguments = arguments, db = db)
         historyIndex = updateHistory(commandToAdd = "options set", db = db,

@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - Updated README.md
 - **BREAKING**: Renamed command `history show` to `history list` to match other
   subcommands related to listings
+- **BREAKING**: Renamed command `options show` to `options list` to match other
+  subcommands related to listings
 
 ### Fixed
 - Reading command line parameters, when there is set database path and the
