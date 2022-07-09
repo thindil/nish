@@ -76,79 +76,45 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   ## history's table in the shell's database
 
   # Set the history related options
-  var
-    optionName: LimitedString = try:
+  try:
+    var
+      optionName: LimitedString =
         initLimitedString(capacity = 20, text = "historyLength")
-      except CapacityError:
-        discard showError(message = "Can't set name of the option historyLength to set.")
-        return HistoryRange.low()
-  if getOption(optionName = optionName, db = db) == "":
-    try:
+    if getOption(optionName = optionName, db = db) == "":
       setOption(optionName = optionName, value = initLimitedString(capacity = 3,
           text = "500"), description = initLimitedString(capacity = 48,
               text = "Max amount of entries in shell commands history."),
           valueType = ValueType.natural, db = db)
-    except CapacityError:
-      discard showError(message = "Can't set values of the option historyLength.")
-      return HistoryRange.low()
-  try:
     optionName.setString(text = "historyAmount")
-  except CapacityError:
-    discard showError(message = "Can't set name of the option historyAmount to set.")
-    return HistoryRange.low()
-  if getOption(optionName = optionName, db = db) == "":
-    try:
+    if getOption(optionName = optionName, db = db) == "":
       setOption(optionName = optionName, value = initLimitedString(capacity = 2,
           text = "20"), description = initLimitedString(capacity = 78,
               text = "Amount of entries in shell commands history to show with history list command."),
            valueType = ValueType.natural, db = db)
-    except:
-      discard showError(message = "Can't set values of the option historyAmount.")
-      return HistoryRange.low()
-  try:
     optionName.setString(text = "historySaveInvalid")
-  except CapacityError:
-    discard showError(message = "Can't set name of the option historySaveInvalid to set.")
-    return HistoryRange.low()
-  if getOption(optionName = optionName, db = db) == "":
-    try:
+    if getOption(optionName = optionName, db = db) == "":
       setOption(optionName = optionName, value = initLimitedString(capacity = 5,
           text = "false"), description = initLimitedString(capacity = 52,
               text = "Save in shell command history also invalid commands."),
           valueType = ValueType.boolean, db = db)
-    except CapacityError:
-      discard showError(message = "Can't set values of the option historySaveInvalid.")
-      return HistoryRange.low()
-  try:
     optionName.setString(text = "historySort")
-  except CapacityError:
-    discard showError(message = "Can't set name of the option historySort to set.")
-    return HistoryRange.low()
-  if getOption(optionName = optionName, db = db) == "":
-    try:
+    if getOption(optionName = optionName, db = db) == "":
       setOption(optionName = optionName, value = initLimitedString(
           capacity = 12, text = "recentamount"),
           description = initLimitedString(capacity = 63,
               text = "How to sort the list of the last commands from shell history."),
           valueType = ValueType.historysort, db = db)
-    except CapacityError:
-      discard showError(message = "Can't set values of the option historySort.")
-      return HistoryRange.low()
-  try:
     optionName.setString(text = "historyReverse")
-  except CapacityError:
-    discard showError(message = "Can't set name of the option historyReverse to set.")
-    return HistoryRange.low()
-  if getOption(optionName = optionName, db = db) == "":
-    try:
+    if getOption(optionName = optionName, db = db) == "":
       setOption(optionName = optionName, value = initLimitedString(
           capacity = 5, text = "false"),
           description = initLimitedString(capacity = 64,
               text = "Reverse order when showing the last commands from shell history."),
           valueType = ValueType.boolean, db = db)
-    except CapacityError:
-      discard showError(message = "Can't set values of the option historySort.")
-      return HistoryRange.low()
+  except CapacityError:
+    discard showError(message = "Can't set values of the shell's history options. Reason: ",
+        e = getCurrentException())
+    return HistoryRange.low()
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
