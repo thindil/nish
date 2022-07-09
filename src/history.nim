@@ -75,46 +75,6 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   ## The length of the shell's commands' history or -1 if can't create the
   ## history's table in the shell's database
 
-  # Set the history related options
-  try:
-    var
-      optionName: LimitedString =
-        initLimitedString(capacity = 20, text = "historyLength")
-    if getOption(optionName = optionName, db = db) == "":
-      setOption(optionName = optionName, value = initLimitedString(capacity = 3,
-          text = "500"), description = initLimitedString(capacity = 48,
-              text = "Max amount of entries in shell commands history."),
-          valueType = ValueType.natural, db = db)
-    optionName.setString(text = "historyAmount")
-    if getOption(optionName = optionName, db = db) == "":
-      setOption(optionName = optionName, value = initLimitedString(capacity = 2,
-          text = "20"), description = initLimitedString(capacity = 78,
-              text = "Amount of entries in shell commands history to show with history list command."),
-           valueType = ValueType.natural, db = db)
-    optionName.setString(text = "historySaveInvalid")
-    if getOption(optionName = optionName, db = db) == "":
-      setOption(optionName = optionName, value = initLimitedString(capacity = 5,
-          text = "false"), description = initLimitedString(capacity = 52,
-              text = "Save in shell command history also invalid commands."),
-          valueType = ValueType.boolean, db = db)
-    optionName.setString(text = "historySort")
-    if getOption(optionName = optionName, db = db) == "":
-      setOption(optionName = optionName, value = initLimitedString(
-          capacity = 12, text = "recentamount"),
-          description = initLimitedString(capacity = 63,
-              text = "How to sort the list of the last commands from shell history."),
-          valueType = ValueType.historysort, db = db)
-    optionName.setString(text = "historyReverse")
-    if getOption(optionName = optionName, db = db) == "":
-      setOption(optionName = optionName, value = initLimitedString(
-          capacity = 5, text = "false"),
-          description = initLimitedString(capacity = 64,
-              text = "Reverse order when showing the last commands from shell history."),
-          valueType = ValueType.boolean, db = db)
-  except CapacityError:
-    discard showError(message = "Can't set values of the shell's history options. Reason: ",
-        e = getCurrentException())
-    return HistoryRange.low()
   # Set the history related help content
   helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
@@ -368,7 +328,7 @@ proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   return QuitSuccess.ResultCode
 
 proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Create the table history
@@ -390,6 +350,31 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
                  path        VARCHAR(""" & $maxInputLength &
           """)
               )"""))
+    setOption(optionName = initLimitedString(capacity = 13,
+        text = "historyLength"), value = initLimitedString(capacity = 3,
+        text = "500"), description = initLimitedString(capacity = 48,
+        text = "Max amount of entries in shell commands history."),
+        valueType = ValueType.natural, db = db)
+    setOption(optionName = initLimitedString(capacity = 13,
+        text = "historyAmount"), value = initLimitedString(capacity = 2,
+        text = "20"), description = initLimitedString(capacity = 78,
+        text = "Amount of entries in shell commands history to show with history list command."),
+        valueType = ValueType.natural, db = db)
+    setOption(optionName = initLimitedString(capacity = 20,
+        text = "historySaveInvalid"), value = initLimitedString(capacity = 5,
+        text = "false"), description = initLimitedString(capacity = 52,
+        text = "Save in shell command history also invalid commands."),
+        valueType = ValueType.boolean, db = db)
+    setOption(optionName = initLimitedString(capacity = 11,
+        text = "historySort"), value = initLimitedString(capacity = 12,
+        text = "recentamount"), description = initLimitedString(capacity = 63,
+        text = "How to sort the list of the last commands from shell history."),
+        valueType = ValueType.historysort, db = db)
+    setOption(optionName = initLimitedString(capacity = 14,
+        text = "historyReverse"), value = initLimitedString(capacity = 5,
+        text = "false"), description = initLimitedString(capacity = 64,
+        text = "Reverse order when showing the last commands from shell history."),
+        valueType = ValueType.boolean, db = db)
   except DbError, CapacityError:
     return showError(message = "Can't create 'history' table. Reason: ",
         e = getCurrentException())
