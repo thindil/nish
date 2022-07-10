@@ -278,8 +278,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   # Initialize the shell's prompt system
   initPrompt(helpContent = helpContent)
 
-  proc refreshOutput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect,
-      ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
+  proc refreshOutput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [
+      WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
     ## FUNCTION
     ##
     ## Refresh the user input, clear the old and show the new. Color the entered
