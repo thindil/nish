@@ -628,8 +628,8 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
       fgColor = fgGreen)
   return QuitSuccess.ResultCode
 
-proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
   ## FUNCTION
   ##
   ## Create the table variables
