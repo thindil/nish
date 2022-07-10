@@ -154,8 +154,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
           text = "Version of the database schema (read only)."),
           valueType = ValueType.natural, db = result, readOnly = 1)
       setOption(optionName = promptName, value = promptValue,
-          description = initLimitedString(capacity = 60,
-          text = "The command which output will be used as the shell's prompt."),
+          description = initLimitedString(capacity = 61,
+          text = "The command which output will be used as the prompt of shell."),
           valueType = ValueType.command, db = result, readOnly = 1)
     except CapacityError:
       discard showError(message = "Can't set database schema. Reason: ",
