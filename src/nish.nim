@@ -25,7 +25,7 @@
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import aliases, commands, completion, constants, directorypath, help, history,
-    input, lstring, options, output, prompt, resultcode, variables
+    input, lstring, options, output, plugins, prompt, resultcode, variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =
@@ -150,6 +150,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       return nil
     if createVariablesDb(db = result) == QuitFailure:
       return nil
+    if createPluginsDb(db = result) == QuitFailure:
+      return nil
     try:
       setOption(optionName = versionName, value = versionValue,
           description = initLimitedString(capacity = 43,
@@ -173,6 +175,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
       if updateHistoryDb(db = result) == QuitFailure:
         return nil
       if updateAliasesDb(db = result) == QuitFailure:
+        return nil
+      if createPluginsDb(db = result) == QuitFailure:
         return nil
       setOption(optionName = versionName, value = versionValue,
           description = initLimitedString(capacity = 43,
