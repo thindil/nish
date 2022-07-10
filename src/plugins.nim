@@ -23,4 +23,32 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import std/db_sqlite
+import input, output, resultcode
+
+proc createPluginsDb*(db: DbConn): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+  ## FUNCTION
+  ##
+  ## Create the table plugins
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  try:
+    db.exec(query = sql(query = """CREATE TABLE plugins (
+               id          INTEGER       PRIMARY KEY
+               path        VARCHAR(""" & $maxInputLength &
+          """) NOT NULL,
+               enabled     BOOLEAN       NOT NULL
+            )"""))
+  except DbError:
+    return showError(message = "Can't create 'plugins' table. Reason: ",
+        e = getCurrentException())
+  return QuitSuccess.ResultCode
 
