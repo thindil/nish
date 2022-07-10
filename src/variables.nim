@@ -143,8 +143,7 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
   ## FUNCTION
   ##
   ## Initialize enviroment variables. Set help related to the variables and
-  ## load the local environment variables. Also, create database table for
-  ## variables if not exists.
+  ## load the local environment variables.
   ##
   ## PARAMETERS
   ##
