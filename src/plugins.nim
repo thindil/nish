@@ -24,7 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/db_sqlite
-import input, output, resultcode
+import directorypath, input, output, resultcode
+
+type PluginsList* = seq[string]
+    ## FUNCTION
+    ##
+    ## Used to store the enabled shell's plugins
 
 proc createPluginsDb*(db: DbConn): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
@@ -52,3 +57,4 @@ proc createPluginsDb*(db: DbConn): ResultCode {.gcsafe, sideEffect, raises: [],
         e = getCurrentException())
   return QuitSuccess.ResultCode
 
+proc pluginAdd*(db: DbConn; path: DirectoryPath) = discard
