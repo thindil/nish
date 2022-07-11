@@ -48,7 +48,7 @@ proc createPluginsDb*(db: DbConn): ResultCode {.gcsafe, sideEffect, raises: [],
   try:
     db.exec(query = sql(query = """CREATE TABLE plugins (
                id          INTEGER       PRIMARY KEY
-               path        VARCHAR(""" & $maxInputLength &
+               location    VARCHAR(""" & $maxInputLength &
           """) NOT NULL,
                enabled     BOOLEAN       NOT NULL
             )"""))
