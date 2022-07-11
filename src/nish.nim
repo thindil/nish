@@ -606,7 +606,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       # Add a new alias
       elif arguments.startsWith(prefix = "add"):
         returnCode = addAlias(historyIndex = historyIndex, aliases = aliases, db = db)
-      # Add a new alias
+      # Edit the selected alias
       elif arguments.startsWith(prefix = "edit"):
         returnCode = editAlias(arguments = arguments,
             historyIndex = historyIndex, aliases = aliases, db = db)
