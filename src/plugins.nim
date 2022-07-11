@@ -31,7 +31,9 @@ type PluginsList* = seq[string]
     ##
     ## Used to store the enabled shell's plugins
 
-proc createPluginsDb*(db: DbConn): ResultCode {.gcsafe, sideEffect, raises: [],
+using db: DbConn # Connection to the shell's database
+
+proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
   ## FUNCTION
   ##
@@ -57,4 +59,6 @@ proc createPluginsDb*(db: DbConn): ResultCode {.gcsafe, sideEffect, raises: [],
         e = getCurrentException())
   return QuitSuccess.ResultCode
 
-proc pluginAdd*(db: DbConn; path: DirectoryPath) = discard
+proc pluginsInit*(db): PluginsList = discard
+
+proc pluginAdd*(db; path: DirectoryPath) = discard
