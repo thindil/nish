@@ -317,7 +317,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           fgGreen
       if color == fgRed:
         if $command in ["exit", "cd", "help", "history", "variable", "options",
-            "set", "unset"]:
+            "set", "unset", "plugin"]:
           color = fgGreen
         elif aliases.contains(key = command):
           color = fgGreen
@@ -619,6 +619,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               db = db, returnCode = returnCode)
         except CapacityError:
           returnCode = QuitFailure.ResultCode
+    # Various commands related to the plugins (like show list of available
+    # plugins, add, delete)
+    of "plugin":
+      if arguments.len() == 0:
+        historyIndex = helpPlugins(db = db)
     # Execute external command or alias
     else:
       let commandToExecute: string = commandName & (if arguments.len() >
