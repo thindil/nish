@@ -24,12 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/db_sqlite
-import directorypath, input, output, resultcode
+import constants, history, input, lstring, output, resultcode
 
 type PluginsList* = seq[string]
-    ## FUNCTION
-    ##
-    ## Used to store the enabled shell's plugins
+  ## FUNCTION
+  ##
+  ## Used to store the enabled shell's plugins
 
 using db: DbConn # Connection to the shell's database
 
@@ -59,6 +59,33 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
         e = getCurrentException())
   return QuitSuccess.ResultCode
 
-proc pluginsInit*(db): PluginsList = discard
+proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, TimeEffect].} =
+  ## FUNCTION
+  ##
+  ## Show short help about available subcommands related to the plugins
+  ##
+  ## PARAMETERS
+  ##
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The new length of the shell's commands' history.
+  showOutput(message = """Available subcommands are: list, delete, show, add
 
-proc pluginAdd*(db; path: DirectoryPath) = discard
+        To see more information about the subcommand, type help plugin [command],
+        for example: help plugin list.
+""")
+  return updateHistory(commandToAdd = "plugin", db = db)
+
+proc pluginAdd*(db; arguments: UserInput): ResultCode =
+  if arguments.len() < 8:
+    return showError(message = "Please enter the path to the plugin which will be added to the shell.")
+  return QuitSuccess.ResultCode
+
+proc pluginsInit*(db): PluginsList =
+  for dbResult in db.fastRows(query = sql(
+      query = "SELECT location, enabled FROM plugins")):
+    if dbResult[1] == "1":
+      result.add(dbResult[0])
