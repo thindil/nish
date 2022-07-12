@@ -79,12 +79,12 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory(commandToAdd = "plugin", db = db)
 
-proc pluginAdd*(db; arguments: UserInput): ResultCode =
+proc addPlugin*(db; arguments: UserInput): ResultCode =
   if arguments.len() < 8:
     return showError(message = "Please enter the path to the plugin which will be added to the shell.")
   return QuitSuccess.ResultCode
 
-proc pluginsInit*(db): PluginsList =
+proc initPlugins*(db): PluginsList =
   for dbResult in db.fastRows(query = sql(
       query = "SELECT location, enabled FROM plugins")):
     if dbResult[1] == "1":
