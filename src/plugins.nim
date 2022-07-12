@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/db_sqlite
+import std/[db_sqlite, os]
 import constants, history, input, lstring, output, resultcode
 
 type PluginsList* = seq[string]
@@ -80,8 +80,11 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory(commandToAdd = "plugin", db = db)
 
 proc addPlugin*(db; arguments: UserInput): ResultCode =
-  if arguments.len() < 8:
+  if arguments.len() < 5:
     return showError(message = "Please enter the path to the plugin which will be added to the shell.")
+  let pluginPath: string = $arguments[4..^1]
+  if not fileExists(filename = pluginPath):
+    return showError(message = "File '" & pluginPath & "' doesn't exist.")
   return QuitSuccess.ResultCode
 
 proc initPlugins*(db): PluginsList =
