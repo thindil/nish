@@ -624,6 +624,15 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "plugin":
       if arguments.len() == 0:
         historyIndex = helpPlugins(db = db)
+      else:
+        try:
+          returnCode = showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 6, text = "plugin"),
+                  helpType = initLimitedString(capacity = 6, text = "plugin"))
+          historyIndex = updateHistory(commandToAdd = "plugin " & arguments,
+              db = db, returnCode = returnCode)
+        except CapacityError:
+          returnCode = QuitFailure.ResultCode
     # Execute external command or alias
     else:
       let commandToExecute: string = commandName & (if arguments.len() >
