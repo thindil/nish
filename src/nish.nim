@@ -624,6 +624,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "plugin":
       if arguments.len() == 0:
         historyIndex = helpPlugins(db = db)
+      elif arguments.startsWith(prefix = "add"):
+        returnCode = addPlugin(arguments = arguments, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
