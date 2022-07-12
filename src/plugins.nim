@@ -85,6 +85,13 @@ proc addPlugin*(db; arguments: UserInput): ResultCode =
   let pluginPath: string = $arguments[4..^1]
   if not fileExists(filename = pluginPath):
     return showError(message = "File '" & pluginPath & "' doesn't exist.")
+  try:
+    if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
+        pluginPath) != @[""]:
+      return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
+  except DbError:
+    return showError(message = "Can't add plugin to the shell. Reason: ",
+        e = getCurrentException())
   return QuitSuccess.ResultCode
 
 proc initPlugins*(db): PluginsList =
