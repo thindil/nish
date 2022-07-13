@@ -211,6 +211,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         DirSep & "nish.db")
     helpContent = initTable[string, HelpEntry]()
     cursorPosition: Natural = 0
+    plugins: PluginsList = @[]
 
   proc ctrlC() {.noconv.} =
     ## FUNCTION
@@ -277,6 +278,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
 
   # Initialize the shell's prompt system
   initPrompt(helpContent = helpContent)
+
+  # Initialize the shell's plugins system
+  plugins = initPlugins(db = db)
 
   proc refreshOutput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [
       WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
@@ -622,10 +626,16 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     # Various commands related to the plugins (like show list of available
     # plugins, add, delete)
     of "plugin":
+      # No subcommand entered, show available options
       if arguments.len() == 0:
         historyIndex = helpPlugins(db = db)
+      # Add a new plugin
       elif arguments.startsWith(prefix = "add"):
         returnCode = addPlugin(arguments = arguments, db = db)
+      # Delete the selected plugin
+      elif arguments.startsWith(prefix = "remove"):
+        returnCode = removePlugin(arguments = arguments,
+            historyIndex = historyIndex, pluginsList = plugins, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
