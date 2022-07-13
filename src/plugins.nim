@@ -23,15 +23,17 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, terminal]
-import constants, history, input, lstring, output, resultcode
+import std/[db_sqlite, os, strutils, terminal]
+import constants, databaseid, history, input, lstring, output, resultcode
 
 type PluginsList* = seq[string]
   ## FUNCTION
   ##
   ## Used to store the enabled shell's plugins
 
-using db: DbConn # Connection to the shell's database
+using
+  db: DbConn # Connection to the shell's database
+  arguments: UserInput # The string with arguments entered by the user for the command
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
@@ -79,7 +81,7 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory(commandToAdd = "plugin", db = db)
 
-proc addPlugin*(db; arguments: UserInput): ResultCode =
+proc addPlugin*(db; arguments): ResultCode =
   if arguments.len() < 5:
     return showError(message = "Please enter the path to the plugin which will be added to the shell.")
   let pluginPath: string = try:
@@ -102,6 +104,30 @@ proc addPlugin*(db; arguments: UserInput): ResultCode =
 
 proc initPlugins*(db): PluginsList =
   for dbResult in db.fastRows(query = sql(
-      query = "SELECT location, enabled FROM plugins")):
+      query = "SELECT location, enabled FROM plugins ORDER BY id ASC")):
     if dbResult[1] == "1":
       result.add(dbResult[0])
+
+proc removePlugin*(db; arguments; pluginsList: var PluginsList;
+    historyIndex: var HistoryRange): ResultCode =
+  if arguments.len() < 8:
+    return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
+  let pluginId: DatabaseId = try:
+      parseInt($arguments[7 .. ^1]).DatabaseId
+    except ValueError:
+      return showError(message = "The Id of the plugin must be a positive number.")
+  try:
+    if db.execAffectedRows(query = sql(query = (
+        "DELETE FROM plugins WHERE id=?")), pluginId) == 0:
+      historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
+          returnCode = QuitFailure.ResultCode)
+      return showError(message = "The plugin with the Id: " & $pluginId &
+        " doesn't exist.")
+  except DbError:
+    return showError(message = "Can't delete plugin from database. Reason: ",
+        e = getCurrentException())
+  pluginsList.del(pluginId.int)
+  historyIndex = updateHistory(commandToAdd = "plugin remove", db = db)
+  showOutput(message = "Deleted the plugin with Id: " & $pluginId,
+      fgColor = fgGreen)
+  return QuitSuccess.ResultCode
