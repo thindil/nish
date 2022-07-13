@@ -34,6 +34,7 @@ type PluginsList* = seq[string]
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
+  pluginsList: var PluginsList # The list of enabled plugins
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
@@ -81,7 +82,7 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory(commandToAdd = "plugin", db = db)
 
-proc addPlugin*(db; arguments): ResultCode =
+proc addPlugin*(db; arguments; pluginsList): ResultCode =
   if arguments.len() < 5:
     return showError(message = "Please enter the path to the plugin which will be added to the shell.")
   let pluginPath: string = try:
@@ -98,8 +99,9 @@ proc addPlugin*(db; arguments): ResultCode =
   except DbError:
     return showError(message = "Can't add plugin to the shell. Reason: ",
         e = getCurrentException())
+  pluginsList.add(pluginPath)
   showOutput(message = "File '" & pluginPath &
-      "' was added as a plugin to the shell.", fgColor = fgGreen);
+      "' added as a plugin to the shell.", fgColor = fgGreen);
   return QuitSuccess.ResultCode
 
 proc initPlugins*(db): PluginsList =
@@ -130,7 +132,7 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
   except DbError:
     return showError(message = "Can't delete plugin from database. Reason: ",
         e = getCurrentException())
-  pluginsList.del(pluginId.int)
+  pluginsList.del(pluginId.int - 1)
   historyIndex = updateHistory(commandToAdd = "plugin remove", db = db)
   showOutput(message = "Deleted the plugin with Id: " & $pluginId,
       fgColor = fgGreen)
