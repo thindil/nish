@@ -103,10 +103,14 @@ proc addPlugin*(db; arguments): ResultCode =
   return QuitSuccess.ResultCode
 
 proc initPlugins*(db): PluginsList =
-  for dbResult in db.fastRows(query = sql(
-      query = "SELECT location, enabled FROM plugins ORDER BY id ASC")):
-    if dbResult[1] == "1":
-      result.add(dbResult[0])
+  try:
+    for dbResult in db.fastRows(query = sql(
+        query = "SELECT location, enabled FROM plugins ORDER BY id ASC")):
+      if dbResult[1] == "1":
+        result.add(dbResult[0])
+  except DbError:
+    discard showError(message = "Can't read data about the shell's plugins. Reason: ",
+        e = getCurrentException())
 
 proc removePlugin*(db; arguments; pluginsList: var PluginsList;
     historyIndex: var HistoryRange): ResultCode =
