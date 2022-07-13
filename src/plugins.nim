@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os]
+import std/[db_sqlite, os, terminal]
 import constants, history, input, lstring, output, resultcode
 
 type PluginsList* = seq[string]
@@ -82,16 +82,22 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 proc addPlugin*(db; arguments: UserInput): ResultCode =
   if arguments.len() < 5:
     return showError(message = "Please enter the path to the plugin which will be added to the shell.")
-  let pluginPath: string = $arguments[4..^1]
+  let pluginPath: string = try:
+      normalizedPath(path = getCurrentDir() & DirSep & $arguments[4..^1])
+    except OSError:
+      $arguments[4..^1]
   if not fileExists(filename = pluginPath):
     return showError(message = "File '" & pluginPath & "' doesn't exist.")
   try:
     if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
         pluginPath) != @[""]:
       return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
+    db.exec(query = sql(query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
   except DbError:
     return showError(message = "Can't add plugin to the shell. Reason: ",
         e = getCurrentException())
+  showOutput(message = "File '" & pluginPath &
+      "' was added as a plugin to the shell.", fgColor = fgGreen);
   return QuitSuccess.ResultCode
 
 proc initPlugins*(db): PluginsList =
