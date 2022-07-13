@@ -37,7 +37,7 @@ type
 
 using
   db: DbConn # Connection to the shell's database
-  arguments: UserInput # The string with arguments entered by the user fot the command
+  arguments: UserInput # The string with arguments entered by the user for the command
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
 proc buildQuery*(directory: DirectoryPath; fields: string;
