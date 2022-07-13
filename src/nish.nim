@@ -631,7 +631,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         historyIndex = helpPlugins(db = db)
       # Add a new plugin
       elif arguments.startsWith(prefix = "add"):
-        returnCode = addPlugin(arguments = arguments, db = db)
+        returnCode = addPlugin(arguments = arguments, db = db,
+            pluginsList = plugins)
       # Delete the selected plugin
       elif arguments.startsWith(prefix = "remove"):
         returnCode = removePlugin(arguments = arguments,
