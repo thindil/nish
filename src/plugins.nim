@@ -138,3 +138,27 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
   showOutput(message = "Deleted the plugin with Id: " & $pluginId,
       fgColor = fgGreen)
   return QuitSuccess.ResultCode
+
+proc disablePlugin*(db; arguments; pluginsList: var PluginsList;
+    historyIndex: var HistoryRange): ResultCode =
+  if arguments.len() < 9:
+    return showError(message = "Please enter the Id to the plugin which will be disabled.")
+  let pluginId: DatabaseId = try:
+      parseInt($arguments[8 .. ^1]).DatabaseId
+    except ValueError:
+      return showError(message = "The Id of the plugin must be a positive number.")
+  try:
+    if db.execAffectedRows(query = sql(query = (
+        "UPDATE plugins SET enabled=0 WHERE id=?")), pluginId) == 0:
+      historyIndex = updateHistory(commandToAdd = "plugin disable", db = db,
+          returnCode = QuitFailure.ResultCode)
+      return showError(message = "The plugin with the Id: " & $pluginId &
+        " doesn't exist.")
+  except DbError:
+    return showError(message = "Can't disable plugin. Reason: ",
+        e = getCurrentException())
+  pluginsList.del($pluginId)
+  historyIndex = updateHistory(commandToAdd = "plugin disable", db = db)
+  showOutput(message = "Disabled the plugin with Id: " & $pluginId,
+      fgColor = fgGreen)
+  return QuitSuccess.ResultCode
