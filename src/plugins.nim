@@ -75,7 +75,7 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput(message = """Available subcommands are: list, delete, show, add, enable, disable
+  showOutput(message = """Available subcommands are: list, remove, show, add, enable, disable
 
         To see more information about the subcommand, type help plugin [command],
         for example: help plugin list.
