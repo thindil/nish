@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
-import constants, databaseid, history, input, lstring, output, resultcode
+import columnamount, constants, databaseid, history, input, lstring, output, resultcode
 
 type PluginsList* = Table[string, string]
   ## FUNCTION
@@ -165,3 +165,65 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
   showOutput(message = (if disable: "Disabled" else: "Enabled") &
       " the plugin with Id: " & $pluginId, fgColor = fgGreen)
   return QuitSuccess.ResultCode
+
+proc listPlugins*(arguments; historyIndex: var HistoryRange;
+    plugins: PluginsList; db) {.gcsafe, sideEffect, raises: [], tags: [
+        ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+            TimeEffect].} =
+  ## FUNCTION
+  ##
+  ## List enabled plugins, if entered command was "plugin list all" list all
+  ## installed then.
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for showing plugins
+  ## * historyIndex - the index of command in the shell's history
+  ## * plugins      - the list of enabled plugins
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The parameter historyIndex updated after execution of showing the plugins'
+  ## list
+  let
+    columnLength: ColumnAmount = try: db.getValue(query =
+        sql(query = "SELECT location FROM plugins ORDER BY LENGTH(location) DESC LIMIT 1")).len().ColumnAmount
+      except DbError: 10.ColumnAmount
+    spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
+        12 except ValueError: 6.ColumnAmount
+  if arguments == "list":
+    showFormHeader(message = "Enabled plugins are:")
+    try:
+      showOutput(message = indent(s = "ID   $1" % [alignLeft(
+        s = "Location",
+        count = columnLength.int)], count = spacesAmount.int),
+            fgColor = fgMagenta)
+    except ValueError:
+      showOutput(message = indent(s = "ID   Name",
+          count = spacesAmount.int), fgColor = fgMagenta)
+    for id, location in plugins.pairs:
+      showOutput(message = indent(s = alignLeft(id, count = 4) & " " &
+          alignLeft(s = location, count = columnLength.int),
+              count = spacesAmount.int))
+    historyIndex = updateHistory(commandToAdd = "plugin list", db = db)
+  elif arguments == "list all":
+    showFormHeader(message = "All available plugins are:")
+    try:
+      showOutput(message = indent(s = "ID   $1 Enabled" % [alignLeft(
+          s = "Location", count = columnLength.int)], count = spacesAmount.int),
+              fgColor = fgMagenta)
+    except ValueError:
+      showOutput(message = indent(s = "ID   Location Enabled",
+          count = spacesAmount.int), fgColor = fgMagenta)
+    try:
+      for row in db.fastRows(query = sql(
+          query = "SELECT id, location, enabled FROM plugins")):
+        showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
+            alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
+                count = spacesAmount.int))
+    except DbError:
+      discard showError(message = "Can't read info about plugin from database. Reason:",
+          e = getCurrentException())
+      return
+    historyIndex = updateHistory(commandToAdd = "plugin list all", db = db)

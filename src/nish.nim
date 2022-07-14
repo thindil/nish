@@ -646,6 +646,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = togglePlugin(arguments = arguments,
             historyIndex = historyIndex, pluginsList = plugins, db = db,
             disable = false)
+      # Show the list of available plugins
+      elif arguments.startsWith(prefix = "list"):
+        listPlugins(arguments = arguments, historyIndex = historyIndex,
+            plugins = plugins, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
