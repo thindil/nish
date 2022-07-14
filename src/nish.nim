@@ -637,6 +637,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       elif arguments.startsWith(prefix = "remove"):
         returnCode = removePlugin(arguments = arguments,
             historyIndex = historyIndex, pluginsList = plugins, db = db)
+      # Disable the selected plugin
+      elif arguments.startsWith(prefix = "disable"):
+        returnCode = disablePlugin(arguments = arguments,
+            historyIndex = historyIndex, pluginsList = plugins, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
