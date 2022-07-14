@@ -23,10 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, strutils, terminal]
+import std/[db_sqlite, os, strutils, tables, terminal]
 import constants, databaseid, history, input, lstring, output, resultcode
 
-type PluginsList* = seq[string]
+type PluginsList* = Table[string, string]
   ## FUNCTION
   ##
   ## Used to store the enabled shell's plugins
@@ -95,11 +95,12 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode =
     if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
         pluginPath) != @[""]:
       return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
-    db.exec(query = sql(query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
+    let newId = db.insertID(query = sql(
+        query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
+    pluginsList[$newId] = pluginPath
   except DbError:
     return showError(message = "Can't add plugin to the shell. Reason: ",
         e = getCurrentException())
-  pluginsList.add(pluginPath)
   showOutput(message = "File '" & pluginPath &
       "' added as a plugin to the shell.", fgColor = fgGreen);
   return QuitSuccess.ResultCode
@@ -107,9 +108,9 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode =
 proc initPlugins*(db): PluginsList =
   try:
     for dbResult in db.fastRows(query = sql(
-        query = "SELECT location, enabled FROM plugins ORDER BY id ASC")):
-      if dbResult[1] == "1":
-        result.add(dbResult[0])
+        query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
+      if dbResult[2] == "1":
+        result[dbResult[0]] = dbResult[1]
   except DbError:
     discard showError(message = "Can't read data about the shell's plugins. Reason: ",
         e = getCurrentException())
@@ -132,7 +133,7 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
   except DbError:
     return showError(message = "Can't delete plugin from database. Reason: ",
         e = getCurrentException())
-  pluginsList.del(pluginId.int - 1)
+  pluginsList.del($pluginId)
   historyIndex = updateHistory(commandToAdd = "plugin remove", db = db)
   showOutput(message = "Deleted the plugin with Id: " & $pluginId,
       fgColor = fgGreen)

@@ -211,7 +211,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         DirSep & "nish.db")
     helpContent = initTable[string, HelpEntry]()
     cursorPosition: Natural = 0
-    plugins: PluginsList = @[]
+    plugins: PluginsList = initTable[string, string]()
 
   proc ctrlC() {.noconv.} =
     ## FUNCTION
