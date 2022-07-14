@@ -639,8 +639,12 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             historyIndex = historyIndex, pluginsList = plugins, db = db)
       # Disable the selected plugin
       elif arguments.startsWith(prefix = "disable"):
-        returnCode = disablePlugin(arguments = arguments,
+        returnCode = togglePlugin(arguments = arguments,
             historyIndex = historyIndex, pluginsList = plugins, db = db)
+      elif arguments.startsWith(prefix = "enable"):
+        returnCode = togglePlugin(arguments = arguments,
+            historyIndex = historyIndex, pluginsList = plugins, db = db,
+            disable = false)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,

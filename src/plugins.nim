@@ -139,17 +139,20 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
       fgColor = fgGreen)
   return QuitSuccess.ResultCode
 
-proc disablePlugin*(db; arguments; pluginsList: var PluginsList;
-    historyIndex: var HistoryRange): ResultCode =
-  if arguments.len() < 9:
+proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
+    historyIndex: var HistoryRange; disable: bool = true): ResultCode =
+  let idStart: int = (if disable: 8 else: 7)
+  if arguments.len() < (idStart + 1):
     return showError(message = "Please enter the Id to the plugin which will be disabled.")
-  let pluginId: DatabaseId = try:
-      parseInt($arguments[8 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the plugin must be a positive number.")
+  let
+    pluginId: DatabaseId = try:
+        parseInt($arguments[idStart .. ^1]).DatabaseId
+      except ValueError:
+        return showError(message = "The Id of the plugin must be a positive number.")
+    pluginState: BooleanInt = (if disable: 0 else: 1)
   try:
     if db.execAffectedRows(query = sql(query = (
-        "UPDATE plugins SET enabled=0 WHERE id=?")), pluginId) == 0:
+        "UPDATE plugins SET enabled=? WHERE id=?")), pluginState, pluginId) == 0:
       historyIndex = updateHistory(commandToAdd = "plugin disable", db = db,
           returnCode = QuitFailure.ResultCode)
       return showError(message = "The plugin with the Id: " & $pluginId &
@@ -159,6 +162,6 @@ proc disablePlugin*(db; arguments; pluginsList: var PluginsList;
         e = getCurrentException())
   pluginsList.del($pluginId)
   historyIndex = updateHistory(commandToAdd = "plugin disable", db = db)
-  showOutput(message = "Disabled the plugin with Id: " & $pluginId,
-      fgColor = fgGreen)
+  showOutput(message = (if disable: "Disabled" else: "Enabled") &
+      " the plugin with Id: " & $pluginId, fgColor = fgGreen)
   return QuitSuccess.ResultCode
