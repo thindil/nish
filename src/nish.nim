@@ -650,6 +650,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       elif arguments.startsWith(prefix = "list"):
         listPlugins(arguments = arguments, historyIndex = historyIndex,
             plugins = plugins, db = db)
+      # Show the selected plugin
+      elif arguments.startsWith(prefix = "show"):
+        returnCode = showPlugin(arguments = arguments,
+            historyIndex = historyIndex, plugins = plugins, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
