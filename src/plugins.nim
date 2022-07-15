@@ -225,8 +225,8 @@ proc listPlugins*(arguments; historyIndex: var HistoryRange;
       for row in db.fastRows(query = sql(
           query = "SELECT id, location, enabled FROM plugins")):
         showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-            alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
-                count = spacesAmount.int))
+            alignLeft(s = row[1], count = columnLength.int) & " " & (if row[
+                2] == "1": "Yes" else: "No"), count = spacesAmount.int))
     except DbError:
       discard showError(message = "Can't read info about plugin from database. Reason:",
           e = getCurrentException())
