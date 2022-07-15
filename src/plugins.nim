@@ -201,11 +201,11 @@ proc listPlugins*(arguments; historyIndex: var HistoryRange;
     showFormHeader(message = "Enabled plugins are:")
     try:
       showOutput(message = indent(s = "ID   $1" % [alignLeft(
-        s = "Location",
+        s = "Path",
         count = columnLength.int)], count = spacesAmount.int),
             fgColor = fgMagenta)
     except ValueError:
-      showOutput(message = indent(s = "ID   Name",
+      showOutput(message = indent(s = "ID   Path",
           count = spacesAmount.int), fgColor = fgMagenta)
     for id, location in plugins.pairs:
       showOutput(message = indent(s = alignLeft(id, count = 4) & " " &
@@ -216,10 +216,10 @@ proc listPlugins*(arguments; historyIndex: var HistoryRange;
     showFormHeader(message = "All available plugins are:")
     try:
       showOutput(message = indent(s = "ID   $1 Enabled" % [alignLeft(
-          s = "Location", count = columnLength.int)], count = spacesAmount.int),
+          s = "Path", count = columnLength.int)], count = spacesAmount.int),
               fgColor = fgMagenta)
     except ValueError:
-      showOutput(message = indent(s = "ID   Location Enabled",
+      showOutput(message = indent(s = "ID   Path Enabled",
           count = spacesAmount.int), fgColor = fgMagenta)
     try:
       for row in db.fastRows(query = sql(
