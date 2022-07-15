@@ -157,10 +157,15 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
           returnCode = QuitFailure.ResultCode)
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
+    if disable:
+      pluginsList.del($pluginId)
+    else:
+      pluginsList[$pluginId] = db.getValue(query = sql(query = (
+          "SELECT location FROM plugins WHERE id=?")), pluginId)
   except DbError:
-    return showError(message = "Can't disable plugin. Reason: ",
+    return showError(message = "Can't " & (
+        if disable: "disable" else: "enable") & " plugin. Reason: ",
         e = getCurrentException())
-  pluginsList.del($pluginId)
   historyIndex = updateHistory(commandToAdd = "plugin disable", db = db)
   showOutput(message = (if disable: "Disabled" else: "Enabled") &
       " the plugin with Id: " & $pluginId, fgColor = fgGreen)
