@@ -276,10 +276,10 @@ proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
       terminalWidth().ColumnAmount / 12
     except ValueError:
       6.ColumnAmount
-  showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
+  showOutput(message = indent(s = alignLeft(s = "Id:", count = 9),
       count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = $id)
-  showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+  showOutput(message = indent(s = alignLeft(s = "Path:", count = 9),
       count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = row[0])
   showOutput(message = indent(s = "Enabled: ", count = spacesAmount.int),
