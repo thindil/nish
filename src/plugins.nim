@@ -35,6 +35,7 @@ using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
   pluginsList: var PluginsList # The list of enabled plugins
+  historyIndex: var HistoryRange # The index of the last command in the shell's history
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
@@ -171,10 +172,9 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       " the plugin with Id: " & $pluginId, fgColor = fgGreen)
   return QuitSuccess.ResultCode
 
-proc listPlugins*(arguments; historyIndex: var HistoryRange;
-    plugins: PluginsList; db) {.gcsafe, sideEffect, raises: [], tags: [
-        ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect].} =
+proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect].} =
   ## FUNCTION
   ##
   ## List enabled plugins, if entered command was "plugin list all" list all
@@ -232,3 +232,57 @@ proc listPlugins*(arguments; historyIndex: var HistoryRange;
           e = getCurrentException())
       return
     historyIndex = updateHistory(commandToAdd = "plugin list all", db = db)
+
+proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
+    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect].} =
+  ## FUNCTION
+  ##
+  ## Show details about the selected plugin, its ID, path and status
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments    - the user entered text with arguments for the showing
+  ##                  plugin
+  ## * historyIndex - the index of the last command in the shell's history
+  ## * plugins      - the list of enabled plugins
+  ## * db           - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the selected plugin was properly show, otherwise
+  ## QuitFailure. Also, updated parameter historyIndex
+  if arguments.len() < 6:
+    historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
+        returnCode = QuitFailure.ResultCode)
+    return showError(message = "Enter the ID of the plugin to show.")
+  let id: DatabaseId = try:
+      parseInt(s = $arguments[5 .. ^1]).DatabaseId
+    except ValueError:
+      return showError(message = "The Id of the plugin must be a positive number.")
+  let row: Row = try:
+        db.getRow(query = sql(query = "SELECT location, enabled FROM plugins WHERE id=?"), args = id)
+    except DbError:
+      return showError(message = "Can't read plugin data from database. Reason: ",
+          e = getCurrentException())
+  if row[0] == "":
+    historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
+        returnCode = QuitFailure.ResultCode)
+    return showError(message = "The plugin with the ID: " & $id &
+      " doesn't exists.")
+  historyIndex = updateHistory(commandToAdd = "plugin show", db = db)
+  let spacesAmount: ColumnAmount = try:
+      terminalWidth().ColumnAmount / 12
+    except ValueError:
+      6.ColumnAmount
+  showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
+      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+  showOutput(message = $id)
+  showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+  showOutput(message = row[0])
+  showOutput(message = indent(s = "Enabled: ", count = spacesAmount.int),
+      newLine = false, fgColor = fgMagenta)
+  showOutput(message = (if row[1] == "1": "Yes" else: "No"))
+  return QuitSuccess.ResultCode
