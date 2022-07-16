@@ -6,3 +6,5 @@ Various tools related to the shell:
                    variables and aliases from Zsh. It is recommended to check
                    and edit created SQL file before it will be loaded into
                    Nish.
+* testplugin.sh  - the test plugin for the shell, used to check if the shell's
+                   plugins API works properly.
