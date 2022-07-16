@@ -362,3 +362,9 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         e = getCurrentException())
   return QuitSuccess.ResultCode
 
+proc deleteOption*(optionName; db): ResultCode =
+  if db.execAffectedRows(query = sql(query = "DELETE FROM options WHERE option=?"),
+      optionName) == 0:
+    return QuitFailure.ResultCode
+  return QuitSuccess.ResultCode
+
