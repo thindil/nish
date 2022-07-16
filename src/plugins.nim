@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, strutils, tables, terminal]
 import columnamount, constants, databaseid, history, input, lstring, output, resultcode
 
 type PluginsList* = Table[string, string]
@@ -92,6 +92,8 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode =
       $arguments[4..^1]
   if not fileExists(filename = pluginPath):
     return showError(message = "File '" & pluginPath & "' doesn't exist.")
+  if execCmd(command = pluginPath & " install") != QuitSuccess:
+    return showError(message = "Can't install plugin '" & pluginPath & "'.")
   try:
     if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
         pluginPath) != @[""]:
