@@ -24,7 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, strutils, tables, terminal]
-import columnamount, constants, databaseid, history, input, lstring, output, resultcode
+import columnamount, constants, databaseid, directorypath, history, input,
+    lstring, output, resultcode
 
 type PluginsList* = Table[string, string]
   ## FUNCTION
@@ -82,6 +83,13 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
         for example: help plugin list.
 """)
   return updateHistory(commandToAdd = "plugin", db = db)
+
+proc execPlugin(pluginPath: DirectoryPath; arguments): ResultCode =
+  let plugin = startProcess(command = $pluginPath)
+  for line in plugin.lines:
+    showOutput(message = line)
+  result = plugin.peekExitCode().ResultCode
+  plugin.close()
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode =
   if arguments.len() < 5:
