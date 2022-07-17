@@ -24,8 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, strutils, tables, terminal]
-import columnamount, constants, databaseid, directorypath, history, input,
-    lstring, output, resultcode
+import columnamount, constants, databaseid, history, input, lstring, output, resultcode
 
 type PluginsList* = Table[string, string]
   ## FUNCTION
@@ -84,8 +83,12 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory(commandToAdd = "plugin", db = db)
 
-proc execPlugin(pluginPath: DirectoryPath; arguments): ResultCode =
-  let plugin = startProcess(command = $pluginPath)
+proc execPlugin*(pluginPath: string; arguments: openArray[string]): ResultCode =
+  let plugin = try:
+      startProcess(command = pluginPath, args = arguments)
+    except OSError:
+      return showError(message = "Can't execute the plugin '" & pluginPath &
+          "'. Reason: ", e = getCurrentException())
   for line in plugin.lines:
     showOutput(message = line)
   result = plugin.peekExitCode().ResultCode
@@ -100,7 +103,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode =
       $arguments[4..^1]
   if not fileExists(filename = pluginPath):
     return showError(message = "File '" & pluginPath & "' doesn't exist.")
-  if execCmd(command = pluginPath & " install") != QuitSuccess:
+  if execPlugin(pluginPath = pluginPath, arguments = ["install"]) != QuitSuccess:
     return showError(message = "Can't install plugin '" & pluginPath & "'.")
   try:
     if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
