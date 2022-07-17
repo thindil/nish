@@ -364,6 +364,19 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 
 proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+  ## FUNCTION
+  ##
+  ## Delete the selected option from the table
+  ##
+  ## PARAMETERS
+  ##
+  ## * optionName - the name of the option which will be deleted
+  ## * db         - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if deletion was successfull, otherwise QuitFailure and
+  ## show message what wrong
   try:
     if db.execAffectedRows(query = sql(query = "DELETE FROM options WHERE option=?"),
         optionName) == 0:
