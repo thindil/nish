@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, osproc, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import columnamount, constants, databaseid, history, input, lstring, output, resultcode
 
 type PluginsList* = Table[string, string]
@@ -92,7 +92,17 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
           "'. Reason: ", e = getCurrentException())
   try:
     for line in plugin.lines:
-      showOutput(message = line)
+      var options = initOptParser(cmdline = line)
+      while true:
+        options.next()
+        case options.key
+        of "showOutput":
+          showOutput(message = options.remainingArgs.join(sep = " "))
+        of "showError":
+          discard showError(message = options.remainingArgs.join(sep = " "))
+        else:
+          discard
+        break
   except OSError, IOError, Exception:
     return showError(message = "Can't get the plugin '" & pluginPath &
         "' output. Reason: ", e = getCurrentException())
