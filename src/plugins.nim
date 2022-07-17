@@ -83,16 +83,25 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 """)
   return updateHistory(commandToAdd = "plugin", db = db)
 
-proc execPlugin*(pluginPath: string; arguments: openArray[string]): ResultCode =
+proc execPlugin*(pluginPath: string; arguments: openArray[
+    string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [RootEffect].} =
   let plugin = try:
       startProcess(command = pluginPath, args = arguments)
-    except OSError:
+    except OSError, Exception:
       return showError(message = "Can't execute the plugin '" & pluginPath &
           "'. Reason: ", e = getCurrentException())
-  for line in plugin.lines:
-    showOutput(message = line)
+  try:
+    for line in plugin.lines:
+      showOutput(message = line)
+  except OSError, IOError, Exception:
+    return showError(message = "Can't get the plugin '" & pluginPath &
+        "' output. Reason: ", e = getCurrentException())
   result = plugin.peekExitCode().ResultCode
-  plugin.close()
+  try:
+    plugin.close()
+  except OSError, IOError, Exception:
+    return showError(message = "Can't close process for the plugin '" &
+        pluginPath & "'. Reason: ", e = getCurrentException())
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode =
   if arguments.len() < 5:
