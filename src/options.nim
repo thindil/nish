@@ -362,9 +362,14 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         e = getCurrentException())
   return QuitSuccess.ResultCode
 
-func deleteOption*(optionName; db): ResultCode =
-  if db.execAffectedRows(query = sql(query = "DELETE FROM options WHERE option=?"),
-      optionName) == 0:
-    return QuitFailure.ResultCode
+proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+  try:
+    if db.execAffectedRows(query = sql(query = "DELETE FROM options WHERE option=?"),
+        optionName) == 0:
+      return QuitFailure.ResultCode
+  except DbError:
+    return showError(message = "Can't delete the selected option. Reason: ",
+        e = getCurrentException())
   return QuitSuccess.ResultCode
 
