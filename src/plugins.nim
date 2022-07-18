@@ -24,7 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
-import columnamount, constants, databaseid, history, input, lstring, output, resultcode
+import columnamount, constants, databaseid, history, input, lstring, options,
+    output, resultcode
 
 type PluginsList* = Table[string, string]
   ## FUNCTION
@@ -84,7 +85,7 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory(commandToAdd = "plugin", db = db)
 
 proc execPlugin*(pluginPath: string; arguments: openArray[
-    string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [RootEffect].} =
+    string]; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [RootEffect].} =
   let plugin = try:
       startProcess(command = pluginPath, args = arguments)
     except OSError, Exception:
@@ -103,6 +104,17 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
           showOutput(message = remainingOptions[0], fgColor = color)
         of "showError":
           discard showError(message = options.remainingArgs.join(sep = " "))
+        of "setOption":
+          let remainingOptions = options.remainingArgs()
+          if remainingOptions.len() < 4:
+            discard showError(message = "Insufficient arguments for setOption")
+            break
+          setOption(optionName = initLimitedString(capacity = maxNameLength,
+              text = remainingOptions[0]), value = initLimitedString(
+              capacity = maxInputLength, text = remainingOptions[1]),
+              description = initLimitedString(capacity = maxInputLength,
+              text = remainingOptions[2]), valueType = parseEnum[ValueType](
+              remainingOptions[3]), db = db)
         else:
           discard
         break
@@ -129,7 +141,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode =
     if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
         pluginPath) != @[""]:
       return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
-    if execPlugin(pluginPath = pluginPath, arguments = ["install"]) != QuitSuccess:
+    if execPlugin(pluginPath = pluginPath, arguments = ["install"], db = db) != QuitSuccess:
       return showError(message = "Can't install plugin '" & pluginPath & "'.")
     let newId = db.insertID(query = sql(
         query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
