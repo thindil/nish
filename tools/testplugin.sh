@@ -7,11 +7,13 @@ case "${1}" in
       ;;
    install)
       echo 'showOutput "Installing the testplugin."
-            setOption testPlugin value "Test option from test plugin" string
+            setOption testPlugin value "Test option from test plugin" text
             showOutput "Installed the testplugin." fgGreen'
       ;;
    uninstall)
-      echo 'showOutput "Uninstalled"'
+      echo 'showOutput "Uninstalling the testplugin."
+            removeOption testPlugin
+            showOutput "Uninstalled" fgGreen'
       ;;
    enable)
       echo 'showOutput "Enabled"'
