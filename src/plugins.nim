@@ -92,12 +92,15 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
           "'. Reason: ", e = getCurrentException())
   try:
     for line in plugin.lines:
-      var options = initOptParser(cmdline = line)
+      var options = initOptParser(cmdline = line.strip())
       while true:
         options.next()
         case options.key
         of "showOutput":
-          showOutput(message = options.remainingArgs.join(sep = " "))
+          let remainingOptions = options.remainingArgs()
+          let color = (if remainingOptions.len() ==
+              1: fgDefault else: parseEnum[ForegroundColor](remainingOptions[1]))
+          showOutput(message = remainingOptions[0], fgColor = color)
         of "showError":
           discard showError(message = options.remainingArgs.join(sep = " "))
         else:
