@@ -6,7 +6,8 @@ case "${1}" in
       exit 1
       ;;
    install)
-      echo 'showOutput "Installed"'
+      echo 'showOutput "Installing the testplugin."
+            showOutput "Installed the testplugin." fgGreen'
       ;;
    uninstall)
       echo 'showOutput "Uninstalled"'
