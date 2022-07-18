@@ -125,12 +125,12 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode =
       $arguments[4..^1]
   if not fileExists(filename = pluginPath):
     return showError(message = "File '" & pluginPath & "' doesn't exist.")
-  if execPlugin(pluginPath = pluginPath, arguments = ["install"]) != QuitSuccess:
-    return showError(message = "Can't install plugin '" & pluginPath & "'.")
   try:
     if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
         pluginPath) != @[""]:
       return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
+    if execPlugin(pluginPath = pluginPath, arguments = ["install"]) != QuitSuccess:
+      return showError(message = "Can't install plugin '" & pluginPath & "'.")
     let newId = db.insertID(query = sql(
         query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
     pluginsList[$newId] = pluginPath
