@@ -7,6 +7,7 @@ case "${1}" in
       ;;
    install)
       echo 'showOutput "Installing the testplugin."
+            setOption testPlugin value "Test option from test plugin" string
             showOutput "Installed the testplugin." fgGreen'
       ;;
    uninstall)
