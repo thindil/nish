@@ -191,17 +191,24 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
     historyIndex: var HistoryRange): ResultCode =
   if arguments.len() < 8:
     return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
-  let pluginId: DatabaseId = try:
-      parseInt($arguments[7 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the plugin must be a positive number.")
+  let
+    pluginId: DatabaseId = try:
+        parseInt($arguments[7 .. ^1]).DatabaseId
+      except ValueError:
+        return showError(message = "The Id of the plugin must be a positive number.")
+    pluginPath: string = try:
+        db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"), pluginId)
+      except DbError:
+        return showError(message = "Can't get plugin's Id from database. Reason: ",
+          e = getCurrentException())
   try:
-    if db.execAffectedRows(query = sql(query = (
-        "DELETE FROM plugins WHERE id=?")), pluginId) == 0:
-      historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
-          returnCode = QuitFailure.ResultCode)
+    if pluginPath.len() == 0:
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
+    if execPlugin(pluginPath = pluginPath, arguments = ["uninstall"],
+        db = db) != QuitSuccess:
+      return showError(message = "Can't remove plugin '" & pluginPath & "'.")
+    db.exec(query = sql(query = "DELETE FROM plugins WHERE id=?"), pluginId)
   except DbError:
     return showError(message = "Can't delete plugin from database. Reason: ",
         e = getCurrentException())
