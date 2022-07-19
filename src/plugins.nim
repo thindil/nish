@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
 import columnamount, constants, databaseid, history, input, lstring, options,
     output, resultcode
 
@@ -125,6 +125,13 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
             discard showError(message = "Failed to remove option '" &
                 remainingOptions[0] & "'.")
             break
+        of "getOption":
+          let remainingOptions = options.remainingArgs()
+          if remainingOptions.len() == 0:
+            discard showError(message = "Insufficient arguments for getOption.")
+            break
+          plugin.inputStream.write($getOption(optionName = initLimitedString(
+              capacity = maxNameLength, text = remainingOptions[0]), db = db))
         else:
           discard
         break
