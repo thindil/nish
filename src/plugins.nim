@@ -107,7 +107,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
         of "setOption":
           let remainingOptions = options.remainingArgs()
           if remainingOptions.len() < 4:
-            discard showError(message = "Insufficient arguments for setOption")
+            discard showError(message = "Insufficient arguments for setOption.")
             break
           setOption(optionName = initLimitedString(capacity = maxNameLength,
               text = remainingOptions[0]), value = initLimitedString(
@@ -115,6 +115,16 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
               description = initLimitedString(capacity = maxInputLength,
               text = remainingOptions[2]), valueType = parseEnum[ValueType](
               remainingOptions[3]), db = db)
+        of "removeOption":
+          let remainingOptions = options.remainingArgs()
+          if remainingOptions.len() == 0:
+            discard showError(message = "Insufficient arguments for removeOption.")
+            break
+          if deleteOption(optionName = initLimitedString(
+              capacity = maxNameLength, text = remainingOptions[0]), db = db) == QuitFailure:
+            discard showError(message = "Failed to remove option '" &
+                remainingOptions[0] & "'.")
+            break
         else:
           discard
         break
