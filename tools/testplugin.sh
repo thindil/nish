@@ -2,7 +2,7 @@
 
 case "${1}" in
    "")
-      echo 'showError "No command specified."'
+      echo 'showError "No plugin command specified."'
       exit 1
       ;;
    install)
@@ -26,10 +26,14 @@ case "${1}" in
       echo 'showOutput "Disabled"'
       ;;
    init)
-      echo 'showOutput "Initialized"'
+      echo 'showOutput "Initializing the testplugin"
+            getOption testPlugin'
+      read value
+      echo 'showOutput "Value for testplugin is $value"
+            showOutput "Initialized the testplugin"'
       ;;
    *)
-      echo 'showError "Unknown option"'
+      echo 'showError "Unknown plugin command."'
       exit 1
       ;;
 esac
