@@ -189,6 +189,9 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList =
     for dbResult in db.fastRows(query = sql(
         query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
       if dbResult[2] == "1":
+        if execPlugin(pluginPath = dbResult[1], arguments = ["init"], db = db) != QuitSuccess:
+          discard showError(message = "Can't initialize plugin '" & dbResult[1] & "'.")
+          return
         result[dbResult[0]] = dbResult[1]
   except DbError:
     discard showError(message = "Can't read data about the shell's plugins. Reason: ",
