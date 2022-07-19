@@ -16,7 +16,11 @@ case "${1}" in
             showOutput "Uninstalled" fgGreen'
       ;;
    enable)
-      echo 'showOutput "Enabled"'
+      echo 'showOutput "Enabling the testplugin"
+            getOption testPlugin'
+      read value
+      echo 'showOutput "Value for testplugin is $value"
+            showOutput "Enabled the testplugin"'
       ;;
    disable)
       echo 'showOutput "Disabled"'
