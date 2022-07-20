@@ -72,7 +72,7 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## PARAMETERS
   ##
-  ## * db           - the connection to the shell's database
+  ## * db - the connection to the shell's database
   ##
   ## RETURNS
   ##
@@ -86,24 +86,45 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 
 proc execPlugin*(pluginPath: string; arguments: openArray[
     string]; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [RootEffect].} =
+  ## FUNCTION
+  ##
+  ## Communicate with the selected plugin via the shell's plugins API. Run the
+  ## selected plugin, send a message to it to execute the selected section of
+  ## the plugin and show its output to the user.
+  ##
+  ## PARAMETERS
+  ##
+  ## * pluginPath - the full path to the plugin which will be executed
+  ## * arguments  - the arguments which will be passed to the plugin
+  ## * db         - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the selected plugin was properly executed, otherwise
+  ## QuitFailure.
   let plugin = try:
       startProcess(command = pluginPath, args = arguments)
     except OSError, Exception:
       return showError(message = "Can't execute the plugin '" & pluginPath &
           "'. Reason: ", e = getCurrentException())
   try:
+    # Read the plugin response and act accordingly to it
     for line in plugin.lines:
       var options = initOptParser(cmdline = line.strip())
       while true:
         options.next()
         case options.key
+        # Show the message sent by the plugin in the standard output
         of "showOutput":
           let remainingOptions = options.remainingArgs()
           let color = (if remainingOptions.len() ==
               1: fgDefault else: parseEnum[ForegroundColor](remainingOptions[1]))
           showOutput(message = remainingOptions[0], fgColor = color)
+        # Show the message sent by the plugin in the standard error
         of "showError":
           discard showError(message = options.remainingArgs.join(sep = " "))
+        # Set the selected shell's option. Arguments are name of the option,
+        # its value, decription and type
         of "setOption":
           let remainingOptions = options.remainingArgs()
           if remainingOptions.len() < 4:
@@ -115,6 +136,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
               description = initLimitedString(capacity = maxInputLength,
               text = remainingOptions[2]), valueType = parseEnum[ValueType](
               remainingOptions[3]), db = db)
+        # Remove the selected shell's option. The argument is the name of the
+        # option to remove
         of "removeOption":
           let remainingOptions = options.remainingArgs()
           if remainingOptions.len() == 0:
@@ -125,6 +148,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
             discard showError(message = "Failed to remove option '" &
                 remainingOptions[0] & "'.")
             break
+        # Get the value of the selected shell's option. The argument is the name
+        # of the option which value will be get
         of "getOption":
           let remainingOptions = options.remainingArgs()
           if remainingOptions.len() == 0:
@@ -133,6 +158,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
           plugin.inputStream.write($getOption(optionName = initLimitedString(
               capacity = maxNameLength, text = remainingOptions[0]), db = db) & "\n")
           plugin.inputStream.flush()
+        # Do nothing if the plugin sent any unknown request
         else:
           discard
         break
