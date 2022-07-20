@@ -160,6 +160,8 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode =
       return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
     if execPlugin(pluginPath = pluginPath, arguments = ["install"], db = db) != QuitSuccess:
       return showError(message = "Can't install plugin '" & pluginPath & "'.")
+    if execPlugin(pluginPath = pluginPath, arguments = ["enable"], db = db) != QuitSuccess:
+      return showError(message = "Can't install plugin '" & pluginPath & "'.")
     let newId = db.insertID(query = sql(
         query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
     pluginsList[$newId] = pluginPath
