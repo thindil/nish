@@ -131,7 +131,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
             discard showError(message = "Insufficient arguments for getOption.")
             break
           plugin.inputStream.write($getOption(optionName = initLimitedString(
-              capacity = maxNameLength, text = remainingOptions[0]), db = db))
+              capacity = maxNameLength, text = remainingOptions[0]), db = db) & "\n")
+          plugin.inputStream.flush()
         else:
           discard
         break
