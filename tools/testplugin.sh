@@ -18,9 +18,9 @@ case "${1}" in
    enable)
       echo 'showOutput "Enabling the testplugin"
             getOption testPlugin'
-      read value
-      echo 'showOutput "Value for testplugin is $value"
-            showOutput "Enabled the testplugin"'
+      read -t 1 value
+      echo "showOutput \"Value for testPlugin is $value\""
+      echo "showOutput \"Initialized the testplugin\" fgGreen"
       ;;
    disable)
       echo 'showOutput "Disabled"'
@@ -28,9 +28,9 @@ case "${1}" in
    init)
       echo 'showOutput "Initializing the testplugin"
             getOption testPlugin'
-      read value
-      echo 'showOutput "Value for testplugin is $value"
-            showOutput "Initialized the testplugin"'
+      read -t 1 value
+      echo "showOutput \"Value for testPlugin is $value\""
+      echo "showOutput \"Initialized the testplugin\" fgGreen"
       ;;
    *)
       echo 'showError "Unknown plugin command."'
