@@ -220,7 +220,8 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       "' added as a plugin to the shell.", fgColor = fgGreen);
   return QuitSuccess.ResultCode
 
-proc initPlugins*(helpContent: var HelpTable; db): PluginsList =
+proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
+    sideEffect, raises: [], tags: [RootEffect].} =
   helpContent["plugin"] = HelpEntry(usage: "plugin ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for plugins. Otherwise, execute the selected subcommand.")
   helpContent["plugin list"] = HelpEntry(usage: "plugin list ?all?",
