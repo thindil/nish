@@ -172,7 +172,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
     return showError(message = "Can't close process for the plugin '" &
         pluginPath & "'. Reason: ", e = getCurrentException())
 
-proc addPlugin*(db; arguments; pluginsList): ResultCode =
+proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [RootEffect].} =
   if arguments.len() < 5:
     return showError(message = "Please enter the path to the plugin which will be added to the shell.")
   let pluginPath: string = try:
