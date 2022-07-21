@@ -174,22 +174,42 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [RootEffect].} =
+  ## FUNCTION
+  ##
+  ## Add the plugin from the selected full path to the shell and enable it.
+  ##
+  ## PARAMETERS
+  ##
+  ## * db          - the connection to the shell's database
+  ## * arguments   - the arguments which the user entered to the command
+  ## * pluginsList - the list of currently enabled shell's plugins
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the selected plugin was properly executed, otherwise
+  ## QuitFailure.
+  # Check if the user entered path to the plugin
   if arguments.len() < 5:
     return showError(message = "Please enter the path to the plugin which will be added to the shell.")
   let pluginPath: string = try:
       normalizedPath(path = getCurrentDir() & DirSep & $arguments[4..^1])
     except OSError:
       $arguments[4..^1]
+  # Check if the file exists
   if not fileExists(filename = pluginPath):
     return showError(message = "File '" & pluginPath & "' doesn't exist.")
   try:
+    # Check if the plugin isn't added previously
     if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
         pluginPath) != @[""]:
       return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
+    # Execute the installation code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = ["install"], db = db) != QuitSuccess:
       return showError(message = "Can't install plugin '" & pluginPath & "'.")
+    # Execute the enabling code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = ["enable"], db = db) != QuitSuccess:
       return showError(message = "Can't install plugin '" & pluginPath & "'.")
+    # Add the plugin to the shell database and the list of enabled plugins
     let newId = db.insertID(query = sql(
         query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
     pluginsList[$newId] = pluginPath
