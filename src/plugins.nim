@@ -222,6 +222,21 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
 
 proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
     sideEffect, raises: [], tags: [RootEffect].} =
+  ## FUNCTION
+  ##
+  ## Initialize the shell's plugins. Set help related to the plugins, load
+  ## the enabled plugins and initialize them
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The list of enabled plugins and the updated helpContent with the help
+  ## for the commands related to the shell's plugins.
+  # Set the help related to the plugins
   helpContent["plugin"] = HelpEntry(usage: "plugin ?subcommand?",
       content: "If entered without subcommand, show the list of available subcommands for plugins. Otherwise, execute the selected subcommand.")
   helpContent["plugin list"] = HelpEntry(usage: "plugin list ?all?",
@@ -236,6 +251,7 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
       content: "Enable the selected plugin. Index must be the index of an installed plugin.")
   helpContent["alias disable"] = HelpEntry(usage: "alias disable [index]",
       content: "Disable the selected plugin. Index must be the index of an installed plugin.")
+  # Load all enabled plugins and execute the initialization code of the plugin
   try:
     for dbResult in db.fastRows(query = sql(
         query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
