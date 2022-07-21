@@ -6,10 +6,8 @@ import std/tables
 import ../../src/[history, lstring, nish, plugins, resultcode]
 import utils/helpers
 
-let db = initTest()
-var
-  pluginsList: PluginsList = initTable[string, string]()
-  historyIndex: HistoryRange
+var (db, _, historyIndex) = initTest()
+var pluginsList: PluginsList = initTable[string, string]()
 discard removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
     pluginsList, historyIndex)
 assert addPlugin(db, initLimitedString(capacity = 23,
