@@ -271,7 +271,9 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
         e = getCurrentException())
 
 proc removePlugin*(db; arguments; pluginsList: var PluginsList;
-    historyIndex: var HistoryRange): ResultCode =
+    historyIndex: var HistoryRange): ResultCode {.gcsafe, sideEffect, raises: [],
+        tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
+        ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect].} =
   if arguments.len() < 8:
     return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
   let
