@@ -3,7 +3,7 @@ discard """
 """
 
 import std/tables
-import ../../src/[history, lstring, nish, plugins, resultcode]
+import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
 var (db, _, historyIndex) = initTest()
