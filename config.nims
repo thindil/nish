@@ -8,6 +8,7 @@ task debug, "builds the project in debug mode":
   switch("styleCheck", "error")
   switch("spellSuggest", "auto")
   switch("verbosity", "2")
+  switch("errorMax", "0")
   setCommand("c", "src" & DirSep & "nish.nim")
 
 task release, "builds the project in release mode":
