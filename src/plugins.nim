@@ -85,7 +85,9 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory(commandToAdd = "plugin", db = db)
 
 proc execPlugin*(pluginPath: string; arguments: openArray[
-    string]; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [RootEffect].} =
+    string]; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+        ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, ReadDbEffect,
+        TimeEffect, WriteDbEffect, RootEffect].} =
   ## FUNCTION
   ##
   ## Communicate with the selected plugin via the shell's plugins API. Run the
