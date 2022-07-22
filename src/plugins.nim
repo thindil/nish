@@ -175,7 +175,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
         pluginPath & "'. Reason: ", e = getCurrentException())
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [RootEffect].} =
+    raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
+        ReadEnvEffect, ReadIOEffect, TimeEffect, WriteDbEffect, RootEffect].} =
   ## FUNCTION
   ##
   ## Add the plugin from the selected full path to the shell and enable it.
