@@ -211,7 +211,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Can't install plugin '" & pluginPath & "'.")
     # Execute the enabling code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = ["enable"], db = db) != QuitSuccess:
-      return showError(message = "Can't install plugin '" & pluginPath & "'.")
+      return showError(message = "Can't enable plugin '" & pluginPath & "'.")
     # Add the plugin to the shell database and the list of enabled plugins
     let newId = db.insertID(query = sql(
         query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
