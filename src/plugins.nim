@@ -190,7 +190,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
   ## RETURNS
   ##
   ## QuitSuccess if the selected plugin was properly added, otherwise
-  ## QuitFailure.
+  ## QuitFailure. Also, updated parameter pluginsList
   # Check if the user entered path to the plugin
   if arguments.len() < 5:
     return showError(message = "Please enter the path to the plugin which will be added to the shell.")
