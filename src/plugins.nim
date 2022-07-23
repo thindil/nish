@@ -274,6 +274,21 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
     historyIndex: var HistoryRange): ResultCode {.gcsafe, sideEffect, raises: [],
         tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
         ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect].} =
+  ## FUNCTION
+  ##
+  ## Disable the plugin and remove it from the shell.
+  ##
+  ## PARAMETERS
+  ##
+  ## * db           - the connection to the shell's database
+  ## * arguments    - the arguments which the user entered to the command
+  ## * pluginsList  - the list of currently enabled shell's plugins
+  ## * historyIndex - the index of command in the shell's history
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the selected plugin was properly added, otherwise
+  ## QuitFailure. Also, updated parameters historyIndex and pluginsList
   if arguments.len() < 8:
     return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
   let
