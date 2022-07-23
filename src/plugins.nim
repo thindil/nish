@@ -290,6 +290,9 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
     if pluginPath.len() == 0:
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
+    if execPlugin(pluginPath = pluginPath, arguments = ["disable"],
+        db = db) != QuitSuccess:
+      return showError(message = "Can't disable plugin '" & pluginPath & "'.")
     if execPlugin(pluginPath = pluginPath, arguments = ["uninstall"],
         db = db) != QuitSuccess:
       return showError(message = "Can't remove plugin '" & pluginPath & "'.")
