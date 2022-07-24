@@ -289,6 +289,7 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
   ##
   ## QuitSuccess if the selected plugin was properly added, otherwise
   ## QuitFailure. Also, updated parameters historyIndex and pluginsList
+  # Check if the user entered proper amount of arguments to the command
   if arguments.len() < 8:
     return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
   let
@@ -305,16 +306,20 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
     if pluginPath.len() == 0:
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
+    # Execute the disabling code of the plugin first
     if execPlugin(pluginPath = pluginPath, arguments = ["disable"],
         db = db) != QuitSuccess:
       return showError(message = "Can't disable plugin '" & pluginPath & "'.")
+    # Execute the uninstalling code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = ["uninstall"],
         db = db) != QuitSuccess:
       return showError(message = "Can't remove plugin '" & pluginPath & "'.")
+    # Remove the plugin from the base
     db.exec(query = sql(query = "DELETE FROM plugins WHERE id=?"), pluginId)
   except DbError:
     return showError(message = "Can't delete plugin from database. Reason: ",
         e = getCurrentException())
+  # Remove the plugin from the list of enabled plugins
   pluginsList.del($pluginId)
   historyIndex = updateHistory(commandToAdd = "plugin remove", db = db)
   showOutput(message = "Deleted the plugin with Id: " & $pluginId,
@@ -325,7 +330,25 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
     historyIndex: var HistoryRange; disable: bool = true): ResultCode {.gcsafe,
         sideEffect, raises: [], tags: [WriteIOEffect, ReadDbEffect,
             WriteDbEffect, ReadEnvEffect, TimeEffect, ReadIOEffect].} =
+  ## FUNCTION
+  ##
+  ## Enable or disable the selected plugin.
+  ##
+  ## PARAMETERS
+  ##
+  ## * db           - the connection to the shell's database
+  ## * arguments    - the arguments which the user entered to the command
+  ## * pluginsList  - the list of currently enabled shell's plugins
+  ## * historyIndex - the index of command in the shell's history
+  ## * disable      - if true, disable the plugin, otherwise enable it
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the selected plugin was properly enabled or disabled,
+  ## otherwise QuitFailure. Also, updated parameters historyIndex and
+  ## pluginsList
   let idStart: int = (if disable: 8 else: 7)
+  # Check if the user entered proper amount of arguments
   if arguments.len() < (idStart + 1):
     return showError(message = "Please enter the Id to the plugin which will be disabled.")
   let
@@ -335,12 +358,14 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
         return showError(message = "The Id of the plugin must be a positive number.")
     pluginState: BooleanInt = (if disable: 0 else: 1)
   try:
+    # Check if plugin with the selected Id exists
     if db.execAffectedRows(query = sql(query = (
         "UPDATE plugins SET enabled=? WHERE id=?")), pluginState, pluginId) == 0:
       historyIndex = updateHistory(commandToAdd = "plugin disable", db = db,
           returnCode = QuitFailure.ResultCode)
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
+    # Remove or add the plugin to the list of enabled plugins
     if disable:
       pluginsList.del($pluginId)
     else:
