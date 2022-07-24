@@ -271,8 +271,8 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
         e = getCurrentException())
 
 proc removePlugin*(db; arguments; pluginsList: var PluginsList;
-    historyIndex: var HistoryRange): ResultCode {.gcsafe, sideEffect, raises: [],
-        tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
+    historyIndex: var HistoryRange): ResultCode {.gcsafe, sideEffect, raises: [
+        ], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
         ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect].} =
   ## FUNCTION
   ##
@@ -322,7 +322,9 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
   return QuitSuccess.ResultCode
 
 proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
-    historyIndex: var HistoryRange; disable: bool = true): ResultCode =
+    historyIndex: var HistoryRange; disable: bool = true): ResultCode {.gcsafe,
+        sideEffect, raises: [], tags: [WriteIOEffect, ReadDbEffect,
+            WriteDbEffect, ReadEnvEffect, TimeEffect, ReadIOEffect].} =
   let idStart: int = (if disable: 8 else: 7)
   if arguments.len() < (idStart + 1):
     return showError(message = "Please enter the Id to the plugin which will be disabled.")
