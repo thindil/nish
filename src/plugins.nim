@@ -350,7 +350,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
   let idStart: int = (if disable: 8 else: 7)
   # Check if the user entered proper amount of arguments
   if arguments.len() < (idStart + 1):
-    return showError(message = "Please enter the Id to the plugin which will be disabled.")
+    return showError(message = "Please enter the Id to the plugin which will be " &
+        (if disable: "disabled" else: "enabled") & ".")
   let
     pluginId: DatabaseId = try:
         parseInt($arguments[idStart .. ^1]).DatabaseId
