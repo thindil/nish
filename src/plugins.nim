@@ -361,8 +361,10 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
     # Check if plugin with the selected Id exists
     if db.execAffectedRows(query = sql(query = (
         "UPDATE plugins SET enabled=? WHERE id=?")), pluginState, pluginId) == 0:
-      historyIndex = updateHistory(commandToAdd = "plugin disable", db = db,
-          returnCode = QuitFailure.ResultCode)
+      historyIndex = updateHistory(commandToAdd = "plugin " & (
+          if disable: "disable" else: "enable"), db = db,
+
+returnCode = QuitFailure.ResultCode)
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
     # Remove or add the plugin to the list of enabled plugins
@@ -375,7 +377,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
     return showError(message = "Can't " & (
         if disable: "disable" else: "enable") & " plugin. Reason: ",
         e = getCurrentException())
-  historyIndex = updateHistory(commandToAdd = "plugin disable", db = db)
+  historyIndex = updateHistory(commandToAdd = "plugin " & (
+      if disable: "disable" else: "enable"), db = db)
   showOutput(message = (if disable: "Disabled" else: "Enabled") &
       " the plugin with Id: " & $pluginId, fgColor = fgGreen)
   return QuitSuccess.ResultCode
