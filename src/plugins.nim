@@ -363,8 +363,7 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
         "UPDATE plugins SET enabled=? WHERE id=?")), pluginState, pluginId) == 0:
       historyIndex = updateHistory(commandToAdd = "plugin " & (
           if disable: "disable" else: "enable"), db = db,
-
-returnCode = QuitFailure.ResultCode)
+          returnCode = QuitFailure.ResultCode)
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
     # Remove or add the plugin to the list of enabled plugins
