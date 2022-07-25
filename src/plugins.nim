@@ -416,6 +416,7 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
       except DbError: 10.ColumnAmount
     spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
         12 except ValueError: 6.ColumnAmount
+  # Show the list of enabled plugins
   if arguments == "list":
     showFormHeader(message = "Enabled plugins are:")
     try:
@@ -431,6 +432,7 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
           alignLeft(s = location, count = columnLength.int),
               count = spacesAmount.int))
     historyIndex = updateHistory(commandToAdd = "plugin list", db = db)
+  # Show the list of all installed plugins with information about their state
   elif arguments == "list all":
     showFormHeader(message = "All available plugins are:")
     try:
