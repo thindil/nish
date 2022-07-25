@@ -20,10 +20,10 @@ case "${1}" in
             getOption testPlugin'
       read -t 1 value
       echo "showOutput \"Value for testPlugin is $value\""
-      echo "showOutput \"Initialized the testplugin\" fgGreen"
+      echo "showOutput \"Enabled the testplugin\" fgGreen"
       ;;
    disable)
-      echo 'showOutput "Disabled"'
+      echo 'showOutput "Disabled the testplugin" fgGreen'
       ;;
    init)
       echo 'showOutput "Initializing the testplugin"
