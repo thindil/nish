@@ -373,7 +373,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
     # Execute the enabling or disabling code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = [actionName],
         db = db) != QuitSuccess:
-      return showError(message = "Can't " & actionName & " plugin '" & pluginPath & "'.")
+      return showError(message = "Can't " & actionName & " plugin '" &
+          pluginPath & "'.")
     # Update the state of the plugin
     db.exec(query = sql(query = ("UPDATE plugins SET enabled=? WHERE id=?")),
         pluginState, pluginId)
@@ -387,7 +388,7 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
         e = getCurrentException())
   historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db)
   showOutput(message = (if disable: "Disabled" else: "Enabled") &
-      " the plugin with Id: " & $pluginId, fgColor = fgGreen)
+      " the plugin '" & $pluginPath & "'", fgColor = fgGreen)
   return QuitSuccess.ResultCode
 
 proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
