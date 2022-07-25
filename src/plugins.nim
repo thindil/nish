@@ -347,11 +347,13 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
   ## QuitSuccess if the selected plugin was properly enabled or disabled,
   ## otherwise QuitFailure. Also, updated parameters historyIndex and
   ## pluginsList
-  let idStart: int = (if disable: 8 else: 7)
+  let
+    idStart: int = (if disable: 8 else: 7)
+    actionName: string = (if disable: "disable" else: "enable")
   # Check if the user entered proper amount of arguments
   if arguments.len() < (idStart + 1):
     return showError(message = "Please enter the Id to the plugin which will be " &
-        (if disable: "disabled" else: "enabled") & ".")
+        actionName & ".")
   let
     pluginId: DatabaseId = try:
         parseInt($arguments[idStart .. ^1]).DatabaseId
@@ -362,9 +364,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
     # Check if plugin with the selected Id exists
     if db.execAffectedRows(query = sql(query = (
         "UPDATE plugins SET enabled=? WHERE id=?")), pluginState, pluginId) == 0:
-      historyIndex = updateHistory(commandToAdd = "plugin " & (
-          if disable: "disable" else: "enable"), db = db,
-          returnCode = QuitFailure.ResultCode)
+      historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
+          db = db, returnCode = QuitFailure.ResultCode)
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
     # Remove or add the plugin to the list of enabled plugins
@@ -374,11 +375,9 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       pluginsList[$pluginId] = db.getValue(query = sql(query = (
           "SELECT location FROM plugins WHERE id=?")), pluginId)
   except DbError:
-    return showError(message = "Can't " & (
-        if disable: "disable" else: "enable") & " plugin. Reason: ",
+    return showError(message = "Can't " & actionName & " plugin. Reason: ",
         e = getCurrentException())
-  historyIndex = updateHistory(commandToAdd = "plugin " & (
-      if disable: "disable" else: "enable"), db = db)
+  historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db)
   showOutput(message = (if disable: "Disabled" else: "Enabled") &
       " the plugin with Id: " & $pluginId, fgColor = fgGreen)
   return QuitSuccess.ResultCode
