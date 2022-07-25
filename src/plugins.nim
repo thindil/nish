@@ -329,7 +329,8 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
 proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
     historyIndex: var HistoryRange; disable: bool = true): ResultCode {.gcsafe,
         sideEffect, raises: [], tags: [WriteIOEffect, ReadDbEffect,
-            WriteDbEffect, ReadEnvEffect, TimeEffect, ReadIOEffect].} =
+            WriteDbEffect, ReadEnvEffect, TimeEffect, ReadIOEffect,
+            ExecIOEffect, RootEffect].} =
   ## FUNCTION
   ##
   ## Enable or disable the selected plugin.
@@ -360,20 +361,27 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       except ValueError:
         return showError(message = "The Id of the plugin must be a positive number.")
     pluginState: BooleanInt = (if disable: 0 else: 1)
+    pluginPath: string = try:
+        db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"), pluginId)
+      except DbError:
+        return showError(message = "Can't get plugin's location from database. Reason: ",
+          e = getCurrentException())
   try:
-    # Check if plugin with the selected Id exists
-    if db.execAffectedRows(query = sql(query = (
-        "UPDATE plugins SET enabled=? WHERE id=?")), pluginState, pluginId) == 0:
-      historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
-          db = db, returnCode = QuitFailure.ResultCode)
-      return showError(message = "The plugin with the Id: " & $pluginId &
-        " doesn't exist.")
+    # Check if plugin exists
+    if pluginPath.len() == 0:
+      return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
+    # Execute the enabling or disabling code of the plugin
+    if execPlugin(pluginPath = pluginPath, arguments = [actionName],
+        db = db) != QuitSuccess:
+      return showError(message = "Can't " & actionName & " plugin '" & pluginPath & "'.")
+    # Update the state of the plugin
+    db.exec(query = sql(query = ("UPDATE plugins SET enabled=? WHERE id=?")),
+        pluginState, pluginId)
     # Remove or add the plugin to the list of enabled plugins
     if disable:
       pluginsList.del($pluginId)
     else:
-      pluginsList[$pluginId] = db.getValue(query = sql(query = (
-          "SELECT location FROM plugins WHERE id=?")), pluginId)
+      pluginsList[$pluginId] = pluginPath
   except DbError:
     return showError(message = "Can't " & actionName & " plugin. Reason: ",
         e = getCurrentException())
