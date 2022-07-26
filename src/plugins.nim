@@ -473,7 +473,7 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
 proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-    TimeEffect].} =
+    TimeEffect, ExecIOEffect, RootEffect].} =
   ## FUNCTION
   ##
   ## Show details about the selected plugin, its ID, path and status
@@ -513,13 +513,24 @@ proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
       terminalWidth().ColumnAmount / 12
     except ValueError:
       6.ColumnAmount
-  showOutput(message = indent(s = alignLeft(s = "Id:", count = 9),
+  showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
       count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = $id)
-  showOutput(message = indent(s = alignLeft(s = "Path:", count = 9),
+  showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
       count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = row[0])
-  showOutput(message = indent(s = "Enabled: ", count = spacesAmount.int),
-      newLine = false, fgColor = fgMagenta)
+  showOutput(message = indent(s = alignLeft(s = "Enabled: ", count = 13),
+      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
   showOutput(message = (if row[1] == "1": "Yes" else: "No"))
+  let pluginData = execPlugin(pluginPath = row[0], arguments = ["info"], db = db)
+  # If plugin contains any aditional information, show them
+  if pluginData.code == QuitSuccess:
+    let pluginInfo = split($pluginData.answer, ";")
+    showOutput(message = indent(s = alignLeft(s = "Name: ", count = 13),
+        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+    showOutput(message = pluginInfo[0])
+    if pluginInfo.len() > 1:
+      showOutput(message = indent(s = "Description: ",
+          count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+      showOutput(message = pluginInfo[1])
   return QuitSuccess.ResultCode
