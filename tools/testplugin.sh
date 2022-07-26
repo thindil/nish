@@ -32,6 +32,9 @@ case "${1}" in
       echo "showOutput \"Value for testPlugin is $value\""
       echo "showOutput \"Initialized the testplugin\" fgGreen"
       ;;
+   info)
+      echo 'answer "Testplugin;Test plugin"'
+      ;;
    *)
       echo 'showError "Unknown plugin command."'
       exit 1
