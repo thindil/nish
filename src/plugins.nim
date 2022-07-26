@@ -85,8 +85,9 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   return updateHistory(commandToAdd = "plugin", db = db)
 
 proc execPlugin*(pluginPath: string; arguments: openArray[
-    string]; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-        ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, ReadDbEffect,
+    string]; db): tuple [code: ResultCode; answer: LimitedString] {.gcsafe,
+        sideEffect, raises: [], tags: [ExecIOEffect, ReadEnvEffect,
+            ReadIOEffect, WriteIOEffect, ReadDbEffect,
         TimeEffect, WriteDbEffect, RootEffect].} =
   ## FUNCTION
   ##
@@ -102,13 +103,17 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
   ##
   ## RETURNS
   ##
-  ## QuitSuccess if the selected plugin was properly executed, otherwise
-  ## QuitFailure.
-  let plugin = try:
-      startProcess(command = pluginPath, args = arguments)
-    except OSError, Exception:
-      return showError(message = "Can't execute the plugin '" & pluginPath &
-          "'. Reason: ", e = getCurrentException())
+  ## Tuple with result code: QuitSuccess if the selected plugin was properly
+  ## executed, otherwise QuitFailure and LimitedString with the plugin's
+  ## answer.
+  let
+    emptyAnswer = emptyLimitedString(capacity = maxInputLength)
+    plugin = try:
+        startProcess(command = pluginPath, args = arguments)
+      except OSError, Exception:
+        return (showError(message = "Can't execute the plugin '" & pluginPath &
+            "'. Reason: ", e = getCurrentException()), emptyAnswer)
+  result.answer = emptyAnswer
   try:
     # Read the plugin response and act accordingly to it
     for line in plugin.lines:
@@ -160,19 +165,28 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
           plugin.inputStream.write($getOption(optionName = initLimitedString(
               capacity = maxNameLength, text = remainingOptions[0]), db = db) & "\n")
           plugin.inputStream.flush()
-        # Do nothing if the plugin sent any unknown request
+        # Set the answer from the plugin. The argument is the plugin's answer
+        # with semicolon limited values
+        of "answer":
+          let remainingOptions = options.remainingArgs()
+          if remainingOptions.len() == 0:
+            discard showError(message = "Insufficient arguments for answer.")
+            break
+          result.answer = initLimitedString(capacity = remainingOptions[0].len,
+              text = remainingOptions[0])
+        # Do nothing if the plugin sent any unknown request or response
         else:
           discard
         break
   except OSError, IOError, Exception:
-    return showError(message = "Can't get the plugin '" & pluginPath &
-        "' output. Reason: ", e = getCurrentException())
-  result = plugin.peekExitCode().ResultCode
+    return (showError(message = "Can't get the plugin '" & pluginPath &
+        "' output. Reason: ", e = getCurrentException()), emptyAnswer)
+  result.code = plugin.peekExitCode().ResultCode
   try:
     plugin.close()
   except OSError, IOError, Exception:
-    return showError(message = "Can't close process for the plugin '" &
-        pluginPath & "'. Reason: ", e = getCurrentException())
+    return (showError(message = "Can't close process for the plugin '" &
+        pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
@@ -207,10 +221,12 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
         pluginPath) != @[""]:
       return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
     # Execute the installation code of the plugin
-    if execPlugin(pluginPath = pluginPath, arguments = ["install"], db = db) != QuitSuccess:
+    if execPlugin(pluginPath = pluginPath, arguments = ["install"],
+        db = db).code != QuitSuccess:
       return showError(message = "Can't install plugin '" & pluginPath & "'.")
     # Execute the enabling code of the plugin
-    if execPlugin(pluginPath = pluginPath, arguments = ["enable"], db = db) != QuitSuccess:
+    if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
+        db = db).code != QuitSuccess:
       return showError(message = "Can't enable plugin '" & pluginPath & "'.")
     # Add the plugin to the shell database and the list of enabled plugins
     let newId = db.insertID(query = sql(
@@ -261,7 +277,7 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
         query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
       if dbResult[2] == "1":
         if execPlugin(pluginPath = dbResult[1], arguments = ["init"],
-            db = db) != QuitSuccess:
+            db = db).code != QuitSuccess:
           discard showError(message = "Can't initialize plugin '" & dbResult[
               1] & "'.")
           return
@@ -308,11 +324,11 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
         " doesn't exist.")
     # Execute the disabling code of the plugin first
     if execPlugin(pluginPath = pluginPath, arguments = ["disable"],
-        db = db) != QuitSuccess:
+        db = db).code != QuitSuccess:
       return showError(message = "Can't disable plugin '" & pluginPath & "'.")
     # Execute the uninstalling code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = ["uninstall"],
-        db = db) != QuitSuccess:
+        db = db).code != QuitSuccess:
       return showError(message = "Can't remove plugin '" & pluginPath & "'.")
     # Remove the plugin from the base
     db.exec(query = sql(query = "DELETE FROM plugins WHERE id=?"), pluginId)
@@ -372,7 +388,7 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
     # Execute the enabling or disabling code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = [actionName],
-        db = db) != QuitSuccess:
+        db = db).code != QuitSuccess:
       return showError(message = "Can't " & actionName & " plugin '" &
           pluginPath & "'.")
     # Update the state of the plugin
