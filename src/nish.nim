@@ -491,6 +491,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       inputString.setString(text = join(a = userInput.remainingArgs(), sep = " "))
     except CapacityError:
       discard
+    # Execute plugins with precommand hook
+    for plugin in plugins.values:
+      discard execPlugin(pluginPath = plugin, arguments = ["precommand",
+          commandName & " " & arguments], db = db)
     # Parse commands
     case commandName
     # Quit from shell
