@@ -36,10 +36,10 @@ case "${1}" in
       echo 'answer "Testplugin;Test plugin"'
       ;;
    precommand)
-      echo 'showOutput "The command which will be executed: \"$2\""'
+      echo "showOutput \"The command which will be executed: $2\""
       ;;
    postcommand)
-      echo 'showOutput "The command which was executed: \"$2\""'
+      echo "showOutput \"The command which was executed: $2\""
       ;;
    *)
       echo 'showError "Unknown plugin command."'
