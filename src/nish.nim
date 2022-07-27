@@ -688,6 +688,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               returnCode = returnCode)
       except CapacityError:
         returnCode = QuitFailure.ResultCode
+    # Execute plugins with postcommand hook
+    for plugin in plugins.values:
+      discard execPlugin(pluginPath = plugin, arguments = ["postcommand",
+          commandName & " " & arguments], db = db)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
