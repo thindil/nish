@@ -220,6 +220,32 @@ executed every time before you execute your command. Thus, be sure it isn't too
 heavy for your system, or it isn't dangerous, for example, it doesn't steal
 credentials, harm your system, etc.
 
+#### Plugins
+
+The shell's offers a very simple API which allows to write its plugins in any
+programming language. The communication between the shell and the plugin is
+made by standard input and output, where the API calls are send as command
+line arguments. The plugin's system will probably change over time especially
+by adding new API calls. The plugins can reside in any location. The directory
+`tools` contains the example plugin.
+
+At this moment available API calls from the shell:
+
+* `install` - called during installation of the plugin (adding it to the
+  shell).
+* `uninstall` - called during deinstallation of the plugin (removing it from
+  the shell).
+* `enable` - called during enabling the plugin.
+* `disable` - called during disabling the plugin.
+* `init` - called during initialization (starting) of the shell.
+* `info` - called during showing information about the plugin. Requested
+  response from the plugin should have form `name of the plugin;description of
+  the plugin`.
+* `precommand [arguments]` - called before the user's command will be executed.
+  Arguments are the name of command and all its arguments entered by the user.
+* `postcommand [arguments]` - called after the user's command execution.
+  Arguments are the name of command and all its arguments entered by the user.
+
 #### Other features
 
 * Simple Tab completion for commands with names of files and directories
