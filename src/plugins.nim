@@ -307,32 +307,46 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
   ## QuitFailure. Also, updated parameters historyIndex and pluginsList
   # Check if the user entered proper amount of arguments to the command
   if arguments.len() < 8:
+    historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
+        returnCode = QuitFailure.ResultCode)
     return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
   let
     pluginId: DatabaseId = try:
         parseInt($arguments[7 .. ^1]).DatabaseId
       except ValueError:
+        historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
+            returnCode = QuitFailure.ResultCode)
         return showError(message = "The Id of the plugin must be a positive number.")
     pluginPath: string = try:
         db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"), pluginId)
       except DbError:
+        historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
+            returnCode = QuitFailure.ResultCode)
         return showError(message = "Can't get plugin's Id from database. Reason: ",
           e = getCurrentException())
   try:
     if pluginPath.len() == 0:
+      historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
+          returnCode = QuitFailure.ResultCode)
       return showError(message = "The plugin with the Id: " & $pluginId &
         " doesn't exist.")
     # Execute the disabling code of the plugin first
     if execPlugin(pluginPath = pluginPath, arguments = ["disable"],
         db = db).code != QuitSuccess:
+      historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
+          returnCode = QuitFailure.ResultCode)
       return showError(message = "Can't disable plugin '" & pluginPath & "'.")
     # Execute the uninstalling code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = ["uninstall"],
         db = db).code != QuitSuccess:
+      historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
+          returnCode = QuitFailure.ResultCode)
       return showError(message = "Can't remove plugin '" & pluginPath & "'.")
     # Remove the plugin from the base
     db.exec(query = sql(query = "DELETE FROM plugins WHERE id=?"), pluginId)
   except DbError:
+    historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
+        returnCode = QuitFailure.ResultCode)
     return showError(message = "Can't delete plugin from database. Reason: ",
         e = getCurrentException())
   # Remove the plugin from the list of enabled plugins
@@ -369,26 +383,36 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
     actionName: string = (if disable: "disable" else: "enable")
   # Check if the user entered proper amount of arguments
   if arguments.len() < (idStart + 1):
+    historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db,
+        returnCode = QuitFailure.ResultCode)
     return showError(message = "Please enter the Id to the plugin which will be " &
         actionName & ".")
   let
     pluginId: DatabaseId = try:
         parseInt($arguments[idStart .. ^1]).DatabaseId
       except ValueError:
+        historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
+            db = db, returnCode = QuitFailure.ResultCode)
         return showError(message = "The Id of the plugin must be a positive number.")
     pluginState: BooleanInt = (if disable: 0 else: 1)
     pluginPath: string = try:
         db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"), pluginId)
       except DbError:
+        historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
+            db = db, returnCode = QuitFailure.ResultCode)
         return showError(message = "Can't get plugin's location from database. Reason: ",
           e = getCurrentException())
   try:
     # Check if plugin exists
     if pluginPath.len() == 0:
+      historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
+          db = db, returnCode = QuitFailure.ResultCode)
       return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
     # Execute the enabling or disabling code of the plugin
     if execPlugin(pluginPath = pluginPath, arguments = [actionName],
         db = db).code != QuitSuccess:
+      historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
+          db = db, returnCode = QuitFailure.ResultCode)
       return showError(message = "Can't " & actionName & " plugin '" &
           pluginPath & "'.")
     # Update the state of the plugin
@@ -400,6 +424,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
     else:
       pluginsList[$pluginId] = pluginPath
   except DbError:
+    historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db,
+        returnCode = QuitFailure.ResultCode)
     return showError(message = "Can't " & actionName & " plugin. Reason: ",
         e = getCurrentException())
   historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db)
@@ -465,6 +491,8 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
             alignLeft(s = row[1], count = columnLength.int) & " " & (if row[
                 2] == "1": "Yes" else: "No"), count = spacesAmount.int))
     except DbError:
+      historyIndex = updateHistory(commandToAdd = "plugin list all", db = db,
+          returnCode = QuitFailure.ResultCode)
       discard showError(message = "Can't read info about plugin from database. Reason:",
           e = getCurrentException())
       return
@@ -497,10 +525,14 @@ proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
   let id: DatabaseId = try:
       parseInt(s = $arguments[5 .. ^1]).DatabaseId
     except ValueError:
+      historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
+          returnCode = QuitFailure.ResultCode)
       return showError(message = "The Id of the plugin must be a positive number.")
   let row: Row = try:
         db.getRow(query = sql(query = "SELECT location, enabled FROM plugins WHERE id=?"), args = id)
     except DbError:
+      historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
+          returnCode = QuitFailure.ResultCode)
       return showError(message = "Can't read plugin data from database. Reason: ",
           e = getCurrentException())
   if row[0] == "":
