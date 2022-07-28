@@ -249,7 +249,10 @@ At this moment, available API calls from the shell:
 Available API calls from plugins:
 
 * `showError [text]`: show the text in the standard error output
-* `showOutput [text]`: show the text in the standard output
+* `showOutput [text] ?color?`: show the text in the standard output. The
+  optional argument is the color of the message. Available options are:
+  fgBlack, fgRed, fgGreen, fgYellow, fgBlue, fgMagenta, fgCyan, fgWhite and
+  fgDefault
 * `setOption [option name] [option value] [option description] [option type]` -
   set the shell's option. If the option doesn't exist, create a new with
   selected parameters. Option type should be one of: integer (positive and
