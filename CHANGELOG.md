@@ -16,6 +16,7 @@ of the shell.
   to show for `history list` command
 - Ability to redirect output of aliases to standard error or the selected file
 - Ability to set the output of program or script as the shell's prompt
+- The shell's plugins' system
 
 ### Changed
 - Better getting commands from the shell's history
