@@ -222,44 +222,42 @@ credentials, harm your system, etc.
 
 #### Plugins
 
-The shell's offers a very simple API which allows to write its plugins in any
-programming language. The communication between the shell and the plugin is
-made by standard input and output, where the API calls are send as command
+The shell's offers a very simple API which allows writing its plugins in any
+programming language. The communication between the shell and the plugin are
+made by standard input and output, where the API calls are sending as command
 line arguments. The plugin's system will probably change over time especially
 by adding new API calls. The plugins can reside in any location. The directory
 `tools` contains the example plugin `testplugin.sh` written in Bash.
 
-At this moment available API calls from the shell:
+At this moment, available API calls from the shell:
 
-* `install` - called during installation of the plugin (adding it to the
+* `install`: called during installation of the plugin (adding it to the
   shell).
-* `uninstall` - called during deinstallation of the plugin (removing it from
-  the shell).
-* `enable` - called during enabling the plugin.
-* `disable` - called during disabling the plugin.
-* `init` - called during initialization (starting) of the shell.
-* `info` - called during showing information about the plugin. Requested
-  response from the plugin should have form `answer [name of the plugin;
-  description of the plugin]`.
-* `precommand [command]` - called before the user's command will be executed.
+* `uninstall`: called during removing of the plugin from the shell.
+* `enable`: called during enabling the plugin.
+* `disable`: called during disabling the plugin.
+* `init`: called during initialization (starting) of the shell.
+* `info`: called during showing information about the plugin. Requested
+  response from the plugin should have form `answer [name of the plugin;description of the plugin]`.
+* `precommand [command]`: called before the user's command will be executed.
   Command argument is the name of command and all its arguments entered by the
   user.
-* `postcommand [command]` - called after the user's command execution.
+* `postcommand [command]`: called after the user's command execution.
   Command argument is the name of command and all its arguments entered by the
   user.
 
 Available API calls from plugins:
 
-* `showError [text]` - show the text in the standard error output
-* `showOutput [text]` - show the text in the standard output
+* `showError [text]`: show the text in the standard error output
+* `showOutput [text]`: show the text in the standard output
 * `setOption [option name] [option value] [option description] [option type]` -
   set the shell's option. If the option doesn't exist, create a new with
   selected parameters. Option type should be one of: integer (positive and
   negative), float, boolean (true or false), historySort, natural (0 or above),
   text, command (the value will be checked if is a valid command before added)
-* `removeOption [option name]` - remove the selected option from the shell.
-* `getOption [option name]` - get the value of the selected shell's option.
-* `answer [text]` - set the anwser for the shell. At this moment used only in
+* `removeOption [option name]`: remove the selected option from the shell.
+* `getOption [option name]`: get the value of the selected shell's option.
+* `answer [text]`: set the answer for the shell. At this moment, used only in
   `info` call from the shell.
 
 #### Other features
