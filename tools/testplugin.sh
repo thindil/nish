@@ -30,17 +30,19 @@
 # line arguments for sections calls, like "install" or "enable", or as a normal
 # input for any other like "getOption". Also, multiple plugin's calls can be
 # done by one printing command, then calls must be separated by new line, or by
-# separated printing command, one call per command.
+# separated printing command, one call per command. More information about
+# available API calls can be found in README.md file or on the project page in
+# documentation.
 
 case "${1}" in
    # No API call when calling the plugin specified, show the error information
    # and quit with error code.
    "")
-      # Ask the shell to print the selected text in the standard error output
+      # Show the selected text in the standard error output
       echo 'showError "No plugin command specified."'
       exit 1
       ;;
-   # Called during the plugin installation. Good place to set any options
+   # Called during the plugin installation. A good place to set any options
    # related to the plugin.
    install)
       # Show the messages about installing the plugin and set the shell's
@@ -57,33 +59,59 @@ case "${1}" in
             removeOption testPlugin
             showOutput "Uninstalled" fgGreen'
       ;;
+   # Called during enabling the plugin and during installing it, after the
+   # install section. A good place to set some settings for the plugin
    enable)
+      # Show the message and read the value of the selected shell option
       echo 'showOutput "Enabling the testplugin"
             getOption testPlugin'
+      # Get the answer from the shell from the standard input
       read -t 1 value
+      # Show the value of the option, read from the shell
       echo "showOutput \"Value for testPlugin is $value\""
+      # Show another message, colored in green
       echo "showOutput \"Enabled the testplugin\" fgGreen"
       ;;
+   # Called during disabling the plugin.
    disable)
+      # Show the selected text with the selected color on the standard output
       echo 'showOutput "Disabled the testplugin" fgGreen'
       ;;
+   # Called during start the shell, when the plugin is enabled. A good place to
+   # set settings for the plugin
    init)
+      # Show the message and read the value of the selected shell option
       echo 'showOutput "Initializing the testplugin"
             getOption testPlugin'
+      # Get the answer from the shell from the standard input
       read -t 1 value
+      # Show the value of the option, read from the shell
       echo "showOutput \"Value for testPlugin is $value\""
+      # Show another message, colored in green
       echo "showOutput \"Initialized the testplugin\" fgGreen"
       ;;
+   # Called when the user enter command "plugin show" for the selected plugin.
+   # It require to return a string with two values: the plugin name and the
+   # plugin description. Values have to be separated with semicolon.
    info)
+      # Send answer to the shell with the plugin's name and description
       echo 'answer "Testplugin;Test plugin"'
       ;;
+   # Called before each the user's command is executed. The second argument is
+   # the full command, with arguments, which will be executed.
    precommand)
+      # Show the message with full to be executed command
       echo "showOutput \"The command which will be executed: $2\""
       ;;
+   # Called after execution of each the user's command. The second argument is
+   # the full command, with arguments, which was executed.
    postcommand)
+      # Show the message with full executed command
       echo "showOutput \"The command which was executed: $2\""
       ;;
+   # Unknown API option called. Show the error message and quit
    *)
+      # Show the selected text in the standard error output
       echo 'showError "Unknown plugin command."'
       exit 1
       ;;
