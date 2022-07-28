@@ -225,9 +225,11 @@ credentials, harm your system, etc.
 The shell's offers a very simple API which allows writing its plugins in any
 programming language. The communication between the shell and the plugin are
 made by standard input and output, where the API calls are sending as command
-line arguments. The plugin's system will probably change over time especially
-by adding new API calls. The plugins can reside in any location. The directory
-`tools` contains the example plugin `testplugin.sh` written in Bash.
+line arguments. All arguments for the calls should be enclosed in quotes if
+they contain spaces. The plugin's system will probably change over time
+especially by adding new API calls. The plugins can reside in any location.
+The directory `tools` contains the example plugin `testplugin.sh` written in
+Bash.
 
 At this moment, available API calls from the shell:
 
@@ -245,6 +247,12 @@ At this moment, available API calls from the shell:
 * `postcommand [command]`: called after the user's command execution.
   Command argument is the name of command and all its arguments entered by the
   user.
+
+**ATTENTION:** the calls set as the `precommand` and `postcommand` will be
+executed every time before and after you execute your command. Thus, be sure it
+isn't too heavy for your system, or it isn't dangerous, for example, it doesn't
+steal credentials, harm your system, etc.
+
 
 Available API calls from plugins:
 
