@@ -99,13 +99,13 @@ case "${1}" in
       ;;
    # Called before each the user's command is executed. The second argument is
    # the full command, with arguments, which will be executed.
-   precommand)
+   preCommand)
       # Show the message with full to be executed command
       echo "showOutput \"The command which will be executed: $2\""
       ;;
    # Called after execution of each the user's command. The second argument is
    # the full command, with arguments, which was executed.
-   postcommand)
+   postCommand)
       # Show the message with full executed command
       echo "showOutput \"The command which was executed: $2\""
       ;;
