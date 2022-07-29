@@ -493,7 +493,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       discard
     # Execute plugins with precommand hook
     for plugin in plugins.values:
-      discard execPlugin(pluginPath = plugin, arguments = ["precommand",
+      discard execPlugin(pluginPath = plugin, arguments = ["preCommand",
           commandName & " " & arguments], db = db)
     # Parse commands
     case commandName
@@ -690,7 +690,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = QuitFailure.ResultCode
     # Execute plugins with postcommand hook
     for plugin in plugins.values:
-      discard execPlugin(pluginPath = plugin, arguments = ["postcommand",
+      discard execPlugin(pluginPath = plugin, arguments = ["postCommand",
           commandName & " " & arguments], db = db)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
