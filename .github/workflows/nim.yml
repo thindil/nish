@@ -29,7 +29,9 @@ jobs:
         nim-version: '1.6.6'
 
     - name: Debug build
-      run: nimble build -y
+      run: |
+        nimble build -y
+        nim debug
 
     - name: Run tests
       run: testament pattern "tests/**/*.nim"
