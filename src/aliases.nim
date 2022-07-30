@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
+import contracts
 import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode, variables
 
@@ -43,8 +44,9 @@ using
   arguments: UserInput # The string with arguments entered by the user for the command
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
-proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Set the available aliases in the selected directory
@@ -58,33 +60,39 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect, ra
   ## RETURNS
   ##
   ## The parameter aliases with the new list of available aliases
-  aliases = initOrderedTable[AliasName, int]()
-  var
-    dbQuery: string = "SELECT id, name FROM aliases WHERE path='" & directory & "'"
-    remainingDirectory: DirectoryPath = parentDir(
-        path = $directory).DirectoryPath
+  require:
+    directory.len() > 0
+    db != nil
+  body:
+    aliases = initOrderedTable[AliasName, int]()
+    var
+      dbQuery: string = "SELECT id, name FROM aliases WHERE path='" &
+          directory & "'"
+      remainingDirectory: DirectoryPath = parentDir(
+          path = $directory).DirectoryPath
 
-  # Construct SQL querry, search for aliases also defined in parent directories
-  # if they are recursive
-  while remainingDirectory != "":
-    dbQuery.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
-    remainingDirectory = parentDir(path = $remainingDirectory).DirectoryPath
-  dbQuery.add(y = " ORDER BY id ASC")
-  # Set the aliases
-  try:
-    for dbResult in db.fastRows(query = sql(query = dbQuery)):
-      let index = try:
-          initLimitedString(capacity = maxInputLength, text = dbResult[1])
-        except CapacityError:
-          discard showError(message = "Can't set index from " & dbResult[1])
-          return
-      try:
-        aliases[index] = parseInt(s = dbResult[0])
-      except ValueError:
-        discard showError(message = "Can't set alias, invalid Id: " & dbResult[0])
-  except DbError:
-    discard showError(message = "Can't set aliases for the current directory. Reason: ",
-        e = getCurrentException())
+    # Construct SQL querry, search for aliases also defined in parent directories
+    # if they are recursive
+    while remainingDirectory != "":
+      dbQuery.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
+      remainingDirectory = parentDir(path = $remainingDirectory).DirectoryPath
+    dbQuery.add(y = " ORDER BY id ASC")
+    # Set the aliases
+    try:
+      for dbResult in db.fastRows(query = sql(query = dbQuery)):
+        let index = try:
+            initLimitedString(capacity = maxInputLength, text = dbResult[1])
+          except CapacityError:
+            discard showError(message = "Can't set index from " & dbResult[1])
+            return
+        try:
+          aliases[index] = parseInt(s = dbResult[0])
+        except ValueError:
+          discard showError(message = "Can't set alias, invalid Id: " &
+              dbResult[0])
+    except DbError:
+      discard showError(message = "Can't set aliases for the current directory. Reason: ",
+          e = getCurrentException())
 
 proc listAliases*(arguments; historyIndex; aliases: AliasesList;
     db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
