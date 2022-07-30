@@ -5,7 +5,7 @@ switch("app", "console")
 task debug, "builds the project in debug mode":
   switch("outdir", "bin")
   switch("define", "debug")
-  switch("styleCheck", "error")
+  switch("styleCheck", "hint")
   switch("spellSuggest", "auto")
   switch("verbosity", "2")
   switch("errorMax", "0")
