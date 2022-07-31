@@ -8,7 +8,7 @@ find any bug in the program, please report it at options available at [contact p
 * In "Title" field try to write short but not too general description of
   problem. Good example: "The program crash when opening directory". Bad
   example: "The program crashes often."
-* In body/comment field try to write that much information about problem as
+* In body/comment field try to write that much information about issue as
   possible. In most cases more information is better than less. General rule
   of good problem report is give enough information which allow reproducing
   problem by other people. It may be in form of steps which are needed for
@@ -45,7 +45,17 @@ we first discuss your proposition. In any other case, fell free to fix my code.
 
 ### Coding standard
 
-The project follows the default coding standards for [Nim](https://nim-lang.org/docs/nep1.html).
+The project follows the default coding standards for [Nim](https://nim-lang.org/docs/nep1.html),
+with additional extensions:
+
+* All calls to subprograms must use named parameters.
+* All subprograms must have pragmas: `gcSafe`, `raises` and `tags`.
+* Subprograms shouldn't propagate exceptions, pragma `raises: []` unless they
+  are low level subprograms, like type initialization, etc. The main shell's
+  loop can't raise any exception.
+* If possible, subprograms without side effects should be declared as functions.
+* All subprograms must have a corresponding unit test, even if it is a very simple
+  test.
 
 ### Code submission
 
@@ -53,4 +63,4 @@ A preferred way to submit your code is to use [tickets](https://www.laeran.pl/re
 on the project page. Please attach to that ticket file with diff changes, the
 best if done with command `fossil patch`. Another diff program will work too.
 In that situation, please add information which program was used to create the
-diff file. If you prefer you can also use other options from [contact page](https://www.laeran.pl/repositories/nish/wiki?name=Contact).
+diff file. If you prefer you can also use other options from [the contact page](https://www.laeran.pl/repositories/nish/wiki?name=Contact).
