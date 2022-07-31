@@ -8,6 +8,7 @@ of the shell.
 
 ### Changed
 - Updated README.md
+- Updated contributing guide
 
 ## [0.3.0] - 2022-07-29
 
