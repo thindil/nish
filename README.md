@@ -248,7 +248,7 @@ At this moment, available API calls from the shell:
   Command argument is the name of command and all its arguments entered by the
   user.
 
-**ATTENTION:** the calls set as the `precommand` and `postcommand` will be
+**ATTENTION:** the calls set as the `preCommand` and `postCommand` will be
 executed every time before and after you execute your command. Thus, be sure it
 isn't too heavy for your system, or it isn't dangerous, for example, it doesn't
 steal credentials, harm your system, etc.
@@ -280,12 +280,24 @@ Available API calls from plugins:
 
 ### How to install
 
-At this moment, the only option is to build it from the source. You will need a
-[Nim compiler](https://nim-lang.org/install.html). After installing it, type
-in the root directory of the project (where this file is) `nim debug` for build
-the program in debug mode or `nim release` to build it in release (optimized)
-mode. You can also use [Nimble](https://github.com/nim-lang/nimble) package manager to install the shell:
-`nimble install https://github.com/thindil/nish`.
+#### Precompiled packages
+
+There are available binary packages for Linux and FreeBSD 64-bit both on the
+download page. If you want to use Nish on different plaftorm, you have to build
+it from the source.
+
+#### Build from the source
+
+You will need:
+
+* [Nim compiler](https://nim-lang.org/install.html)
+* [Contracts package](https://github.com/Udiknedormin/NimContracts)
+
+You can install them manually or by using [Nimble](https://github.com/nim-lang/nimble).
+In that second option, type `nimble install https://github.com/thindil/nish` to
+install the shell and all dependencies. Generally it is recommended to use
+`nim release` to build the project in release (optimized) mode or `nim debug`
+to build it in the debug mode.
 
 ### Design goals
 
