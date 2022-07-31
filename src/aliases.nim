@@ -173,7 +173,7 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
 proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
         sideEffect, raises: [], tags: [
         WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect].} =
+            TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Delete the selected alias from the shell's database
@@ -190,32 +190,41 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ##
   ## QuitSuccess if the selected alias was properly deleted, otherwise
   ## QuitFailure. Also, updated parameters historyIndex and aliases
-  if arguments.len() < 8:
-    historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
-        returnCode = QuitFailure.ResultCode)
-    return showError(message = "Enter the Id of the alias to delete.")
-  let id: DatabaseId = try:
-      parseInt(s = $arguments[7 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the alias must be a positive number.")
-  try:
-    if db.execAffectedRows(query = sql(query = "DELETE FROM aliases WHERE id=?"),
-        id.int) == 0:
+  require:
+    arguments.len() > 0
+    db != nil
+  ensure:
+    if result == QuitSuccess:
+      aliases.len() != `aliases`.len()
+    else:
+      aliases == `aliases`
+  body:
+    if arguments.len() < 8:
       historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
           returnCode = QuitFailure.ResultCode)
-      return showError(message = "The alias with the Id: " & $id &
-        " doesn't exists.")
-  except DbError:
-    return showError(message = "Can't delete alias from database. Reason: ",
-        e = getCurrentException())
-  historyIndex = updateHistory(commandToAdd = "alias delete", db = db)
-  try:
-    aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
-  except OSError:
-    return showError(message = "Can't delete alias, setting a new aliases not work. Reason: ",
-        e = getCurrentException())
-  showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
-  return QuitSuccess.ResultCode
+      return showError(message = "Enter the Id of the alias to delete.")
+    let id: DatabaseId = try:
+        parseInt(s = $arguments[7 .. ^1]).DatabaseId
+      except ValueError:
+        return showError(message = "The Id of the alias must be a positive number.")
+    try:
+      if db.execAffectedRows(query = sql(query = "DELETE FROM aliases WHERE id=?"),
+          id.int) == 0:
+        historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
+            returnCode = QuitFailure.ResultCode)
+        return showError(message = "The alias with the Id: " & $id &
+          " doesn't exists.")
+    except DbError:
+      return showError(message = "Can't delete alias from database. Reason: ",
+          e = getCurrentException())
+    historyIndex = updateHistory(commandToAdd = "alias delete", db = db)
+    try:
+      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+    except OSError:
+      return showError(message = "Can't delete alias, setting a new aliases not work. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
+    return QuitSuccess.ResultCode
 
 proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
