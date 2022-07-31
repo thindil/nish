@@ -122,7 +122,27 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
           sql(query = "SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1")).len().ColumnAmount except DbError: 10.ColumnAmount
       spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
           12 except ValueError: 6.ColumnAmount
-    if arguments == "list":
+    if arguments == "list all":
+      showFormHeader(message = "All available aliases are:")
+      try:
+        showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
+            s = "Name", count = columnLength.int)], count = spacesAmount.int),
+                fgColor = fgMagenta)
+      except ValueError:
+        showOutput(message = indent(s = "ID   Name Description",
+            count = spacesAmount.int), fgColor = fgMagenta)
+      try:
+        for row in db.fastRows(query = sql(
+            query = "SELECT id, name, description FROM aliases")):
+          showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
+              alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
+                  count = spacesAmount.int))
+      except DbError:
+        discard showError(message = "Can't read info about alias from database. Reason:",
+            e = getCurrentException())
+        return
+      historyIndex = updateHistory(commandToAdd = "alias list all", db = db)
+    elif arguments[0 .. 3] == "list":
       showFormHeader(message = "Available aliases are:")
       try:
         showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
@@ -145,26 +165,10 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
               e = getCurrentException())
           return
       historyIndex = updateHistory(commandToAdd = "alias list", db = db)
-    elif arguments == "list all":
-      showFormHeader(message = "All available aliases are:")
-      try:
-        showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
-            s = "Name", count = columnLength.int)], count = spacesAmount.int),
-                fgColor = fgMagenta)
-      except ValueError:
-        showOutput(message = indent(s = "ID   Name Description",
-            count = spacesAmount.int), fgColor = fgMagenta)
-      try:
-        for row in db.fastRows(query = sql(
-            query = "SELECT id, name, description FROM aliases")):
-          showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-              alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
-                  count = spacesAmount.int))
-      except DbError:
-        discard showError(message = "Can't read info about alias from database. Reason:",
-            e = getCurrentException())
-        return
-      historyIndex = updateHistory(commandToAdd = "alias list all", db = db)
+    else:
+      discard showError(message = "Invalid command entered for listing the aliases.")
+      historyIndex = updateHistory(commandToAdd = "alias " & arguments, db = db,
+          returnCode = QuitFailure.ResultCode)
 
 proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
         sideEffect, raises: [], tags: [
