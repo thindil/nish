@@ -73,7 +73,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
 
     # Construct SQL querry, search for aliases also defined in parent directories
     # if they are recursive
-    while remainingDirectory != "":
+    while remainingDirectory.len() > 0:
       dbQuery.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
       remainingDirectory = parentDir(path = $remainingDirectory).DirectoryPath
     dbQuery.add(y = " ORDER BY id ASC")
