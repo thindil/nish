@@ -299,7 +299,7 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
 
 proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect].} =
+    TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show short help about available subcommands related to the aliases
@@ -311,12 +311,15 @@ proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput(message = """Available subcommands are: list, delete, show, add, edit
+  require:
+    db != nil
+  body:
+    showOutput(message = """Available subcommands are: list, delete, show, add, edit
 
-        To see more information about the subcommand, type help alias [command],
-        for example: help alias list.
-""")
-  return updateHistory(commandToAdd = "alias", db = db)
+          To see more information about the subcommand, type help alias [command],
+          for example: help alias list.
+  """)
+    return updateHistory(commandToAdd = "alias", db = db)
 
 proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
