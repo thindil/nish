@@ -208,8 +208,8 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
       except ValueError:
         return showError(message = "The Id of the alias must be a positive number.")
     try:
-      if db.execAffectedRows(query = sql(query = "DELETE FROM aliases WHERE id=?"),
-          id.int) == 0:
+      if db.execAffectedRows(query = sql(
+          query = "DELETE FROM aliases WHERE id=?"), id.int) == 0:
         historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
             returnCode = QuitFailure.ResultCode)
         return showError(message = "The alias with the Id: " & $id &
@@ -229,7 +229,7 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
 proc showAlias*(arguments; historyIndex; aliases: AliasesList;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-    TimeEffect].} =
+    TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show details about the selected alias, its ID, name, description and
@@ -247,53 +247,57 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   ##
   ## QuitSuccess if the selected alias was properly show, otherwise
   ## QuitFailure. Also, updated parameter historyIndex
-  if arguments.len() < 6:
-    historyIndex = updateHistory(commandToAdd = "alias show", db = db,
-        returnCode = QuitFailure.ResultCode)
-    return showError(message = "Enter the ID of the alias to show.")
-  let id: DatabaseId = try:
-      parseInt(s = $arguments[5 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the alias must be a positive number.")
-  let row: Row = try:
-        db.getRow(query = sql(query = "SELECT name, commands, description, path, recursive, output FROM aliases WHERE id=?"), args = id)
-    except DbError:
-      return showError(message = "Can't read alias data from database. Reason: ",
-          e = getCurrentException())
-  if row[0] == "":
-    historyIndex = updateHistory(commandToAdd = "alias show", db = db,
-        returnCode = QuitFailure.ResultCode)
-    return showError(message = "The alias with the ID: " & $id &
-      " doesn't exists.")
-  historyIndex = updateHistory(commandToAdd = "alias show", db = db)
-  let spacesAmount: ColumnAmount = try:
-      terminalWidth().ColumnAmount / 12
-    except ValueError:
-      6.ColumnAmount
-  showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
-      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-  showOutput(message = $id)
-  showOutput(message = indent(s = alignLeft(s = "Name:", count = 13),
-      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-  showOutput(message = row[0])
-  showOutput(message = indent(s = "Description: ", count = spacesAmount.int),
-      newLine = false, fgColor = fgMagenta)
-  showOutput(message = (if row[2].len > 0: row[2] else: "(none)"))
-  if row[4] == "1":
-    showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+  require:
+    arguments.len() > 0
+    db != nil
+  body:
+    if arguments.len() < 6:
+      historyIndex = updateHistory(commandToAdd = "alias show", db = db,
+          returnCode = QuitFailure.ResultCode)
+      return showError(message = "Enter the ID of the alias to show.")
+    let id: DatabaseId = try:
+        parseInt(s = $arguments[5 .. ^1]).DatabaseId
+      except ValueError:
+        return showError(message = "The Id of the alias must be a positive number.")
+    let row: Row = try:
+          db.getRow(query = sql(query = "SELECT name, commands, description, path, recursive, output FROM aliases WHERE id=?"), args = id)
+      except DbError:
+        return showError(message = "Can't read alias data from database. Reason: ",
+            e = getCurrentException())
+    if row[0] == "":
+      historyIndex = updateHistory(commandToAdd = "alias show", db = db,
+          returnCode = QuitFailure.ResultCode)
+      return showError(message = "The alias with the ID: " & $id &
+        " doesn't exists.")
+    historyIndex = updateHistory(commandToAdd = "alias show", db = db)
+    let spacesAmount: ColumnAmount = try:
+        terminalWidth().ColumnAmount / 12
+      except ValueError:
+        6.ColumnAmount
+    showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
         count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = row[3] & " (recursive)")
-  else:
-    showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+    showOutput(message = $id)
+    showOutput(message = indent(s = alignLeft(s = "Name:", count = 13),
         count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = row[3])
-  showOutput(message = indent(s = alignLeft(s = "Command(s):", count = 13),
-      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-  showOutput(message = row[1])
-  showOutput(message = indent(s = alignLeft(s = "Output to:", count = 13),
-      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-  showOutput(message = row[5])
-  return QuitSuccess.ResultCode
+    showOutput(message = row[0])
+    showOutput(message = indent(s = "Description: ", count = spacesAmount.int),
+        newLine = false, fgColor = fgMagenta)
+    showOutput(message = (if row[2].len > 0: row[2] else: "(none)"))
+    if row[4] == "1":
+      showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+          count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+      showOutput(message = row[3] & " (recursive)")
+    else:
+      showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+          count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+      showOutput(message = row[3])
+    showOutput(message = indent(s = alignLeft(s = "Command(s):", count = 13),
+        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+    showOutput(message = row[1])
+    showOutput(message = indent(s = alignLeft(s = "Output to:", count = 13),
+        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+    showOutput(message = row[5])
+    return QuitSuccess.ResultCode
 
 proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
