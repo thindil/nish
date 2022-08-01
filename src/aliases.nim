@@ -323,7 +323,7 @@ proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 
 proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect].} =
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Add a new alias to the shell. Ask the user a few questions and fill the
@@ -339,107 +339,111 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   ##
   ## QuitSuccess if the new alias was properly set, otherwise QuitFailure.
   ## Also, updated parameter historyIndex and aliases.
-  showOutput(message = "You can cancel adding a new alias at any time by double press Escape key.")
-  showFormHeader(message = "(1/6) Name")
-  showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
-  showOutput(message = "Name: ", newLine = false)
-  var name: AliasName = emptyLimitedString(capacity = aliasNameLength)
-  while name.len() == 0:
-    name = readInput(maxLength = aliasNameLength)
-    if name.len() == 0:
-      discard showError(message = "Please enter a name for the alias.")
-    elif not validIdentifier(s = $name):
+  require:
+    db != nil
+  body:
+    showOutput(message = "You can cancel adding a new alias at any time by double press Escape key.")
+    showFormHeader(message = "(1/6) Name")
+    showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
+    showOutput(message = "Name: ", newLine = false)
+    var name: AliasName = emptyLimitedString(capacity = aliasNameLength)
+    while name.len() == 0:
+      name = readInput(maxLength = aliasNameLength)
+      if name.len() == 0:
+        discard showError(message = "Please enter a name for the alias.")
+      elif not validIdentifier(s = $name):
+        try:
+          name.setString("")
+          discard showError(message = "Please enter a valid name for the alias.")
+        except CapacityError:
+          discard showError(message = "Can't set empty name for alias.")
+      if name.len() == 0:
+        showOutput(message = "Name: ", newLine = false)
+    if name == "exit":
+      return showError(message = "Adding a new alias cancelled.")
+    showFormHeader(message = "(2/6) Description")
+    showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
+    showOutput(message = "Description: ", newLine = false)
+    let description: UserInput = readInput()
+    if description == "exit":
+      return showError(message = "Adding a new alias cancelled.")
+    showFormHeader(message = "(3/6) Working directory")
+    showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
+    showOutput(message = "Path: ", newLine = false)
+    var path: DirectoryPath = "".DirectoryPath
+    while path.len() == 0:
+      path = DirectoryPath($readInput())
+      if path.len() == 0:
+        discard showError(message = "Please enter a path for the alias.")
+      elif not dirExists(dir = $path) and path != "exit":
+        path = "".DirectoryPath
+        discard showError(message = "Please enter a path to the existing directory")
+      if path.len() == 0:
+        showOutput(message = "Path: ", newLine = false)
+    if path == "exit":
+      return showError(message = "Adding a new alias cancelled.")
+    showFormHeader(message = "(4/6) Recursiveness")
+    showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+    showOutput(message = "Recursive(y/n): ", newLine = false)
+    var inputChar: char = try:
+        getch()
+      except IOError:
+        'y'
+    while inputChar notin {'n', 'N', 'y', 'Y'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    showOutput(message = $inputChar)
+    let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
+    showFormHeader(message = "(5/6) Commands")
+    showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
+    showOutput(message = "Command(s): ", newLine = false)
+    var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
+    while commands.len() == 0:
+      commands = readInput()
+      if commands.len() == 0:
+        discard showError(message = "Please enter commands for the alias.")
+        showOutput(message = "Command(s): ", newLine = false)
+    if commands == "exit":
+      return showError(message = "Adding a new alias cancelled.")
+    showFormHeader(message = "(6/6) Output")
+    showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.:")
+    showOutput(message = "Output to: ", newLine = false)
+    var output: UserInput = readInput()
+    if output == "exit":
+      return showError(message = "Adding a new alias cancelled.")
+    elif output == "":
       try:
-        name.setString("")
-        discard showError(message = "Please enter a valid name for the alias.")
+        output.setString(text = "stdout")
       except CapacityError:
-        discard showError(message = "Can't set empty name for alias.")
-    if name.len() == 0:
-      showOutput(message = "Name: ", newLine = false)
-  if name == "exit":
-    return showError(message = "Adding a new alias cancelled.")
-  showFormHeader(message = "(2/6) Description")
-  showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
-  showOutput(message = "Description: ", newLine = false)
-  let description: UserInput = readInput()
-  if description == "exit":
-    return showError(message = "Adding a new alias cancelled.")
-  showFormHeader(message = "(3/6) Working directory")
-  showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
-  showOutput(message = "Path: ", newLine = false)
-  var path: DirectoryPath = "".DirectoryPath
-  while path.len() == 0:
-    path = DirectoryPath($readInput())
-    if path.len() == 0:
-      discard showError(message = "Please enter a path for the alias.")
-    elif not dirExists(dir = $path) and path != "exit":
-      path = "".DirectoryPath
-      discard showError(message = "Please enter a path to the existing directory")
-    if path.len() == 0:
-      showOutput(message = "Path: ", newLine = false)
-  if path == "exit":
-    return showError(message = "Adding a new alias cancelled.")
-  showFormHeader(message = "(4/6) Recursiveness")
-  showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
-  showOutput(message = "Recursive(y/n): ", newLine = false)
-  var inputChar: char = try:
-      getch()
-    except IOError:
-      'y'
-  while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = try:
-      getch()
-    except IOError:
-      'y'
-  showOutput(message = $inputChar)
-  let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
-  showFormHeader(message = "(5/6) Commands")
-  showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
-  showOutput(message = "Command(s): ", newLine = false)
-  var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
-  while commands.len() == 0:
-    commands = readInput()
-    if commands.len() == 0:
-      discard showError(message = "Please enter commands for the alias.")
-      showOutput(message = "Command(s): ", newLine = false)
-  if commands == "exit":
-    return showError(message = "Adding a new alias cancelled.")
-  showFormHeader(message = "(6/6) Output")
-  showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.:")
-  showOutput(message = "Output to: ", newLine = false)
-  var output: UserInput = readInput()
-  if output == "exit":
-    return showError(message = "Adding a new alias cancelled.")
-  elif output == "":
+        return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
+    # Check if alias with the same parameters exists in the database
     try:
-      output.setString(text = "stdout")
-    except CapacityError:
-      return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
-  # Check if alias with the same parameters exists in the database
-  try:
-    if db.getValue(query = sql(query = "SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?"),
-        name, path, recursive, commands).len() > 0:
-      return showError(message = "There is an alias with the same name, path and commands in the database.")
-  except DbError:
-    return showError(message = "Can't check if the similar alias exists. Reason: ",
-        e = getCurrentException())
-  # Save the alias to the database
-  try:
-    if db.tryInsertID(query = sql(query = "INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)"),
-        name, path, recursive, commands, description, output) == -1:
-      return showError(message = "Can't add alias.")
-  except DbError:
-    return showError(message = "Can't add the alias to the database. Reason: ",
-        e = getCurrentException())
-  # Update history index and refresh the list of available aliases
-  historyIndex = updateHistory(commandToAdd = "alias add", db = db)
-  try:
-    aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
-  except OSError:
-    return showError(message = "Can't set aliases for the current directory. Reason: ",
-        e = getCurrentException())
-  showOutput(message = "The new alias '" & name & "' added.", fgColor = fgGreen)
-  return QuitSuccess.ResultCode
+      if db.getValue(query = sql(query = "SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?"),
+          name, path, recursive, commands).len() > 0:
+        return showError(message = "There is an alias with the same name, path and commands in the database.")
+    except DbError:
+      return showError(message = "Can't check if the similar alias exists. Reason: ",
+          e = getCurrentException())
+    # Save the alias to the database
+    try:
+      if db.tryInsertID(query = sql(query = "INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)"),
+          name, path, recursive, commands, description, output) == -1:
+        return showError(message = "Can't add alias.")
+    except DbError:
+      return showError(message = "Can't add the alias to the database. Reason: ",
+          e = getCurrentException())
+    # Update history index and refresh the list of available aliases
+    historyIndex = updateHistory(commandToAdd = "alias add", db = db)
+    try:
+      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+    except OSError:
+      return showError(message = "Can't set aliases for the current directory. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "The new alias '" & name & "' added.",
+        fgColor = fgGreen)
+    return QuitSuccess.ResultCode
 
 proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
