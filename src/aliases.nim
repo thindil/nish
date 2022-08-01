@@ -447,8 +447,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
 
 proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
-        WriteDbEffect,
-    ReadEnvEffect, TimeEffect].} =
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Edit the selected alias
@@ -465,121 +464,126 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ##
   ## QuitSuccess if the alias was properly edited, otherwise QuitFailure.
   ## Also, updated parameters historyIndex and aliases.
-  if arguments.len() < 6:
-    return showError(message = "Enter the ID of the alias to edit.")
-  let id: DatabaseId = try:
-      parseInt(s = $arguments[5 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the alias must be a positive number.")
-  let row: Row = try:
-        db.getRow(query = sql(query = "SELECT name, path, commands, description, output FROM aliases WHERE id=?"), id)
+  require:
+    arguments.len() > 3
+    db != nil
+  body:
+    if arguments.len() < 6:
+      return showError(message = "Enter the ID of the alias to edit.")
+    let id: DatabaseId = try:
+        parseInt(s = $arguments[5 .. ^1]).DatabaseId
+      except ValueError:
+        return showError(message = "The Id of the alias must be a positive number.")
+    let row: Row = try:
+          db.getRow(query = sql(query = "SELECT name, path, commands, description, output FROM aliases WHERE id=?"), id)
+      except DbError:
+        return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
+    showOutput(message = "You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
+    showFormHeader(message = "(1/6) Name")
+    showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
+        newLine = false)
+    showOutput(message = row[0], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Can contains only letters, numbers and underscores.")
+    showOutput(message = "Name: ", newLine = false)
+    var name: AliasName = readInput(maxLength = aliasNameLength)
+    while name.len() > 0 and not validIdentifier(s = $name):
+      discard showError(message = "Please enter a valid name for the alias.")
+      name = readInput(maxLength = aliasNameLength)
+    if name == "exit":
+      return showError(message = "Editing the alias cancelled.")
+    elif name == "":
+      try:
+        name.setString(text = row[0])
+      except CapacityError:
+        return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
+    showFormHeader(message = "(2/6) Description")
+    showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
+        newLine = false)
+    showOutput(message = row[3], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Can't contains a new line character.: ")
+    showOutput(message = "Description: ", newLine = false)
+    var description: UserInput = readInput()
+    if description == "exit":
+      return showError(message = "Editing the alias cancelled.")
+    elif description == "":
+      try:
+        description.setString(text = row[3])
+      except CapacityError:
+        return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
+    showFormHeader(message = "(3/6) Working directory")
+    showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
+        newLine = false)
+    showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Must be a path to the existing directory.")
+    var path: DirectoryPath = DirectoryPath($readInput())
+    while path.len() > 0 and (path != "exit" and not dirExists(dir = $path)):
+      discard showError(message = "Please enter a path to the existing directory")
+      path = DirectoryPath($readInput())
+    if path == "exit":
+      return showError(message = "Editing the alias cancelled.")
+    elif path == "":
+      path = row[1].DirectoryPath
+    showFormHeader(message = "(4/6) Recursiveness")
+    showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+    showOutput(message = "Recursive(y/n): ", newLine = false)
+    var inputChar: char = try:
+        getch()
+      except IOError:
+        'y'
+    while inputChar notin {'n', 'N', 'y', 'Y'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+    showOutput(message = "")
+    showFormHeader(message = "(5/6) Commands")
+    showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
+        newLine = false)
+    showOutput(message = row[2], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Commands can't contain a new line character.:")
+    showOutput(message = "Commands: ", newLine = false)
+    var commands: UserInput = readInput()
+    if commands == "exit":
+      return showError(message = "Editing the alias cancelled.")
+    elif commands == "":
+      try:
+        commands.setString(text = row[2])
+      except CapacityError:
+        return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
+    showFormHeader(message = "(6/6) Output")
+    showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
+        newLine = false)
+    showOutput(message = row[4], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "':")
+    showOutput(message = "Output to: ", newLine = false)
+    var output: UserInput = readInput()
+    if output == "exit":
+      return showError(message = "Editing the alias cancelled.")
+    elif output == "":
+      try:
+        output.setString(text = row[4])
+      except CapacityError:
+        return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
+    # Save the alias to the database
+    try:
+      if db.execAffectedRows(query = sql(
+          query = "UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=?, output=? where id=?"),
+           name, path, recursive, commands, description, output, id) != 1:
+        return showError(message = "Can't edit the alias.")
     except DbError:
-      return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
-  showOutput(message = "You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
-  showFormHeader(message = "(1/6) Name")
-  showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
-      newLine = false)
-  showOutput(message = row[0], newLine = false, fgColor = fgMagenta)
-  showOutput(message = "'. Can contains only letters, numbers and underscores.")
-  showOutput(message = "Name: ", newLine = false)
-  var name: AliasName = readInput(maxLength = aliasNameLength)
-  while name.len() > 0 and not validIdentifier(s = $name):
-    discard showError(message = "Please enter a valid name for the alias.")
-    name = readInput(maxLength = aliasNameLength)
-  if name == "exit":
-    return showError(message = "Editing the alias cancelled.")
-  elif name == "":
+      return showError(message = "Can't save the alias to database. Reason: ",
+          e = getCurrentException())
+    # Update history index and refresh the list of available aliases
+    historyIndex = updateHistory(commandToAdd = "alias edit", db = db)
     try:
-      name.setString(text = row[0])
-    except CapacityError:
-      return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
-  showFormHeader(message = "(2/6) Description")
-  showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
-      newLine = false)
-  showOutput(message = row[3], newLine = false, fgColor = fgMagenta)
-  showOutput(message = "'. Can't contains a new line character.: ")
-  showOutput(message = "Description: ", newLine = false)
-  var description: UserInput = readInput()
-  if description == "exit":
-    return showError(message = "Editing the alias cancelled.")
-  elif description == "":
-    try:
-      description.setString(text = row[3])
-    except CapacityError:
-      return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
-  showFormHeader(message = "(3/6) Working directory")
-  showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
-      newLine = false)
-  showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
-  showOutput(message = "'. Must be a path to the existing directory.")
-  var path: DirectoryPath = DirectoryPath($readInput())
-  while path.len() > 0 and (path != "exit" and not dirExists(dir = $path)):
-    discard showError(message = "Please enter a path to the existing directory")
-    path = DirectoryPath($readInput())
-  if path == "exit":
-    return showError(message = "Editing the alias cancelled.")
-  elif path == "":
-    path = row[1].DirectoryPath
-  showFormHeader(message = "(4/6) Recursiveness")
-  showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
-  showOutput(message = "Recursive(y/n): ", newLine = false)
-  var inputChar: char = try:
-      getch()
-    except IOError:
-      'y'
-  while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = try:
-      getch()
-    except IOError:
-      'y'
-  let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
-  showOutput(message = "")
-  showFormHeader(message = "(5/6) Commands")
-  showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
-      newLine = false)
-  showOutput(message = row[2], newLine = false, fgColor = fgMagenta)
-  showOutput(message = "'. Commands can't contain a new line character.:")
-  showOutput(message = "Commands: ", newLine = false)
-  var commands: UserInput = readInput()
-  if commands == "exit":
-    return showError(message = "Editing the alias cancelled.")
-  elif commands == "":
-    try:
-      commands.setString(text = row[2])
-    except CapacityError:
-      return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
-  showFormHeader(message = "(6/6) Output")
-  showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
-      newLine = false)
-  showOutput(message = row[4], newLine = false, fgColor = fgMagenta)
-  showOutput(message = "':")
-  showOutput(message = "Output to: ", newLine = false)
-  var output: UserInput = readInput()
-  if output == "exit":
-    return showError(message = "Editing the alias cancelled.")
-  elif output == "":
-    try:
-      output.setString(text = row[4])
-    except CapacityError:
-      return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
-  # Save the alias to the database
-  try:
-    if db.execAffectedRows(query = sql(query = "UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=?, output=? where id=?"),
-        name, path, recursive, commands, description, output, id) != 1:
-      return showError(message = "Can't edit the alias.")
-  except DbError:
-    return showError(message = "Can't save the alias to database. Reason: ",
-        e = getCurrentException())
-  # Update history index and refresh the list of available aliases
-  historyIndex = updateHistory(commandToAdd = "alias edit", db = db)
-  try:
-    aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
-  except OSError:
-    return showError(message = "Can't set aliases for the current directory. Reason: ",
-        e = getCurrentException())
-  showOutput(message = "The alias  with Id: '" & $id & "' edited.",
-      fgColor = fgGreen)
-  return QuitSuccess.ResultCode
+      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+    except OSError:
+      return showError(message = "Can't set aliases for the current directory. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "The alias  with Id: '" & $id & "' edited.",
+        fgColor = fgGreen)
+    return QuitSuccess.ResultCode
 
 proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
