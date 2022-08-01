@@ -114,7 +114,8 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   ## The parameter historyIndex updated after execution of showing the aliases'
   ## list
   require:
-    arguments.len() > 0
+    arguments.len() > 3
+    arguments.startsWith("list")
     db != nil
   body:
     let
@@ -191,7 +192,8 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ## QuitSuccess if the selected alias was properly deleted, otherwise
   ## QuitFailure. Also, updated parameters historyIndex and aliases
   require:
-    arguments.len() > 0
+    arguments.len() > 5
+    arguments.startsWith("delete")
     db != nil
   ensure:
     if result == QuitSuccess:
@@ -248,7 +250,8 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   ## QuitSuccess if the selected alias was properly show, otherwise
   ## QuitFailure. Also, updated parameter historyIndex
   require:
-    arguments.len() > 0
+    arguments.len() > 3
+    arguments.startsWith("show")
     db != nil
   body:
     if arguments.len() < 6:
