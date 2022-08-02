@@ -715,7 +715,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
 
 proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect].} =
+    TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize the shell's aliases. Set help related to the aliases and
@@ -731,23 +731,28 @@ proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
   ## The list of available aliases in the current directory and the updated
   ## helpContent with the help for the commands related to the shell's
   ## aliases.
-  helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
-      content: "If entered without subcommand, show the list of available subcommands for aliases. Otherwise, execute the selected subcommand.")
-  helpContent["alias list"] = HelpEntry(usage: "alias list ?all?",
-      content: "Show the list of all available aliases in the current directory. If parameter all added, show all declared aliases.")
-  helpContent["alias delete"] = HelpEntry(usage: "alias delete [index]",
-      content: "Delete the alias with the selected index.")
-  helpContent["alias show"] = HelpEntry(usage: "alias show [index]",
-      content: "Show details (description, commands, etc) for the alias with the selected index.")
-  helpContent["alias add"] = HelpEntry(usage: "alias add",
-      content: "Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.")
-  helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
-      content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
-  try:
-    result.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
-  except OSError:
-    discard showError(message = "Can't initialize aliases. Reason: ",
-        e = getCurrentException())
+  require:
+    db != nil
+  ensure:
+    helpContent.len() > `helpContent`.len()
+  body:
+    helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
+        content: "If entered without subcommand, show the list of available subcommands for aliases. Otherwise, execute the selected subcommand.")
+    helpContent["alias list"] = HelpEntry(usage: "alias list ?all?",
+        content: "Show the list of all available aliases in the current directory. If parameter all added, show all declared aliases.")
+    helpContent["alias delete"] = HelpEntry(usage: "alias delete [index]",
+        content: "Delete the alias with the selected index.")
+    helpContent["alias show"] = HelpEntry(usage: "alias show [index]",
+        content: "Show details (description, commands, etc) for the alias with the selected index.")
+    helpContent["alias add"] = HelpEntry(usage: "alias add",
+        content: "Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.")
+    helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
+        content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
+    try:
+      result.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+    except OSError:
+      discard showError(message = "Can't initialize aliases. Reason: ",
+          e = getCurrentException())
 
 proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
