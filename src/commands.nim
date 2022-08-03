@@ -72,7 +72,7 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
 
 proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Build-in command to enter the selected by the user directory
@@ -88,14 +88,17 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
   ##
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
-  if newDirectory.len() == 0:
-    result = changeDirectory(newDirectory = "~".DirectoryPath,
-        aliases = aliases, db = db)
-    discard updateHistory(commandToAdd = "cd ~", db = db, returnCode = result)
-  else:
-    result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)
-    discard updateHistory(commandToAdd = "cd " & newDirectory, db = db,
-        returnCode = result)
+  require:
+    db != nil
+  body:
+    if newDirectory.len() == 0:
+      result = changeDirectory(newDirectory = "~".DirectoryPath,
+          aliases = aliases, db = db)
+      discard updateHistory(commandToAdd = "cd ~", db = db, returnCode = result)
+    else:
+      result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)
+      discard updateHistory(commandToAdd = "cd " & newDirectory, db = db,
+          returnCode = result)
 
 func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
     tags: [].} =
