@@ -780,7 +780,7 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Create the table aliases
@@ -793,22 +793,25 @@ proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
-  try:
-    db.exec(query = sql(query = """CREATE TABLE aliases (
-                 id          INTEGER       PRIMARY KEY,
-                 name        VARCHAR(""" & $aliasNameLength &
-            """) NOT NULL,
-                 path        VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 recursive   BOOLEAN       NOT NULL,
-                 commands    VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 description VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 output VARCHAR(""" & $maxInputLength &
-            """) NOT NULL DEFAULT 'stdout')"""))
-  except DbError, CapacityError:
-    return showError(message = "Can't create 'aliases' table. Reason: ",
-        e = getCurrentException())
-  return QuitSuccess.ResultCode
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """CREATE TABLE aliases (
+                   id          INTEGER       PRIMARY KEY,
+                   name        VARCHAR(""" & $aliasNameLength &
+              """) NOT NULL,
+                   path        VARCHAR(""" & $maxInputLength &
+              """) NOT NULL,
+                   recursive   BOOLEAN       NOT NULL,
+                   commands    VARCHAR(""" & $maxInputLength &
+              """) NOT NULL,
+                   description VARCHAR(""" & $maxInputLength &
+              """) NOT NULL,
+                   output VARCHAR(""" & $maxInputLength &
+              """) NOT NULL DEFAULT 'stdout')"""))
+    except DbError, CapacityError:
+      return showError(message = "Can't create 'aliases' table. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
