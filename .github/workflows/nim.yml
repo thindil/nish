@@ -30,7 +30,7 @@ jobs:
 
     - name: Debug build
       run: |
-        nimble install -d
+        nimble install -d -y
         nim debug
 
     - name: Run tests
