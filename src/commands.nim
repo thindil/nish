@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, tables]
+import contracts
 import aliases, constants, directorypath, history, output, resultcode, variables
 
 using
@@ -33,7 +34,7 @@ using
 
 proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Change the current directory for the shell
@@ -49,21 +50,25 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
   ##
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
-  try:
-    var path: DirectoryPath = try:
-        absolutePath(path = expandTilde(path = $newDirectory)).DirectoryPath
-      except ValueError:
-        return showError(message = "Can't get absolute path to the new directory.")
-    if not dirExists(dir = $path):
-      return showError(message = "Directory '" & path & "' doesn't exist.")
-    path = expandFilename(filename = $path).DirectoryPath
-    setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDir().DirectoryPath)
-    setCurrentDir(newDir = $path)
-    aliases.setAliases(directory = path, db = db)
-    return QuitSuccess.ResultCode
-  except OSError:
-    return showError(message = "Can't change directory. Reason: ",
-        e = getCurrentException())
+  require:
+    newDirectory.len() > 0
+    db != nil
+  body:
+    try:
+      var path: DirectoryPath = try:
+          absolutePath(path = expandTilde(path = $newDirectory)).DirectoryPath
+        except ValueError:
+          return showError(message = "Can't get absolute path to the new directory.")
+      if not dirExists(dir = $path):
+        return showError(message = "Directory '" & path & "' doesn't exist.")
+      path = expandFilename(filename = $path).DirectoryPath
+      setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDir().DirectoryPath)
+      setCurrentDir(newDir = $path)
+      aliases.setAliases(directory = path, db = db)
+      return QuitSuccess.ResultCode
+    except OSError:
+      return showError(message = "Can't change directory. Reason: ",
+          e = getCurrentException())
 
 proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
