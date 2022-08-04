@@ -79,7 +79,7 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect, raises: [], tags: [
 
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show information about unknown help topic entered by the user
@@ -94,9 +94,14 @@ proc showUnknownHelp*(subCommand, command,
   ##
   ## RETURNS
   ## Always QuitFailure.
-  return showError(message = "Unknown subcommand `" & subCommand &
-              "` for `" & command & "`. To see all available " & helpType &
-              " commands, type `" & command & "`.")
+  require:
+    subCommand.len() > 0
+    command.len() > 0
+    helpType.len() > 0
+  body:
+    return showError(message = "Unknown subcommand `" & subCommand &
+                "` for `" & command & "`. To see all available " & helpType &
+                " commands, type `" & command & "`.")
 
 proc showHelp*(topic: UserInput; helpContent: HelpTable;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
