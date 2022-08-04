@@ -22,4 +22,4 @@ A clear and concise description of what you expected to happen.
  - Version: [e.g. 22]
 
 **Additional context**
-Add any other context about the problem here. If possible, please attach error.log file (if it exists) with information about problem.
+Add any other context about the problem here.
