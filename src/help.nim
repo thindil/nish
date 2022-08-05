@@ -106,7 +106,7 @@ proc showUnknownHelp*(subCommand, command,
 proc showHelp*(topic: UserInput; helpContent: HelpTable;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect].} =
+            TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the selected help section. If the user entered non-existing name of
@@ -123,86 +123,89 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
   ##
   ## QuitSuccess if the selected help's topic was succesully shown, otherwise
   ## QuitFailure.
+  require:
+    topic.len() > 0
+    db != nil
+  body:
+    proc showHelpEntry(helpEntry: HelpEntry;
+        usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
+        ReadIOEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
+        WriteDbEffect].} =
+      ## FUNCTION
+      ##
+      ## Show the selected help entry
+      ##
+      ## PARAMETERS
+      ##
+      ## * helpEntry   - the help entry to show to the user
+      ## * usageHeader - the sentence used as the first in the help entry's usage
+      ##                 header. Default value is "Usage"
+      showOutput(message = "    " & usageHeader & ": ", newLine = false,
+          fgColor = fgYellow)
+      showOutput(message = helpEntry.usage & "\n")
+      var
+        content: string = "    "
+        index: Positive = 4
+      let maxLength: ColumnAmount = try:
+          (terminalWidth() - 8).ColumnAmount
+        except ValueError:
+            72.ColumnAmount;
+      for ch in helpEntry.content:
+        content.add(y = ch)
+        index.inc()
+        if index == maxLength.int:
+          content.add(y = "\n    ")
+          index = 4
+      showOutput(message = content)
+      discard updateHistory(commandToAdd = "help", db = db)
 
-  proc showHelpEntry(helpEntry: HelpEntry;
-      usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
-      ReadIOEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
-      WriteDbEffect].} =
-    ## FUNCTION
-    ##
-    ## Show the selected help entry
-    ##
-    ## PARAMETERS
-    ##
-    ## * helpEntry   - the help entry to show to the user
-    ## * usageHeader - the sentence used as the first in the help entry's usage
-    ##                 header. Default value is "Usage"
-    showOutput(message = "    " & usageHeader & ": ", newLine = false,
-        fgColor = fgYellow)
-    showOutput(message = helpEntry.usage & "\n")
-    var
-      content: string = "    "
-      index: Positive = 4
-    let maxLength: ColumnAmount = try:
-        (terminalWidth() - 8).ColumnAmount
-      except ValueError:
-          72.ColumnAmount;
-    for ch in helpEntry.content:
-      content.add(y = ch)
-      index.inc()
-      if index == maxLength.int:
-        content.add(y = "\n    ")
-        index = 4
-    showOutput(message = content)
-    discard updateHistory(commandToAdd = "help", db = db)
-
-  result = ResultCode(QuitSuccess)
-  if topic.len == 0:
-    try:
-      showHelpEntry(helpEntry = helpContent["help"],
-          usageHeader = "Available help topics")
-    except KeyError:
-      return showError(message = "Can't show list of available help topics. Reason: ",
-          e = getCurrentException())
-  else:
-    let
-      tokens: seq[string] = split(s = $topic)
-      args: UserInput = try:
-          initLimitedString(capacity = maxInputLength, text = join(a = tokens[
-              1 .. ^1], " "))
-        except CapacityError:
-          return showError(message = "Can't set arguments for help")
-      command: UserInput = try:
-          initLimitedString(capacity = maxInputLength, text = tokens[0])
-        except CapacityError:
-          return showError(message = "Can't set command for help")
-      key: string = command & (if args.len() > 0: " " & args else: "")
-    if helpContent.hasKey(key = key):
+    result = ResultCode(QuitSuccess)
+    if topic.len == 0:
       try:
-        showHelpEntry(helpEntry = helpContent[key])
+        showHelpEntry(helpEntry = helpContent["help"],
+            usageHeader = "Available help topics")
       except KeyError:
-        return showError(message = "Can't show the help topic for '" & key &
-            "'. Reason: ", e = getCurrentException())
-    elif helpContent.hasKey(key = $command):
-      if command == key:
-        try:
-          showHelpEntry(helpEntry = helpContent[$command])
-        except KeyError:
-          return showError(message = "Cam't show the help topic for '" &
-              command & "'. Reason: ", e = getCurrentException())
-      else:
-        try:
-          result = showUnknownHelp(subCommand = args, command = command,
-              helpType = initLimitedString(capacity = maxInputLength, text = (
-                  if command == "alias": "aliases" else: $command)))
-          discard updateHistory(commandToAdd = "help " & key, db = db,
-              returnCode = result)
-        except CapacityError:
-          return showError(message = "Can't show help for unknown command")
+        return showError(message = "Can't show list of available help topics. Reason: ",
+            e = getCurrentException())
     else:
-      result = showError(message = "Unknown help topic '" & key & "'")
-      discard updateHistory(commandToAdd = "help " & key, db = db,
-          returnCode = result)
+      let
+        tokens: seq[string] = split(s = $topic)
+        args: UserInput = try:
+            initLimitedString(capacity = maxInputLength, text = join(a = tokens[
+                1 .. ^1], " "))
+          except CapacityError:
+            return showError(message = "Can't set arguments for help")
+        command: UserInput = try:
+            initLimitedString(capacity = maxInputLength, text = tokens[0])
+          except CapacityError:
+            return showError(message = "Can't set command for help")
+        key: string = command & (if args.len() > 0: " " & args else: "")
+      if helpContent.hasKey(key = key):
+        try:
+          showHelpEntry(helpEntry = helpContent[key])
+        except KeyError:
+          return showError(message = "Can't show the help topic for '" & key &
+              "'. Reason: ", e = getCurrentException())
+      elif helpContent.hasKey(key = $command):
+        if command == key:
+          try:
+            showHelpEntry(helpEntry = helpContent[$command])
+          except KeyError:
+            return showError(message = "Cam't show the help topic for '" &
+                command & "'. Reason: ", e = getCurrentException())
+        else:
+          try:
+            result = showUnknownHelp(subCommand = args, command = command,
+                helpType = initLimitedString(capacity = maxInputLength, text = (
+                    if command == "alias": "aliases" else: $command)))
+            discard updateHistory(commandToAdd = "help " & key, db = db,
+                returnCode = result)
+          except CapacityError:
+            return showError(message = "Can't show help for unknown command")
+      else:
+        result = showError(message = "Unknown help topic '" & key & "'")
+        discard updateHistory(commandToAdd = "help " & key, db = db,
+            returnCode = result)
 
 proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect].} =
