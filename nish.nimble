@@ -19,6 +19,12 @@ requires "contracts >= 0.2.1"
 # Tasks
 
 task debug, "builds the shell in debug mode":
-  exec "nimble install -d"
+  exec "nimble install -d -y"
   exec "nim c -d:debug --styleCheck:hint --spellSuggest:auto --verbosity:2 --errorMax:0 --outdir:" &
       binDir & " " & srcDir & DirSep & "nish.nim"
+
+task release, "builds the project in release mode":
+  exec "nimble install -d -y"
+  exec "nim c -d:release --passc:-flto --passl:-s --outdir:" & binDir & " " &
+      srcDir & DirSep & "nish.nim"
+
