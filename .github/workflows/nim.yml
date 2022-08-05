@@ -32,4 +32,4 @@ jobs:
       run: nimble debug
 
     - name: Run tests
-      run: testament pattern "tests/**/*.nim"
+      run: nimble test
