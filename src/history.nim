@@ -63,7 +63,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
 
 proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
+    WriteDbEffect, ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Initialize shell's commands history and set help related to the history
@@ -77,14 +77,16 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
   ## RETURNS
   ##
   ## The length of the shell's commands' history
-
-  # Set the history related help content
-  helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
-      content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
-  helpContent["history clear"] = HelpEntry(usage: "history clear",
-      content: "Clear the shell's commands' history.")
-  # Return the current help index set on the last command in the shell's history
-  return historyLength(db = db)
+  require:
+    db != nil
+  body:
+    # Set the history related help content
+    helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
+        content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
+    helpContent["history clear"] = HelpEntry(usage: "history clear",
+        content: "Clear the shell's commands' history.")
+    # Return the current help index set on the last command in the shell's history
+    return historyLength(db = db)
 
 proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
