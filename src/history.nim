@@ -91,7 +91,7 @@ proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
 proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
         sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Add the selected command to the shell history and increase the current
@@ -108,40 +108,45 @@ proc updateHistory*(commandToAdd: string; db;
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  result = historyLength(db = db)
-  try:
-    if returnCode != QuitSuccess and db.getValue(query = sql(query =
-      "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
+  require:
+    db != nil
+    commandToAdd.len() > 0
+  body:
+    result = historyLength(db = db)
+    try:
+      if returnCode != QuitSuccess and db.getValue(query = sql(query =
+        "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
+        return
+    except DbError:
+      discard showError(message = "Can't get value of option historySaveInvalid. Reason: ",
+          e = getCurrentException())
       return
-  except DbError:
-    discard showError(message = "Can't get value of option historySaveInvalid. Reason: ",
-        e = getCurrentException())
-    return
-  try:
-    if result == parseInt(s = db.getValue(query = sql(query =
-      "SELECT value FROM options where option='historyLength'"))):
-      db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
-      result.dec()
-  except DbError, ValueError:
-    discard showError(message = "Can't get value of option historyLength. Reason: ",
-        e = getCurrentException())
-    return
-  try:
-    # Update history if there is the command in the history in the same directory
-    let currentDir = getCurrentDir()
-    if db.execAffectedRows(query = sql(query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=? AND path=?"),
-        commandToAdd, currentDir) == 0:
-      # Update history if there is the command in the history
+    try:
+      if result == parseInt(s = db.getValue(query = sql(query =
+        "SELECT value FROM options where option='historyLength'"))):
+        db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
+        result.dec()
+    except DbError, ValueError:
+      discard showError(message = "Can't get value of option historyLength. Reason: ",
+          e = getCurrentException())
+      return
+    try:
+      # Update history if there is the command in the history in the same directory
+      let currentDir = getCurrentDir()
       if db.execAffectedRows(query = sql(
-          query = "UPDATE history SET amount=amount+1, lastused=datetime('now'), path=? WHERE command=?"),
-           currentDir, commandToAdd) == 0:
-        # If command isn't in the history, add it
-        db.exec(query = sql(query = "INSERT INTO history (command, amount, lastused, path) VALUES (?, 1, datetime('now'), ?)"),
-            commandToAdd, currentDir)
-        result.inc()
-  except DbError, OSError:
-    discard showError(message = "Can't update the shell's history. Reason: ",
-        e = getCurrentException())
+          query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=? AND path=?"),
+           commandToAdd, currentDir) == 0:
+        # Update history if there is the command in the history
+        if db.execAffectedRows(query = sql(
+            query = "UPDATE history SET amount=amount+1, lastused=datetime('now'), path=? WHERE command=?"),
+             currentDir, commandToAdd) == 0:
+          # If command isn't in the history, add it
+          db.exec(query = sql(query = "INSERT INTO history (command, amount, lastused, path) VALUES (?, 1, datetime('now'), ?)"),
+              commandToAdd, currentDir)
+          result.inc()
+    except DbError, OSError:
+      discard showError(message = "Can't update the shell's history. Reason: ",
+          e = getCurrentException())
 
 proc getHistory*(historyIndex: HistoryRange; db;
     searchFor: UserInput = emptyLimitedString(
