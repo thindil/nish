@@ -296,8 +296,8 @@ You will need:
 You can install them manually or by using [Nimble](https://github.com/nim-lang/nimble).
 In that second option, type `nimble install https://github.com/thindil/nish` to
 install the shell and all dependencies. Generally it is recommended to use
-`nim release` to build the project in release (optimized) mode or `nim debug`
-to build it in the debug mode.
+`nimble release` to build the project in release (optimized) mode or
+`nimble debug` to build it in the debug mode.
 
 ### Design goals
 
