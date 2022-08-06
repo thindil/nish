@@ -195,11 +195,6 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     arguments.len() > 5
     arguments.startsWith("delete")
     db != nil
-  ensure:
-    if result == QuitSuccess:
-      aliases.len() != `aliases`.len()
-    else:
-      aliases == `aliases`
   body:
     if arguments.len() < 8:
       historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
