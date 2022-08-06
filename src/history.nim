@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
+import contracts
 import columnamount, constants, input, lstring, options, output, resultcode
 
 type HistoryRange* = ExtendedNatural
@@ -35,7 +36,8 @@ using
   db: DbConn # Connection to the shell's database
 
 proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
+    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0,
+        contractual.} =
   ## FUNCTION
   ##
   ## Get the current length of the shell's commmands' history
@@ -48,13 +50,16 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
   ##
   ## The amount of commands in the shell's commands' history or -1 if can't
   ## get the current amount of commands.
-  try:
-    return parseInt(s = db.getValue(query = sql(query =
-      "SELECT COUNT(*) FROM history")))
-  except DbError, ValueError:
-    discard showError(message = "Can't get the length of the shell's commands history. Reason: ",
-        e = getCurrentException())
-    return HistoryRange.low()
+  require:
+    db != nil
+  body:
+    try:
+      return parseInt(s = db.getValue(query = sql(query =
+        "SELECT COUNT(*) FROM history")))
+    except DbError, ValueError:
+      discard showError(message = "Can't get the length of the shell's commands history. Reason: ",
+          e = getCurrentException())
+      return HistoryRange.low()
 
 proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
