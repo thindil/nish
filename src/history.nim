@@ -151,8 +151,8 @@ proc updateHistory*(commandToAdd: string; db;
 proc getHistory*(historyIndex: HistoryRange; db;
     searchFor: UserInput = emptyLimitedString(
         capacity = maxInputLength)): string {.gcsafe, sideEffect, locks: 0,
-            raises: [], tags: [ReadDbEffect, ReadEnvEffect, WriteIOEffect,
-                TimeEffect].} =
+        raises: [], tags: [ReadDbEffect, ReadEnvEffect, WriteIOEffect,
+        TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Get the command with the selected index from the shell history
@@ -166,32 +166,35 @@ proc getHistory*(historyIndex: HistoryRange; db;
   ## RETURNS
   ##
   ## The selected command from the shell's commands' history.
-  try:
-    if searchFor.len() == 0:
-      let value = db.getValue(query = sql(
-          query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-          getCurrentDir(), $(historyLength(db = db) - historyIndex))
-      if value.len() == 0:
-        result = db.getValue(query = sql(
-            query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-            $(historyLength(db = db) - historyIndex))
+  require:
+    db != nil
+  body:
+    try:
+      if searchFor.len() == 0:
+        let value = db.getValue(query = sql(
+            query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
+            getCurrentDir(), $(historyLength(db = db) - historyIndex))
+        if value.len() == 0:
+          result = db.getValue(query = sql(
+              query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
+              $(historyLength(db = db) - historyIndex))
+        else:
+          result = value
       else:
-        result = value
-    else:
-      let value = db.getValue(query = sql(
-          query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
-          searchFor & "%", getCurrentDir())
-      if value.len() == 0:
-        result = db.getValue(query = sql(
-            query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
-            searchFor & "%")
-      else:
-        result = value
-      if result.len() == 0:
-        result = $searchFor
-  except DbError, OSError:
-    discard showError("Can't get the selected command from the shell's history. Reason: ",
-        getCurrentException())
+        let value = db.getValue(query = sql(
+            query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
+            searchFor & "%", getCurrentDir())
+        if value.len() == 0:
+          result = db.getValue(query = sql(
+              query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
+              searchFor & "%")
+        else:
+          result = value
+        if result.len() == 0:
+          result = $searchFor
+    except DbError, OSError:
+      discard showError("Can't get the selected command from the shell's history. Reason: ",
+          getCurrentException())
 
 proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect], locks: 0.} =
