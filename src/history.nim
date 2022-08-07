@@ -225,7 +225,7 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 
 proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], locks: 0.} =
+    TimeEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Show short help about available subcommands related to the shell's
@@ -238,12 +238,15 @@ proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput(message = """Available subcommands are: clear, list
+  require:
+    db != nil
+  body:
+    showOutput(message = """Available subcommands are: clear, list
 
-        To see more information about the subcommand, type help history [command],
-        for example: help history clear.
-""")
-  return updateHistory(commandToAdd = "history", db = db)
+          To see more information about the subcommand, type help history [command],
+          for example: help history clear.
+  """)
+    return updateHistory(commandToAdd = "history", db = db)
 
 proc showHistory*(db; arguments: UserInput = emptyLimitedString(
     capacity = maxInputLength)): HistoryRange {.gcsafe, sideEffect, raises: [],
