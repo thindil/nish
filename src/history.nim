@@ -328,7 +328,8 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
           returnCode = QuitFailure.ResultCode)
 
 proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
+    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Update the table history to the new version if needed
@@ -341,27 +342,30 @@ proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## QuitSuccess if update was successfull, otherwise QuitFailure and
   ## show message what wrong
-  try:
-    db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
-        $maxInputLength & """)"""))
-    setOption(optionName = initLimitedString(capacity = 13,
-        text = "historyLength"), valueType = ValueType.natural, db = db)
-    setOption(optionName = initLimitedString(capacity = 13,
-        text = "historyAmount"), valueType = ValueType.natural, db = db)
-    setOption(optionName = initLimitedString(capacity = 11,
-        text = "historySort"), value = initLimitedString(capacity = 12,
-        text = "recentamount"), description = initLimitedString(capacity = 63,
-        text = "How to sort the list of the last commands from shell history."),
-        valueType = ValueType.historysort, db = db)
-    setOption(optionName = initLimitedString(capacity = 14,
-        text = "historyReverse"), value = initLimitedString(capacity = 5,
-        text = "false"), description = initLimitedString(capacity = 64,
-        text = "Reverse order when showing the last commands from shell history."),
-        valueType = ValueType.boolean, db = db)
-  except DbError, CapacityError:
-    return showError(message = "Can't update table for the shell's history. Reason: ",
-        e = getCurrentException())
-  return QuitSuccess.ResultCode
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
+          $maxInputLength & """)"""))
+      setOption(optionName = initLimitedString(capacity = 13,
+          text = "historyLength"), valueType = ValueType.natural, db = db)
+      setOption(optionName = initLimitedString(capacity = 13,
+          text = "historyAmount"), valueType = ValueType.natural, db = db)
+      setOption(optionName = initLimitedString(capacity = 11,
+          text = "historySort"), value = initLimitedString(capacity = 12,
+          text = "recentamount"), description = initLimitedString(capacity = 63,
+          text = "How to sort the list of the last commands from shell history."),
+          valueType = ValueType.historysort, db = db)
+      setOption(optionName = initLimitedString(capacity = 14,
+          text = "historyReverse"), value = initLimitedString(capacity = 5,
+          text = "false"), description = initLimitedString(capacity = 64,
+          text = "Reverse order when showing the last commands from shell history."),
+          valueType = ValueType.boolean, db = db)
+    except DbError, CapacityError:
+      return showError(message = "Can't update table for the shell's history. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
 proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
