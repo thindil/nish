@@ -197,7 +197,8 @@ proc getHistory*(historyIndex: HistoryRange; db;
           getCurrentException())
 
 proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
-    ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect], locks: 0.} =
+    ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect],
+    locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Clear the shell's history, don't add the command to the history
@@ -209,14 +210,18 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new last index in the shell's commands history
-  try:
-    db.exec(query = sql(query = "DELETE FROM history"));
-  except DbError:
-    discard showError(message = "Can't clear the shell's commands history. Reason: ",
-        e = getCurrentException())
-    return historyLength(db = db)
-  showOutput(message = "Shell's commands' history cleared.", fgColor = fgGreen)
-  return 0;
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = "DELETE FROM history"));
+    except DbError:
+      discard showError(message = "Can't clear the shell's commands history. Reason: ",
+          e = getCurrentException())
+      return historyLength(db = db)
+    showOutput(message = "Shell's commands' history cleared.",
+        fgColor = fgGreen)
+    return 0;
 
 proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
