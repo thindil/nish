@@ -251,7 +251,7 @@ proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 proc showHistory*(db; arguments: UserInput = emptyLimitedString(
     capacity = maxInputLength)): HistoryRange {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect], locks: 0.} =
+    ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Show the last X entries to the shell's history. X can be set in the shell's
@@ -266,61 +266,66 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
   ## RETURNS
   ##
   ## The last X entries to the shell's history.
-  let
-    argumentsList: seq[string] = split(s = $arguments)
-    amount: HistoryRange = try:
-        parseInt(s = (if argumentsList.len() > 1: argumentsList[
-            1] else: $getOption(optionName = initLimitedString(capacity = 13,
-            text = "historyAmount"), db = db)))
-      except ValueError, CapacityError:
-        discard showError(message = "Can't get setting for the amount of history commands to show.")
-        return updateHistory(commandToAdd = "history list", db = db,
+  require:
+    db != nil
+  body:
+    let
+      argumentsList: seq[string] = split(s = $arguments)
+      amount: HistoryRange = try:
+          parseInt(s = (if argumentsList.len() > 1: argumentsList[
+              1] else: $getOption(optionName = initLimitedString(capacity = 13,
+              text = "historyAmount"), db = db)))
+        except ValueError, CapacityError:
+          discard showError(message = "Can't get setting for the amount of history commands to show.")
+          return updateHistory(commandToAdd = "history list", db = db,
+              returnCode = QuitFailure.ResultCode)
+      spacesAmount: ColumnAmount = try:
+            (terminalWidth() / 12).ColumnAmount
+        except ValueError:
+          6.ColumnAmount
+      historyDirection: string = try:
+          if argumentsList.len() > 3: (if argumentsList[3] ==
+              "true": "ASC" else: "DESC") else:
+            if $getOption(optionName = initLimitedString(capacity = 14,
+              text = "historyReverse"), db = db) == "true": "ASC" else: "DESC"
+        except CapacityError:
+          discard showError(message = "Can't get setting for the reverse order of history commands to show.")
+          return updateHistory(commandToAdd = "history list", db = db,
+              returnCode = QuitFailure.ResultCode)
+      orderText: string = try:
+          if argumentsList.len() > 2: argumentsList[2] else: $getOption(
+              optionName = initLimitedString(capacity = 11,
+                  text = "historySort"), db = db)
+        except CapacityError:
+          discard showError(message = "Can't get setting for the order of history commands to show.")
+          return updateHistory(commandToAdd = "history list", db = db,
+              returnCode = QuitFailure.ResultCode)
+      historyOrder: string =
+        case orderText
+        of "recent": "lastused " & historyDirection
+        of "amount": "amount " & historyDirection
+        of "name": "command " & (if historyDirection ==
+            "DESC": "ASC" else: "DESC")
+        of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
+        else:
+          discard showError(message = "Unknown type of history sort order")
+          return updateHistory(commandToAdd = "history list", db = db,
             returnCode = QuitFailure.ResultCode)
-    spacesAmount: ColumnAmount = try:
-          (terminalWidth() / 12).ColumnAmount
-      except ValueError:
-        6.ColumnAmount
-    historyDirection: string = try:
-        if argumentsList.len() > 3: (if argumentsList[3] ==
-            "true": "ASC" else: "DESC") else:
-          if $getOption(optionName = initLimitedString(capacity = 14,
-            text = "historyReverse"), db = db) == "true": "ASC" else: "DESC"
-      except CapacityError:
-        discard showError(message = "Can't get setting for the reverse order of history commands to show.")
-        return updateHistory(commandToAdd = "history list", db = db,
-            returnCode = QuitFailure.ResultCode)
-    orderText: string = try:
-        if argumentsList.len() > 2: argumentsList[2] else: $getOption(
-            optionName = initLimitedString(capacity = 11, text = "historySort"), db = db)
-      except CapacityError:
-        discard showError(message = "Can't get setting for the order of history commands to show.")
-        return updateHistory(commandToAdd = "history list", db = db,
-            returnCode = QuitFailure.ResultCode)
-    historyOrder: string =
-      case orderText
-      of "recent": "lastused " & historyDirection
-      of "amount": "amount " & historyDirection
-      of "name": "command " & (if historyDirection ==
-          "DESC": "ASC" else: "DESC")
-      of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
-      else:
-        discard showError(message = "Unknown type of history sort order")
-        return updateHistory(commandToAdd = "history list", db = db,
+    showFormHeader(message = "The last commands from the shell's history")
+    showOutput(message = indent(s = "Last used                Times      Command",
+        count = spacesAmount.int), fgColor = fgMagenta)
+    try:
+      for row in db.fastRows(query = sql(
+          query = "SELECT command, lastused, amount FROM history ORDER BY " &
+          historyOrder & " LIMIT 0, ?"), amount):
+        showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
+            width = 5) & "      " & row[0], count = spacesAmount.int))
+      return updateHistory(commandToAdd = "history list", db = db)
+    except DbError:
+      discard showError(message = "Can't get the last commands from the shell's history. Reason: ",
+          e = getCurrentException())
+      return updateHistory(commandToAdd = "history list", db = db,
           returnCode = QuitFailure.ResultCode)
-  showFormHeader(message = "The last commands from the shell's history")
-  showOutput(message = indent(s = "Last used                Times      Command",
-      count = spacesAmount.int), fgColor = fgMagenta)
-  try:
-    for row in db.fastRows(query = sql(query = "SELECT command, lastused, amount FROM history ORDER BY " &
-        historyOrder & " LIMIT 0, ?"), amount):
-      showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
-          width = 5) & "      " & row[0], count = spacesAmount.int))
-    return updateHistory(commandToAdd = "history list", db = db)
-  except DbError:
-    discard showError(message = "Can't get the last commands from the shell's history. Reason: ",
-        e = getCurrentException())
-    return updateHistory(commandToAdd = "history list", db = db,
-        returnCode = QuitFailure.ResultCode)
 
 proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
