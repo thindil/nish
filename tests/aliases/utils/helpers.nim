@@ -14,6 +14,7 @@ proc setTestAliases*(db: DbConn): int =
     if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
         "tests", "/", 1, "ls -a", "Test alias.") == -1:
       return QuitFailure
+  if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 1:
     if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
         "tests2", "/", 0, "ls -a", "Test alias 2.") == -1:
       return QuitFailure
