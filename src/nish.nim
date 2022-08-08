@@ -93,7 +93,7 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
-        TimeEffect].} =
+    TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Open connection to the shell database. Create database if not exists.
@@ -107,94 +107,97 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
   ##
   ## Pointer to the database connection. If connection cannot be established,
   ## returns nil.
-  try:
-    discard existsOrCreateDir(dir = parentDir(path = $dbPath))
-  except OSError, IOError:
-    discard showError(message = "Can't create directory for the shell's database. Reason: ",
-        e = getCurrentException())
-    return nil
-  let dbExists: bool = fileExists($dbPath)
-  try:
-    result = open(connection = $dbPath, user = "", password = "", database = "")
-  except DbError:
-    discard showError(message = "Can't open the shell's database. Reason: ",
-        e = getCurrentException())
-    return nil
-  let
-    versionName: OptionName = try:
-        initLimitedString(capacity = 9, text = "dbVersion")
-      except CapacityError:
-        discard showError(message = "Can't set versionName. Reason: ",
-            e = getCurrentException())
-        return nil
-    versionValue: OptionValue = try:
-        initLimitedString(capacity = 1, text = "2")
-      except CapacityError:
-        discard showError(message = "Can't set versionValue. Reason: ",
-            e = getCurrentException())
-        return nil
-    promptName: OptionName = try:
-        initLimitedString(capacity = 13, text = "promptCommand")
-      except CapacityError:
-        discard showError(message = "Can't set promptName. Reason: ",
-            e = getCurrentException())
-        return nil
-    promptValue: OptionValue = try:
-        initLimitedString(capacity = 8, text = "built-in")
-      except CapacityError:
-        discard showError(message = "Can't set promptValue. Reason: ",
-            e = getCurrentException())
-        return nil
-  # Create a new database if not exists
-  if not dbExists:
-    if createAliasesDb(db = result) == QuitFailure:
-      return nil
-    if createOptionsDb(db = result) == QuitFailure:
-      return nil
-    if createHistoryDb(db = result) == QuitFailure:
-      return nil
-    if createVariablesDb(db = result) == QuitFailure:
-      return nil
-    if createPluginsDb(db = result) == QuitFailure:
-      return nil
+  require:
+    dbPath.len() > 0
+  body:
     try:
-      setOption(optionName = versionName, value = versionValue,
-          description = initLimitedString(capacity = 43,
-          text = "Version of the database schema (read only)."),
-          valueType = ValueType.natural, db = result, readOnly = 1)
-      setOption(optionName = promptName, value = promptValue,
-          description = initLimitedString(capacity = 61,
-          text = "The command which output will be used as the prompt of shell."),
-          valueType = ValueType.command, db = result, readOnly = 1)
-    except CapacityError:
-      discard showError(message = "Can't set database schema. Reason: ",
+      discard existsOrCreateDir(dir = parentDir(path = $dbPath))
+    except OSError, IOError:
+      discard showError(message = "Can't create directory for the shell's database. Reason: ",
           e = getCurrentException())
       return nil
-  # If database version is different than the newest, update database
-  try:
-    if parseInt(s = $getOption(optionName = versionName, db = result,
-        defaultValue = initLimitedString(capacity = 1, text = "0"))) < parseInt(
-            s = $versionValue):
-      if updateOptionsDb(db = result) == QuitFailure:
+    let dbExists: bool = fileExists($dbPath)
+    try:
+      result = open(connection = $dbPath, user = "", password = "", database = "")
+    except DbError:
+      discard showError(message = "Can't open the shell's database. Reason: ",
+          e = getCurrentException())
+      return nil
+    let
+      versionName: OptionName = try:
+          initLimitedString(capacity = 9, text = "dbVersion")
+        except CapacityError:
+          discard showError(message = "Can't set versionName. Reason: ",
+              e = getCurrentException())
+          return nil
+      versionValue: OptionValue = try:
+          initLimitedString(capacity = 1, text = "2")
+        except CapacityError:
+          discard showError(message = "Can't set versionValue. Reason: ",
+              e = getCurrentException())
+          return nil
+      promptName: OptionName = try:
+          initLimitedString(capacity = 13, text = "promptCommand")
+        except CapacityError:
+          discard showError(message = "Can't set promptName. Reason: ",
+              e = getCurrentException())
+          return nil
+      promptValue: OptionValue = try:
+          initLimitedString(capacity = 8, text = "built-in")
+        except CapacityError:
+          discard showError(message = "Can't set promptValue. Reason: ",
+              e = getCurrentException())
+          return nil
+    # Create a new database if not exists
+    if not dbExists:
+      if createAliasesDb(db = result) == QuitFailure:
         return nil
-      if updateHistoryDb(db = result) == QuitFailure:
+      if createOptionsDb(db = result) == QuitFailure:
         return nil
-      if updateAliasesDb(db = result) == QuitFailure:
+      if createHistoryDb(db = result) == QuitFailure:
+        return nil
+      if createVariablesDb(db = result) == QuitFailure:
         return nil
       if createPluginsDb(db = result) == QuitFailure:
         return nil
-      setOption(optionName = versionName, value = versionValue,
-          description = initLimitedString(capacity = 43,
-          text = "Version of the database schema (read only)."),
-          valueType = ValueType.natural, db = result)
-      setOption(optionName = promptName, value = promptValue,
-          description = initLimitedString(capacity = 60,
-          text = "The command which output will be used as the shell's prompt."),
-          valueType = ValueType.command, db = result, readOnly = 1)
-  except CapacityError, DbError, ValueError:
-    discard showError(message = "Can't update database. Reason: ",
-        e = getCurrentException())
-    return nil
+      try:
+        setOption(optionName = versionName, value = versionValue,
+            description = initLimitedString(capacity = 43,
+            text = "Version of the database schema (read only)."),
+            valueType = ValueType.natural, db = result, readOnly = 1)
+        setOption(optionName = promptName, value = promptValue,
+            description = initLimitedString(capacity = 61,
+            text = "The command which output will be used as the prompt of shell."),
+            valueType = ValueType.command, db = result, readOnly = 1)
+      except CapacityError:
+        discard showError(message = "Can't set database schema. Reason: ",
+            e = getCurrentException())
+        return nil
+    # If database version is different than the newest, update database
+    try:
+      if parseInt(s = $getOption(optionName = versionName, db = result,
+          defaultValue = initLimitedString(capacity = 1, text = "0"))) <
+              parseInt(s = $versionValue):
+        if updateOptionsDb(db = result) == QuitFailure:
+          return nil
+        if updateHistoryDb(db = result) == QuitFailure:
+          return nil
+        if updateAliasesDb(db = result) == QuitFailure:
+          return nil
+        if createPluginsDb(db = result) == QuitFailure:
+          return nil
+        setOption(optionName = versionName, value = versionValue,
+            description = initLimitedString(capacity = 43,
+            text = "Version of the database schema (read only)."),
+            valueType = ValueType.natural, db = result)
+        setOption(optionName = promptName, value = promptValue,
+            description = initLimitedString(capacity = 60,
+            text = "The command which output will be used as the shell's prompt."),
+            valueType = ValueType.command, db = result, readOnly = 1)
+    except CapacityError, DbError, ValueError:
+      discard showError(message = "Can't update database. Reason: ",
+          e = getCurrentException())
+      return nil
 
 proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     WriteIOEffect, ExecIOEffect, RootEffect].} =
