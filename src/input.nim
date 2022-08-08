@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[parseopt, strutils, terminal]
+import contracts
 import constants, lstring, output
 
 const maxInputLength*: Positive = 4096
@@ -37,7 +38,8 @@ type MaxInputLength* = range[1..maxInputLength]
   ## Used to store maximum allowed length of the user input
 
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect].} =
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Read the user input. Used in adding a new or editing an existing alias
@@ -52,64 +54,67 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
   ##
   ## The user input text or "exit" if there was an error or the user pressed
   ## Escape key
-  # Get the user input and parse it
-  let exitString: LimitedString =
-    try:
-      initLimitedString(capacity = maxLength, text = "exit")
-    except CapacityError:
-      return
-  var
-    inputChar: char = '\0'
-    resultString: LimitedString = emptyLimitedString(capacity = maxLength)
-  # Read the user input until not meet new line character or the input
-  # reach the maximum length
-  while inputChar.ord() != 13 and resultString.len() < maxLength:
-    # Backspace pressed, delete the last character from the user input
-    if inputChar.ord() == 127:
-      if resultString.len() > 0:
+  ensure:
+    result.capacity == maxLength
+  body:
+    # Get the user input and parse it
+    let exitString: LimitedString =
+      try:
+        initLimitedString(capacity = maxLength, text = "exit")
+      except CapacityError:
+        return
+    var
+      inputChar: char = '\0'
+      resultString: LimitedString = emptyLimitedString(capacity = maxLength)
+    # Read the user input until not meet new line character or the input
+    # reach the maximum length
+    while inputChar.ord() != 13 and resultString.len() < maxLength:
+      # Backspace pressed, delete the last character from the user input
+      if inputChar.ord() == 127:
+        if resultString.len() > 0:
+          try:
+            resultString.setString(text = $resultString[0..^2])
+            stdout.cursorBackward()
+            stdout.write(s = " ")
+            stdout.cursorBackward()
+          except IOError, ValueError, CapacityError:
+            discard showError(message = "Can't delete character. Reason: ",
+                e = getCurrentException())
+            return exitString
+      # Special key pressed (all starts like Escape key), check which one
+      elif inputChar.ord() == 27:
         try:
-          resultString.setString(text = $resultString[0..^2])
-          stdout.cursorBackward()
-          stdout.write(s = " ")
-          stdout.cursorBackward()
-        except IOError, ValueError, CapacityError:
-          discard showError(message = "Can't delete character. Reason: ",
+          inputChar = getch()
+        except IOError:
+          discard showError(message = "Can't get the next character after Escape. Reason: ",
               e = getCurrentException())
           return exitString
-    # Special key pressed (all starts like Escape key), check which one
-    elif inputChar.ord() == 27:
+        # Escape key pressed, return "exit" as input value
+        if inputChar.ord() == 27:
+          return exitString
+        else:
+          continue
+      # Visible character, add it to the user input string and show it in the
+      # console
+      elif inputChar.ord() > 31:
+        stdout.write(c = inputChar)
+        try:
+          resultString.add(y = inputChar)
+        except CapacityError:
+          return resultString
       try:
         inputChar = getch()
       except IOError:
-        discard showError(message = "Can't get the next character after Escape. Reason: ",
+        discard showError(message = "Can't get the next character. Reason: ",
             e = getCurrentException())
         return exitString
-      # Escape key pressed, return "exit" as input value
-      if inputChar.ord() == 27:
-        return exitString
-      else:
-        continue
-    # Visible character, add it to the user input string and show it in the
-    # console
-    elif inputChar.ord() > 31:
-      stdout.write(c = inputChar)
-      try:
-        resultString.add(y = inputChar)
-      except CapacityError:
-        return resultString
     try:
-      inputChar = getch()
+      stdout.writeLine(x = "")
     except IOError:
-      discard showError(message = "Can't get the next character. Reason: ",
+      discard showError(message = "Can't add a new line. Reason: ",
           e = getCurrentException())
       return exitString
-  try:
-    stdout.writeLine(x = "")
-  except IOError:
-    discard showError(message = "Can't add a new line. Reason: ",
-        e = getCurrentException())
-    return exitString
-  return resultString
+    return resultString
 
 func getArguments*(userInput: var OptParser;
     conjCommands: var bool): UserInput {.gcsafe, raises: [], tags: [].} =
