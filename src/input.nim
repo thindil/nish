@@ -50,7 +50,7 @@ proc readInput*(maxLength: Positive = maxInputLength): UserInput {.gcsafe,
   # Get the user input and parse it
   let exitString: LimitedString =
     try:
-      initLimitedString(capacity = 4, text = "exit")
+      initLimitedString(capacity = maxLength, text = "exit")
     except CapacityError:
       return
   var
