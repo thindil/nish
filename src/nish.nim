@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
+import contracts
 import aliases, commands, completion, constants, directorypath, help, history,
     input, lstring, options, output, plugins, prompt, resultcode, variables
 
@@ -70,7 +71,8 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
   quit QuitSuccess
 
 proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
-    raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Close the shell database and quit from the program with the selected return code
@@ -79,12 +81,15 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
   ##
   ## * returnCode - the exit code to return with the end of the program
   ## * db         - the connection to the shell's database
-  try:
-    db.close()
-  except DbError:
-    quit showError(message = "Can't close properly the shell database. Reason:",
-        e = getCurrentException()).int
-  quit int(returnCode)
+  require:
+    db != nil
+  body:
+    try:
+      db.close()
+    except DbError:
+      quit showError(message = "Can't close properly the shell database. Reason:",
+          e = getCurrentException()).int
+    quit int(returnCode)
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
