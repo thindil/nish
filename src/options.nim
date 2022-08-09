@@ -146,15 +146,15 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
       for row in db.fastRows(query = sql(
           query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
         showOutput(message = indent(s = alignLeft(s = row[0], count = 18) &
-            " " & alignLeft(s = row[1], count = 12) & " " & alignLeft(s = row[2],
-                count = 12) & " " & alignLeft(s = row[3], count = 11) & " " &
-                    row[4], count = spacesAmount.int))
+            " " & alignLeft(s = row[1], count = 12) & " " & alignLeft(s = row[
+                2], count = 12) & " " & alignLeft(s = row[3], count = 11) &
+                    " " & row[4], count = spacesAmount.int))
     except DbError:
       discard showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
 
 proc helpOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
-    WriteIOEffect], locks: 0.} =
+    WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Show short help about available subcommands related to the shell's
@@ -163,11 +163,14 @@ proc helpOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
-  showOutput(message = """Available subcommands are: list, set, reset
+  require:
+    db != nil
+  body:
+    showOutput(message = """Available subcommands are: list, set, reset
 
-        To see more information about the subcommand, type help options [command],
-        for example: help options list.
-""")
+          To see more information about the subcommand, type help options [command],
+          for example: help options list.
+  """)
 
 proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
