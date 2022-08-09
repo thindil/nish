@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, strutils, tables, terminal]
+import contracts
 import columnamount, constants, input, lstring, output, resultcode
 
 type
@@ -48,7 +49,8 @@ using
 
 proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
-        tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
+    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0,
+    contractual.} =
   ## FUNCTION
   ##
   ## Get the selected option from the database. If the option doesn't exist,
@@ -65,17 +67,21 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
   ##
   ## The value of the selected option or empty string if there is no that
   ## option in the database.
-  try:
-    let value = db.getValue(query = sql(
-        query = "SELECT value FROM options WHERE option=?"), optionName)
-    result = initLimitedString(capacity = (if value.len() ==
-        0: 1 else: value.len()), text = value)
-  except DbError, CapacityError:
-    discard showError(message = "Can't get value for option '" & optionName &
-        "' from database. Reason: ", e = getCurrentException())
-    return defaultValue
-  if result == "":
-    result = defaultValue
+  require:
+    optionName.len() > 0
+    db != nil
+  body:
+    try:
+      let value = db.getValue(query = sql(
+          query = "SELECT value FROM options WHERE option=?"), optionName)
+      result = initLimitedString(capacity = (if value.len() ==
+          0: 1 else: value.len()), text = value)
+    except DbError, CapacityError:
+      discard showError(message = "Can't get value for option '" & optionName &
+          "' from database. Reason: ", e = getCurrentException())
+      return defaultValue
+    if result == "":
+      result = defaultValue
 
 proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
