@@ -4,4 +4,4 @@ discard """
 
 import ../../src/[input, lstring]
 
-assert readInput() == initLimitedString(capacity = 4, text = "exit")
+assert readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
