@@ -126,7 +126,8 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
           "'. Reason: ", e = getCurrentException())
 
 proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
+    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Show the shell's options
@@ -134,19 +135,23 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
   ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
-  let spacesAmount: ColumnAmount = 2.ColumnAmount
-  showFormHeader(message = "Available options are:", spaces = spacesAmount)
-  showOutput(message = indent(s = "Name               Value        Default      Type        Description",
-      count = spacesAmount.int), fgColor = fgMagenta)
-  try:
-    for row in db.fastRows(query = sql(query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
-      showOutput(message = indent(s = alignLeft(s = row[0], count = 18) & " " &
-          alignLeft(s = row[1], count = 12) & " " & alignLeft(s = row[2],
-              count = 12) & " " & alignLeft(s = row[3], count = 11) & " " & row[
-                  4], count = spacesAmount.int))
-  except DbError:
-    discard showError(message = "Can't show the shell's options. Reason: ",
-        e = getCurrentException())
+  require:
+    db != nil
+  body:
+    let spacesAmount: ColumnAmount = 2.ColumnAmount
+    showFormHeader(message = "Available options are:", spaces = spacesAmount)
+    showOutput(message = indent(s = "Name               Value        Default      Type        Description",
+        count = spacesAmount.int), fgColor = fgMagenta)
+    try:
+      for row in db.fastRows(query = sql(
+          query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
+        showOutput(message = indent(s = alignLeft(s = row[0], count = 18) &
+            " " & alignLeft(s = row[1], count = 12) & " " & alignLeft(s = row[2],
+                count = 12) & " " & alignLeft(s = row[3], count = 11) & " " &
+                    row[4], count = spacesAmount.int))
+    except DbError:
+      discard showError(message = "Can't show the shell's options. Reason: ",
+          e = getCurrentException())
 
 proc helpOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     WriteIOEffect], locks: 0.} =
