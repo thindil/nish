@@ -85,10 +85,10 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
 
 proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
-        capacity = maxInputLength); valueType: ValueType = none; db;
-            readOnly: BooleanInt = 0) {.gcsafe, sideEffect, raises: [], tags: [
-                ReadDbEffect, WriteDbEffect,
-            WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
+    capacity = maxInputLength); valueType: ValueType = none; db;
+    readOnly: BooleanInt = 0) {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    locks: 0, contractual.} =
   ## FUNCTIONS
   ##
   ## Set the value and or description of the selected option. If the option
@@ -101,25 +101,29 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
   ## * description - the description of the option to set
   ## * valuetype   - the type of the option to set
   ## * db          - the connection to the shell's database
-  var sqlQuery: string = "UPDATE options SET "
-  if value != "":
-    sqlQuery.add(y = "value='" & value & "'")
-  if description != "":
-    if sqlQuery.len() > 21:
-      sqlQuery.add(y = ", ")
-    sqlQuery.add(y = "description='" & description & "'")
-  if valueType != none:
-    if sqlQuery.len() > 21:
-      sqlQuery.add(y = ", ")
-    sqlQuery.add(y = "valuetype='" & $valueType & "'")
-  sqlQuery.add(y = " WHERE option='" & optionName & "'")
-  try:
-    if db.execAffectedRows(query = sql(query = sqlQuery)) == 0:
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES (?, ?, ?, ?, ?, ?)"),
-          optionName, value, description, valueType, value, readOnly)
-  except DbError:
-    discard showError(message = "Can't set value for option '" & optionName &
-        "'. Reason: ", e = getCurrentException())
+  require:
+    optionName.len() > 0
+    db != nil
+  body:
+    var sqlQuery: string = "UPDATE options SET "
+    if value != "":
+      sqlQuery.add(y = "value='" & value & "'")
+    if description != "":
+      if sqlQuery.len() > 21:
+        sqlQuery.add(y = ", ")
+      sqlQuery.add(y = "description='" & description & "'")
+    if valueType != none:
+      if sqlQuery.len() > 21:
+        sqlQuery.add(y = ", ")
+      sqlQuery.add(y = "valuetype='" & $valueType & "'")
+    sqlQuery.add(y = " WHERE option='" & optionName & "'")
+    try:
+      if db.execAffectedRows(query = sql(query = sqlQuery)) == 0:
+        db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES (?, ?, ?, ?, ?, ?)"),
+            optionName, value, description, valueType, value, readOnly)
+    except DbError:
+      discard showError(message = "Can't set value for option '" & optionName &
+          "'. Reason: ", e = getCurrentException())
 
 proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0.} =
