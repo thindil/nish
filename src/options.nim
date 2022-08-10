@@ -400,7 +400,8 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0,
+    contractual.} =
   ## FUNCTION
   ##
   ## Delete the selected option from the table
@@ -414,12 +415,16 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ##
   ## QuitSuccess if deletion was successfull, otherwise QuitFailure and
   ## show message what wrong
-  try:
-    if db.execAffectedRows(query = sql(query = "DELETE FROM options WHERE option=?"),
-        optionName) == 0:
-      return QuitFailure.ResultCode
-  except DbError:
-    return showError(message = "Can't delete the selected option. Reason: ",
-        e = getCurrentException())
-  return QuitSuccess.ResultCode
+  require:
+    optionName.len() > 0
+    db != nil
+  body:
+    try:
+      if db.execAffectedRows(query = sql(
+          query = "DELETE FROM options WHERE option=?"), optionName) == 0:
+        return QuitFailure.ResultCode
+    except DbError:
+      return showError(message = "Can't delete the selected option. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
