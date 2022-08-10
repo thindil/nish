@@ -266,7 +266,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
 
 proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
-    ReadEnvEffect, TimeEffect], locks: 0.} =
+    ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Reset the selected option's value to default value. If name of the option
@@ -281,36 +281,40 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ## RETURNS
   ##
   ## QuitSuccess if the variable(s) correctly reseted, otherwise QuitFailure.
-  if arguments.len() < 7:
-    return showError("Please enter name of the option to reset or 'all' to reset all options.")
-  let optionName: OptionName = arguments[6 .. ^1]
-  if optionName == "all":
-    try:
-      db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
-      showOutput(message = "All shell's options are reseted to their default values.")
-    except DbError:
-      return showError(message = "Can't reset the shell's options to their default values. Reason: ",
-          e = getCurrentException())
-  else:
-    try:
-      if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
-          optionName) == "1":
-        return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.")
-      if db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"),
-          optionName) == "":
-        return showError(message = "Shell's option with name '" & optionName &
-          "' doesn't exists. Please use command 'options list' to see all available shell's options.")
-    except DbError:
-      return showError(message = "Can't get value for option '" & optionName &
-          "'. Reason: ", e = getCurrentException())
-    try:
-      db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE option=?"), optionName)
-      showOutput(message = "The shell's option '" & optionName &
-          "' reseted to its default value.", fgColor = fgGreen)
-    except DbError:
-      return showError(message = "Can't reset option '" & optionName &
-          "' to its default value. Reason: ", e = getCurrentException())
-  return QuitSuccess.ResultCode
+  require:
+    arguments.len() > 0
+    db != nil
+  body:
+    if arguments.len() < 7:
+      return showError("Please enter name of the option to reset or 'all' to reset all options.")
+    let optionName: OptionName = arguments[6 .. ^1]
+    if optionName == "all":
+      try:
+        db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
+        showOutput(message = "All shell's options are reseted to their default values.")
+      except DbError:
+        return showError(message = "Can't reset the shell's options to their default values. Reason: ",
+            e = getCurrentException())
+    else:
+      try:
+        if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
+            optionName) == "1":
+          return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.")
+        if db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"),
+            optionName) == "":
+          return showError(message = "Shell's option with name '" & optionName &
+            "' doesn't exists. Please use command 'options list' to see all available shell's options.")
+      except DbError:
+        return showError(message = "Can't get value for option '" & optionName &
+            "'. Reason: ", e = getCurrentException())
+      try:
+        db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE option=?"), optionName)
+        showOutput(message = "The shell's option '" & optionName &
+            "' reseted to its default value.", fgColor = fgGreen)
+      except DbError:
+        return showError(message = "Can't reset option '" & optionName &
+            "' to its default value. Reason: ", e = getCurrentException())
+    return QuitSuccess.ResultCode
 
 func initOptions*(helpContent: var HelpTable) {.gcsafe, locks: 0,
     raises: [], tags: [].} =
