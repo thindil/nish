@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
+import contracts
 import columnamount, constants, databaseid, history, input, lstring, options,
     output, resultcode
 
@@ -38,8 +39,8 @@ using
   pluginsList: var PluginsList # The list of enabled plugins
   historyIndex: var HistoryRange # The index of the last command in the shell's history
 
-proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Create the table plugins
@@ -52,17 +53,20 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
   ##
   ## QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
-  try:
-    db.exec(query = sql(query = """CREATE TABLE plugins (
-               id          INTEGER       PRIMARY KEY,
-               location    VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-               enabled     BOOLEAN       NOT NULL
-            )"""))
-  except DbError:
-    return showError(message = "Can't create 'plugins' table. Reason: ",
-        e = getCurrentException())
-  return QuitSuccess.ResultCode
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """CREATE TABLE plugins (
+                 id          INTEGER       PRIMARY KEY,
+                 location    VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                 enabled     BOOLEAN       NOT NULL
+              )"""))
+    except DbError:
+      return showError(message = "Can't create 'plugins' table. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
 proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, TimeEffect].} =
