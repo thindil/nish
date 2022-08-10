@@ -365,7 +365,7 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Create the table options
@@ -378,23 +378,26 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
-  try:
-    db.exec(query = sql(query = """CREATE TABLE options (
-                option VARCHAR(""" & $ aliasNameLength &
-          """) NOT NULL PRIMARY KEY,
-                value	 VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-                description VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-                valuetype VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-                defaultvalue VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-                readonly BOOLEAN DEFAULT 0)"""))
-  except DbError, CapacityError:
-    return showError(message = "Can't create 'options' table. Reason: ",
-        e = getCurrentException())
-  return QuitSuccess.ResultCode
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """CREATE TABLE options (
+                  option VARCHAR(""" & $ aliasNameLength &
+            """) NOT NULL PRIMARY KEY,
+                  value	 VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                  description VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                  valuetype VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                  defaultvalue VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                  readonly BOOLEAN DEFAULT 0)"""))
+    except DbError, CapacityError:
+      return showError(message = "Can't create 'options' table. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
 proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
