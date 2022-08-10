@@ -341,7 +341,7 @@ proc initOptions*(helpContent: var HelpTable) {.gcsafe, sideEffect, locks: 0,
 content: "Reset the selected shell's option with name to the default value. If the name parameter is set to 'all', reset all shell's options to their default values.")
 
 proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Update the table options to the new version if needed
@@ -354,12 +354,15 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## QuitSuccess if update was successfull, otherwise QuitFailure and
   ## show message what wrong
-  try:
-    db.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
-  except DbError:
-    return showError(message = "Can't update table for the shell's options. Reason: ",
-        e = getCurrentException())
-  return QuitSuccess.ResultCode
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
+    except DbError:
+      return showError(message = "Can't update table for the shell's options. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
 proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
