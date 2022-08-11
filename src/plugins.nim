@@ -69,7 +69,8 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, TimeEffect].} =
+    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, TimeEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Show short help about available subcommands related to the plugins
@@ -81,12 +82,15 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput(message = """Available subcommands are: list, remove, show, add, enable, disable
+  require:
+    db != nil
+  body:
+    showOutput(message = """Available subcommands are: list, remove, show, add, enable, disable
 
-        To see more information about the subcommand, type help plugin [command],
-        for example: help plugin list.
-""")
-  return updateHistory(commandToAdd = "plugin", db = db)
+          To see more information about the subcommand, type help plugin [command],
+          for example: help plugin list.
+  """)
+    return updateHistory(commandToAdd = "plugin", db = db)
 
 proc execPlugin*(pluginPath: string; arguments: openArray[
     string]; db): tuple [code: ResultCode; answer: LimitedString] {.gcsafe,
