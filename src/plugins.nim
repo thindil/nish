@@ -204,7 +204,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
-        ReadEnvEffect, ReadIOEffect, TimeEffect, WriteDbEffect, RootEffect].} =
+    ReadEnvEffect, ReadIOEffect, TimeEffect, WriteDbEffect, RootEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Add the plugin from the selected full path to the shell and enable it.
@@ -219,39 +220,43 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
   ##
   ## QuitSuccess if the selected plugin was properly added, otherwise
   ## QuitFailure. Also, updated parameter pluginsList
-  # Check if the user entered path to the plugin
-  if arguments.len() < 5:
-    return showError(message = "Please enter the path to the plugin which will be added to the shell.")
-  let pluginPath: string = try:
-      normalizedPath(path = getCurrentDir() & DirSep & $arguments[4..^1])
-    except OSError:
-      $arguments[4..^1]
-  # Check if the file exists
-  if not fileExists(filename = pluginPath):
-    return showError(message = "File '" & pluginPath & "' doesn't exist.")
-  try:
-    # Check if the plugin isn't added previously
-    if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
-        pluginPath) != @[""]:
-      return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
-    # Execute the installation code of the plugin
-    if execPlugin(pluginPath = pluginPath, arguments = ["install"],
-        db = db).code != QuitSuccess:
-      return showError(message = "Can't install plugin '" & pluginPath & "'.")
-    # Execute the enabling code of the plugin
-    if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
-        db = db).code != QuitSuccess:
-      return showError(message = "Can't enable plugin '" & pluginPath & "'.")
-    # Add the plugin to the shell database and the list of enabled plugins
-    let newId = db.insertID(query = sql(
-        query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
-    pluginsList[$newId] = pluginPath
-  except DbError:
-    return showError(message = "Can't add plugin to the shell. Reason: ",
-        e = getCurrentException())
-  showOutput(message = "File '" & pluginPath &
-      "' added as a plugin to the shell.", fgColor = fgGreen);
-  return QuitSuccess.ResultCode
+  require:
+    db != nil
+    arguments.len() > 0
+  body:
+    # Check if the user entered path to the plugin
+    if arguments.len() < 5:
+      return showError(message = "Please enter the path to the plugin which will be added to the shell.")
+    let pluginPath: string = try:
+        normalizedPath(path = getCurrentDir() & DirSep & $arguments[4..^1])
+      except OSError:
+        $arguments[4..^1]
+    # Check if the file exists
+    if not fileExists(filename = pluginPath):
+      return showError(message = "File '" & pluginPath & "' doesn't exist.")
+    try:
+      # Check if the plugin isn't added previously
+      if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
+          pluginPath) != @[""]:
+        return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
+      # Execute the installation code of the plugin
+      if execPlugin(pluginPath = pluginPath, arguments = ["install"],
+          db = db).code != QuitSuccess:
+        return showError(message = "Can't install plugin '" & pluginPath & "'.")
+      # Execute the enabling code of the plugin
+      if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
+          db = db).code != QuitSuccess:
+        return showError(message = "Can't enable plugin '" & pluginPath & "'.")
+      # Add the plugin to the shell database and the list of enabled plugins
+      let newId = db.insertID(query = sql(
+          query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
+      pluginsList[$newId] = pluginPath
+    except DbError:
+      return showError(message = "Can't add plugin to the shell. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "File '" & pluginPath &
+        "' added as a plugin to the shell.", fgColor = fgGreen);
+    return QuitSuccess.ResultCode
 
 proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
     sideEffect, raises: [], tags: [ExecIOEffect, ReadEnvEffect, ReadIOEffect,
