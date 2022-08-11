@@ -92,11 +92,10 @@ proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   """)
     return updateHistory(commandToAdd = "plugin", db = db)
 
-proc execPlugin*(pluginPath: string; arguments: openArray[
-    string]; db): tuple [code: ResultCode; answer: LimitedString] {.gcsafe,
-        sideEffect, raises: [], tags: [ExecIOEffect, ReadEnvEffect,
-            ReadIOEffect, WriteIOEffect, ReadDbEffect,
-        TimeEffect, WriteDbEffect, RootEffect].} =
+proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
+    code: ResultCode; answer: LimitedString] {.gcsafe, sideEffect, raises: [],
+    tags: [ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect,
+    ReadDbEffect, TimeEffect, WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Communicate with the selected plugin via the shell's plugins API. Run the
@@ -114,87 +113,94 @@ proc execPlugin*(pluginPath: string; arguments: openArray[
   ## Tuple with result code: QuitSuccess if the selected plugin was properly
   ## executed, otherwise QuitFailure and LimitedString with the plugin's
   ## answer.
-  let
-    emptyAnswer = emptyLimitedString(capacity = maxInputLength)
-    plugin = try:
-        startProcess(command = pluginPath, args = arguments)
-      except OSError, Exception:
-        return (showError(message = "Can't execute the plugin '" & pluginPath &
-            "'. Reason: ", e = getCurrentException()), emptyAnswer)
-  result.answer = emptyAnswer
-  try:
-    # Read the plugin response and act accordingly to it
-    for line in plugin.lines:
-      var options = initOptParser(cmdline = line.strip())
-      while true:
-        options.next()
-        case options.key
-        # Show the message sent by the plugin in the standard output
-        of "showOutput":
-          let remainingOptions = options.remainingArgs()
-          let color = (if remainingOptions.len() ==
-              1: fgDefault else: parseEnum[ForegroundColor](remainingOptions[1]))
-          showOutput(message = remainingOptions[0], fgColor = color)
-        # Show the message sent by the plugin in the standard error
-        of "showError":
-          discard showError(message = options.remainingArgs.join(sep = " "))
-        # Set the selected shell's option. Arguments are name of the option,
-        # its value, decription and type
-        of "setOption":
-          let remainingOptions = options.remainingArgs()
-          if remainingOptions.len() < 4:
-            discard showError(message = "Insufficient arguments for setOption.")
-            break
-          setOption(optionName = initLimitedString(capacity = maxNameLength,
-              text = remainingOptions[0]), value = initLimitedString(
-              capacity = maxInputLength, text = remainingOptions[1]),
-              description = initLimitedString(capacity = maxInputLength,
-              text = remainingOptions[2]), valueType = parseEnum[ValueType](
-              remainingOptions[3]), db = db)
-        # Remove the selected shell's option. The argument is the name of the
-        # option to remove
-        of "removeOption":
-          let remainingOptions = options.remainingArgs()
-          if remainingOptions.len() == 0:
-            discard showError(message = "Insufficient arguments for removeOption.")
-            break
-          if deleteOption(optionName = initLimitedString(
-              capacity = maxNameLength, text = remainingOptions[0]), db = db) == QuitFailure:
-            discard showError(message = "Failed to remove option '" &
-                remainingOptions[0] & "'.")
-            break
-        # Get the value of the selected shell's option. The argument is the name
-        # of the option which value will be get
-        of "getOption":
-          let remainingOptions = options.remainingArgs()
-          if remainingOptions.len() == 0:
-            discard showError(message = "Insufficient arguments for getOption.")
-            break
-          plugin.inputStream.write($getOption(optionName = initLimitedString(
-              capacity = maxNameLength, text = remainingOptions[0]), db = db) & "\n")
-          plugin.inputStream.flush()
-        # Set the answer from the plugin. The argument is the plugin's answer
-        # with semicolon limited values
-        of "answer":
-          let remainingOptions = options.remainingArgs()
-          if remainingOptions.len() == 0:
-            discard showError(message = "Insufficient arguments for answer.")
-            break
-          result.answer = initLimitedString(capacity = remainingOptions[0].len,
-              text = remainingOptions[0])
-        # Do nothing if the plugin sent any unknown request or response
-        else:
-          discard
-        break
-  except OSError, IOError, Exception:
-    return (showError(message = "Can't get the plugin '" & pluginPath &
-        "' output. Reason: ", e = getCurrentException()), emptyAnswer)
-  result.code = plugin.peekExitCode().ResultCode
-  try:
-    plugin.close()
-  except OSError, IOError, Exception:
-    return (showError(message = "Can't close process for the plugin '" &
-        pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
+  require:
+    pluginPath.len() > 0
+    arguments.len() > 0
+    db != nil
+  body:
+    let
+      emptyAnswer = emptyLimitedString(capacity = maxInputLength)
+      plugin = try:
+          startProcess(command = pluginPath, args = arguments)
+        except OSError, Exception:
+          return (showError(message = "Can't execute the plugin '" &
+              pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
+    result.answer = emptyAnswer
+    try:
+      # Read the plugin response and act accordingly to it
+      for line in plugin.lines:
+        var options = initOptParser(cmdline = line.strip())
+        while true:
+          options.next()
+          case options.key
+          # Show the message sent by the plugin in the standard output
+          of "showOutput":
+            let remainingOptions = options.remainingArgs()
+            let color = (if remainingOptions.len() ==
+                1: fgDefault else: parseEnum[ForegroundColor](remainingOptions[1]))
+            showOutput(message = remainingOptions[0], fgColor = color)
+          # Show the message sent by the plugin in the standard error
+          of "showError":
+            discard showError(message = options.remainingArgs.join(sep = " "))
+          # Set the selected shell's option. Arguments are name of the option,
+          # its value, decription and type
+          of "setOption":
+            let remainingOptions = options.remainingArgs()
+            if remainingOptions.len() < 4:
+              discard showError(message = "Insufficient arguments for setOption.")
+              break
+            setOption(optionName = initLimitedString(capacity = maxNameLength,
+                text = remainingOptions[0]), value = initLimitedString(
+                capacity = maxInputLength, text = remainingOptions[1]),
+                description = initLimitedString(capacity = maxInputLength,
+                text = remainingOptions[2]), valueType = parseEnum[ValueType](
+                remainingOptions[3]), db = db)
+          # Remove the selected shell's option. The argument is the name of the
+          # option to remove
+          of "removeOption":
+            let remainingOptions = options.remainingArgs()
+            if remainingOptions.len() == 0:
+              discard showError(message = "Insufficient arguments for removeOption.")
+              break
+            if deleteOption(optionName = initLimitedString(
+                capacity = maxNameLength, text = remainingOptions[0]),
+                    db = db) == QuitFailure:
+              discard showError(message = "Failed to remove option '" &
+                  remainingOptions[0] & "'.")
+              break
+          # Get the value of the selected shell's option. The argument is the name
+          # of the option which value will be get
+          of "getOption":
+            let remainingOptions = options.remainingArgs()
+            if remainingOptions.len() == 0:
+              discard showError(message = "Insufficient arguments for getOption.")
+              break
+            plugin.inputStream.write($getOption(optionName = initLimitedString(
+                capacity = maxNameLength, text = remainingOptions[0]),
+                    db = db) & "\n")
+            plugin.inputStream.flush()
+          # Set the answer from the plugin. The argument is the plugin's answer
+          # with semicolon limited values
+          of "answer":
+            let remainingOptions = options.remainingArgs()
+            if remainingOptions.len() == 0:
+              discard showError(message = "Insufficient arguments for answer.")
+              break
+            result.answer = initLimitedString(capacity = remainingOptions[
+                0].len, text = remainingOptions[0])
+          # Do nothing if the plugin sent any unknown request or response
+          else:
+            discard
+          break
+    except OSError, IOError, Exception:
+      return (showError(message = "Can't get the plugin '" & pluginPath &
+          "' output. Reason: ", e = getCurrentException()), emptyAnswer)
+    result.code = plugin.peekExitCode().ResultCode
+    try:
+      plugin.close()
+    except OSError, IOError, Exception:
+      return (showError(message = "Can't close process for the plugin '" &
+          pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
