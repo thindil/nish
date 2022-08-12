@@ -71,7 +71,7 @@ proc showOutput*(message; newLine: bool = true;
   stdout.flushFile()
 
 proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect].} =
+    sideEffect, raises: [], tags: [WriteIOEffect], discardable.} =
   ## FUNCTION
   ##
   ## Print the message to standard error and set the shell return
