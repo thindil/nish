@@ -141,13 +141,13 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
             showOutput(message = remainingOptions[0], fgColor = color)
           # Show the message sent by the plugin in the standard error
           of "showError":
-            discard showError(message = options.remainingArgs.join(sep = " "))
+            showError(message = options.remainingArgs.join(sep = " "))
           # Set the selected shell's option. Arguments are name of the option,
           # its value, decription and type
           of "setOption":
             let remainingOptions = options.remainingArgs()
             if remainingOptions.len() < 4:
-              discard showError(message = "Insufficient arguments for setOption.")
+              showError(message = "Insufficient arguments for setOption.")
               break
             setOption(optionName = initLimitedString(capacity = maxNameLength,
                 text = remainingOptions[0]), value = initLimitedString(
@@ -160,12 +160,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
           of "removeOption":
             let remainingOptions = options.remainingArgs()
             if remainingOptions.len() == 0:
-              discard showError(message = "Insufficient arguments for removeOption.")
+              showError(message = "Insufficient arguments for removeOption.")
               break
             if deleteOption(optionName = initLimitedString(
                 capacity = maxNameLength, text = remainingOptions[0]),
                     db = db) == QuitFailure:
-              discard showError(message = "Failed to remove option '" &
+              showError(message = "Failed to remove option '" &
                   remainingOptions[0] & "'.")
               break
           # Get the value of the selected shell's option. The argument is the name
@@ -173,7 +173,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
           of "getOption":
             let remainingOptions = options.remainingArgs()
             if remainingOptions.len() == 0:
-              discard showError(message = "Insufficient arguments for getOption.")
+              showError(message = "Insufficient arguments for getOption.")
               break
             plugin.inputStream.write($getOption(optionName = initLimitedString(
                 capacity = maxNameLength, text = remainingOptions[0]),
@@ -184,7 +184,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
           of "answer":
             let remainingOptions = options.remainingArgs()
             if remainingOptions.len() == 0:
-              discard showError(message = "Insufficient arguments for answer.")
+              showError(message = "Insufficient arguments for answer.")
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
@@ -303,12 +303,12 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
         if dbResult[2] == "1":
           if execPlugin(pluginPath = dbResult[1], arguments = ["init"],
               db = db).code != QuitSuccess:
-            discard showError(message = "Can't initialize plugin '" & dbResult[
+            showError(message = "Can't initialize plugin '" & dbResult[
                 1] & "'.")
             return
           result[dbResult[0]] = dbResult[1]
     except DbError:
-      discard showError(message = "Can't read data about the shell's plugins. Reason: ",
+      showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException())
 
 proc removePlugin*(db; arguments; pluginsList: var PluginsList;
@@ -529,7 +529,7 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
       except DbError:
         historyIndex = updateHistory(commandToAdd = "plugin list all", db = db,
             returnCode = QuitFailure.ResultCode)
-        discard showError(message = "Can't read info about plugin from database. Reason:",
+        showError(message = "Can't read info about plugin from database. Reason:",
             e = getCurrentException())
         return
       historyIndex = updateHistory(commandToAdd = "plugin list all", db = db)

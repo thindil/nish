@@ -77,7 +77,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
       result = initLimitedString(capacity = (if value.len() ==
           0: 1 else: value.len()), text = value)
     except DbError, CapacityError:
-      discard showError(message = "Can't get value for option '" & optionName &
+      showError(message = "Can't get value for option '" & optionName &
           "' from database. Reason: ", e = getCurrentException())
       return defaultValue
     if result == "":
@@ -122,7 +122,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
         db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES (?, ?, ?, ?, ?, ?)"),
             optionName, value, description, valueType, value, readOnly)
     except DbError:
-      discard showError(message = "Can't set value for option '" & optionName &
+      showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException())
 
 proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
@@ -150,7 +150,7 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
                 2], count = 12) & " " & alignLeft(s = row[3], count = 11) &
                     " " & row[4], count = spacesAmount.int))
     except DbError:
-      discard showError(message = "Can't show the shell's options. Reason: ",
+      showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
 
 proc helpOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,

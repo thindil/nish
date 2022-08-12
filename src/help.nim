@@ -234,7 +234,7 @@ proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
       try:
         helpContent["help"].usage.add(y = alignLeft(s = key, count = 20))
       except KeyError:
-        discard showError(message = "Can't set content of the help main screen. Reason: ",
+        showError(message = "Can't set content of the help main screen. Reason: ",
             e = getCurrentException())
         return
       i.inc()
@@ -242,7 +242,7 @@ proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
         try:
           helpContent["help"].usage.add(y = "\n    ")
         except KeyError:
-          discard showError(message = "Can't set content of the help main screen. Reason: ",
+          showError(message = "Can't set content of the help main screen. Reason: ",
               e = getCurrentException())
           return
         i = 1
@@ -250,5 +250,5 @@ proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
       helpContent["help"].usage.removeSuffix(suffix = ", ")
       helpContent["help"].content.add(y = "To see more information about the selected topic, type help [topic], for example: help cd.")
     except KeyError:
-      discard showError(message = "Can't set content of the help main screen. Reason: ",
+      showError(message = "Can't set content of the help main screen. Reason: ",
           e = getCurrentException())
