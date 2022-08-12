@@ -537,7 +537,7 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
 proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-    TimeEffect, ExecIOEffect, RootEffect].} =
+    TimeEffect, ExecIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show details about the selected plugin, its ID, path and status
@@ -554,51 +554,55 @@ proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
   ##
   ## QuitSuccess if the selected plugin was properly show, otherwise
   ## QuitFailure. Also, updated parameter historyIndex
-  if arguments.len() < 6:
-    historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
-        returnCode = QuitFailure.ResultCode)
-    return showError(message = "Enter the ID of the plugin to show.")
-  let id: DatabaseId = try:
-      parseInt(s = $arguments[5 .. ^1]).DatabaseId
-    except ValueError:
+  require:
+    arguments.len() > 0
+    db != nil
+  body:
+    if arguments.len() < 6:
       historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
           returnCode = QuitFailure.ResultCode)
-      return showError(message = "The Id of the plugin must be a positive number.")
-  let row: Row = try:
-        db.getRow(query = sql(query = "SELECT location, enabled FROM plugins WHERE id=?"), args = id)
-    except DbError:
+      return showError(message = "Enter the ID of the plugin to show.")
+    let id: DatabaseId = try:
+        parseInt(s = $arguments[5 .. ^1]).DatabaseId
+      except ValueError:
+        historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
+            returnCode = QuitFailure.ResultCode)
+        return showError(message = "The Id of the plugin must be a positive number.")
+    let row: Row = try:
+          db.getRow(query = sql(query = "SELECT location, enabled FROM plugins WHERE id=?"), args = id)
+      except DbError:
+        historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
+            returnCode = QuitFailure.ResultCode)
+        return showError(message = "Can't read plugin data from database. Reason: ",
+            e = getCurrentException())
+    if row[0] == "":
       historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
           returnCode = QuitFailure.ResultCode)
-      return showError(message = "Can't read plugin data from database. Reason: ",
-          e = getCurrentException())
-  if row[0] == "":
-    historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
-        returnCode = QuitFailure.ResultCode)
-    return showError(message = "The plugin with the ID: " & $id &
-      " doesn't exists.")
-  historyIndex = updateHistory(commandToAdd = "plugin show", db = db)
-  let spacesAmount: ColumnAmount = try:
-      terminalWidth().ColumnAmount / 12
-    except ValueError:
-      6.ColumnAmount
-  showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
-      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-  showOutput(message = $id)
-  showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
-      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-  showOutput(message = row[0])
-  showOutput(message = indent(s = alignLeft(s = "Enabled: ", count = 13),
-      count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-  showOutput(message = (if row[1] == "1": "Yes" else: "No"))
-  let pluginData = execPlugin(pluginPath = row[0], arguments = ["info"], db = db)
-  # If plugin contains any aditional information, show them
-  if pluginData.code == QuitSuccess:
-    let pluginInfo = split($pluginData.answer, ";")
-    showOutput(message = indent(s = alignLeft(s = "Name: ", count = 13),
+      return showError(message = "The plugin with the ID: " & $id &
+        " doesn't exists.")
+    historyIndex = updateHistory(commandToAdd = "plugin show", db = db)
+    let spacesAmount: ColumnAmount = try:
+        terminalWidth().ColumnAmount / 12
+      except ValueError:
+        6.ColumnAmount
+    showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
         count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = pluginInfo[0])
-    if pluginInfo.len() > 1:
-      showOutput(message = indent(s = "Description: ",
+    showOutput(message = $id)
+    showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
+        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+    showOutput(message = row[0])
+    showOutput(message = indent(s = alignLeft(s = "Enabled: ", count = 13),
+        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+    showOutput(message = (if row[1] == "1": "Yes" else: "No"))
+    let pluginData = execPlugin(pluginPath = row[0], arguments = ["info"], db = db)
+    # If plugin contains any aditional information, show them
+    if pluginData.code == QuitSuccess:
+      let pluginInfo = split($pluginData.answer, ";")
+      showOutput(message = indent(s = alignLeft(s = "Name: ", count = 13),
           count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-      showOutput(message = pluginInfo[1])
-  return QuitSuccess.ResultCode
+      showOutput(message = pluginInfo[0])
+      if pluginInfo.len() > 1:
+        showOutput(message = indent(s = "Description: ",
+            count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+        showOutput(message = pluginInfo[1])
+    return QuitSuccess.ResultCode
