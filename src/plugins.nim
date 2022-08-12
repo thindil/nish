@@ -385,7 +385,11 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc togglePlugin*(db; arguments; pluginsList: var PluginsList; historyIndex: var HistoryRange; disable: bool = true): ResultCode {.gcsafe, sideEffect, raises: [], tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
+proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
+    historyIndex: var HistoryRange; disable: bool = true): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, ReadIOEffect, ExecIOEffect, RootEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Enable or disable the selected plugin.
@@ -412,8 +416,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList; historyIndex: va
       actionName: string = (if disable: "disable" else: "enable")
     # Check if the user entered proper amount of arguments
     if arguments.len() < (idStart + 1):
-      historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db,
-          returnCode = QuitFailure.ResultCode)
+      historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
+          db = db, returnCode = QuitFailure.ResultCode)
       return showError(message = "Please enter the Id to the plugin which will be " &
           actionName & ".")
     let
@@ -453,8 +457,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList; historyIndex: va
       else:
         pluginsList[$pluginId] = pluginPath
     except DbError:
-      historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db,
-          returnCode = QuitFailure.ResultCode)
+      historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
+          db = db, returnCode = QuitFailure.ResultCode)
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
           e = getCurrentException())
     historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db)
@@ -464,7 +468,7 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList; historyIndex: va
 
 proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## List enabled plugins, if entered command was "plugin list all" list all
@@ -481,51 +485,54 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
   ##
   ## The parameter historyIndex updated after execution of showing the plugins'
   ## list
-  let
-    columnLength: ColumnAmount = try: db.getValue(query =
-        sql(query = "SELECT location FROM plugins ORDER BY LENGTH(location) DESC LIMIT 1")).len().ColumnAmount
-      except DbError: 10.ColumnAmount
-    spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
-        12 except ValueError: 6.ColumnAmount
-  # Show the list of enabled plugins
-  if arguments == "list":
-    showFormHeader(message = "Enabled plugins are:")
-    try:
-      showOutput(message = indent(s = "ID   $1" % [alignLeft(
-        s = "Path",
-        count = columnLength.int)], count = spacesAmount.int),
-            fgColor = fgMagenta)
-    except ValueError:
-      showOutput(message = indent(s = "ID   Path",
-          count = spacesAmount.int), fgColor = fgMagenta)
-    for id, location in plugins.pairs:
-      showOutput(message = indent(s = alignLeft(id, count = 4) & " " &
-          alignLeft(s = location, count = columnLength.int),
-              count = spacesAmount.int))
-    historyIndex = updateHistory(commandToAdd = "plugin list", db = db)
-  # Show the list of all installed plugins with information about their state
-  elif arguments == "list all":
-    showFormHeader(message = "All available plugins are:")
-    try:
-      showOutput(message = indent(s = "ID   $1 Enabled" % [alignLeft(
-          s = "Path", count = columnLength.int)], count = spacesAmount.int),
+  require:
+    arguments.len() > 3
+  body:
+    let
+      columnLength: ColumnAmount = try: db.getValue(query =
+          sql(query = "SELECT location FROM plugins ORDER BY LENGTH(location) DESC LIMIT 1")).len().ColumnAmount
+        except DbError: 10.ColumnAmount
+      spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
+          12 except ValueError: 6.ColumnAmount
+    # Show the list of enabled plugins
+    if arguments == "list":
+      showFormHeader(message = "Enabled plugins are:")
+      try:
+        showOutput(message = indent(s = "ID   $1" % [alignLeft(
+          s = "Path",
+          count = columnLength.int)], count = spacesAmount.int),
               fgColor = fgMagenta)
-    except ValueError:
-      showOutput(message = indent(s = "ID   Path Enabled",
-          count = spacesAmount.int), fgColor = fgMagenta)
-    try:
-      for row in db.fastRows(query = sql(
-          query = "SELECT id, location, enabled FROM plugins")):
-        showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-            alignLeft(s = row[1], count = columnLength.int) & " " & (if row[
-                2] == "1": "Yes" else: "No"), count = spacesAmount.int))
-    except DbError:
-      historyIndex = updateHistory(commandToAdd = "plugin list all", db = db,
-          returnCode = QuitFailure.ResultCode)
-      discard showError(message = "Can't read info about plugin from database. Reason:",
-          e = getCurrentException())
-      return
-    historyIndex = updateHistory(commandToAdd = "plugin list all", db = db)
+      except ValueError:
+        showOutput(message = indent(s = "ID   Path",
+            count = spacesAmount.int), fgColor = fgMagenta)
+      for id, location in plugins.pairs:
+        showOutput(message = indent(s = alignLeft(id, count = 4) & " " &
+            alignLeft(s = location, count = columnLength.int),
+                count = spacesAmount.int))
+      historyIndex = updateHistory(commandToAdd = "plugin list", db = db)
+    # Show the list of all installed plugins with information about their state
+    elif arguments == "list all":
+      showFormHeader(message = "All available plugins are:")
+      try:
+        showOutput(message = indent(s = "ID   $1 Enabled" % [alignLeft(
+            s = "Path", count = columnLength.int)], count = spacesAmount.int),
+                fgColor = fgMagenta)
+      except ValueError:
+        showOutput(message = indent(s = "ID   Path Enabled",
+            count = spacesAmount.int), fgColor = fgMagenta)
+      try:
+        for row in db.fastRows(query = sql(
+            query = "SELECT id, location, enabled FROM plugins")):
+          showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
+              alignLeft(s = row[1], count = columnLength.int) & " " & (if row[
+                  2] == "1": "Yes" else: "No"), count = spacesAmount.int))
+      except DbError:
+        historyIndex = updateHistory(commandToAdd = "plugin list all", db = db,
+            returnCode = QuitFailure.ResultCode)
+        discard showError(message = "Can't read info about plugin from database. Reason:",
+            e = getCurrentException())
+        return
+      historyIndex = updateHistory(commandToAdd = "plugin list all", db = db)
 
 proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
