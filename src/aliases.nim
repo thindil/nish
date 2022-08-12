@@ -83,15 +83,15 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
         let index = try:
             initLimitedString(capacity = maxInputLength, text = dbResult[1])
           except CapacityError:
-            discard showError(message = "Can't set index from " & dbResult[1])
+            showError(message = "Can't set index from " & dbResult[1])
             return
         try:
           aliases[index] = parseInt(s = dbResult[0])
         except ValueError:
-          discard showError(message = "Can't set alias, invalid Id: " &
+          showError(message = "Can't set alias, invalid Id: " &
               dbResult[0])
     except DbError:
-      discard showError(message = "Can't set aliases for the current directory. Reason: ",
+      showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
 
 proc listAliases*(arguments; historyIndex; aliases: AliasesList;
@@ -139,7 +139,7 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
               alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
                   count = spacesAmount.int))
       except DbError:
-        discard showError(message = "Can't read info about alias from database. Reason:",
+        showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
         return
       historyIndex = updateHistory(commandToAdd = "alias list all", db = db)
@@ -162,12 +162,12 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
               alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
                   count = spacesAmount.int))
         except DbError:
-          discard showError(message = "Can't read info about alias from database. Reason:",
+          showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
           return
       historyIndex = updateHistory(commandToAdd = "alias list", db = db)
     else:
-      discard showError(message = "Invalid command entered for listing the aliases.")
+      showError(message = "Invalid command entered for listing the aliases.")
       historyIndex = updateHistory(commandToAdd = "alias " & arguments, db = db,
           returnCode = QuitFailure.ResultCode)
 
@@ -345,13 +345,13 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     while name.len() == 0:
       name = readInput(maxLength = aliasNameLength)
       if name.len() == 0:
-        discard showError(message = "Please enter a name for the alias.")
+        showError(message = "Please enter a name for the alias.")
       elif not validIdentifier(s = $name):
         try:
           name.setString("")
-          discard showError(message = "Please enter a valid name for the alias.")
+          showError(message = "Please enter a valid name for the alias.")
         except CapacityError:
-          discard showError(message = "Can't set empty name for alias.")
+          showError(message = "Can't set empty name for alias.")
       if name.len() == 0:
         showOutput(message = "Name: ", newLine = false)
     if name == "exit":
@@ -369,10 +369,10 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     while path.len() == 0:
       path = DirectoryPath($readInput())
       if path.len() == 0:
-        discard showError(message = "Please enter a path for the alias.")
+        showError(message = "Please enter a path for the alias.")
       elif not dirExists(dir = $path) and path != "exit":
         path = "".DirectoryPath
-        discard showError(message = "Please enter a path to the existing directory")
+        showError(message = "Please enter a path to the existing directory")
       if path.len() == 0:
         showOutput(message = "Path: ", newLine = false)
     if path == "exit":
@@ -398,7 +398,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     while commands.len() == 0:
       commands = readInput()
       if commands.len() == 0:
-        discard showError(message = "Please enter commands for the alias.")
+        showError(message = "Please enter commands for the alias.")
         showOutput(message = "Command(s): ", newLine = false)
     if commands == "exit":
       return showError(message = "Adding a new alias cancelled.")
@@ -482,7 +482,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     showOutput(message = "Name: ", newLine = false)
     var name: AliasName = readInput(maxLength = aliasNameLength)
     while name.len() > 0 and not validIdentifier(s = $name):
-      discard showError(message = "Please enter a valid name for the alias.")
+      showError(message = "Please enter a valid name for the alias.")
       name = readInput(maxLength = aliasNameLength)
     if name == "exit":
       return showError(message = "Editing the alias cancelled.")
@@ -512,7 +512,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     showOutput(message = "'. Must be a path to the existing directory.")
     var path: DirectoryPath = DirectoryPath($readInput())
     while path.len() > 0 and (path != "exit" and not dirExists(dir = $path)):
-      discard showError(message = "Please enter a path to the existing directory")
+      showError(message = "Please enter a path to the existing directory")
       path = DirectoryPath($readInput())
     if path == "exit":
       return showError(message = "Editing the alias cancelled.")
@@ -684,12 +684,12 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           if outputFile != nil:
             outputFile.write(resultOutput)
           else:
-            discard showError(message = resultOutput)
+            showError(message = resultOutput)
         if returnCode != QuitSuccess and conjCommands:
           result = QuitFailure.ResultCode
           break
       except OSError, IOError, Exception:
-        discard showError(message = "Can't execute the command of the alias. Reason: ",
+        showError(message = "Can't execute the command of the alias. Reason: ",
             e = getCurrentException())
         break
       if not conjCommands:
@@ -746,7 +746,7 @@ proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
     try:
       result.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
     except OSError:
-      discard showError(message = "Can't initialize aliases. Reason: ",
+      showError(message = "Can't initialize aliases. Reason: ",
           e = getCurrentException())
 
 proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
