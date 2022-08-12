@@ -57,7 +57,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
       return parseInt(s = db.getValue(query = sql(query =
         "SELECT COUNT(*) FROM history")))
     except DbError, ValueError:
-      discard showError(message = "Can't get the length of the shell's commands history. Reason: ",
+      showError(message = "Can't get the length of the shell's commands history. Reason: ",
           e = getCurrentException())
       return HistoryRange.low()
 
@@ -118,7 +118,7 @@ proc updateHistory*(commandToAdd: string; db;
         "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
         return
     except DbError:
-      discard showError(message = "Can't get value of option historySaveInvalid. Reason: ",
+      showError(message = "Can't get value of option historySaveInvalid. Reason: ",
           e = getCurrentException())
       return
     try:
@@ -127,7 +127,7 @@ proc updateHistory*(commandToAdd: string; db;
         db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
         result.dec()
     except DbError, ValueError:
-      discard showError(message = "Can't get value of option historyLength. Reason: ",
+      showError(message = "Can't get value of option historyLength. Reason: ",
           e = getCurrentException())
       return
     try:
@@ -145,7 +145,7 @@ proc updateHistory*(commandToAdd: string; db;
               commandToAdd, currentDir)
           result.inc()
     except DbError, OSError:
-      discard showError(message = "Can't update the shell's history. Reason: ",
+      showError(message = "Can't update the shell's history. Reason: ",
           e = getCurrentException())
 
 proc getHistory*(historyIndex: HistoryRange; db;
@@ -193,7 +193,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
         if result.len() == 0:
           result = $searchFor
     except DbError, OSError:
-      discard showError("Can't get the selected command from the shell's history. Reason: ",
+      showError("Can't get the selected command from the shell's history. Reason: ",
           getCurrentException())
 
 proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
@@ -216,7 +216,7 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     try:
       db.exec(query = sql(query = "DELETE FROM history"));
     except DbError:
-      discard showError(message = "Can't clear the shell's commands history. Reason: ",
+      showError(message = "Can't clear the shell's commands history. Reason: ",
           e = getCurrentException())
       return historyLength(db = db)
     showOutput(message = "Shell's commands' history cleared.",
@@ -276,7 +276,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
               1] else: $getOption(optionName = initLimitedString(capacity = 13,
               text = "historyAmount"), db = db)))
         except ValueError, CapacityError:
-          discard showError(message = "Can't get setting for the amount of history commands to show.")
+          showError(message = "Can't get setting for the amount of history commands to show.")
           return updateHistory(commandToAdd = "history list", db = db,
               returnCode = QuitFailure.ResultCode)
       spacesAmount: ColumnAmount = try:
@@ -289,7 +289,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
             if $getOption(optionName = initLimitedString(capacity = 14,
               text = "historyReverse"), db = db) == "true": "ASC" else: "DESC"
         except CapacityError:
-          discard showError(message = "Can't get setting for the reverse order of history commands to show.")
+          showError(message = "Can't get setting for the reverse order of history commands to show.")
           return updateHistory(commandToAdd = "history list", db = db,
               returnCode = QuitFailure.ResultCode)
       orderText: string = try:
@@ -297,7 +297,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
               optionName = initLimitedString(capacity = 11,
                   text = "historySort"), db = db)
         except CapacityError:
-          discard showError(message = "Can't get setting for the order of history commands to show.")
+          showError(message = "Can't get setting for the order of history commands to show.")
           return updateHistory(commandToAdd = "history list", db = db,
               returnCode = QuitFailure.ResultCode)
       historyOrder: string =
@@ -308,7 +308,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
             "DESC": "ASC" else: "DESC")
         of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
         else:
-          discard showError(message = "Unknown type of history sort order")
+          showError(message = "Unknown type of history sort order")
           return updateHistory(commandToAdd = "history list", db = db,
             returnCode = QuitFailure.ResultCode)
     showFormHeader(message = "The last commands from the shell's history")
@@ -322,7 +322,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
             width = 5) & "      " & row[0], count = spacesAmount.int))
       return updateHistory(commandToAdd = "history list", db = db)
     except DbError:
-      discard showError(message = "Can't get the last commands from the shell's history. Reason: ",
+      showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
       return updateHistory(commandToAdd = "history list", db = db,
           returnCode = QuitFailure.ResultCode)

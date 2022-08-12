@@ -78,7 +78,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
             stdout.write(s = " ")
             stdout.cursorBackward()
           except IOError, ValueError, CapacityError:
-            discard showError(message = "Can't delete character. Reason: ",
+            showError(message = "Can't delete character. Reason: ",
                 e = getCurrentException())
             return exitString
       # Special key pressed (all starts like Escape key), check which one
@@ -86,7 +86,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         try:
           inputChar = getch()
         except IOError:
-          discard showError(message = "Can't get the next character after Escape. Reason: ",
+          showError(message = "Can't get the next character after Escape. Reason: ",
               e = getCurrentException())
           return exitString
         # Escape key pressed, return "exit" as input value
@@ -105,13 +105,13 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
       try:
         inputChar = getch()
       except IOError:
-        discard showError(message = "Can't get the next character. Reason: ",
+        showError(message = "Can't get the next character. Reason: ",
             e = getCurrentException())
         return exitString
     try:
       stdout.writeLine(x = "")
     except IOError:
-      discard showError(message = "Can't add a new line. Reason: ",
+      showError(message = "Can't add a new line. Reason: ",
           e = getCurrentException())
       return exitString
     return resultString

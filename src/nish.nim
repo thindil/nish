@@ -113,39 +113,39 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     try:
       discard existsOrCreateDir(dir = parentDir(path = $dbPath))
     except OSError, IOError:
-      discard showError(message = "Can't create directory for the shell's database. Reason: ",
+      showError(message = "Can't create directory for the shell's database. Reason: ",
           e = getCurrentException())
       return nil
     let dbExists: bool = fileExists($dbPath)
     try:
       result = open(connection = $dbPath, user = "", password = "", database = "")
     except DbError:
-      discard showError(message = "Can't open the shell's database. Reason: ",
+      showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException())
       return nil
     let
       versionName: OptionName = try:
           initLimitedString(capacity = 9, text = "dbVersion")
         except CapacityError:
-          discard showError(message = "Can't set versionName. Reason: ",
+          showError(message = "Can't set versionName. Reason: ",
               e = getCurrentException())
           return nil
       versionValue: OptionValue = try:
           initLimitedString(capacity = 1, text = "2")
         except CapacityError:
-          discard showError(message = "Can't set versionValue. Reason: ",
+          showError(message = "Can't set versionValue. Reason: ",
               e = getCurrentException())
           return nil
       promptName: OptionName = try:
           initLimitedString(capacity = 13, text = "promptCommand")
         except CapacityError:
-          discard showError(message = "Can't set promptName. Reason: ",
+          showError(message = "Can't set promptName. Reason: ",
               e = getCurrentException())
           return nil
       promptValue: OptionValue = try:
           initLimitedString(capacity = 8, text = "built-in")
         except CapacityError:
-          discard showError(message = "Can't set promptValue. Reason: ",
+          showError(message = "Can't set promptValue. Reason: ",
               e = getCurrentException())
           return nil
     # Create a new database if not exists
@@ -170,7 +170,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
             text = "The command which output will be used as the prompt of shell."),
             valueType = ValueType.command, db = result, readOnly = 1)
       except CapacityError:
-        discard showError(message = "Can't set database schema. Reason: ",
+        showError(message = "Can't set database schema. Reason: ",
             e = getCurrentException())
         return nil
     # If database version is different than the newest, update database
@@ -195,7 +195,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
             text = "The command which output will be used as the shell's prompt."),
             valueType = ValueType.command, db = result, readOnly = 1)
     except CapacityError, DbError, ValueError:
-      discard showError(message = "Can't update database. Reason: ",
+      showError(message = "Can't update database. Reason: ",
           e = getCurrentException())
       return nil
 
