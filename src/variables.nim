@@ -81,8 +81,8 @@ proc buildQuery*(directory: DirectoryPath; fields: string;
 
 proc setVariables*(newDirectory: DirectoryPath; db;
     oldDirectory: DirectoryPath = "".DirectoryPath) {.gcsafe, sideEffect,
-        raises: [], tags: [
-    ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect].} =
+    raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Set the environment variables in the selected directory and remove the
@@ -95,52 +95,55 @@ proc setVariables*(newDirectory: DirectoryPath; db;
   ## * db           - the connection to the shell's database
   ## * oldDirectory - the old directory in which environment variables will be
   ##                  removed. Can be empty. Default value is empty
+  require:
+    newDirectory.len() > 0
+    db != nil
+  body:
+    var skipped: seq[string]
 
-  var skipped: seq[string]
-
-  # Remove the old environment variables if needed
-  if oldDirectory.len() > 0:
+    # Remove the old environment variables if needed
+    if oldDirectory.len() > 0:
+      try:
+        for dbResult in db.fastRows(query = sql(query = buildQuery(
+            directory = oldDirectory, fields = "name, value"))):
+          let existingVariable: Row = db.getRow(query = sql(query = buildQuery(
+              directory = newDirectory, fields = "id", where = "AND name='" &
+                  dbResult[0] & "' AND value='" & dbResult[1] & "'")))
+          if existingVariable.len() == 0:
+            delEnv(key = dbResult[0])
+          else:
+            skipped.add(y = existingVariable[0])
+      except DbError, OSError:
+        showError(message = "Can't delete environment variables from the old directory. Reason: ",
+            e = getCurrentException())
+    # Set the new environment variables
     try:
       for dbResult in db.fastRows(query = sql(query = buildQuery(
-          directory = oldDirectory, fields = "name, value"))):
-        let existingVariable: Row = db.getRow(query = sql(query = buildQuery(
-            directory = newDirectory, fields = "id", where = "AND name='" &
-                dbResult[0] & "' AND value='" & dbResult[1] & "'")))
-        if existingVariable.len() == 0:
-          delEnv(key = dbResult[0])
-        else:
-          skipped.add(y = existingVariable[0])
-    except DbError, OSError:
-      showError(message = "Can't delete environment variables from the old directory. Reason: ",
-          e = getCurrentException())
-  # Set the new environment variables
-  try:
-    for dbResult in db.fastRows(query = sql(query = buildQuery(
-        directory = newDirectory, fields = "name, value, id"))):
-      if dbResult[2] in skipped:
-        continue
-      var
-        value: string = dbResult[1]
-        variableIndex: ExtendedNatural = value.find(sub = '$')
-      # Convert all environment variables inside the variable to their values
-      while variableIndex in 0..(value.len() - 1):
-        var variableEnd: ExtendedNatural = variableIndex + 1
-        # Variables names can start only with letters
-        if not isAlphaAscii(value[variableEnd]):
-          variableIndex = value.find(sub = '$', start = variableEnd)
+          directory = newDirectory, fields = "name, value, id"))):
+        if dbResult[2] in skipped:
           continue
-        # Variables names can contain only letters and numbers
-        while variableEnd < value.len() and value[variableEnd].isAlphaNumeric():
-          variableEnd.inc()
-        if variableEnd > value.len():
-          variableEnd = value.len()
-        let variableName: string = value[variableIndex + 1..variableEnd - 1]
-        value[variableIndex..variableEnd - 1] = getEnv(variableName)
-        variableIndex = value.find(sub = '$', start = variableEnd)
-      putEnv(key = dbResult[0], val = value)
-  except DbError, OSError:
-    showError(message = "Can't set environment variables for the new directory. Reason: ",
-        e = getCurrentException())
+        var
+          value: string = dbResult[1]
+          variableIndex: ExtendedNatural = value.find(sub = '$')
+        # Convert all environment variables inside the variable to their values
+        while variableIndex in 0..(value.len() - 1):
+          var variableEnd: ExtendedNatural = variableIndex + 1
+          # Variables names can start only with letters
+          if not isAlphaAscii(value[variableEnd]):
+            variableIndex = value.find(sub = '$', start = variableEnd)
+            continue
+          # Variables names can contain only letters and numbers
+          while variableEnd < value.len() and value[variableEnd].isAlphaNumeric():
+            variableEnd.inc()
+          if variableEnd > value.len():
+            variableEnd = value.len()
+          let variableName: string = value[variableIndex + 1..variableEnd - 1]
+          value[variableIndex..variableEnd - 1] = getEnv(variableName)
+          variableIndex = value.find(sub = '$', start = variableEnd)
+        putEnv(key = dbResult[0], val = value)
+    except DbError, OSError:
+      showError(message = "Can't set environment variables for the new directory. Reason: ",
+          e = getCurrentException())
 
 proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
