@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, strutils, tables, terminal]
+import contracts
 import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode
 
@@ -42,7 +43,7 @@ using
 
 proc buildQuery*(directory: DirectoryPath; fields: string;
     where: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect].} =
+    ReadDbEffect], contractual.} =
   ## FUNCTION
   ##
   ## Build database query for get environment variables for the selected
@@ -58,21 +59,25 @@ proc buildQuery*(directory: DirectoryPath; fields: string;
   ## RETURNS
   ##
   ## The string with database's query for the selected directory and fields
-  result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
-  var remainingDirectory: DirectoryPath = parentDir(
-      path = $directory).DirectoryPath
+  require:
+    directory.len() > 0
+    fields.len() > 0
+  body:
+    result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
+    var remainingDirectory: DirectoryPath = parentDir(
+        path = $directory).DirectoryPath
 
-  # Construct SQL querry, search for variables also defined in parent directories
-  # if they are recursive
-  while remainingDirectory != "":
-    result.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
-    remainingDirectory = parentDir($remainingDirectory).DirectoryPath
+    # Construct SQL querry, search for variables also defined in parent directories
+    # if they are recursive
+    while remainingDirectory != "":
+      result.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
+      remainingDirectory = parentDir($remainingDirectory).DirectoryPath
 
-  # If optional arguments entered, add them to the query
-  if where.len() > 0:
-    result.add(y = " " & where)
+    # If optional arguments entered, add them to the query
+    if where.len() > 0:
+      result.add(y = " " & where)
 
-  result.add(y = " ORDER BY id ASC")
+    result.add(y = " ORDER BY id ASC")
 
 proc setVariables*(newDirectory: DirectoryPath; db;
     oldDirectory: DirectoryPath = "".DirectoryPath) {.gcsafe, sideEffect,
