@@ -106,7 +106,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
         else:
           skipped.add(y = existingVariable[0])
     except DbError, OSError:
-      discard showError(message = "Can't delete environment variables from the old directory. Reason: ",
+      showError(message = "Can't delete environment variables from the old directory. Reason: ",
           e = getCurrentException())
   # Set the new environment variables
   try:
@@ -134,7 +134,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
         variableIndex = value.find(sub = '$', start = variableEnd)
       putEnv(key = dbResult[0], val = value)
   except DbError, OSError:
-    discard showError(message = "Can't set environment variables for the new directory. Reason: ",
+    showError(message = "Can't set environment variables for the new directory. Reason: ",
         e = getCurrentException())
 
 proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
@@ -172,7 +172,7 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
   try:
     setVariables(getCurrentDir().DirectoryPath, db)
   except OSError:
-    discard showError("Can't set environment variables for the current directory. Reason:",
+    showError("Can't set environment variables for the current directory. Reason:",
         e = getCurrentException())
 
 proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
@@ -260,12 +260,12 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
     nameLength: ColumnAmount = try:
         db.getValue(query = sql(query = "SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1")).len().ColumnAmount
     except DbError:
-      discard showError(message = "Can't get the maximum length of the variables names from database.")
+      showError(message = "Can't get the maximum length of the variables names from database.")
       return
     valueLength: ColumnAmount = try:
         db.getValue(query = sql(query = "SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1")).len().ColumnAmount
     except DbError:
-      discard showError(message = "Can't get the maximum length of the variables values from database.")
+      showError(message = "Can't get the maximum length of the variables values from database.")
       return
     spacesAmount: ColumnAmount = try:
         terminalWidth().ColumnAmount / 12
@@ -279,7 +279,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
               count = valueLength.int)], count = spacesAmount.int),
               fgColor = fgMagenta)
     except ValueError:
-      discard showError(message = "Can't draw header for variables. Reason: ",
+      showError(message = "Can't draw header for variables. Reason: ",
           e = getCurrentException())
     try:
       for row in db.fastRows(query = sql(query = buildQuery(
@@ -290,7 +290,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
                 s = row[2], count = valueLength.int) & " " & row[3],
                     count = spacesAmount.int))
     except DbError, OSError:
-      discard showError(message = "Can't get the current directory name. Reason: ",
+      showError(message = "Can't get the current directory name. Reason: ",
           e = getCurrentException())
       historyIndex = updateHistory(commandToAdd = "variable " & arguments,
           db = db, returnCode = QuitFailure.ResultCode)
@@ -303,7 +303,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
               count = valueLength.int)], count = spacesAmount.int),
               fgColor = fgMagenta)
     except ValueError:
-      discard showError(message = "Can't draw header for variables. Reason: ",
+      showError(message = "Can't draw header for variables. Reason: ",
           e = getCurrentException())
     try:
       for row in db.fastRows(query = sql(
@@ -313,7 +313,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
                 s = row[2], count = valueLength.int) & " " & row[3],
                     count = spacesAmount.int))
     except DbError:
-      discard showError(message = "Can't read data about variables from database. Reason: ",
+      showError(message = "Can't read data about variables from database. Reason: ",
           e = getCurrentException())
       historyIndex = updateHistory(commandToAdd = "variable " & arguments,
           db = db, returnCode = QuitFailure.ResultCode)
@@ -414,13 +414,13 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   while name.len() == 0:
     name = readInput(maxLength = variableNameLength)
     if name.len() == 0:
-      discard showError(message = "Please enter a name for the variable.")
+      showError(message = "Please enter a name for the variable.")
     elif not validIdentifier(s = $name):
       try:
         name.setString(text = "")
-        discard showError(message = "Please enter a valid name for the variable.")
+        showError(message = "Please enter a valid name for the variable.")
       except CapacityError:
-        discard showError(message = "Can't set empty name for variable.")
+        showError(message = "Can't set empty name for variable.")
     if name.len() == 0:
       showOutput(message = "Name: ", newLine = false)
   if name == "exit":
@@ -438,10 +438,10 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   while path.len() == 0:
     path = DirectoryPath($readInput())
     if path.len() == 0:
-      discard showError(message = "Please enter a path for the alias.")
+      showError(message = "Please enter a path for the alias.")
     elif not dirExists(dir = $path) and path != "exit":
       path = "".DirectoryPath
-      discard showError(message = "Please enter a path to the existing directory")
+      showError(message = "Please enter a path to the existing directory")
     if path.len() == 0:
       showOutput(message = "Path: ", newLine = false)
   if path == "exit":
@@ -470,7 +470,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   while value.len() == 0:
     value = readInput()
     if value.len() == 0:
-      discard showError(message = "Please enter value for the variable.")
+      showError(message = "Please enter value for the variable.")
       showOutput(message = "Value: ", newLine = false)
   if value == "exit":
     return showError(message = "Adding a new variable cancelled.")
@@ -543,7 +543,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   while name.len() > 0:
     name = readInput(maxLength = variableNameLength)
     if name.len() > 0 and not validIdentifier(s = $name):
-      discard showError(message = "Please enter a valid name for the variable.")
+      showError(message = "Please enter a valid name for the variable.")
       showOutput(message = "Name: ", newLine = false)
     else:
       break
@@ -573,7 +573,7 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   while path.len() > 0:
     path = DirectoryPath($readInput())
     if path.len() > 0 and not dirExists(dir = $path) and path != "exit":
-      discard showError(message = "Please enter a path to the existing directory")
+      showError(message = "Please enter a path to the existing directory")
       showOutput(message = "Path: ", newLine = false)
     else:
       break
