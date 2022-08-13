@@ -24,12 +24,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import std/[db_sqlite, os, osproc, strutils, tables, terminal]
+import contracts
 import constants, directorypath, lstring, options, output, resultcode
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode; db: DbConn): bool {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect,
-        RootEffect], discardable.} =
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect, RootEffect],
+    discardable, contractual.} =
   ## FUNCTION
   ##
   ## Show the shell prompt if the shell wasn't started in one command mode
@@ -44,80 +45,83 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   ## RETURNS
   ##
   ## True if the prompt is multiline prompt, otherwise false
-  result = false
-  if not promptEnabled:
-    return
-  try:
-    let promptCommand: OptionValue = getOption(optionName = initLimitedString(
-        capacity = 13, text = "promptCommand"), db = db,
-            defaultValue = initLimitedString(
-        capacity = 8, text = "built-in"))
-    if promptCommand != "built-in":
-      var (output, exitCode) = execCmdEx(command = $promptCommand)
-      if exitCode != QuitSuccess:
-        showError(message = "Can't execute external command as the shell's prompt.")
-        return
-      if output.endsWith(suffix = '\n'):
-        output.stripLineEnd()
-        stdout.writeLine(output)
-        return true
-      else:
-        stdout.write(output)
+  require:
+    db != nil
+  body:
+    result = false
+    if not promptEnabled:
       return
-  except CapacityError, Exception:
-    showError(message = "Can't get command for prompt. Reason: ",
-        e = getCurrentException())
-    return
-  let
-    currentDirectory: DirectoryPath = try:
-      getCurrentDir().DirectoryPath
-    except OSError:
-      "[unknown dir]".DirectoryPath
-    homeDirectory: DirectoryPath = getHomeDir().DirectoryPath
-  if endsWith(s = currentDirectory & "/", suffix = $homeDirectory):
     try:
-      stdout.styledWrite(fgBlue, "~")
-    except ValueError, IOError:
-      try:
-        stdout.write(s = "~")
-      except IOError:
-        discard
-  else:
+      let promptCommand: OptionValue = getOption(optionName = initLimitedString(
+          capacity = 13, text = "promptCommand"), db = db,
+              defaultValue = initLimitedString(
+          capacity = 8, text = "built-in"))
+      if promptCommand != "built-in":
+        var (output, exitCode) = execCmdEx(command = $promptCommand)
+        if exitCode != QuitSuccess:
+          showError(message = "Can't execute external command as the shell's prompt.")
+          return
+        if output.endsWith(suffix = '\n'):
+          output.stripLineEnd()
+          stdout.writeLine(output)
+          return true
+        else:
+          stdout.write(output)
+        return
+    except CapacityError, Exception:
+      showError(message = "Can't get command for prompt. Reason: ",
+          e = getCurrentException())
+      return
     let
-      homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
-      promptPath: string = currentDirectory.string[homeIndex +
-              homeDirectory.len()..^1]
-    if homeIndex > -1:
+      currentDirectory: DirectoryPath = try:
+        getCurrentDir().DirectoryPath
+      except OSError:
+        "[unknown dir]".DirectoryPath
+      homeDirectory: DirectoryPath = getHomeDir().DirectoryPath
+    if endsWith(s = currentDirectory & "/", suffix = $homeDirectory):
       try:
-        stdout.styledWrite(fgBlue, "~/" & promptPath)
+        stdout.styledWrite(fgBlue, "~")
       except ValueError, IOError:
         try:
-          stdout.write(s = "~/" & promptPath)
+          stdout.write(s = "~")
         except IOError:
           discard
     else:
+      let
+        homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
+        promptPath: string = currentDirectory.string[homeIndex +
+                homeDirectory.len()..^1]
+      if homeIndex > -1:
+        try:
+          stdout.styledWrite(fgBlue, "~/" & promptPath)
+        except ValueError, IOError:
+          try:
+            stdout.write(s = "~/" & promptPath)
+          except IOError:
+            discard
+      else:
+        try:
+          stdout.styledWrite(fgBlue, $currentDirectory)
+        except ValueError, IOError:
+          try:
+            stdout.write(s = $currentDirectory)
+          except IOError:
+            discard
+    if previousCommand != "" and resultCode != QuitSuccess:
       try:
-        stdout.styledWrite(fgBlue, $currentDirectory)
+        stdout.styledWrite(fgRed, "[" & $resultCode & "]")
       except ValueError, IOError:
         try:
-          stdout.write(s = $currentDirectory)
+          stdout.write(s = "[" & $resultCode & "]")
         except IOError:
           discard
-  if previousCommand != "" and resultCode != QuitSuccess:
     try:
-      stdout.styledWrite(fgRed, "[" & $resultCode & "]")
+      stdout.styledWrite(fgBlue, "# ")
     except ValueError, IOError:
       try:
-        stdout.write(s = "[" & $resultCode & "]")
+        stdout.write(s = "# ")
       except IOError:
         discard
-  try:
-    stdout.styledWrite(fgBlue, "# ")
-  except ValueError, IOError:
-    try:
-      stdout.write(s = "# ")
-    except IOError:
-      discard
 
 func initPrompt*(helpContent: var HelpTable) {.gcsafe, locks: 0,
     raises: [], tags: [].} =
