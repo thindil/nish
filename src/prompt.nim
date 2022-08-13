@@ -125,6 +125,19 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
 
 proc initPrompt*(helpContent: var HelpTable) {.gcsafe, sideEffect, locks: 0,
     raises: [], tags: [], contractual.} =
+  ## FUNCTION
+  ##
+  ## Initialize the shell's prompt. At this moment only set help related to
+  ## the prompt
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ##
+  ## RETURNS
+  ##
+  ## The updated helpContent with the help for the commands related to the
+  ## shell's prompt.
   ensure:
     helpContent.len() > `helpContent`.len()
   body:
