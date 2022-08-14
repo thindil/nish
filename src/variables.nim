@@ -418,8 +418,8 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
+    ], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -537,7 +537,7 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: []
 
 proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
-        WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Edit the selected variable.  Ask the user a few questions and fill the
@@ -554,112 +554,118 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   ## QuitSuccess if the environment variable was successfully updated, otherwise
   ## QuitFailure. Also, updated parameter historyIndex with new length of the
   ## shell's history
-  if arguments.len() < 6:
-    return showError(message = "Enter the ID of the variable to edit.")
-  let varId: DatabaseId = try:
-      parseInt($arguments[7 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the variable must be a positive number.")
-  let
-    row: Row = try:
-        db.getRow(query = sql(query = "SELECT name, path, value, description FROM variables WHERE id=?"), varId)
-      except DbError:
-        return showError(message = "The variable with the ID: " & $varId & " doesn't exists.")
-  showOutput(message = "You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
-  showFormHeader(message = "(1/5) Name")
-  showOutput(message = "The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
-  var name: VariableName = try:
-      initLimitedString(capacity = variableNameLength, text = "exit")
-    except CapacityError:
-      return showError(message = "Can't set name of the variable")
-  showOutput(message = "Name: ", newLine = false)
-  while name.len() > 0:
-    name = readInput(maxLength = variableNameLength)
-    if name.len() > 0 and not validIdentifier(s = $name):
-      showError(message = "Please enter a valid name for the variable.")
-      showOutput(message = "Name: ", newLine = false)
-    else:
-      break
-  if name == "exit":
-    return showError(message = "Editing the variable cancelled.")
-  elif name == "":
+  require:
+    arguments.len() > 0
+    db != nil
+  body:
+    if arguments.len() < 6:
+      return showError(message = "Enter the ID of the variable to edit.")
+    let varId: DatabaseId = try:
+        parseInt($arguments[7 .. ^1]).DatabaseId
+      except ValueError:
+        return showError(message = "The Id of the variable must be a positive number.")
+    let
+      row: Row = try:
+          db.getRow(query = sql(query = "SELECT name, path, value, description FROM variables WHERE id=?"), varId)
+        except DbError:
+          return showError(message = "The variable with the ID: " & $varId & " doesn't exists.")
+    showOutput(message = "You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
+    showFormHeader(message = "(1/5) Name")
+    showOutput(message = "The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
+    var name: VariableName = try:
+        initLimitedString(capacity = variableNameLength, text = "exit")
+      except CapacityError:
+        return showError(message = "Can't set name of the variable")
+    showOutput(message = "Name: ", newLine = false)
+    while name.len() > 0:
+      name = readInput(maxLength = variableNameLength)
+      if name.len() > 0 and not validIdentifier(s = $name):
+        showError(message = "Please enter a valid name for the variable.")
+        showOutput(message = "Name: ", newLine = false)
+      else:
+        break
+    if name == "exit":
+      return showError(message = "Editing the variable cancelled.")
+    elif name == "":
+      try:
+        name.setString(text = row[0])
+      except CapacityError:
+        return showError("Editing the variable cancelled. Reason: can't set name for the variable.")
+    showFormHeader(message = "(2/5) Description")
+    showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '" &
+        row[3] & "'. Can't contains a new line character.: ")
+    var description: UserInput = readInput()
+    if description == "exit":
+      return showError(message = "Editing the variable cancelled.")
+    elif description == "":
+      try:
+        description.setString(text = row[3])
+      except CapacityError:
+        return showError("Editing the variable cancelled. Reason: can't set description for the variable.")
+    showFormHeader(message = "(3/5) Working directory")
+    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
+        row[1] & "'. Must be a path to the existing directory.:")
+    showOutput(message = "Path: ", newLine = false)
+    var path: DirectoryPath = "exit".DirectoryPath
+    while path.len() > 0:
+      path = DirectoryPath($readInput())
+      if path.len() > 0 and not dirExists(dir = $path) and path != "exit":
+        showError(message = "Please enter a path to the existing directory")
+        showOutput(message = "Path: ", newLine = false)
+      else:
+        break
+    if path == "exit":
+      return showError(message = "Editing the variable cancelled.")
+    elif path == "":
+      path = row[1].DirectoryPath
+    showFormHeader(message = "(4/5) Recursiveness")
+    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+    var inputChar: char = try:
+        getch()
+      except IOError:
+        'y'
+    while inputChar notin {'n', 'N', 'y', 'Y'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
     try:
-      name.setString(text = row[0])
-    except CapacityError:
-      return showError("Editing the variable cancelled. Reason: can't set name for the variable.")
-  showFormHeader(message = "(2/5) Description")
-  showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '" &
-      row[3] & "'. Can't contains a new line character.: ")
-  var description: UserInput = readInput()
-  if description == "exit":
-    return showError(message = "Editing the variable cancelled.")
-  elif description == "":
-    try:
-      description.setString(text = row[3])
-    except CapacityError:
-      return showError("Editing the variable cancelled. Reason: can't set description for the variable.")
-  showFormHeader(message = "(3/5) Working directory")
-  showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
-      row[1] & "'. Must be a path to the existing directory.:")
-  showOutput(message = "Path: ", newLine = false)
-  var path: DirectoryPath = "exit".DirectoryPath
-  while path.len() > 0:
-    path = DirectoryPath($readInput())
-    if path.len() > 0 and not dirExists(dir = $path) and path != "exit":
-      showError(message = "Please enter a path to the existing directory")
-      showOutput(message = "Path: ", newLine = false)
-    else:
-      break
-  if path == "exit":
-    return showError(message = "Editing the variable cancelled.")
-  elif path == "":
-    path = row[1].DirectoryPath
-  showFormHeader(message = "(4/5) Recursiveness")
-  showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
-  var inputChar: char = try:
-      getch()
+      stdout.writeLine(x = "")
     except IOError:
-      'y'
-  while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = try:
-      getch()
-    except IOError:
-      'y'
-  let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
-  try:
-    stdout.writeLine(x = "")
-  except IOError:
-    discard
-  showFormHeader(message = "(5/5) Value")
-  showOutput(message = "The value of the variable. Current value: '" & row[2] &
-      "'. Value can't contain a new line character.:")
-  var value: UserInput = readInput()
-  if value == "exit":
-    return showError(message = "Editing the variable cancelled.")
-  elif value == "":
+      discard
+    showFormHeader(message = "(5/5) Value")
+    showOutput(message = "The value of the variable. Current value: '" & row[
+        2] &
+        "'. Value can't contain a new line character.:")
+    var value: UserInput = readInput()
+    if value == "exit":
+      return showError(message = "Editing the variable cancelled.")
+    elif value == "":
+      try:
+        value.setString(text = row[2])
+      except CapacityError:
+        return showError("Editing the variable cancelled. Reason: can't set value for the variable.")
+    # Save the variable to the database
     try:
-      value.setString(text = row[2])
-    except CapacityError:
-      return showError("Editing the variable cancelled. Reason: can't set value for the variable.")
-  # Save the variable to the database
-  try:
-    if db.execAffectedRows(query = sql(query = "UPDATE variables SET name=?, path=?, recursive=?, value=?, description=? where id=?"),
-        name, path, recursive, value, description, varId) != 1:
-      return showError(message = "Can't edit the variable.")
-  except DbError:
-    return showError(message = "Can't save the edits of the variable to database. Reason: ",
-        e = getCurrentException())
-  # Update history index and refresh the list of available variables
-  historyIndex = updateHistory(commandToAdd = "variable edit", db = db)
-  try:
-    setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
-        oldDirectory = getCurrentDir().DirectoryPath)
-  except OSError:
-    return showError(message = "Can't set variables for the current directory. Reason: ",
-        e = getCurrentException())
-  showOutput(message = "The variable  with Id: '" & $varId & "' edited.",
-      fgColor = fgGreen)
-  return QuitSuccess.ResultCode
+      if db.execAffectedRows(query = sql(
+          query = "UPDATE variables SET name=?, path=?, recursive=?, value=?, description=? where id=?"),
+           name, path, recursive, value, description, varId) != 1:
+        return showError(message = "Can't edit the variable.")
+    except DbError:
+      return showError(message = "Can't save the edits of the variable to database. Reason: ",
+          e = getCurrentException())
+    # Update history index and refresh the list of available variables
+    historyIndex = updateHistory(commandToAdd = "variable edit", db = db)
+    try:
+      setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
+          oldDirectory = getCurrentDir().DirectoryPath)
+    except OSError:
+      return showError(message = "Can't set variables for the current directory. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "The variable  with Id: '" & $varId & "' edited.",
+        fgColor = fgGreen)
+    return QuitSuccess.ResultCode
 
 proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
