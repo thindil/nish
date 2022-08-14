@@ -369,7 +369,7 @@ proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
 
 proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
-        WriteDbEffect, ReadEnvEffect, TimeEffect].} =
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Delete the selected variable from the shell's database
@@ -385,34 +385,38 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   ## QuitSuccess if the environment variable was successfully deleted, otherwise
   ## QuitFailure. Also, updated parameter historyIndex with new length of the
   ## shell's history
-  if arguments.len() < 8:
-    historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
-        returnCode = QuitFailure.ResultCode)
-    return showError(message = "Enter the Id of the variable to delete.")
-  let varId: DatabaseId = try:
-      parseInt($arguments[7 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the variable must be a positive number.")
-  try:
-    if db.execAffectedRows(query = sql(query = (
-        "DELETE FROM variables WHERE id=?")), varId) == 0:
+  require:
+    arguments.len() > 0
+    db != nil
+  body:
+    if arguments.len() < 8:
       historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
           returnCode = QuitFailure.ResultCode)
-      return showError(message = "The variable with the Id: " & $varId &
-        " doesn't exist.")
-  except DbError:
-    return showError(message = "Can't delete variable from database. Reason: ",
-        e = getCurrentException())
-  historyIndex = updateHistory(commandToAdd = "variable delete", db = db)
-  try:
-    setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
-        oldDirectory = getCurrentDir().DirectoryPath)
-  except OSError:
-    return showError(message = "Can't set environment variables in the current directory. Reason: ",
-        e = getCurrentException())
-  showOutput(message = "Deleted the variable with Id: " & $varId,
-      fgColor = fgGreen)
-  return QuitSuccess.ResultCode
+      return showError(message = "Enter the Id of the variable to delete.")
+    let varId: DatabaseId = try:
+        parseInt($arguments[7 .. ^1]).DatabaseId
+      except ValueError:
+        return showError(message = "The Id of the variable must be a positive number.")
+    try:
+      if db.execAffectedRows(query = sql(query = (
+          "DELETE FROM variables WHERE id=?")), varId) == 0:
+        historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
+            returnCode = QuitFailure.ResultCode)
+        return showError(message = "The variable with the Id: " & $varId &
+          " doesn't exist.")
+    except DbError:
+      return showError(message = "Can't delete variable from database. Reason: ",
+          e = getCurrentException())
+    historyIndex = updateHistory(commandToAdd = "variable delete", db = db)
+    try:
+      setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
+          oldDirectory = getCurrentDir().DirectoryPath)
+    except OSError:
+      return showError(message = "Can't set environment variables in the current directory. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "Deleted the variable with Id: " & $varId,
+        fgColor = fgGreen)
+    return QuitSuccess.ResultCode
 
 proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
     ], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
