@@ -147,7 +147,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
 
 proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect, WriteDbEffect].} =
+    ReadEnvEffect, TimeEffect, WriteDbEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize enviroment variables. Set help related to the variables and
@@ -163,25 +163,30 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
   ## The list of available environment variables in the current directory and
   ## the updated helpContent with the help for the commands related to the
   ## variables.
-  helpContent["set"] = HelpEntry(usage: "set [name=value]",
-      content: "Set the environment variable with the selected name and value.")
-  helpContent["unset"] = HelpEntry(usage: "unset [name]",
-      content: "Remove the environment variable with the selected name.")
-  helpContent["variable"] = HelpEntry(usage: "variable ?subcommand?",
-      content: "If entered without subcommand, show the list of available subcommands for variables. Otherwise, execute the selected subcommand.")
-  helpContent["variable list"] = HelpEntry(usage: "variable list ?all?",
-      content: "Show the list of all declared in shell environment variables in the current directory. If parameter all added, show all declared environment variables.")
-  helpContent["variable delete"] = HelpEntry(usage: "variable delete [index]",
-      content: "Delete the declared in shell environment variable with the selected index.")
-  helpContent["variable add"] = HelpEntry(usage: "variable add",
-      content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
-  helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
-      content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
-  try:
-    setVariables(getCurrentDir().DirectoryPath, db)
-  except OSError:
-    showError("Can't set environment variables for the current directory. Reason:",
-        e = getCurrentException())
+  require:
+    db != nil
+  ensure:
+    helpContent.len() > `helpContent`.len()
+  body:
+    helpContent["set"] = HelpEntry(usage: "set [name=value]",
+        content: "Set the environment variable with the selected name and value.")
+    helpContent["unset"] = HelpEntry(usage: "unset [name]",
+        content: "Remove the environment variable with the selected name.")
+    helpContent["variable"] = HelpEntry(usage: "variable ?subcommand?",
+        content: "If entered without subcommand, show the list of available subcommands for variables. Otherwise, execute the selected subcommand.")
+    helpContent["variable list"] = HelpEntry(usage: "variable list ?all?",
+        content: "Show the list of all declared in shell environment variables in the current directory. If parameter all added, show all declared environment variables.")
+    helpContent["variable delete"] = HelpEntry(usage: "variable delete [index]",
+        content: "Delete the declared in shell environment variable with the selected index.")
+    helpContent["variable add"] = HelpEntry(usage: "variable add",
+        content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
+    helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
+        content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
+    try:
+      setVariables(getCurrentDir().DirectoryPath, db)
+    except OSError:
+      showError("Can't set environment variables for the current directory. Reason:",
+          e = getCurrentException())
 
 proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
