@@ -258,8 +258,8 @@ proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     discard updateHistory(commandToAdd = "unset " & arguments, db = db,
         returnCode = result)
 
-proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
+    ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -345,7 +345,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
 
 proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect].} =
+    TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show short help about available subcommands related to the environment variables
@@ -357,12 +357,15 @@ proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ## RETURNS
   ##
   ## The new length of the shell's commands' history.
-  showOutput(message = """Available subcommands are: list, delete, add, edit
+  require:
+    db != nil
+  body:
+    showOutput(message = """Available subcommands are: list, delete, add, edit
 
-        To see more information about the subcommand, type help variable [command],
-        for example: help variable list.
-""")
-  return updateHistory(commandToAdd = "variable", db = db)
+          To see more information about the subcommand, type help variable [command],
+          for example: help variable list.
+  """)
+    return updateHistory(commandToAdd = "variable", db = db)
 
 proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
