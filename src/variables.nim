@@ -418,9 +418,9 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
-    ], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect].} =
+proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Add a new variable to the shell. Ask the user a few questions and fill the
@@ -436,101 +436,104 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   ## QuitSuccess if the environment variable was successfully added, otherwise
   ## QuitFailure. Also, updated parameter historyIndex with new length of the
   ## shell's history
-  showOutput(message = "You can cancel adding a new variable at any time by double press Escape key.")
-  showFormHeader(message = "(1/5) Name")
-  showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
-  var name: VariableName = emptyLimitedString(capacity = variableNameLength)
-  showOutput(message = "Name: ", newLine = false)
-  while name.len() == 0:
-    name = readInput(maxLength = variableNameLength)
-    if name.len() == 0:
-      showError(message = "Please enter a name for the variable.")
-    elif not validIdentifier(s = $name):
-      try:
-        name.setString(text = "")
-        showError(message = "Please enter a valid name for the variable.")
-      except CapacityError:
-        showError(message = "Can't set empty name for variable.")
-    if name.len() == 0:
-      showOutput(message = "Name: ", newLine = false)
-  if name == "exit":
-    return showError(message = "Adding a new variable cancelled.")
-  showFormHeader(message = "(2/5) Description")
-  showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
-  showOutput(message = "Description: ", newLine = false)
-  let description: UserInput = readInput()
-  if description == "exit":
-    return showError(message = "Adding a new variable cancelled.")
-  showFormHeader(message = "(3/5) Working directory")
-  showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
-  showOutput(message = "Path: ", newLine = false)
-  var path: DirectoryPath = "".DirectoryPath
-  while path.len() == 0:
-    path = DirectoryPath($readInput())
-    if path.len() == 0:
-      showError(message = "Please enter a path for the alias.")
-    elif not dirExists(dir = $path) and path != "exit":
-      path = "".DirectoryPath
-      showError(message = "Please enter a path to the existing directory")
-    if path.len() == 0:
-      showOutput(message = "Path: ", newLine = false)
-  if path == "exit":
-    return showError(message = "Adding a new variable cancelled.")
-  showFormHeader(message = "(4/5) Recursiveness")
-  showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
-  showOutput(message = "Recursive(y/n): ", newLine = false)
-  var inputChar: char = try:
-      getch()
+  require:
+    db != nil
+  body:
+    showOutput(message = "You can cancel adding a new variable at any time by double press Escape key.")
+    showFormHeader(message = "(1/5) Name")
+    showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
+    var name: VariableName = emptyLimitedString(capacity = variableNameLength)
+    showOutput(message = "Name: ", newLine = false)
+    while name.len() == 0:
+      name = readInput(maxLength = variableNameLength)
+      if name.len() == 0:
+        showError(message = "Please enter a name for the variable.")
+      elif not validIdentifier(s = $name):
+        try:
+          name.setString(text = "")
+          showError(message = "Please enter a valid name for the variable.")
+        except CapacityError:
+          showError(message = "Can't set empty name for variable.")
+      if name.len() == 0:
+        showOutput(message = "Name: ", newLine = false)
+    if name == "exit":
+      return showError(message = "Adding a new variable cancelled.")
+    showFormHeader(message = "(2/5) Description")
+    showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
+    showOutput(message = "Description: ", newLine = false)
+    let description: UserInput = readInput()
+    if description == "exit":
+      return showError(message = "Adding a new variable cancelled.")
+    showFormHeader(message = "(3/5) Working directory")
+    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
+    showOutput(message = "Path: ", newLine = false)
+    var path: DirectoryPath = "".DirectoryPath
+    while path.len() == 0:
+      path = DirectoryPath($readInput())
+      if path.len() == 0:
+        showError(message = "Please enter a path for the alias.")
+      elif not dirExists(dir = $path) and path != "exit":
+        path = "".DirectoryPath
+        showError(message = "Please enter a path to the existing directory")
+      if path.len() == 0:
+        showOutput(message = "Path: ", newLine = false)
+    if path == "exit":
+      return showError(message = "Adding a new variable cancelled.")
+    showFormHeader(message = "(4/5) Recursiveness")
+    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+    showOutput(message = "Recursive(y/n): ", newLine = false)
+    var inputChar: char = try:
+        getch()
+      except IOError:
+        'y'
+    while inputChar notin {'n', 'N', 'y', 'Y'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+    try:
+      stdout.writeLine(x = "")
     except IOError:
-      'y'
-  while inputChar notin {'n', 'N', 'y', 'Y'}:
-    inputChar = try:
-      getch()
-    except IOError:
-      'y'
-  let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
-  try:
-    stdout.writeLine(x = "")
-  except IOError:
-    discard
-  showFormHeader(message = "(5/5) Value")
-  showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
-  showOutput(message = "Value: ", newLine = false)
-  var value: UserInput = emptyLimitedString(capacity = maxInputLength)
-  while value.len() == 0:
-    value = readInput()
-    if value.len() == 0:
-      showError(message = "Please enter value for the variable.")
-      showOutput(message = "Value: ", newLine = false)
-  if value == "exit":
-    return showError(message = "Adding a new variable cancelled.")
-  # Check if variable with the same parameters exists in the database
-  try:
-    if db.getValue(query = sql(query = "SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?"),
-        name, path, recursive, value).len() > 0:
-      return showError(message = "There is a variable with the same name, path and value in the database.")
-  except DbError:
-    return showError(message = "Can't check if the same variable exists in the database. Reason: ",
-        e = getCurrentException())
-  # Save the variable to the database
-  try:
-    if db.tryInsertID(query = sql(query = "INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)"),
-        name, path, recursive, value, description) == -1:
-      return showError(message = "Can't add variable.")
-  except DbError:
-    return showError(message = "Can't add the variable to database. Reason: ",
-        e = getCurrentException())
-  # Update history index and refresh the list of available variables
-  historyIndex = updateHistory(commandToAdd = "variable add", db = db)
-  try:
-    setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
-        oldDirectory = getCurrentDir().DirectoryPath)
-  except OSError:
-    return showError(message = "Can't set variables for the current directory. Reason: ",
-        e = getCurrentException())
-  showOutput(message = "The new variable '" & name & "' added.",
-      fgColor = fgGreen)
-  return QuitSuccess.ResultCode
+      discard
+    showFormHeader(message = "(5/5) Value")
+    showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
+    showOutput(message = "Value: ", newLine = false)
+    var value: UserInput = emptyLimitedString(capacity = maxInputLength)
+    while value.len() == 0:
+      value = readInput()
+      if value.len() == 0:
+        showError(message = "Please enter value for the variable.")
+        showOutput(message = "Value: ", newLine = false)
+    if value == "exit":
+      return showError(message = "Adding a new variable cancelled.")
+    # Check if variable with the same parameters exists in the database
+    try:
+      if db.getValue(query = sql(query = "SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?"),
+          name, path, recursive, value).len() > 0:
+        return showError(message = "There is a variable with the same name, path and value in the database.")
+    except DbError:
+      return showError(message = "Can't check if the same variable exists in the database. Reason: ",
+          e = getCurrentException())
+    # Save the variable to the database
+    try:
+      if db.tryInsertID(query = sql(query = "INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)"),
+          name, path, recursive, value, description) == -1:
+        return showError(message = "Can't add variable.")
+    except DbError:
+      return showError(message = "Can't add the variable to database. Reason: ",
+          e = getCurrentException())
+    # Update history index and refresh the list of available variables
+    historyIndex = updateHistory(commandToAdd = "variable add", db = db)
+    try:
+      setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
+          oldDirectory = getCurrentDir().DirectoryPath)
+    except OSError:
+      return showError(message = "Can't set variables for the current directory. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "The new variable '" & name & "' added.",
+        fgColor = fgGreen)
+    return QuitSuccess.ResultCode
 
 proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
