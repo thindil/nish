@@ -227,7 +227,7 @@ proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
 
 proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
-        ReadEnvEffect, TimeEffect].} =
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Build-in command to unset the selected environment variable
@@ -241,19 +241,22 @@ proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ##
   ## QuitSuccess if the environment variable was successfully unset, otherwise
   ## QuitFailure
-  if arguments.len() > 0:
-    try:
-      delEnv(key = $arguments)
-      showOutput(message = "Environment variable '" & arguments & "' removed",
-          fgColor = fgGreen)
-      result = QuitSuccess.ResultCode
-    except OSError:
-      result = showError(message = "Can't unset the environment variable '" &
-          arguments & "'. Reason:", e = getCurrentException())
-  else:
-    result = showError(message = "You have to enter the name of the variable to unset.")
-  discard updateHistory(commandToAdd = "unset " & arguments, db = db,
-      returnCode = result)
+  require:
+    db != nil
+  body:
+    if arguments.len() > 0:
+      try:
+        delEnv(key = $arguments)
+        showOutput(message = "Environment variable '" & arguments & "' removed",
+            fgColor = fgGreen)
+        result = QuitSuccess.ResultCode
+      except OSError:
+        result = showError(message = "Can't unset the environment variable '" &
+            arguments & "'. Reason:", e = getCurrentException())
+    else:
+      result = showError(message = "You have to enter the name of the variable to unset.")
+    discard updateHistory(commandToAdd = "unset " & arguments, db = db,
+        returnCode = result)
 
 proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
     ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
