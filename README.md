@@ -253,6 +253,9 @@ executed every time before and after you execute your command. Thus, be sure it
 isn't too heavy for your system, or it isn't dangerous, for example, it doesn't
 steal credentials, harm your system, etc.
 
+If the plugin doesn't answer on any API call from the shell, it should return
+error code 2, so the shell will known that the API's call isn't supported by
+the plugin.
 
 Available API calls from plugins:
 
