@@ -56,6 +56,7 @@ with additional extensions:
 * If possible, subprograms without side effects should be declared as functions.
 * All subprograms must have a corresponding unit test, even if it is a very simple
   test.
+* All subprograms must have written contracts, even it they are very simple.
 
 ### Code submission
 
