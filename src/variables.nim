@@ -668,7 +668,8 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     return QuitSuccess.ResultCode
 
 proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0.} =
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0,
+    contractual.} =
   ## FUNCTION
   ##
   ## Create the table variables
@@ -681,21 +682,24 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
   ##
   ## QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
-  try:
-    db.exec(query = sql(query = """CREATE TABLE variables (
-               id          INTEGER       PRIMARY KEY,
-               name        VARCHAR(""" & $variableNameLength &
-          """) NOT NULL,
-               path        VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-               recursive   BOOLEAN       NOT NULL,
-               value       VARCHAR(""" & $maxInputLength &
-          """) NOT NULL,
-               description VARCHAR(""" & $maxInputLength &
-          """) NOT NULL
-            )"""))
-  except DbError:
-    return showError(message = "Can't create 'variables' table. Reason: ",
-        e = getCurrentException())
-  return QuitSuccess.ResultCode
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """CREATE TABLE variables (
+                 id          INTEGER       PRIMARY KEY,
+                 name        VARCHAR(""" & $variableNameLength &
+            """) NOT NULL,
+                 path        VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                 recursive   BOOLEAN       NOT NULL,
+                 value       VARCHAR(""" & $maxInputLength &
+            """) NOT NULL,
+                 description VARCHAR(""" & $maxInputLength &
+            """) NOT NULL
+              )"""))
+    except DbError:
+      return showError(message = "Can't create 'variables' table. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
