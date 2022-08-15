@@ -14,7 +14,7 @@ binDir = "bin"
 # Dependencies
 
 requires "nim >= 1.6.6"
-requires "contracts >= 0.2.1"
+requires "https://github.com/thindil/NimContracts#head"
 
 # Tasks
 
