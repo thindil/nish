@@ -28,6 +28,11 @@ import contracts
 import columnamount, constants, databaseid, history, input, lstring, options,
     output, resultcode
 
+const apiVersion: string = "0.2"
+  ## FUNCTION
+  ##
+  ## The current version of the shell's plugins' API
+
 type PluginsList* = Table[string, string]
   ## FUNCTION
   ##
