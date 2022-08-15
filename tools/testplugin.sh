@@ -109,10 +109,9 @@ case "${1}" in
       # Show the message with full executed command
       echo "showOutput \"The command which was executed: $2\""
       ;;
-   # Unknown API option called. Show the error message and quit
+   # Unknown API option called. Quit with status code 2 so the shell can know
+   # about unsupported command
    *)
-      # Show the selected text in the standard error output
-      echo 'showError "Unknown plugin command."'
-      exit 1
+      exit 2
       ;;
 esac
