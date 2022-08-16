@@ -599,10 +599,16 @@ proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
     showOutput(message = indent(s = alignLeft(s = "Enabled: ", count = 13),
         count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
     showOutput(message = (if row[1] == "1": "Yes" else: "No"))
+    showOutput(message = indent(s = alignLeft(s = "API version: ", count = 13),
+        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
     let pluginData = execPlugin(pluginPath = row[0], arguments = ["info"], db = db)
     # If plugin contains any aditional information, show them
     if pluginData.code == QuitSuccess:
       let pluginInfo = split($pluginData.answer, ";")
+      if pluginInfo.len() > 2:
+        showOutput(message = pluginInfo[2])
+      else:
+        showOutput(message = "0.1")
       showOutput(message = indent(s = alignLeft(s = "Name: ", count = 13),
           count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
       showOutput(message = pluginInfo[0])
@@ -610,4 +616,6 @@ proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
         showOutput(message = indent(s = "Description: ",
             count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
         showOutput(message = pluginInfo[1])
+    else:
+      showOutput(message = "0.1")
     return QuitSuccess.ResultCode
