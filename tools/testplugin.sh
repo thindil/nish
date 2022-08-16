@@ -94,8 +94,9 @@ case "${1}" in
    # It require to return a string with two values: the plugin name and the
    # plugin description. Values have to be separated with semicolon.
    info)
-      # Send answer to the shell with the plugin's name and description
-      echo 'answer "Testplugin;Test plugin"'
+      # Send answer to the shell with the plugin's name, description and API
+      # version
+      echo 'answer "Testplugin;Test plugin;0.2"'
       ;;
    # Called before each the user's command is executed. The second argument is
    # the full command, with arguments, which will be executed.
