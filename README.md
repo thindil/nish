@@ -231,7 +231,7 @@ especially by adding new API calls. The plugins can reside in any location.
 The directory `tools` contains the example plugin `testplugin.sh` written in
 Bash.
 
-At this moment, available API calls from the shell:
+At this moment, available API calls from the shell (current version of API is 0.2):
 
 * `install`: called during installation of the plugin (adding it to the
   shell).
@@ -240,7 +240,8 @@ At this moment, available API calls from the shell:
 * `disable`: called during disabling the plugin.
 * `init`: called during initialization (starting) of the shell.
 * `info`: called during showing information about the plugin. Requested
-  response from the plugin should have form `answer [name of the plugin;description of the plugin]`.
+  response from the plugin should have form:
+  `answer [name of the plugin;description of the plugin;API version of the plugin]`.
 * `preCommand [command]`: called before the user's command will be executed.
   Command argument is the name of command and all its arguments entered by the
   user.
