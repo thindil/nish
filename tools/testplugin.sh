@@ -90,13 +90,14 @@ case "${1}" in
       # Show another message, colored in green
       echo "showOutput \"Initialized the testplugin\" fgGreen"
       ;;
-   # Called when the user enter command "plugin show" for the selected plugin.
-   # It require to return a string with two values: the plugin name and the
-   # plugin description. Values have to be separated with semicolon.
+   # It require to return a string with four values: the plugin name, the
+   # plugin description, the supported API version and the list of API commands
+   # which will be executed by the plugin (separated by colon). Values have to
+   # be separated with semicolon.
    info)
-      # Send answer to the shell with the plugin's name, description and API
-      # version
-      echo 'answer "Testplugin;Test plugin;0.2"'
+      # Send answer to the shell with the plugin's name, description, API
+      # version and list of API commands
+      echo 'answer "Testplugin;Test plugin;0.2;install,uninstall,enable,disable,init,info,preCommand,postCommand"'
       ;;
    # Called before each the user's command is executed. The second argument is
    # the full command, with arguments, which will be executed.
