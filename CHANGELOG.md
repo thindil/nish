@@ -6,6 +6,9 @@ of the shell.
 
 ## [Unreleased]
 
+### Added
+- **BREAKING**: Added version to the plugins API
+
 ### Changed
 - Updated README.md
 - Updated contributing guide
