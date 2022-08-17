@@ -92,7 +92,7 @@ case "${1}" in
       ;;
    # It require to return a string with four values: the plugin name, the
    # plugin description, the supported API version and the list of API commands
-   # which will be executed by the plugin (separated by colon). Values have to
+   # which will be executed by the plugin (separated by comma). Values have to
    # be separated with semicolon.
    info)
       # Send answer to the shell with the plugin's name, description, API
