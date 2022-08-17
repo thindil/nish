@@ -33,7 +33,11 @@ const apiVersion: string = "0.2"
   ##
   ## The current version of the shell's plugins' API
 
-type PluginsList* = Table[string, string]
+type
+  PluginData = object
+    path: string
+    api: seq[string]
+  PluginsList* = Table[string, PluginData]
   ## FUNCTION
   ##
   ## Used to store the enabled shell's plugins
@@ -207,14 +211,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-proc addToPlugins(id, path: string; pluginsList): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [], contractual.} =
+proc addToPlugins(id, path: string; pluginsList; db): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect,
+        ExecIOEffect, ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect],
+        contractual.} =
   require:
     id.len() > 0
     path.len() > 0
   body:
-    pluginsList[id] = path
-    return QuitSuccess.ResultCode
+    let pluginData = execPlugin(pluginPath = path, arguments = ["info"], db = db)
+    result = pluginData.code
+    if result == QuitFailure:
+      return
+    pluginsList[id] = PluginData(path: path)
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
@@ -264,7 +273,8 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       # Add the plugin to the shell database and the list of enabled plugins
       let newId = db.insertID(query = sql(
           query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
-      result = addToPlugins($newId, pluginPath, pluginsList)
+      result = addToPlugins(id = $newId, path = pluginPath,
+          pluginsList = pluginsList, db = db)
       if result == QuitFailure:
         return
     except DbError:
@@ -322,7 +332,8 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
             showError(message = "Can't initialize plugin '" & dbResult[
                 1] & "'.")
             return
-          if addToPlugins(dbResult[0], dbResult[1], result) == QuitFailure:
+          if addToPlugins(id = dbResult[0], path = dbResult[1],
+              pluginsList = result, db = db) == QuitFailure:
             break
     except DbError:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
@@ -472,7 +483,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       if disable:
         pluginsList.del($pluginId)
       else:
-        result = addToPlugins($pluginId, pluginPath, pluginsList)
+        result = addToPlugins(id = $pluginId, path = pluginPath,
+            pluginsList = pluginsList, db = db)
         if result == QuitFailure:
           return
     except DbError:
@@ -524,9 +536,9 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
       except ValueError:
         showOutput(message = indent(s = "ID   Path",
             count = spacesAmount.int), fgColor = fgMagenta)
-      for id, location in plugins.pairs:
+      for id, data in plugins.pairs:
         showOutput(message = indent(s = alignLeft(id, count = 4) & " " &
-            alignLeft(s = location, count = columnLength.int),
+            alignLeft(s = data.path, count = columnLength.int),
                 count = spacesAmount.int))
       historyIndex = updateHistory(commandToAdd = "plugin list", db = db)
     # Show the list of all installed plugins with information about their state
