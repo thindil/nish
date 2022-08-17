@@ -207,6 +207,15 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
+proc addToPlugins(id, path: string; pluginsList): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [], contractual.} =
+  require:
+    id.len() > 0
+    path.len() > 0
+  body:
+    pluginsList[id] = path
+    return QuitSuccess.ResultCode
+
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, TimeEffect, WriteDbEffect, RootEffect],
@@ -255,7 +264,9 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       # Add the plugin to the shell database and the list of enabled plugins
       let newId = db.insertID(query = sql(
           query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
-      pluginsList[$newId] = pluginPath
+      result = addToPlugins($newId, pluginPath, pluginsList)
+      if result == QuitFailure:
+        return
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
           e = getCurrentException())
@@ -311,7 +322,8 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
             showError(message = "Can't initialize plugin '" & dbResult[
                 1] & "'.")
             return
-          result[dbResult[0]] = dbResult[1]
+          if addToPlugins(dbResult[0], dbResult[1], result) == QuitFailure:
+            break
     except DbError:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException())
@@ -460,7 +472,9 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       if disable:
         pluginsList.del($pluginId)
       else:
-        pluginsList[$pluginId] = pluginPath
+        result = addToPlugins($pluginId, pluginPath, pluginsList)
+        if result == QuitFailure:
+          return
     except DbError:
       historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
           db = db, returnCode = QuitFailure.ResultCode)
