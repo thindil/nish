@@ -218,11 +218,15 @@ proc addToPlugins(id, path: string; pluginsList; db): ResultCode {.gcsafe,
   require:
     id.len() > 0
     path.len() > 0
+    db != nil
   body:
     let pluginData = execPlugin(pluginPath = path, arguments = ["info"], db = db)
     result = pluginData.code
     if result == QuitFailure:
       return
+    let pluginInfo = split($pluginData.answer, ";")
+    if pluginInfo.len() < 4:
+      return QuitFailure.ResultCode
     pluginsList[id] = PluginData(path: path)
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
