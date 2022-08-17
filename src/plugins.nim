@@ -609,6 +609,9 @@ proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
         showOutput(message = pluginInfo[2])
       else:
         showOutput(message = "0.1")
+      showOutput(message = indent(s = alignLeft(s = "API used: ", count = 13),
+          count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+      showOutput(message = pluginInfo[3])
       showOutput(message = indent(s = alignLeft(s = "Name: ", count = 13),
           count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
       showOutput(message = pluginInfo[0])
