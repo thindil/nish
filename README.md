@@ -241,7 +241,7 @@ At this moment, available API calls from the shell (current version of API is 0.
 * `init`: called during initialization (starting) of the shell.
 * `info`: called during showing information about the plugin. Requested
   response from the plugin should have form:
-  `answer [name of the plugin;description of the plugin;API version of the plugin]`.
+  `answer [name of the plugin;description of the plugin;API version of the plugin;list of API used(separated by comma)]`.
 * `preCommand [command]`: called before the user's command will be executed.
   Command argument is the name of command and all its arguments entered by the
   user.
