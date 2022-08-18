@@ -219,7 +219,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         DirSep & "nish.db")
     helpContent = initTable[string, HelpEntry]()
     cursorPosition: Natural = 0
-    plugins: PluginsList = initTable[string, string]()
+    plugins: PluginsList = initTable[string, PluginData]()
 
   proc ctrlC() {.noconv.} =
     ## FUNCTION
@@ -501,7 +501,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       discard
     # Execute plugins with precommand hook
     for plugin in plugins.values:
-      discard execPlugin(pluginPath = plugin, arguments = ["preCommand",
+      discard execPlugin(pluginPath = plugin.path, arguments = ["preCommand",
           commandName & " " & arguments], db = db)
     # Parse commands
     case commandName
@@ -698,7 +698,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = QuitFailure.ResultCode
     # Execute plugins with postcommand hook
     for plugin in plugins.values:
-      discard execPlugin(pluginPath = plugin, arguments = ["postCommand",
+      discard execPlugin(pluginPath = plugin.path, arguments = ["postCommand",
           commandName & " " & arguments], db = db)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
