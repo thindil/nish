@@ -28,10 +28,11 @@ import contracts
 import columnamount, constants, databaseid, history, input, lstring, options,
     output, resultcode
 
-const apiVersion: string = "0.2"
+const minApiVersion: string = "0.2"
   ## FUNCTION
   ##
-  ## The current version of the shell's plugins' API
+  ## The minimal version of the shell's plugins' API which plugins must support
+  ## in order to work
 
 type
   PluginData* = object
