@@ -28,7 +28,7 @@ import contracts
 import columnamount, constants, databaseid, history, input, lstring, options,
     output, resultcode
 
-const minApiVersion: string = "0.2"
+const minApiVersion: float = 0.2
   ## FUNCTION
   ##
   ## The minimal version of the shell's plugins' API which plugins must support
