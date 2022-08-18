@@ -34,8 +34,8 @@ const apiVersion: string = "0.2"
   ## The current version of the shell's plugins' API
 
 type
-  PluginData = object
-    path: string
+  PluginData* = object
+    path*: string
     api: seq[string]
   PluginsList* = Table[string, PluginData]
   ## FUNCTION
@@ -204,6 +204,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
     except OSError, IOError, Exception:
       return (showError(message = "Can't get the plugin '" & pluginPath &
           "' output. Reason: ", e = getCurrentException()), emptyAnswer)
+    if plugin.peekExitCode().ResultCode == 2:
+      return (showError(message = "Plugin '" & pluginPath &
+          "' doesn't support API command '" & arguments[0] & "'"), emptyAnswer)
     result.code = plugin.peekExitCode().ResultCode
     try:
       plugin.close()
