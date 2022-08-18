@@ -215,7 +215,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-proc addToPlugins(id, path: string; pluginsList; db): ResultCode {.gcsafe,
+proc checkPlugin(id, path: string; pluginsList; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect,
         ExecIOEffect, ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect],
         contractual.} =
@@ -286,7 +286,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       # Add the plugin to the shell database and the list of enabled plugins
       let newId = db.insertID(query = sql(
           query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
-      result = addToPlugins(id = $newId, path = pluginPath,
+      result = checkPlugin(id = $newId, path = pluginPath,
           pluginsList = pluginsList, db = db)
       if result == QuitFailure:
         return
@@ -345,7 +345,7 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
             showError(message = "Can't initialize plugin '" & dbResult[
                 1] & "'.")
             return
-          if addToPlugins(id = dbResult[0], path = dbResult[1],
+          if checkPlugin(id = dbResult[0], path = dbResult[1],
               pluginsList = result, db = db) == QuitFailure:
             break
     except DbError:
@@ -496,7 +496,7 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       if disable:
         pluginsList.del($pluginId)
       else:
-        result = addToPlugins(id = $pluginId, path = pluginPath,
+        result = checkPlugin(id = $pluginId, path = pluginPath,
             pluginsList = pluginsList, db = db)
         if result == QuitFailure:
           return
