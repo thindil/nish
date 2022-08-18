@@ -231,6 +231,11 @@ proc addToPlugins(id, path: string; pluginsList; db): ResultCode {.gcsafe,
     let pluginInfo = split($pluginData.answer, ";")
     if pluginInfo.len() < 4:
       return QuitFailure.ResultCode
+    try:
+      if parseFloat(s = pluginInfo[2]) < minApiVersion:
+        return QuitFailure.ResultCode
+    except ValueError:
+      return QuitFailure.ResultCode
     pluginsList[id] = PluginData(path: path)
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
