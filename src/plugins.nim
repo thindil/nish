@@ -215,7 +215,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-proc checkPlugin(id, path: string; pluginsList; db): ResultCode {.gcsafe,
+proc checkPlugin(id, path: string; db): PluginData {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect,
         ExecIOEffect, ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect],
         contractual.} =
@@ -225,18 +225,17 @@ proc checkPlugin(id, path: string; pluginsList; db): ResultCode {.gcsafe,
     db != nil
   body:
     let pluginData = execPlugin(pluginPath = path, arguments = ["info"], db = db)
-    result = pluginData.code
-    if result == QuitFailure:
+    if pluginData.code == QuitFailure:
       return
     let pluginInfo = split(s = $pluginData.answer, sep = ";")
     if pluginInfo.len() < 4:
-      return QuitFailure.ResultCode
+      return
     try:
       if parseFloat(s = pluginInfo[2]) < minApiVersion:
-        return QuitFailure.ResultCode
+        return
     except ValueError:
-      return QuitFailure.ResultCode
-    pluginsList[id] = PluginData(path: path)
+      return
+    result = PluginData(path: path, api: split(s = pluginInfo[3], sep = ";"))
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
@@ -286,10 +285,10 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       # Add the plugin to the shell database and the list of enabled plugins
       let newId = db.insertID(query = sql(
           query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
-      result = checkPlugin(id = $newId, path = pluginPath,
-          pluginsList = pluginsList, db = db)
-      if result == QuitFailure:
-        return
+      let newPlugin = checkPlugin(id = $newId, path = pluginPath, db = db)
+      if newPlugin.path.len() == 0:
+        return QuitFailure.ResultCode
+      pluginsList[$newId] = newPlugin
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
           e = getCurrentException())
@@ -345,9 +344,10 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
             showError(message = "Can't initialize plugin '" & dbResult[
                 1] & "'.")
             return
-          if checkPlugin(id = dbResult[0], path = dbResult[1],
-              pluginsList = result, db = db) == QuitFailure:
+          let newPlugin = checkPlugin(id = dbResult[0], path = dbResult[1], db = db)
+          if newPlugin.path.len() == 0:
             break
+          result[dbResult[0]] = newPlugin
     except DbError:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException())
@@ -496,10 +496,10 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       if disable:
         pluginsList.del($pluginId)
       else:
-        result = checkPlugin(id = $pluginId, path = pluginPath,
-            pluginsList = pluginsList, db = db)
-        if result == QuitFailure:
-          return
+        let newPlugin = checkPlugin(id = $pluginId, path = pluginPath, db = db)
+        if newPlugin.path.len() == 0:
+          return QuitFailure.ResultCode
+        pluginsList[$pluginId] = newPlugin
     except DbError:
       historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
           db = db, returnCode = QuitFailure.ResultCode)
