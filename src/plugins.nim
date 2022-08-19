@@ -228,7 +228,7 @@ proc checkPlugin(id, path: string; pluginsList; db): ResultCode {.gcsafe,
     result = pluginData.code
     if result == QuitFailure:
       return
-    let pluginInfo = split($pluginData.answer, ";")
+    let pluginInfo = split(s = $pluginData.answer, sep = ";")
     if pluginInfo.len() < 4:
       return QuitFailure.ResultCode
     try:
