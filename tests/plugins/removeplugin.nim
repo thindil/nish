@@ -7,7 +7,7 @@ import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
 var (db, _, historyIndex) = initTest()
-var pluginsList: PluginsList = initTable[string, string]()
+var pluginsList: PluginsList = initTable[string, PluginData]()
 assert setTestPlugin(db, pluginsList, historyIndex) == QuitSuccess
 assert removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
     pluginsList, historyIndex) == QuitSuccess
