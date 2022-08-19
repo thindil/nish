@@ -351,7 +351,7 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
               db = db).code != QuitSuccess:
             showError(message = "Can't initialize plugin '" & dbResult[
                 1] & "'.")
-            return
+            continue
           result[dbResult[0]] = newPlugin
     except DbError:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
