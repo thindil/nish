@@ -274,20 +274,24 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
           pluginPath) != @[""]:
         return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
+      # Add the plugin to the shell database and the list of enabled plugins
+      let newId = db.insertID(query = sql(
+          query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
+      # Check if the plugin can be added
+      let newPlugin = checkPlugin(id = $newId, path = pluginPath, db = db)
+      if newPlugin.path.len() == 0:
+        db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
+        return QuitFailure.ResultCode
       # Execute the installation code of the plugin
       if execPlugin(pluginPath = pluginPath, arguments = ["install"],
           db = db).code != QuitSuccess:
+        db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
         return showError(message = "Can't install plugin '" & pluginPath & "'.")
       # Execute the enabling code of the plugin
       if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
           db = db).code != QuitSuccess:
+        db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
         return showError(message = "Can't enable plugin '" & pluginPath & "'.")
-      # Add the plugin to the shell database and the list of enabled plugins
-      let newId = db.insertID(query = sql(
-          query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
-      let newPlugin = checkPlugin(id = $newId, path = pluginPath, db = db)
-      if newPlugin.path.len() == 0:
-        return QuitFailure.ResultCode
       pluginsList[$newId] = newPlugin
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
