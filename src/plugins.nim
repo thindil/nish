@@ -343,14 +343,15 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
       for dbResult in db.fastRows(query = sql(
           query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
         if dbResult[2] == "1":
+          let newPlugin = checkPlugin(id = dbResult[0], path = dbResult[1], db = db)
+          if newPlugin.path.len() == 0:
+            db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"), dbResult[0])
+            continue
           if execPlugin(pluginPath = dbResult[1], arguments = ["init"],
               db = db).code != QuitSuccess:
             showError(message = "Can't initialize plugin '" & dbResult[
                 1] & "'.")
             return
-          let newPlugin = checkPlugin(id = dbResult[0], path = dbResult[1], db = db)
-          if newPlugin.path.len() == 0:
-            break
           result[dbResult[0]] = newPlugin
     except DbError:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
