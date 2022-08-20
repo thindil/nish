@@ -218,14 +218,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-proc checkPlugin(path: string; db): PluginData {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
+proc checkPlugin(pluginPath: string; db): PluginData {.gcsafe, sideEffect,
+    raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
   require:
-    path.len() > 0
+    pluginPath.len() > 0
     db != nil
   body:
-    let pluginData = execPlugin(pluginPath = path, arguments = ["info"], db = db)
+    let pluginData = execPlugin(pluginPath = pluginPath, arguments = ["info"], db = db)
     if pluginData.code == QuitFailure:
       return
     let pluginInfo = split(s = $pluginData.answer, sep = ";")
@@ -236,7 +236,7 @@ proc checkPlugin(path: string; db): PluginData {.gcsafe, sideEffect, raises: [],
         return
     except ValueError:
       return
-    result = PluginData(path: path, api: split(s = pluginInfo[3], sep = ","))
+    result = PluginData(path: pluginPath, api: split(s = pluginInfo[3], sep = ","))
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
@@ -279,7 +279,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       let newId = db.insertID(query = sql(
           query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
       # Check if the plugin can be added
-      let newPlugin = checkPlugin(path = pluginPath, db = db)
+      let newPlugin = checkPlugin(pluginPath = pluginPath, db = db)
       if newPlugin.path.len() == 0:
         db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
         return QuitFailure.ResultCode
@@ -346,7 +346,7 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
       for dbResult in db.fastRows(query = sql(
           query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
         if dbResult[2] == "1":
-          let newPlugin = checkPlugin(path = dbResult[1], db = db)
+          let newPlugin = checkPlugin(pluginPath = dbResult[1], db = db)
           if newPlugin.path.len() == 0:
             db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
                 dbResult[0])
@@ -506,7 +506,7 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       if disable:
         pluginsList.del($pluginId)
       else:
-        let newPlugin = checkPlugin(path = pluginPath, db = db)
+        let newPlugin = checkPlugin(pluginPath = pluginPath, db = db)
         if newPlugin.path.len() == 0:
           return QuitFailure.ResultCode
         pluginsList[$pluginId] = newPlugin
