@@ -36,8 +36,11 @@ const minApiVersion: float = 0.2
 
 type
   PluginData* = object
-    path*: string
-    api: seq[string]
+    ## FUNCTION
+    ##
+    ## Store information about the shell's plugin
+    path*: string ## Full path to the selected plugin
+    api: seq[string] ## The list of API calls supported by the plugin
   PluginsList* = Table[string, PluginData]
   ## FUNCTION
   ##
