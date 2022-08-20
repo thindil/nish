@@ -283,15 +283,17 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
         db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
         return QuitFailure.ResultCode
       # Execute the installation code of the plugin
-      if execPlugin(pluginPath = pluginPath, arguments = ["install"],
-          db = db).code != QuitSuccess:
-        db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
-        return showError(message = "Can't install plugin '" & pluginPath & "'.")
+      if "install" in newPlugin.api:
+        if execPlugin(pluginPath = pluginPath, arguments = ["install"],
+            db = db).code != QuitSuccess:
+          db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
+          return showError(message = "Can't install plugin '" & pluginPath & "'.")
       # Execute the enabling code of the plugin
-      if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
-          db = db).code != QuitSuccess:
-        db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
-        return showError(message = "Can't enable plugin '" & pluginPath & "'.")
+      if "enable" in newPlugin.api:
+        if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
+            db = db).code != QuitSuccess:
+          db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
+          return showError(message = "Can't enable plugin '" & pluginPath & "'.")
       pluginsList[$newId] = newPlugin
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
