@@ -235,7 +235,7 @@ proc checkPlugin(id, path: string; db): PluginData {.gcsafe,
         return
     except ValueError:
       return
-    result = PluginData(path: path, api: split(s = pluginInfo[3], sep = ";"))
+    result = PluginData(path: path, api: split(s = pluginInfo[3], sep = ","))
 
 proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
