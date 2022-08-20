@@ -218,12 +218,10 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-proc checkPlugin(id, path: string; db): PluginData {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect,
-        ExecIOEffect, ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect],
-        contractual.} =
+proc checkPlugin(path: string; db): PluginData {.gcsafe, sideEffect, raises: [],
+    tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
+    ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
   require:
-    id.len() > 0
     path.len() > 0
     db != nil
   body:
@@ -281,7 +279,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       let newId = db.insertID(query = sql(
           query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
       # Check if the plugin can be added
-      let newPlugin = checkPlugin(id = $newId, path = pluginPath, db = db)
+      let newPlugin = checkPlugin(path = pluginPath, db = db)
       if newPlugin.path.len() == 0:
         db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
         return QuitFailure.ResultCode
@@ -348,7 +346,7 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
       for dbResult in db.fastRows(query = sql(
           query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
         if dbResult[2] == "1":
-          let newPlugin = checkPlugin(id = dbResult[0], path = dbResult[1], db = db)
+          let newPlugin = checkPlugin(path = dbResult[1], db = db)
           if newPlugin.path.len() == 0:
             db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
                 dbResult[0])
@@ -508,7 +506,7 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       if disable:
         pluginsList.del($pluginId)
       else:
-        let newPlugin = checkPlugin(id = $pluginId, path = pluginPath, db = db)
+        let newPlugin = checkPlugin(path = pluginPath, db = db)
         if newPlugin.path.len() == 0:
           return QuitFailure.ResultCode
         pluginsList[$pluginId] = newPlugin
