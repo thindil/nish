@@ -221,6 +221,20 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
 proc checkPlugin(pluginPath: string; db): PluginData {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Get information about the selected plugin and check it compatybility with
+  ## the shell's API
+  ##
+  ## PARAMETERS
+  ##
+  ## * pluginPath - the full path to the plugin which will be checked
+  ## * db         - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## PluginData object with information about the selected plugin or an empty
+  ## object if the plugin isn't compatible with the shell's API
   require:
     pluginPath.len() > 0
     db != nil
