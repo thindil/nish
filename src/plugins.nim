@@ -364,6 +364,7 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
           if newPlugin.path.len() == 0:
             db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
                 dbResult[0])
+            showError(message = "Plugin '" & dbResult[1] & "' isn't compatible with the current version of shell's API and will be disabled.")
             continue
           if "init" in newPlugin.api:
             if execPlugin(pluginPath = dbResult[1], arguments = ["init"],
