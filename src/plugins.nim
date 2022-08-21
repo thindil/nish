@@ -296,7 +296,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
       let newPlugin = checkPlugin(pluginPath = pluginPath, db = db)
       if newPlugin.path.len() == 0:
         db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
-        return QuitFailure.ResultCode
+        return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.")
       # Execute the installation code of the plugin
       if "install" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
