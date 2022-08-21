@@ -506,13 +506,18 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
         historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
             db = db, returnCode = QuitFailure.ResultCode)
         return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
+      # Check if plugin can be enabled due to version of API
+      let newPlugin = checkPlugin(pluginPath = pluginPath, db = db)
+      if newPlugin.path.len() == 0 and not disable:
+        return showError(message = "Can't enable plugin with Id: " & $pluginId & " because its API version is incompatible with the shell's version.")
       # Execute the enabling or disabling code of the plugin
-      if execPlugin(pluginPath = pluginPath, arguments = [actionName],
-          db = db).code != QuitSuccess:
-        historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
-            db = db, returnCode = QuitFailure.ResultCode)
-        return showError(message = "Can't " & actionName & " plugin '" &
-            pluginPath & "'.")
+      if actionName in newPlugin.api:
+        if execPlugin(pluginPath = pluginPath, arguments = [actionName],
+            db = db).code != QuitSuccess:
+          historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
+              db = db, returnCode = QuitFailure.ResultCode)
+          return showError(message = "Can't " & actionName & " plugin '" &
+              pluginPath & "'.")
       # Update the state of the plugin
       db.exec(query = sql(query = ("UPDATE plugins SET enabled=? WHERE id=?")),
           pluginState, pluginId)
