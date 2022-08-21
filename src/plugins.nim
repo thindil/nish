@@ -218,7 +218,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-proc checkPlugin(pluginPath: string; db): PluginData {.gcsafe, sideEffect,
+proc checkPlugin*(pluginPath: string; db): PluginData {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
   ## FUNCTION
