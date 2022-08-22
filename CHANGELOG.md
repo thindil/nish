@@ -9,6 +9,7 @@ of the shell.
 ### Added
 - **BREAKING**: Version to the plugins API
 - Information about supported API version by plugin to `plugin show` command
+- Information about used API calls by plugin to `plugin show` command
 
 ### Changed
 - Updated README.md
