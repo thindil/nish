@@ -212,7 +212,7 @@ The shell's prompt can be set to the output of the selected program or script.
 To do this, set the value of the shell's option `promptCommand` to the command
 line with the desired program or script and its arguments. For example, to set
 prompt to show the current date, use command `options set promptCommand date`.
-If you want to reset the prompt to the original state set it vallue to
+If you want to reset the prompt to the original state set it value to
 `built-in` or just reset with command `options reset promptCommand`.
 
 **ATTENTION:** the command set as the shell's option `promptCommand` will be
@@ -232,7 +232,7 @@ The directory `tools` contains the example plugin `testplugin.sh` written in
 Bash.
 
 The current version of API: **0.2**
-The miniumum required version of API for plugins to work: **0.2**
+The minimum required version of API for plugins to work: **0.2**
 
 At this moment, available API calls from the shell:
 
@@ -292,7 +292,7 @@ Available API calls from plugins:
 #### Precompiled packages
 
 There are available binary packages for Linux and FreeBSD 64-bit both on the
-download page. If you want to use Nish on different plaftorm, you have to build
+download page. If you want to use Nish on different platform, you have to build
 it from the source.
 
 #### Build from the source
