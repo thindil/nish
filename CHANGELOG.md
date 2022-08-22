@@ -14,6 +14,9 @@ of the shell.
 - Updated README.md
 - Updated contributing guide
 
+### Fixed
+- Typos in README.md
+
 ## [0.3.0] - 2022-07-29
 
 ### Added
