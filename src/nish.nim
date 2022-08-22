@@ -501,8 +501,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       discard
     # Execute plugins with precommand hook
     for plugin in plugins.values:
-      discard execPlugin(pluginPath = plugin.path, arguments = ["preCommand",
-          commandName & " " & arguments], db = db)
+      if "preCommand" in plugin.api:
+        discard execPlugin(pluginPath = plugin.path, arguments = ["preCommand",
+            commandName & " " & arguments], db = db)
     # Parse commands
     case commandName
     # Quit from shell
@@ -698,8 +699,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = QuitFailure.ResultCode
     # Execute plugins with postcommand hook
     for plugin in plugins.values:
-      discard execPlugin(pluginPath = plugin.path, arguments = ["postCommand",
-          commandName & " " & arguments], db = db)
+      if "postCommand" in plugin.api:
+        discard execPlugin(pluginPath = plugin.path, arguments = ["postCommand",
+            commandName & " " & arguments], db = db)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
