@@ -231,7 +231,10 @@ especially by adding new API calls. The plugins can reside in any location.
 The directory `tools` contains the example plugin `testplugin.sh` written in
 Bash.
 
-At this moment, available API calls from the shell (current version of API is 0.2):
+The current version of API: **0.2**
+The miniumum required version of API for plugins to work: **0.2**
+
+At this moment, available API calls from the shell:
 
 * `install`: called during installation of the plugin (adding it to the
   shell).
