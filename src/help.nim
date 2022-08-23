@@ -253,7 +253,7 @@ proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
       showError(message = "Can't set content of the help main screen. Reason: ",
           e = getCurrentException())
 
-proc showHelpList*(command: string; subcommands: seq[string];
+proc showHelpList*(command: string; subcommands: openArray[string];
     db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
     contractual.} =
