@@ -609,7 +609,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "alias":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = helpAliases(db = db)
+        historyIndex = showHelpList(command = "alias",
+            subcommands = aliasesCommands, db = db)
       # Show the list of available aliases
       elif arguments.startsWith(prefix = "list"):
         listAliases(arguments = arguments, historyIndex = historyIndex,

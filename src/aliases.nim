@@ -28,6 +28,8 @@ import contracts
 import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode, variables
 
+const aliasesCommands* = @["list", "delete", "show", "add", "edit"]
+
 type
   AliasName* = LimitedString
     ## FUNCTION
@@ -291,30 +293,6 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
         count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
     showOutput(message = row[5])
     return QuitSuccess.ResultCode
-
-proc helpAliases*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], contractual.} =
-  ## FUNCTION
-  ##
-  ## Show short help about available subcommands related to the aliases
-  ##
-  ## PARAMETERS
-  ##
-  ## * db           - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## The new length of the shell's commands' history.
-  require:
-    db != nil
-  body:
-    showOutput(message = """Available subcommands are: list, delete, show, add, edit
-
-          To see more information about the subcommand, type help alias [command],
-          for example: help alias list.
-  """)
-    return updateHistory(commandToAdd = "alias", db = db)
 
 proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,

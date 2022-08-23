@@ -252,3 +252,32 @@ proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
     except KeyError:
       showError(message = "Can't set content of the help main screen. Reason: ",
           e = getCurrentException())
+
+proc showHelpList*(command: string; subcommands: seq[string];
+    db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    contractual.} =
+  ## FUNCTION
+  ##
+  ## Show short help about available subcommands related to the selected command
+  ##
+  ## PARAMETERS
+  ##
+  ## * command     - the selected command which subcommands' list will be
+  ##                 displayed
+  ## * subcommands - the list of subcommands available for the selected command
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The new length of the shell's commands' history.
+  require:
+    db != nil
+  body:
+    showOutput(message = """Available subcommands for '""" & command & """' are: """ & subcommands.join(sep = ", ") & """
+
+
+          To see more information about the subcommands, type 'help """ & command & """ [subcommand]',
+          for example: 'help """ & command & """ """ & subcommands[0] & """'.
+  """)
+    return updateHistory(commandToAdd = command, db = db)
