@@ -14,6 +14,7 @@ of the shell.
 ### Changed
 - Updated README.md
 - Updated contributing guide
+- **BREAKING**: Better, more effective system of plugins
 
 ### Fixed
 - Typos in README.md
