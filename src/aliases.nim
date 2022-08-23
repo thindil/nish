@@ -29,6 +29,9 @@ import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode, variables
 
 const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
+  ## FUNCTION
+  ##
+  ## The list of available subcomamnds for command alias
 
 type
   AliasName* = LimitedString
