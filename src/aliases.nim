@@ -28,7 +28,7 @@ import contracts
 import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode, variables
 
-const aliasesCommands* = @["list", "delete", "show", "add", "edit"]
+const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
 
 type
   AliasName* = LimitedString
