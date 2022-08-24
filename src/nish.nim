@@ -559,7 +559,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "history":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = helpHistory(db = db)
+        historyIndex = showHelpList(command = "history",
+            subcommands = historyCommands, db = db)
       # Clear the shell's commands' history
       elif arguments == "clear":
         historyIndex = clearHistory(db = db)

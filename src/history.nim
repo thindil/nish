@@ -27,6 +27,11 @@ import std/[db_sqlite, os, strutils, tables, terminal]
 import contracts
 import columnamount, constants, input, lstring, options, output, resultcode
 
+const historyCommands* = ["clear", "list"]
+  ## FUNCTION
+  ##
+  ## The list of available subcomamnds for command history
+
 type HistoryRange* = ExtendedNatural
   ## FUNCTION
   ##
@@ -222,31 +227,6 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     showOutput(message = "Shell's commands' history cleared.",
         fgColor = fgGreen)
     return 0;
-
-proc helpHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], locks: 0, contractual.} =
-  ## FUNCTION
-  ##
-  ## Show short help about available subcommands related to the shell's
-  ## commands' history
-  ##
-  ## PARAMETERS
-  ##
-  ## * db - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## The new length of the shell's commands' history.
-  require:
-    db != nil
-  body:
-    showOutput(message = """Available subcommands are: clear, list
-
-          To see more information about the subcommand, type help history [command],
-          for example: help history clear.
-  """)
-    return updateHistory(commandToAdd = "history", db = db)
 
 proc showHistory*(db; arguments: UserInput = emptyLimitedString(
     capacity = maxInputLength)): HistoryRange {.gcsafe, sideEffect, raises: [],
