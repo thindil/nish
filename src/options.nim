@@ -30,7 +30,7 @@ import columnamount, constants, input, lstring, output, resultcode
 const optionsCommands* = ["list", "set", "reset"]
   ## FUNCTION
   ##
-  ## The list of available subcomamnds for command history
+  ## The list of available subcommands for command options
 
 type
   OptionName* = LimitedString

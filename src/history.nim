@@ -30,7 +30,7 @@ import columnamount, constants, input, lstring, options, output, resultcode
 const historyCommands* = ["clear", "list"]
   ## FUNCTION
   ##
-  ## The list of available subcomamnds for command history
+  ## The list of available subcommands for command history
 
 type HistoryRange* = ExtendedNatural
   ## FUNCTION
