@@ -580,8 +580,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "options":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        helpOptions(db = db)
-        historyIndex = updateHistory(commandToAdd = "options", db = db)
+        historyIndex = showHelpList(command = "options",
+            subcommands = optionsCommands, db = db)
       # Show the list of available options
       elif arguments == "list":
         showOptions(db = db)

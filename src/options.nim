@@ -27,6 +27,11 @@ import std/[db_sqlite, os, osproc, strutils, tables, terminal]
 import contracts
 import columnamount, constants, input, lstring, output, resultcode
 
+const optionsCommands* = ["list", "set", "reset"]
+  ## FUNCTION
+  ##
+  ## The list of available subcomamnds for command history
+
 type
   OptionName* = LimitedString
     ## FUNCTION
@@ -152,25 +157,6 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     except DbError:
       showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
-
-proc helpOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
-    WriteIOEffect], locks: 0, contractual.} =
-  ## FUNCTION
-  ##
-  ## Show short help about available subcommands related to the shell's
-  ## options
-  ##
-  ## PARAMETERS
-  ##
-  ## * db - the connection to the shell's database
-  require:
-    db != nil
-  body:
-    showOutput(message = """Available subcommands are: list, set, reset
-
-          To see more information about the subcommand, type help options [command],
-          for example: help options list.
-  """)
 
 proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
