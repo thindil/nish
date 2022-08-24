@@ -28,11 +28,17 @@ import contracts
 import columnamount, constants, databaseid, history, input, lstring, options,
     output, resultcode
 
-const minApiVersion: float = 0.2
+const
+  minApiVersion: float = 0.2
   ## FUNCTION
   ##
   ## The minimal version of the shell's plugins' API which plugins must support
   ## in order to work
+
+  pluginsCommands* = ["list", "remove", "show", "add", "enable", "disable"]
+  ## FUNCTION
+  ##
+  ## The list of available subcommands for command plugin
 
 type
   PluginData* = object
@@ -80,30 +86,6 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       return showError(message = "Can't create 'plugins' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
-
-proc helpPlugins*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, TimeEffect],
-    contractual.} =
-  ## FUNCTION
-  ##
-  ## Show short help about available subcommands related to the plugins
-  ##
-  ## PARAMETERS
-  ##
-  ## * db - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## The new length of the shell's commands' history.
-  require:
-    db != nil
-  body:
-    showOutput(message = """Available subcommands are: list, remove, show, add, enable, disable
-
-          To see more information about the subcommand, type help plugin [command],
-          for example: help plugin list.
-  """)
-    return updateHistory(commandToAdd = "plugin", db = db)
 
 proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
     code: ResultCode; answer: LimitedString] {.gcsafe, sideEffect, raises: [],

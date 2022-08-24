@@ -645,7 +645,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "plugin":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = helpPlugins(db = db)
+        historyIndex = showHelpList(command = "plugin",
+            subcommands = pluginsCommands, db = db)
       # Add a new plugin
       elif arguments.startsWith(prefix = "add"):
         returnCode = addPlugin(arguments = arguments, db = db,
