@@ -124,7 +124,6 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
   ## QuitSuccess if the selected help's topic was succesully shown, otherwise
   ## QuitFailure.
   require:
-    topic.len() > 0
     db != nil
   body:
     proc showHelpEntry(helpEntry: HelpEntry;
