@@ -530,7 +530,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "variable":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = helpVariables(db = db)
+        historyIndex = showHelpList(command = "variable",
+            subcommands = variablesCommands, db = db)
       # Show the list of declared environment variables
       elif arguments.startsWith(prefix = "list"):
         listVariables(arguments = arguments, historyIndex = historyIndex, db = db)

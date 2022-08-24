@@ -28,10 +28,16 @@ import contracts
 import columnamount, constants, databaseid, directorypath, history, input,
     lstring, output, resultcode
 
-const variableNameLength*: Positive = maxNameLength
+const
+  variableNameLength*: Positive = maxNameLength
   ## FUNCTION
   ##
   ## The maximum length of the shell's environment variable name
+
+  variablesCommands* = ["list", "delete", "add", "edit"]
+  ## FUNCTION
+  ##
+  ## The list of available subcommands for command variable
 
 type
   VariableName = LimitedString # Used to store variables names in the database.
@@ -342,30 +348,6 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
             db = db, returnCode = QuitFailure.ResultCode)
         return
     historyIndex = updateHistory(commandToAdd = "variable " & arguments, db = db)
-
-proc helpVariables*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], contractual.} =
-  ## FUNCTION
-  ##
-  ## Show short help about available subcommands related to the environment variables
-  ##
-  ## PARAMETERS
-  ##
-  ## * db - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## The new length of the shell's commands' history.
-  require:
-    db != nil
-  body:
-    showOutput(message = """Available subcommands are: list, delete, add, edit
-
-          To see more information about the subcommand, type help variable [command],
-          for example: help variable list.
-  """)
-    return updateHistory(commandToAdd = "variable", db = db)
 
 proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
