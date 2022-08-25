@@ -25,7 +25,7 @@
 
 import std/[db_sqlite, os, tables]
 import contracts
-import aliases, constants, directorypath, history, output, resultcode, variables
+import aliases, constants, directorypath, output, resultcode, variables
 
 using
   db: DbConn # Connection to the shell's database
@@ -94,11 +94,8 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
     if newDirectory.len() == 0:
       result = changeDirectory(newDirectory = "~".DirectoryPath,
           aliases = aliases, db = db)
-      discard updateHistory(commandToAdd = "cd ~", db = db, returnCode = result)
     else:
       result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)
-      discard updateHistory(commandToAdd = "cd " & newDirectory, db = db,
-          returnCode = result)
 
 func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
     tags: [].} =
