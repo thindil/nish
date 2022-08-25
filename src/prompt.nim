@@ -89,8 +89,8 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     else:
       let
         homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
-        promptPath: string = currentDirectory.string[homeIndex +
-                homeDirectory.len()..^1]
+        promptPath: string = (if homeIndex > -1: currentDirectory.string[homeIndex +
+                homeDirectory.len()..^1] else: $currentDirectory)
       if homeIndex > -1:
         try:
           stdout.styledWrite(fgBlue, "~/" & promptPath)
