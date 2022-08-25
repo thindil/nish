@@ -15,6 +15,7 @@ of the shell.
 - Updated README.md
 - Updated contributing guide
 - **BREAKING**: Better, more effective system of plugins
+- Better help entry for list of subcommands for the selected command
 
 ### Fixed
 - Typos in README.md
