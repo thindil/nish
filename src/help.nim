@@ -273,10 +273,12 @@ proc showHelpList*(command: string; subcommands: openArray[string];
   require:
     db != nil
   body:
-    showOutput(message = """Available subcommands for '""" & command & """' are: """ & subcommands.join(sep = ", ") & """
-
-
-          To see more information about the subcommands, type 'help """ & command & """ [subcommand]',
-          for example: 'help """ & command & """ """ & subcommands[0] & """'.
-  """)
+    showOutput(message = indent(s = "Available subcommands for '" & command &
+        "' are': ", count = 4), fgColor = fgYellow)
+    showOutput(message = indent(s = subcommands.join(sep = ", "), count = 6))
+    showOutput(message = " ")
+    showOutput(message = indent(s = "To see more information about the subcommands, type 'help " &
+        command & " [subcommand]',", count = 4))
+    showOutput(message = indent(s = "for example: 'help " & command & " " &
+        subcommands[0] & "'.", count = 4))
     return updateHistory(commandToAdd = command, db = db)
