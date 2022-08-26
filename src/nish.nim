@@ -519,8 +519,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           aliases = aliases, db = db)
     # Set the environment variable
     of "set":
-      returnCode = setCommand(arguments = arguments, db = db)
-      historyIndex = historyLength(db = db)
+      returnCode = setCommand(arguments = arguments)
     # Delete environment variable
     of "unset":
       returnCode = unsetCommand(arguments = arguments, db = db)

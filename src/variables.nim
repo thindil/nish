@@ -194,7 +194,7 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
       showError("Can't set environment variables for the current directory. Reason:",
           e = getCurrentException())
 
-proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
@@ -204,14 +204,11 @@ proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ## PARAMETERS
   ##
   ## * arguments - the user entered text with arguments for set variable
-  ## * db        - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the environment variable was successfully set, otherwise
   ## QuitFailure
-  require:
-    db != nil
   body:
     if arguments.len() > 0:
       let varValues: seq[string] = split(s = $arguments, sep = '=')
@@ -228,8 +225,6 @@ proc setCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         result = showError(message = "You have to enter the name of the variable and its value.")
     else:
       result = showError(message = "You have to enter the name of the variable and its value.")
-    discard updateHistory(commandToAdd = "set " & arguments, db = db,
-        returnCode = result)
 
 proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
