@@ -517,7 +517,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "cd":
       returnCode = cdCommand(newDirectory = DirectoryPath($arguments),
           aliases = aliases, db = db)
-      historyIndex = historyLength(db = db)
     # Set the environment variable
     of "set":
       returnCode = setCommand(arguments = arguments, db = db)
@@ -701,14 +700,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               returnCode = returnCode)
       except CapacityError:
         returnCode = QuitFailure.ResultCode
+    # Update the shell's history with info about the executed command
+    historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len() >
+        0: " " & arguments else: ""), db = db, returnCode = returnCode)
     # Execute plugins with postcommand hook
     for plugin in plugins.values:
       if "postCommand" in plugin.api:
         discard execPlugin(pluginPath = plugin.path, arguments = ["postCommand",
             commandName & " " & arguments], db = db)
-    # Update the shell's history with info about the executed command
-    historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len() >
-        0: " " & arguments else: ""), db = db, returnCode = returnCode)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
