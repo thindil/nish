@@ -522,8 +522,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       returnCode = setCommand(arguments = arguments)
     # Delete environment variable
     of "unset":
-      returnCode = unsetCommand(arguments = arguments, db = db)
-      historyIndex = historyLength(db = db)
+      returnCode = unsetCommand(arguments = arguments)
     # Various commands related to environment variables
     of "variable":
       # No subcommand entered, show available options
