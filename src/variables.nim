@@ -219,9 +219,9 @@ proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
       putEnv(key = varValues[0], val = varValues[1])
       showOutput(message = "Environment variable '" & varValues[0] &
           "' set to '" & varValues[1] & "'", fgColor = fgGreen)
-      result = QuitSuccess.ResultCode
+      return QuitSuccess.ResultCode
     except OSError:
-      result = showError(message = "Can't set the environment variable '" &
+      return showError(message = "Can't set the environment variable '" &
           varValues[0] & "'. Reason:", e = getCurrentException())
 
 proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
@@ -240,17 +240,16 @@ proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitSuccess if the environment variable was successfully unset, otherwise
   ## QuitFailure
   body:
-    if arguments.len() > 0:
-      try:
-        delEnv(key = $arguments)
-        showOutput(message = "Environment variable '" & arguments & "' removed",
-            fgColor = fgGreen)
-        result = QuitSuccess.ResultCode
-      except OSError:
-        result = showError(message = "Can't unset the environment variable '" &
-            arguments & "'. Reason:", e = getCurrentException())
-    else:
-      result = showError(message = "You have to enter the name of the variable to unset.")
+    if arguments.len() == 0:
+      return showError(message = "You have to enter the name of the variable to unset.")
+    try:
+      delEnv(key = $arguments)
+      showOutput(message = "Environment variable '" & arguments & "' removed",
+          fgColor = fgGreen)
+      return QuitSuccess.ResultCode
+    except OSError:
+      return showError(message = "Can't unset the environment variable '" &
+          arguments & "'. Reason:", e = getCurrentException())
 
 proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
     ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
