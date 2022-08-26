@@ -210,21 +210,19 @@ proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitSuccess if the environment variable was successfully set, otherwise
   ## QuitFailure
   body:
-    if arguments.len() > 0:
-      let varValues: seq[string] = split(s = $arguments, sep = '=')
-      if varValues.len() > 1:
-        try:
-          putEnv(key = varValues[0], val = varValues[1])
-          showOutput(message = "Environment variable '" & varValues[0] &
-              "' set to '" & varValues[1] & "'", fgColor = fgGreen)
-          result = QuitSuccess.ResultCode
-        except OSError:
-          result = showError(message = "Can't set the environment variable '" &
-              varValues[0] & "'. Reason:", e = getCurrentException())
-      else:
-        result = showError(message = "You have to enter the name of the variable and its value.")
-    else:
-      result = showError(message = "You have to enter the name of the variable and its value.")
+    if arguments.len() == 0:
+      return showError(message = "You have to enter the name of the variable and its value.")
+    let varValues: seq[string] = split(s = $arguments, sep = '=')
+    if varValues.len() < 2:
+      return showError(message = "You have to enter the name of the variable and its value.")
+    try:
+      putEnv(key = varValues[0], val = varValues[1])
+      showOutput(message = "Environment variable '" & varValues[0] &
+          "' set to '" & varValues[1] & "'", fgColor = fgGreen)
+      result = QuitSuccess.ResultCode
+    except OSError:
+      result = showError(message = "Can't set the environment variable '" &
+          varValues[0] & "'. Reason:", e = getCurrentException())
 
 proc unsetCommand*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
