@@ -527,8 +527,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "variable":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = showHelpList(command = "variable",
-            subcommands = variablesCommands, db = db)
+        returnCode = showHelpList(command = "variable",
+            subcommands = variablesCommands)
       # Show the list of declared environment variables
       elif arguments.startsWith(prefix = "list"):
         listVariables(arguments = arguments, historyIndex = historyIndex, db = db)
@@ -557,8 +557,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "history":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = showHelpList(command = "history",
-            subcommands = historyCommands, db = db)
+        returnCode = showHelpList(command = "history",
+            subcommands = historyCommands)
       # Clear the shell's commands' history
       elif arguments == "clear":
         historyIndex = clearHistory(db = db)
@@ -578,8 +578,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "options":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = showHelpList(command = "options",
-            subcommands = optionsCommands, db = db)
+        returnCode = showHelpList(command = "options",
+            subcommands = optionsCommands)
       # Show the list of available options
       elif arguments == "list":
         showOptions(db = db)
@@ -608,8 +608,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "alias":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = showHelpList(command = "alias",
-            subcommands = aliasesCommands, db = db)
+        returnCode = showHelpList(command = "alias",
+            subcommands = aliasesCommands)
       # Show the list of available aliases
       elif arguments.startsWith(prefix = "list"):
         listAliases(arguments = arguments, historyIndex = historyIndex,
@@ -643,8 +643,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "plugin":
       # No subcommand entered, show available options
       if arguments.len() == 0:
-        historyIndex = showHelpList(command = "plugin",
-            subcommands = pluginsCommands, db = db)
+        returnCode = showHelpList(command = "plugin",
+            subcommands = pluginsCommands)
       # Add a new plugin
       elif arguments.startsWith(prefix = "add"):
         returnCode = addPlugin(arguments = arguments, db = db,
@@ -699,8 +699,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       except CapacityError:
         returnCode = QuitFailure.ResultCode
     # Update the shell's history with info about the executed command
-    historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len() >
-        0: " " & arguments else: ""), db = db, returnCode = returnCode)
+    historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len(
+        ) > 0: " " & arguments else: ""), db = db, returnCode = returnCode)
     # Execute plugins with postcommand hook
     for plugin in plugins.values:
       if "postCommand" in plugin.api:

@@ -252,8 +252,8 @@ proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
       showError(message = "Can't set content of the help main screen. Reason: ",
           e = getCurrentException())
 
-proc showHelpList*(command: string; subcommands: openArray[string];
-    db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+proc showHelpList*(command: string; subcommands: openArray[
+    string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
     contractual.} =
   ## FUNCTION
@@ -265,13 +265,10 @@ proc showHelpList*(command: string; subcommands: openArray[string];
   ## * command     - the selected command which subcommands' list will be
   ##                 displayed
   ## * subcommands - the list of subcommands available for the selected command
-  ## * db          - the connection to the shell's database
   ##
   ## RETURNS
   ##
-  ## The new length of the shell's commands' history.
-  require:
-    db != nil
+  ## This procedure always return QuitSuccess
   body:
     showOutput(message = indent(s = "Available subcommands for '" & command &
         "' are': ", count = 4), fgColor = fgYellow)
@@ -281,4 +278,4 @@ proc showHelpList*(command: string; subcommands: openArray[string];
         command & " [subcommand]',", count = 4))
     showOutput(message = indent(s = "for example: 'help " & command & " " &
         subcommands[0] & "'.", count = 4))
-    return updateHistory(commandToAdd = command, db = db)
+    return QuitSuccess.ResultCode
