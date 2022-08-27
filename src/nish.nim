@@ -531,7 +531,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             subcommands = variablesCommands)
       # Show the list of declared environment variables
       elif arguments.startsWith(prefix = "list"):
-        listVariables(arguments = arguments, historyIndex = historyIndex, db = db)
+        returnCode = listVariables(arguments = arguments, db = db)
       # Delete the selected environment variable
       elif arguments.startsWith(prefix = "delete"):
         returnCode = deleteVariable(arguments = arguments,
@@ -700,7 +700,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = QuitFailure.ResultCode
     # Update the shell's history with info about the executed command
     historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len(
-        ) > 0: " " & arguments else: ""), db = db, returnCode = returnCode)
+      ) > 0: " " & arguments else: ""), db = db, returnCode = returnCode)
     # Execute plugins with postcommand hook
     for plugin in plugins.values:
       if "postCommand" in plugin.api:

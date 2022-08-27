@@ -251,8 +251,8 @@ proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Can't unset the environment variable '" &
           arguments & "'. Reason:", e = getCurrentException())
 
-proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
-    ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+proc listVariables*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -262,12 +262,11 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
   ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for list variables
-  ## * historyIndex - the index of the last command in the shell's history
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
-  ## Updated value for the historyIndex argument
+  ## QuitSucces if variables are properly listed, otherwise QuitFailure
   require:
     arguments.len() > 0
     db != nil
@@ -276,13 +275,11 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
       nameLength: ColumnAmount = try:
           db.getValue(query = sql(query = "SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1")).len().ColumnAmount
       except DbError:
-        showError(message = "Can't get the maximum length of the variables names from database.")
-        return
+        return showError(message = "Can't get the maximum length of the variables names from database.")
       valueLength: ColumnAmount = try:
           db.getValue(query = sql(query = "SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1")).len().ColumnAmount
       except DbError:
-        showError(message = "Can't get the maximum length of the variables values from database.")
-        return
+        return showError(message = "Can't get the maximum length of the variables values from database.")
       spacesAmount: ColumnAmount = try:
           terminalWidth().ColumnAmount / 12
         except ValueError:
@@ -295,7 +292,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
                 count = valueLength.int)], count = spacesAmount.int),
                 fgColor = fgMagenta)
       except ValueError:
-        showError(message = "Can't draw header for variables. Reason: ",
+        return showError(message = "Can't draw header for variables. Reason: ",
             e = getCurrentException())
       try:
         for row in db.fastRows(query = sql(query = buildQuery(
@@ -306,11 +303,8 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
                   alignLeft(s = row[2], count = valueLength.int) & " " & row[3],
                       count = spacesAmount.int))
       except DbError, OSError:
-        showError(message = "Can't get the current directory name. Reason: ",
+        return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException())
-        historyIndex = updateHistory(commandToAdd = "variable " & arguments,
-            db = db, returnCode = QuitFailure.ResultCode)
-        return
     elif arguments == "list all":
       showFormHeader(message = "All declared environent variables are:")
       try:
@@ -319,7 +313,7 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
                 count = valueLength.int)], count = spacesAmount.int),
                 fgColor = fgMagenta)
       except ValueError:
-        showError(message = "Can't draw header for variables. Reason: ",
+        return showError(message = "Can't draw header for variables. Reason: ",
             e = getCurrentException())
       try:
         for row in db.fastRows(query = sql(
@@ -329,12 +323,9 @@ proc listVariables*(arguments; historyIndex; db) {.gcsafe, sideEffect, raises: [
                   alignLeft(s = row[2], count = valueLength.int) & " " & row[3],
                       count = spacesAmount.int))
       except DbError:
-        showError(message = "Can't read data about variables from database. Reason: ",
+        return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException())
-        historyIndex = updateHistory(commandToAdd = "variable " & arguments,
-            db = db, returnCode = QuitFailure.ResultCode)
-        return
-    historyIndex = updateHistory(commandToAdd = "variable " & arguments, db = db)
+    return QuitSuccess.ResultCode
 
 proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
