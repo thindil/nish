@@ -327,8 +327,8 @@ proc listVariables*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
+    ], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -371,9 +371,9 @@ proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: []
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
-    ], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Add a new variable to the shell. Ask the user a few questions and fill the
@@ -381,14 +381,12 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
   ##
   ## PARAMETERS
   ##
-  ## * historyIndex - the index of the last command in the shell's history
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the environment variable was successfully added, otherwise
-  ## QuitFailure. Also, updated parameter historyIndex with new length of the
-  ## shell's history
+  ## QuitFailure.
   require:
     db != nil
   body:
@@ -476,8 +474,6 @@ proc addVariable*(historyIndex; db): ResultCode {.gcsafe, sideEffect, raises: [
     except DbError:
       return showError(message = "Can't add the variable to database. Reason: ",
           e = getCurrentException())
-    # Update history index and refresh the list of available variables
-    historyIndex = updateHistory(commandToAdd = "variable add", db = db)
     try:
       setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
           oldDirectory = getCurrentDir().DirectoryPath)

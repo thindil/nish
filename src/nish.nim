@@ -537,7 +537,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = deleteVariable(arguments = arguments, db = db)
       # Add a new variable
       elif arguments == "add":
-        returnCode = addVariable(historyIndex = historyIndex, db = db)
+        returnCode = addVariable(db = db)
       # Edit an existing variable
       elif arguments.startsWith(prefix = "edit"):
         returnCode = editVariable(arguments = arguments,
