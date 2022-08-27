@@ -534,8 +534,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = listVariables(arguments = arguments, db = db)
       # Delete the selected environment variable
       elif arguments.startsWith(prefix = "delete"):
-        returnCode = deleteVariable(arguments = arguments,
-            historyIndex = historyIndex, db = db)
+        returnCode = deleteVariable(arguments = arguments, db = db)
       # Add a new variable
       elif arguments == "add":
         returnCode = addVariable(historyIndex = historyIndex, db = db)

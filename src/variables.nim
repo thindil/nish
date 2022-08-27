@@ -327,9 +327,9 @@ proc listVariables*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Delete the selected variable from the shell's database
@@ -337,21 +337,17 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for delete the variable
-  ## * historyIndex - the index of the last command in the shell's history
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the environment variable was successfully deleted, otherwise
-  ## QuitFailure. Also, updated parameter historyIndex with new length of the
-  ## shell's history
+  ## QuitFailure.
   require:
     arguments.len() > 0
     db != nil
   body:
     if arguments.len() < 8:
-      historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
-          returnCode = QuitFailure.ResultCode)
       return showError(message = "Enter the Id of the variable to delete.")
     let varId: DatabaseId = try:
         parseInt($arguments[7 .. ^1]).DatabaseId
@@ -360,14 +356,11 @@ proc deleteVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     try:
       if db.execAffectedRows(query = sql(query = (
           "DELETE FROM variables WHERE id=?")), varId) == 0:
-        historyIndex = updateHistory(commandToAdd = "variable delete", db = db,
-            returnCode = QuitFailure.ResultCode)
         return showError(message = "The variable with the Id: " & $varId &
           " doesn't exist.")
     except DbError:
       return showError(message = "Can't delete variable from database. Reason: ",
           e = getCurrentException())
-    historyIndex = updateHistory(commandToAdd = "variable delete", db = db)
     try:
       setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
           oldDirectory = getCurrentDir().DirectoryPath)
