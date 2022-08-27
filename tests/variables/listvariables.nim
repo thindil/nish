@@ -5,9 +5,9 @@ discard """
 import ../../src/[lstring, nish, variables, resultcode]
 import utils/helpers
 
-var (db, _, historyIndex) = initTest()
+var (db, _, _) = initTest()
 assert setTestVariables(db) == QuitSuccess
-listVariables(initLimitedString(capacity = 4, text = "list"), historyIndex, db)
-listVariables(initLimitedString(capacity = 8, text = "list all"), historyIndex, db)
-listVariables(initLimitedString(capacity = 8, text = "werwerew"), historyIndex, db)
+assert listVariables(initLimitedString(capacity = 4, text = "list"), db) == QuitSuccess
+assert listVariables(initLimitedString(capacity = 8, text = "list all"), db) == QuitSuccess
+assert listVariables(initLimitedString(capacity = 8, text = "werwerew"), db) == QuitSuccess
 quitShell(ResultCode(QuitSuccess), db)
