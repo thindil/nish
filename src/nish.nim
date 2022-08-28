@@ -581,13 +581,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = showOptions(db = db)
       elif arguments.startsWith(prefix = "set"):
         returnCode = setOptions(arguments = arguments, db = db)
-        historyIndex = updateHistory(commandToAdd = "options set", db = db,
-            returnCode = returnCode)
         updateHelp(helpContent = helpContent, db = db)
       elif arguments.startsWith(prefix = "reset"):
         returnCode = resetOptions(arguments = arguments, db = db)
-        historyIndex = updateHistory(commandToAdd = "options reset", db = db,
-            returnCode = returnCode)
         updateHelp(helpContent = helpContent, db = db)
       else:
         try:
