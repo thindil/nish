@@ -130,7 +130,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
       showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException())
 
-proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+proc showOptions*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
     locks: 0, contractual.} =
   ## FUNCTION
@@ -155,8 +155,9 @@ proc showOptions*(db) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
                 2], count = 12) & " " & alignLeft(s = row[3], count = 11) &
                     " " & row[4], count = spacesAmount.int))
     except DbError:
-      showError(message = "Can't show the shell's options. Reason: ",
+      return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
+    return QuitSuccess.ResultCode
 
 proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
