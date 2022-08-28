@@ -606,8 +606,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = listAliases(arguments = arguments, aliases = aliases, db = db)
       # Delete the selected alias
       elif arguments.startsWith(prefix = "delete"):
-        returnCode = deleteAlias(arguments = arguments,
-            historyIndex = historyIndex, aliases = aliases, db = db)
+        returnCode = deleteAlias(arguments = arguments, aliases = aliases, db = db)
       # Show the selected alias
       elif arguments.startsWith(prefix = "show"):
         returnCode = showAlias(arguments = arguments,

@@ -170,10 +170,9 @@ proc listAliases*(arguments; aliases: AliasesList; db): ResultCode {.gcsafe,
       return showError(message = "Invalid command entered for listing the aliases.")
     return QuitSuccess.ResultCode
 
-proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
-        sideEffect, raises: [], tags: [
-        WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect], contractual.} =
+proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Delete the selected alias from the shell's database
@@ -182,22 +181,19 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ##
   ## * arguments    - the user entered text with arguments for the deleting
   ##                  alias
-  ## * historyIndex - the index of the last command in the shell's history
   ## * aliases      - the list of aliases available in the current directory
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the selected alias was properly deleted, otherwise
-  ## QuitFailure. Also, updated parameters historyIndex and aliases
+  ## QuitFailure. Also, updated paramete aliases
   require:
     arguments.len() > 5
     arguments.startsWith("delete")
     db != nil
   body:
     if arguments.len() < 8:
-      historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
-          returnCode = QuitFailure.ResultCode)
       return showError(message = "Enter the Id of the alias to delete.")
     let id: DatabaseId = try:
         parseInt(s = $arguments[7 .. ^1]).DatabaseId
@@ -206,14 +202,11 @@ proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     try:
       if db.execAffectedRows(query = sql(
           query = "DELETE FROM aliases WHERE id=?"), id.int) == 0:
-        historyIndex = updateHistory(commandToAdd = "alias delete", db = db,
-            returnCode = QuitFailure.ResultCode)
         return showError(message = "The alias with the Id: " & $id &
           " doesn't exists.")
     except DbError:
       return showError(message = "Can't delete alias from database. Reason: ",
           e = getCurrentException())
-    historyIndex = updateHistory(commandToAdd = "alias delete", db = db)
     try:
       aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
     except OSError:
