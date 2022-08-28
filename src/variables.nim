@@ -25,8 +25,8 @@
 
 import std/[db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, constants, databaseid, directorypath, history, input,
-    lstring, output, resultcode
+import columnamount, constants, databaseid, directorypath, input, lstring,
+    output, resultcode
 
 const
   variableNameLength*: Positive = maxNameLength
@@ -45,7 +45,6 @@ type
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
-  historyIndex: var HistoryRange # The index of the last command in the shell's history
 
 proc buildQuery*(directory: DirectoryPath; fields: string;
     where: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
@@ -484,9 +483,9 @@ proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Edit the selected variable.  Ask the user a few questions and fill the
@@ -495,14 +494,12 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
   ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for editing the variable
-  ## * historyIndex - the index of the last command in the shell's history
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the environment variable was successfully updated, otherwise
-  ## QuitFailure. Also, updated parameter historyIndex with new length of the
-  ## shell's history
+  ## QuitFailure.
   require:
     arguments.len() > 0
     db != nil
@@ -604,8 +601,6 @@ proc editVariable*(arguments; historyIndex; db): ResultCode {.gcsafe,
     except DbError:
       return showError(message = "Can't save the edits of the variable to database. Reason: ",
           e = getCurrentException())
-    # Update history index and refresh the list of available variables
-    historyIndex = updateHistory(commandToAdd = "variable edit", db = db)
     try:
       setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
           oldDirectory = getCurrentDir().DirectoryPath)

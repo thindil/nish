@@ -540,16 +540,13 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = addVariable(db = db)
       # Edit an existing variable
       elif arguments.startsWith(prefix = "edit"):
-        returnCode = editVariable(arguments = arguments,
-            historyIndex = historyIndex, db = db)
+        returnCode = editVariable(arguments = arguments, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 8, text = "variable"),
                   helpType = initLimitedString(capacity = 9,
                       text = "variables"))
-          historyIndex = updateHistory(commandToAdd = "variable " & arguments,
-              db = db, returnCode = returnCode)
         except CapacityError:
           returnCode = QuitFailure.ResultCode
     # Various commands related to the shell's commands' history
