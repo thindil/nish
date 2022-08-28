@@ -201,7 +201,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
       showError("Can't get the selected command from the shell's history. Reason: ",
           getCurrentException())
 
-proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
+proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect],
     locks: 0, contractual.} =
   ## FUNCTION
@@ -214,19 +214,18 @@ proc clearHistory*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## RETURNS
   ##
-  ## The new last index in the shell's commands history
+  ## QuitSuccess if the shell's history was cleared otherwise QuitFailure
   require:
     db != nil
   body:
     try:
       db.exec(query = sql(query = "DELETE FROM history"));
     except DbError:
-      showError(message = "Can't clear the shell's commands history. Reason: ",
+      return showError(message = "Can't clear the shell's commands history. Reason: ",
           e = getCurrentException())
-      return historyLength(db = db)
     showOutput(message = "Shell's commands' history cleared.",
         fgColor = fgGreen)
-    return 0;
+    return QuitSuccess.ResultCode
 
 proc showHistory*(db; arguments: UserInput = emptyLimitedString(
     capacity = maxInputLength)): HistoryRange {.gcsafe, sideEffect, raises: [],
