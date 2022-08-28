@@ -99,9 +99,9 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
       showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
 
-proc listAliases*(arguments; historyIndex; aliases: AliasesList;
-    db) {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
-        ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc listAliases*(arguments; aliases: AliasesList; db): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## List available aliases in the current directory, if entered command was
@@ -110,14 +110,12 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for showing aliases
-  ## * historyIndex - the index of command in the shell's history
   ## * aliases      - the list of aliases available in the current directory
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
-  ## The parameter historyIndex updated after execution of showing the aliases'
-  ## list
+  ## QuitSuccess if the list of aliases was shown, otherwise QuitFailure
   require:
     arguments.len() > 3
     arguments.startsWith("list")
@@ -125,7 +123,8 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
   body:
     let
       columnLength: ColumnAmount = try: db.getValue(query =
-          sql(query = "SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1")).len().ColumnAmount except DbError: 10.ColumnAmount
+          sql(query = "SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1")).len().ColumnAmount
+        except DbError: 10.ColumnAmount
       spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
           12 except ValueError: 6.ColumnAmount
     if arguments == "list all":
@@ -144,10 +143,8 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
               alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
                   count = spacesAmount.int))
       except DbError:
-        showError(message = "Can't read info about alias from database. Reason:",
+        return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
-        return
-      historyIndex = updateHistory(commandToAdd = "alias list all", db = db)
     elif arguments[0 .. 3] == "list":
       showFormHeader(message = "Available aliases are:")
       try:
@@ -167,14 +164,11 @@ proc listAliases*(arguments; historyIndex; aliases: AliasesList;
               alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
                   count = spacesAmount.int))
         except DbError:
-          showError(message = "Can't read info about alias from database. Reason:",
+          return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
-          return
-      historyIndex = updateHistory(commandToAdd = "alias list", db = db)
     else:
-      showError(message = "Invalid command entered for listing the aliases.")
-      historyIndex = updateHistory(commandToAdd = "alias " & arguments, db = db,
-          returnCode = QuitFailure.ResultCode)
+      return showError(message = "Invalid command entered for listing the aliases.")
+    return QuitSuccess.ResultCode
 
 proc deleteAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
         sideEffect, raises: [], tags: [
