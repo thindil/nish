@@ -560,7 +560,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = clearHistory(db = db)
       # Show the last executed shell's commands
       elif arguments.len() > 3 and arguments[0 .. 3] == "list":
-        historyIndex = showHistory(db = db, arguments = arguments)
+        returnCode = showHistory(db = db, arguments = arguments)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,

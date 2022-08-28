@@ -228,7 +228,7 @@ proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc showHistory*(db; arguments: UserInput = emptyLimitedString(
-    capacity = maxInputLength)): HistoryRange {.gcsafe, sideEffect, raises: [],
+    capacity = maxInputLength)): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
   ## FUNCTION
@@ -244,7 +244,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
   ##
   ## RETURNS
   ##
-  ## The last X entries to the shell's history.
+  ## QuitSucces if the history was properly shown otherwise QuitFailure.
   require:
     db != nil
   body:
@@ -255,9 +255,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
               1] else: $getOption(optionName = initLimitedString(capacity = 13,
               text = "historyAmount"), db = db)))
         except ValueError, CapacityError:
-          showError(message = "Can't get setting for the amount of history commands to show.")
-          return updateHistory(commandToAdd = "history list", db = db,
-              returnCode = QuitFailure.ResultCode)
+          return showError(message = "Can't get setting for the amount of history commands to show.")
       spacesAmount: ColumnAmount = try:
             (terminalWidth() / 12).ColumnAmount
         except ValueError:
@@ -268,17 +266,13 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
             if $getOption(optionName = initLimitedString(capacity = 14,
               text = "historyReverse"), db = db) == "true": "ASC" else: "DESC"
         except CapacityError:
-          showError(message = "Can't get setting for the reverse order of history commands to show.")
-          return updateHistory(commandToAdd = "history list", db = db,
-              returnCode = QuitFailure.ResultCode)
+          return showError(message = "Can't get setting for the reverse order of history commands to show.")
       orderText: string = try:
           if argumentsList.len() > 2: argumentsList[2] else: $getOption(
               optionName = initLimitedString(capacity = 11,
                   text = "historySort"), db = db)
         except CapacityError:
-          showError(message = "Can't get setting for the order of history commands to show.")
-          return updateHistory(commandToAdd = "history list", db = db,
-              returnCode = QuitFailure.ResultCode)
+          return showError(message = "Can't get setting for the order of history commands to show.")
       historyOrder: string =
         case orderText
         of "recent": "lastused " & historyDirection
@@ -287,9 +281,7 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
             "DESC": "ASC" else: "DESC")
         of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
         else:
-          showError(message = "Unknown type of history sort order")
-          return updateHistory(commandToAdd = "history list", db = db,
-            returnCode = QuitFailure.ResultCode)
+          return showError(message = "Unknown type of history sort order")
     showFormHeader(message = "The last commands from the shell's history")
     showOutput(message = indent(s = "Last used                Times      Command",
         count = spacesAmount.int), fgColor = fgMagenta)
@@ -299,12 +291,10 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
           historyOrder & " LIMIT 0, ?"), amount):
         showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
             width = 5) & "      " & row[0], count = spacesAmount.int))
-      return updateHistory(commandToAdd = "history list", db = db)
+      return QuitSuccess.ResultCode
     except DbError:
-      showError(message = "Can't get the last commands from the shell's history. Reason: ",
+      return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
-      return updateHistory(commandToAdd = "history list", db = db,
-          returnCode = QuitFailure.ResultCode)
 
 proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
