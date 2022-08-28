@@ -8,5 +8,5 @@ import utils/helpers
 let (db, amount) = initTest()
 if amount == 0:
   assert setTestHistory(db) == QuitSuccess
-assert showHistory(db) >= amount
+assert showHistory(db) == QuitSuccess
 quitShell(ResultCode(QuitSuccess), db)

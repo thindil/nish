@@ -6,5 +6,5 @@ import ../../src/[nish, options, resultcode]
 import utils/helpers
 
 let db = initTest()
-showOptions(db)
+assert showOptions(db) == QuitSuccess
 quitShell(ResultCode(QuitSuccess), db)
