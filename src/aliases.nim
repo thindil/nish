@@ -277,8 +277,8 @@ proc showAlias*(arguments; aliases: AliasesList; db): ResultCode {.gcsafe,
     showOutput(message = row[5])
     return QuitSuccess.ResultCode
 
-proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -287,14 +287,13 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
   ##
   ## PARAMETERS
   ##
-  ## * historyIndex - the index of the last command in the shell's history
   ## * aliases      - the list of aliases available in the current directory
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the new alias was properly set, otherwise QuitFailure.
-  ## Also, updated parameter historyIndex and aliases.
+  ## Also, updated parameter aliases.
   require:
     db != nil
   body:
@@ -390,8 +389,7 @@ proc addAlias*(historyIndex; aliases; db): ResultCode {.gcsafe, sideEffect,
     except DbError:
       return showError(message = "Can't add the alias to the database. Reason: ",
           e = getCurrentException())
-    # Update history index and refresh the list of available aliases
-    historyIndex = updateHistory(commandToAdd = "alias add", db = db)
+    # Refresh the list of available aliases
     try:
       aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
     except OSError:
