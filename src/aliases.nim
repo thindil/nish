@@ -399,9 +399,9 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Edit the selected alias
@@ -410,14 +410,13 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
   ##
   ## * arguments    - the user entered text with arguments for the editing
   ##                  alias
-  ## * historyIndex - the index of the last command in the shell's history
   ## * aliases      - the list of aliases available in the current directory
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the alias was properly edited, otherwise QuitFailure.
-  ## Also, updated parameters historyIndex and aliases.
+  ## Also, updated parameter aliases.
   require:
     arguments.len() > 3
     db != nil
@@ -528,8 +527,7 @@ proc editAlias*(arguments; historyIndex; aliases; db): ResultCode {.gcsafe,
     except DbError:
       return showError(message = "Can't save the alias to database. Reason: ",
           e = getCurrentException())
-    # Update history index and refresh the list of available aliases
-    historyIndex = updateHistory(commandToAdd = "alias edit", db = db)
+    # Refresh the list of available aliases
     try:
       aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
     except OSError:

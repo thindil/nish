@@ -611,15 +611,12 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = addAlias(aliases = aliases, db = db)
       # Edit the selected alias
       elif arguments.startsWith(prefix = "edit"):
-        returnCode = editAlias(arguments = arguments,
-            historyIndex = historyIndex, aliases = aliases, db = db)
+        returnCode = editAlias(arguments = arguments, aliases = aliases, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 5, text = "alias"),
                   helpType = initLimitedString(capacity = 7, text = "aliases"))
-          historyIndex = updateHistory(commandToAdd = "alias " & arguments,
-              db = db, returnCode = returnCode)
         except CapacityError:
           returnCode = QuitFailure.ResultCode
     # Various commands related to the plugins (like show list of available
