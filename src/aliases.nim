@@ -215,10 +215,9 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
     showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc showAlias*(arguments; historyIndex; aliases: AliasesList;
-    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-    TimeEffect], contractual.} =
+proc showAlias*(arguments; aliases: AliasesList; db): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show details about the selected alias, its ID, name, description and
@@ -228,22 +227,19 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
   ##
   ## * arguments    - the user entered text with arguments for the showing
   ##                  alias
-  ## * historyIndex - the index of the last command in the shell's history
   ## * aliases      - the list of aliases available in the current directory
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the selected alias was properly show, otherwise
-  ## QuitFailure. Also, updated parameter historyIndex
+  ## QuitFailure.
   require:
     arguments.len() > 3
     arguments.startsWith("show")
     db != nil
   body:
     if arguments.len() < 6:
-      historyIndex = updateHistory(commandToAdd = "alias show", db = db,
-          returnCode = QuitFailure.ResultCode)
       return showError(message = "Enter the ID of the alias to show.")
     let id: DatabaseId = try:
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
@@ -255,11 +251,8 @@ proc showAlias*(arguments; historyIndex; aliases: AliasesList;
         return showError(message = "Can't read alias data from database. Reason: ",
             e = getCurrentException())
     if row[0] == "":
-      historyIndex = updateHistory(commandToAdd = "alias show", db = db,
-          returnCode = QuitFailure.ResultCode)
       return showError(message = "The alias with the ID: " & $id &
         " doesn't exists.")
-    historyIndex = updateHistory(commandToAdd = "alias show", db = db)
     let spacesAmount: ColumnAmount = try:
         terminalWidth().ColumnAmount / 12
       except ValueError:

@@ -566,8 +566,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           returnCode = showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 7, text = "history"),
                   helpType = initLimitedString(capacity = 7, text = "history"))
-          historyIndex = updateHistory(commandToAdd = "history " & arguments,
-              db = db, returnCode = returnCode)
         except CapacityError:
           returnCode = QuitFailure.ResultCode
     # Various commands related to the shell's options
@@ -590,8 +588,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           returnCode = showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 7, text = "options"),
                   helpType = initLimitedString(capacity = 7, text = "options"))
-          historyIndex = updateHistory(commandToAdd = "options " & arguments,
-              db = db, returnCode = returnCode)
         except CapacityError:
           returnCode = QuitFailure.ResultCode
     # Various commands related to the aliases (like show list of available
@@ -609,8 +605,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = deleteAlias(arguments = arguments, aliases = aliases, db = db)
       # Show the selected alias
       elif arguments.startsWith(prefix = "show"):
-        returnCode = showAlias(arguments = arguments,
-            historyIndex = historyIndex, aliases = aliases, db = db)
+        returnCode = showAlias(arguments = arguments, aliases = aliases, db = db)
       # Add a new alias
       elif arguments.startsWith(prefix = "add"):
         returnCode = addAlias(historyIndex = historyIndex, aliases = aliases, db = db)
