@@ -6,11 +6,11 @@ import std/tables
 import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
-var (db, _, historyIndex) = initTest()
+var (db, _, _) = initTest()
 var pluginsList: PluginsList = initTable[string, PluginData]()
-assert setTestPlugin(db, pluginsList, historyIndex) == QuitSuccess
+assert setTestPlugin(db, pluginsList) == QuitSuccess
 assert removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
-    pluginsList, historyIndex) == QuitSuccess
+    pluginsList) == QuitSuccess
 assert removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
-    pluginsList, historyIndex) == QuitFailure
+    pluginsList) == QuitFailure
 quitShell(QuitSuccess.ResultCode, db)

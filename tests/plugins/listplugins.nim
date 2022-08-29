@@ -8,7 +8,7 @@ import utils/helpers
 
 var (db, _, historyIndex) = initTest()
 var pluginsList: PluginsList = initTable[string, PluginData]()
-assert setTestPlugin(db, pluginsList, historyIndex) == QuitSuccess
+assert setTestPlugin(db, pluginsList) == QuitSuccess
 listPlugins(initLimitedString(capacity = 4, text = "list"), historyIndex,
     pluginsList, db)
 listPlugins(initLimitedString(capacity = 8, text = "list all"), historyIndex,

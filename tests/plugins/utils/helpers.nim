@@ -8,9 +8,7 @@ proc initTest*(): tuple[db: DbConn, helpContent: HelpTable,
   var helpContent = initTable[string, HelpEntry]()
   return (db, helpContent, initHistory(db, helpContent))
 
-proc setTestPlugin*(db: DbConn; pluginsList: var PluginsList;
-    historyIndex: var HistoryRange): ResultCode =
-  discard removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
-      pluginsList, historyIndex)
+proc setTestPlugin*(db: DbConn; pluginsList: var PluginsList): ResultCode =
+  discard removePlugin(db, initLimitedString(capacity = 8, "remove 1"), pluginsList)
   return addPlugin(db, initLimitedString(capacity = 23,
       "add tools/testplugin.sh"), pluginsList)
