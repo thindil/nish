@@ -359,10 +359,10 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
       showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException())
 
-proc removePlugin*(db; arguments; pluginsList: var PluginsList;
-    historyIndex: var HistoryRange): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
-    ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
+proc removePlugin*(db; arguments; pluginsList: var PluginsList): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect,
+    ReadEnvEffect, ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Disable the plugin and remove it from the shell.
@@ -372,63 +372,47 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList;
   ## * db           - the connection to the shell's database
   ## * arguments    - the arguments which the user entered to the command
   ## * pluginsList  - the list of currently enabled shell's plugins
-  ## * historyIndex - the index of command in the shell's history
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the selected plugin was properly added, otherwise
-  ## QuitFailure. Also, updated parameters historyIndex and pluginsList
+  ## QuitFailure. Also, updated parameter pluginsList
   require:
     db != nil
     arguments.len() > 0
   body:
     # Check if the user entered proper amount of arguments to the command
     if arguments.len() < 8:
-      historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
-          returnCode = QuitFailure.ResultCode)
       return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
     let
       pluginId: DatabaseId = try:
           parseInt($arguments[7 .. ^1]).DatabaseId
         except ValueError:
-          historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
-              returnCode = QuitFailure.ResultCode)
           return showError(message = "The Id of the plugin must be a positive number.")
       pluginPath: string = try:
           db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"), pluginId)
         except DbError:
-          historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
-              returnCode = QuitFailure.ResultCode)
           return showError(message = "Can't get plugin's Id from database. Reason: ",
             e = getCurrentException())
     try:
       if pluginPath.len() == 0:
-        historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
-            returnCode = QuitFailure.ResultCode)
         return showError(message = "The plugin with the Id: " & $pluginId &
           " doesn't exist.")
       # Execute the disabling code of the plugin first
       if execPlugin(pluginPath = pluginPath, arguments = ["disable"],
           db = db).code != QuitSuccess:
-        historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
-            returnCode = QuitFailure.ResultCode)
         return showError(message = "Can't disable plugin '" & pluginPath & "'.")
       # Execute the uninstalling code of the plugin
       if execPlugin(pluginPath = pluginPath, arguments = ["uninstall"],
           db = db).code != QuitSuccess:
-        historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
-            returnCode = QuitFailure.ResultCode)
         return showError(message = "Can't remove plugin '" & pluginPath & "'.")
       # Remove the plugin from the base
       db.exec(query = sql(query = "DELETE FROM plugins WHERE id=?"), pluginId)
     except DbError:
-      historyIndex = updateHistory(commandToAdd = "plugin remove", db = db,
-          returnCode = QuitFailure.ResultCode)
       return showError(message = "Can't delete plugin from database. Reason: ",
           e = getCurrentException())
     # Remove the plugin from the list of enabled plugins
     pluginsList.del($pluginId)
-    historyIndex = updateHistory(commandToAdd = "plugin remove", db = db)
     showOutput(message = "Deleted the plugin with Id: " & $pluginId,
         fgColor = fgGreen)
     return QuitSuccess.ResultCode

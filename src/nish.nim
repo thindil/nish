@@ -632,8 +632,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             pluginsList = plugins)
       # Delete the selected plugin
       elif arguments.startsWith(prefix = "remove"):
-        returnCode = removePlugin(arguments = arguments,
-            historyIndex = historyIndex, pluginsList = plugins, db = db)
+        returnCode = removePlugin(arguments = arguments, pluginsList = plugins, db = db)
       # Disable the selected plugin
       elif arguments.startsWith(prefix = "disable"):
         returnCode = togglePlugin(arguments = arguments,
