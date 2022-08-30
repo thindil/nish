@@ -25,8 +25,7 @@
 
 import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
 import contracts
-import columnamount, constants, databaseid, history, input, lstring, options,
-    output, resultcode
+import columnamount, constants, databaseid, input, lstring, options, output, resultcode
 
 const
   minApiVersion: float = 0.2
@@ -56,7 +55,6 @@ using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
   pluginsList: var PluginsList # The list of enabled plugins
-  historyIndex: var HistoryRange # The index of the last command in the shell's history
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
