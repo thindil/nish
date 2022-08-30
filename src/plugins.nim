@@ -418,10 +418,9 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList): ResultCode {.gc
     return QuitSuccess.ResultCode
 
 proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
-    historyIndex: var HistoryRange; disable: bool = true): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect, ReadIOEffect, ExecIOEffect, RootEffect],
-    contractual.} =
+    disable: bool = true): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
+    ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Enable or disable the selected plugin.
@@ -431,14 +430,12 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
   ## * db           - the connection to the shell's database
   ## * arguments    - the arguments which the user entered to the command
   ## * pluginsList  - the list of currently enabled shell's plugins
-  ## * historyIndex - the index of command in the shell's history
   ## * disable      - if true, disable the plugin, otherwise enable it
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the selected plugin was properly enabled or disabled,
-  ## otherwise QuitFailure. Also, updated parameters historyIndex and
-  ## pluginsList
+  ## otherwise QuitFailure. Also, updated parameter pluginsList
   require:
     db != nil
     arguments.len() > 0
@@ -448,30 +445,22 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       actionName: string = (if disable: "disable" else: "enable")
     # Check if the user entered proper amount of arguments
     if arguments.len() < (idStart + 1):
-      historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
-          db = db, returnCode = QuitFailure.ResultCode)
       return showError(message = "Please enter the Id to the plugin which will be " &
           actionName & ".")
     let
       pluginId: DatabaseId = try:
           parseInt($arguments[idStart .. ^1]).DatabaseId
         except ValueError:
-          historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
-              db = db, returnCode = QuitFailure.ResultCode)
           return showError(message = "The Id of the plugin must be a positive number.")
       pluginState: BooleanInt = (if disable: 0 else: 1)
       pluginPath: string = try:
           db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"), pluginId)
         except DbError:
-          historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
-              db = db, returnCode = QuitFailure.ResultCode)
           return showError(message = "Can't get plugin's location from database. Reason: ",
             e = getCurrentException())
     try:
       # Check if plugin exists
       if pluginPath.len() == 0:
-        historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
-            db = db, returnCode = QuitFailure.ResultCode)
         return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
       # Check if plugin can be enabled due to version of API
       let newPlugin = checkPlugin(pluginPath = pluginPath, db = db)
@@ -481,8 +470,6 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
       if actionName in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = [actionName],
             db = db).code != QuitSuccess:
-          historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
-              db = db, returnCode = QuitFailure.ResultCode)
           return showError(message = "Can't " & actionName & " plugin '" &
               pluginPath & "'.")
       # Update the state of the plugin
@@ -497,11 +484,8 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
           return QuitFailure.ResultCode
         pluginsList[$pluginId] = newPlugin
     except DbError:
-      historyIndex = updateHistory(commandToAdd = "plugin " & actionName,
-          db = db, returnCode = QuitFailure.ResultCode)
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
           e = getCurrentException())
-    historyIndex = updateHistory(commandToAdd = "plugin " & actionName, db = db)
     showOutput(message = (if disable: "Disabled" else: "Enabled") &
         " the plugin '" & $pluginPath & "'", fgColor = fgGreen)
     return QuitSuccess.ResultCode

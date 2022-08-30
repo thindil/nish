@@ -635,13 +635,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = removePlugin(arguments = arguments, pluginsList = plugins, db = db)
       # Disable the selected plugin
       elif arguments.startsWith(prefix = "disable"):
-        returnCode = togglePlugin(arguments = arguments,
-            historyIndex = historyIndex, pluginsList = plugins, db = db)
+        returnCode = togglePlugin(arguments = arguments, pluginsList = plugins, db = db)
       # Enable the selected plugin
       elif arguments.startsWith(prefix = "enable"):
-        returnCode = togglePlugin(arguments = arguments,
-            historyIndex = historyIndex, pluginsList = plugins, db = db,
-            disable = false)
+        returnCode = togglePlugin(arguments = arguments, pluginsList = plugins,
+            db = db, disable = false)
       # Show the list of available plugins
       elif arguments.startsWith(prefix = "list"):
         listPlugins(arguments = arguments, historyIndex = historyIndex,
