@@ -490,7 +490,9 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
         " the plugin '" & $pluginPath & "'", fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc listPlugins*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc listPlugins*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## List enabled plugins, if entered command was "plugin list all" list all
@@ -551,10 +553,10 @@ proc listPlugins*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe, sid
             e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
-    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-    TimeEffect, ExecIOEffect, RootEffect], contractual.} =
+proc showPlugin*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Show details about the selected plugin, its ID, path and status
@@ -563,41 +565,31 @@ proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
   ##
   ## * arguments    - the user entered text with arguments for the showing
   ##                  plugin
-  ## * historyIndex - the index of the last command in the shell's history
   ## * plugins      - the list of enabled plugins
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
   ##
   ## QuitSuccess if the selected plugin was properly show, otherwise
-  ## QuitFailure. Also, updated parameter historyIndex
+  ## QuitFailure.
   require:
     arguments.len() > 0
     db != nil
   body:
     if arguments.len() < 6:
-      historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
-          returnCode = QuitFailure.ResultCode)
       return showError(message = "Enter the ID of the plugin to show.")
     let id: DatabaseId = try:
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
       except ValueError:
-        historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
-            returnCode = QuitFailure.ResultCode)
         return showError(message = "The Id of the plugin must be a positive number.")
     let row: Row = try:
           db.getRow(query = sql(query = "SELECT location, enabled FROM plugins WHERE id=?"), args = id)
       except DbError:
-        historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
-            returnCode = QuitFailure.ResultCode)
         return showError(message = "Can't read plugin data from database. Reason: ",
             e = getCurrentException())
     if row[0] == "":
-      historyIndex = updateHistory(commandToAdd = "plugin show", db = db,
-          returnCode = QuitFailure.ResultCode)
       return showError(message = "The plugin with the ID: " & $id &
         " doesn't exists.")
-    historyIndex = updateHistory(commandToAdd = "plugin show", db = db)
     let spacesAmount: ColumnAmount = try:
         terminalWidth().ColumnAmount / 12
       except ValueError:

@@ -645,15 +645,12 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         returnCode = listPlugins(arguments = arguments, plugins = plugins, db = db)
       # Show the selected plugin
       elif arguments.startsWith(prefix = "show"):
-        returnCode = showPlugin(arguments = arguments,
-            historyIndex = historyIndex, plugins = plugins, db = db)
+        returnCode = showPlugin(arguments = arguments, plugins = plugins, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 6, text = "plugin"),
                   helpType = initLimitedString(capacity = 6, text = "plugin"))
-          historyIndex = updateHistory(commandToAdd = "plugin " & arguments,
-              db = db, returnCode = returnCode)
         except CapacityError:
           returnCode = QuitFailure.ResultCode
     # Execute external command or alias
