@@ -490,9 +490,7 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
         " the plugin '" & $pluginPath & "'", fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc listPlugins*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## List enabled plugins, if entered command was "plugin list all" list all
@@ -501,7 +499,6 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
   ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for showing plugins
-  ## * historyIndex - the index of command in the shell's history
   ## * plugins      - the list of enabled plugins
   ## * db           - the connection to the shell's database
   ##
@@ -533,7 +530,6 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
         showOutput(message = indent(s = alignLeft(id, count = 4) & " " &
             alignLeft(s = data.path, count = columnLength.int),
                 count = spacesAmount.int))
-      historyIndex = updateHistory(commandToAdd = "plugin list", db = db)
     # Show the list of all installed plugins with information about their state
     elif arguments == "list all":
       showFormHeader(message = "All available plugins are:")
@@ -551,12 +547,9 @@ proc listPlugins*(arguments; historyIndex; plugins: PluginsList; db) {.gcsafe,
               alignLeft(s = row[1], count = columnLength.int) & " " & (if row[
                   2] == "1": "Yes" else: "No"), count = spacesAmount.int))
       except DbError:
-        historyIndex = updateHistory(commandToAdd = "plugin list all", db = db,
-            returnCode = QuitFailure.ResultCode)
-        showError(message = "Can't read info about plugin from database. Reason:",
+        return showError(message = "Can't read info about plugin from database. Reason:",
             e = getCurrentException())
-        return
-      historyIndex = updateHistory(commandToAdd = "plugin list all", db = db)
+    return QuitSuccess.ResultCode
 
 proc showPlugin*(arguments; historyIndex; plugins: PluginsList;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [

@@ -642,8 +642,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             db = db, disable = false)
       # Show the list of available plugins
       elif arguments.startsWith(prefix = "list"):
-        listPlugins(arguments = arguments, historyIndex = historyIndex,
-            plugins = plugins, db = db)
+        returnCode = listPlugins(arguments = arguments, plugins = plugins, db = db)
       # Show the selected plugin
       elif arguments.startsWith(prefix = "show"):
         returnCode = showPlugin(arguments = arguments,
