@@ -6,13 +6,13 @@ import std/tables
 import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
-var (db, _, historyIndex) = initTest()
+var (db, _, _) = initTest()
 var pluginsList: PluginsList = initTable[string, PluginData]()
 assert setTestPlugin(db, pluginsList) == QuitSuccess
 assert togglePlugin(db, initLimitedString(capacity = 9, "disable 1"),
-    pluginsList, historyIndex) == QuitSuccess
+    pluginsList) == QuitSuccess
 assert togglePlugin(db, initLimitedString(capacity = 8, "enable 1"),
-    pluginsList, historyIndex, false) == QuitSuccess
+    pluginsList, false) == QuitSuccess
 assert togglePlugin(db, initLimitedString(capacity = 8, "enable 2"),
-    pluginsList, historyIndex, false) == QuitFailure
+    pluginsList, false) == QuitFailure
 quitShell(QuitSuccess.ResultCode, db)
