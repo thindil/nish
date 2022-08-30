@@ -504,8 +504,8 @@ proc listPlugins*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe, sid
   ##
   ## RETURNS
   ##
-  ## The parameter historyIndex updated after execution of showing the plugins'
-  ## list
+  ## QuitSuccess if the list of plugins was properly show, otherwise
+  ## QuitFailure.
   require:
     arguments.len() > 3
   body:
