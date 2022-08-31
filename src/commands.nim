@@ -25,7 +25,17 @@
 
 import std/[db_sqlite, os, tables]
 import contracts
-import aliases, constants, directorypath, output, resultcode, variables
+import aliases, constants, directorypath, lstring, output, resultcode, variables
+
+type
+  CommandProc* = proc (arguments: UserInput; db: DbConn): ResultCode
+  ## FUNCTION
+  ##
+  ## The shell's command's code
+  CommandsList = Table[string, CommandProc]
+  ## FUNCTION
+  ##
+  ## Used to store the shell's commands
 
 using
   db: DbConn # Connection to the shell's database
@@ -121,3 +131,13 @@ func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
   helpContent["merge commands"] = HelpEntry(
       usage: "command [&& or ||] command ...",
       content: "Commands can be merged to execute each after another. If merged with && then the next command(s) will be executed only when the previous was successfull. If merged with || then the next commands will be executed only when the previous failed.")
+
+proc addCommand*(name: UserInput; command: CommandProc;
+    commands: var CommandsList) {.contractual.} =
+  require:
+    name.len() > 0
+  body:
+    if $name in commands:
+      showError(message = "Can't add command '" & $name & "' because there is one with that name.")
+      return
+    commands[$name] = command
