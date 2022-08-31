@@ -7,7 +7,7 @@ import ../../src/[aliases, directorypath, lstring, nish, resultcode]
 import utils/helpers
 import contracts
 
-var (db, _, _, myaliases) = initTest()
+var (db, _, myaliases) = initTest()
 assert setTestAliases(db) == QuitSuccess
 myaliases.setAliases(getCurrentDir().DirectoryPath, db)
 assert parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 2

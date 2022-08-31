@@ -1,13 +1,11 @@
 import std/[db_sqlite, strutils, tables]
-import ../../../src/[aliases, constants, directorypath, history, lstring, nish]
+import ../../../src/[aliases, constants, directorypath, lstring, nish]
 
-proc initTest*(): tuple[db: DbConn, helpContent: HelpTable,
-    historyIndex: HistoryRange, aliases: AliasesList] =
+proc initTest*(): tuple[db: DbConn, helpContent: HelpTable, aliases: AliasesList] =
   let db = startDb("test.db".DirectoryPath)
   assert db != nil
   var helpContent = initTable[string, HelpEntry]()
-  return (db, helpContent, initHistory(db, helpContent), initOrderedTable[
-      LimitedString, int]())
+  return (db, helpContent, initOrderedTable[LimitedString, int]())
 
 proc setTestAliases*(db: DbConn): int =
   if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:

@@ -6,7 +6,7 @@ import std/os
 import ../../src/[aliases, directorypath, lstring, nish, resultcode]
 import utils/helpers
 
-var (db, _, _, myaliases) = initTest()
+var (db, _, myaliases) = initTest()
 assert setTestAliases(db) == QuitSuccess
 myaliases.setAliases(getCurrentDir().DirectoryPath, db)
 assert execAlias(emptyLimitedString(), "tests", myaliases, db) == QuitSuccess
