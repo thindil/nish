@@ -662,14 +662,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         if initLimitedString(capacity = maxInputLength, text = commandName) in aliases:
           returnCode = execAlias(arguments = arguments, aliasId = commandName,
               aliases = aliases, db = db)
-          historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
-              returnCode = returnCode)
           cursorPosition = inputString.len()
         else:
           # Execute external command
           returnCode = ResultCode(execCmd(command = commandToExecute))
-          historyIndex = updateHistory(commandToAdd = commandToExecute, db = db,
-              returnCode = returnCode)
       except CapacityError:
         returnCode = QuitFailure.ResultCode
     # Update the shell's history with info about the executed command
