@@ -5,6 +5,6 @@ discard """
 import ../../src/[nish, variables, resultcode]
 import utils/helpers
 
-var (db, helpContent, _) = initTest()
+var (db, helpContent) = initTest()
 initVariables(helpContent, db)
 quitShell(ResultCode(QuitSuccess), db)

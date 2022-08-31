@@ -6,7 +6,7 @@ import std/os
 import ../../src/[directorypath, nish, variables, resultcode]
 import utils/helpers
 
-let (db, _, _) = initTest()
+let (db, _) = initTest()
 assert setTestVariables(db) == QuitSuccess
 setVariables("/home".DirectoryPath, db)
 assert getEnv("TESTS") == "test_variable"

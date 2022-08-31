@@ -1,13 +1,12 @@
 import std/[db_sqlite, strutils, tables]
-import ../../../src/[constants, directorypath, history, nish, variables]
+import ../../../src/[constants, directorypath, nish, variables]
 
-proc initTest*(): tuple[db: DbConn, helpContent: HelpTable,
-    historyIndex: HistoryRange] =
+proc initTest*(): tuple[db: DbConn, helpContent: HelpTable] =
   let db = startDb("test.db".DirectoryPath)
   assert db != nil
   var helpContent = initTable[string, HelpEntry]()
   initVariables(helpContent, db)
-  return (db, helpContent, initHistory(db, helpContent))
+  return (db, helpContent)
 
 proc setTestVariables*(db: DbConn): int =
   if parseInt(db.getValue(sql"SELECT COUNT(*) FROM variables")) == 0:
