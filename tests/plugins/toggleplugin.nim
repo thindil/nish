@@ -2,12 +2,12 @@ discard """
   exitcode: 0
 """
 
-import std/tables
 import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
-var (db, _) = initTest()
-var pluginsList: PluginsList = initTable[string, PluginData]()
+var
+  (db, helpContent) = initTest()
+  pluginsList = initPlugins(helpContent, db)
 assert setTestPlugin(db, pluginsList) == QuitSuccess
 assert togglePlugin(db, initLimitedString(capacity = 9, "disable 1"),
     pluginsList) == QuitSuccess
