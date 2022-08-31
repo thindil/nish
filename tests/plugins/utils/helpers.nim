@@ -1,12 +1,11 @@
 import std/[db_sqlite, tables]
-import ../../../src/[constants, directorypath, lstring, history, nish, plugins, resultcode]
+import ../../../src/[constants, directorypath, lstring, nish, plugins, resultcode]
 
-proc initTest*(): tuple[db: DbConn, helpContent: HelpTable,
-    historyIndex: HistoryRange] =
+proc initTest*(): tuple[db: DbConn, helpContent: HelpTable] =
   let db = startDb("test.db".DirectoryPath)
   assert db != nil
   var helpContent = initTable[string, HelpEntry]()
-  return (db, helpContent, initHistory(db, helpContent))
+  return (db, helpContent)
 
 proc setTestPlugin*(db: DbConn; pluginsList: var PluginsList): ResultCode =
   discard removePlugin(db, initLimitedString(capacity = 8, "remove 1"), pluginsList)
