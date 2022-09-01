@@ -137,6 +137,7 @@ proc addCommand*(name: UserInput; command: CommandProc;
         RootEffect], contractual.} =
   require:
     name.len() > 0
+    command != nil
   body:
     if $name in commands:
       showError(message = "Can't add command '" & $name & "' because there is one with that name.")
