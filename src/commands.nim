@@ -28,7 +28,7 @@ import contracts
 import aliases, constants, directorypath, lstring, output, resultcode, variables
 
 type
-  CommandProc* = proc (arguments: UserInput; db: DbConn): ResultCode
+  CommandProc* = proc (arguments: UserInput; db: DbConn): ResultCode {.gcsafe.}
   ## FUNCTION
   ##
   ## The shell's command's code
@@ -133,7 +133,8 @@ func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
       content: "Commands can be merged to execute each after another. If merged with && then the next command(s) will be executed only when the previous was successfull. If merged with || then the next commands will be executed only when the previous failed.")
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList) {.contractual.} =
+    commands: var CommandsList) {.gcsafe, raises: [], tags: [WriteIOEffect,
+        RootEffect], contractual.} =
   require:
     name.len() > 0
   body:
@@ -143,4 +144,8 @@ proc addCommand*(name: UserInput; command: CommandProc;
     if $name in ["cd", "exit", "set", "unset"]:
       showError(message = "Can't replace built-in commands.")
       return
-    commands[$name] = command
+    try:
+      commands[$name] = command
+    except Exception:
+      showError(message = "Can't add command '" & name & "'. Reason: ",
+          e = getCurrentException())
