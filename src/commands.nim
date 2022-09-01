@@ -140,4 +140,7 @@ proc addCommand*(name: UserInput; command: CommandProc;
     if $name in commands:
       showError(message = "Can't add command '" & $name & "' because there is one with that name.")
       return
+    if $name in ["cd", "exit", "set", "unset"]:
+      showError(message = "Can't replace built-in commands.")
+      return
     commands[$name] = command
