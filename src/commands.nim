@@ -135,6 +135,20 @@ func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
 proc addCommand*(name: UserInput; command: CommandProc;
     commands: var CommandsList) {.gcsafe, raises: [], tags: [WriteIOEffect,
         RootEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Add a new command to the shell's commands' list
+  ##
+  ## PARAMETERS
+  ##
+  ## * name     - the name of the new command to add
+  ## * command  - the pointer to the procedure which will be called when the
+  ##              command is invoked
+  ## * commands - the list of shell's commands
+  ##
+  ## RETURNS
+  ##
+  ## The updated parameter commands with the list of available shell's commands
   require:
     name.len() > 0
     command != nil
