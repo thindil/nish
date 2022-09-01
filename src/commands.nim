@@ -28,7 +28,8 @@ import contracts
 import aliases, constants, directorypath, lstring, output, resultcode, variables
 
 type
-  CommandProc* = proc (arguments: UserInput; db: DbConn): ResultCode {.gcsafe.}
+  CommandProc* = proc (arguments: UserInput; db: DbConn): ResultCode {.gcsafe,
+      raises: [], contractual.}
   ## FUNCTION
   ##
   ## The shell's command's code
@@ -133,8 +134,8 @@ func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
       content: "Commands can be merged to execute each after another. If merged with && then the next command(s) will be executed only when the previous was successfull. If merged with || then the next commands will be executed only when the previous failed.")
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList) {.gcsafe, raises: [], tags: [WriteIOEffect,
-        RootEffect], contractual.} =
+    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Add a new command to the shell's commands' list
