@@ -33,6 +33,15 @@ type
   ## FUNCTION
   ##
   ## The shell's command's code
+  ##
+  ## PARAMETERS
+  ##
+  ## * arguments - the arguments entered by the user for the command
+  ## * db        - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the command was succesfull, otherwise QuitFalse
   CommandsList = Table[string, CommandProc]
   ## FUNCTION
   ##
