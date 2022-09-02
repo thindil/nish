@@ -25,7 +25,7 @@
 
 import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, constants, input, lstring, options, output, resultcode
+import columnamount, commands, constants, input, lstring, options, output, resultcode
 
 using
   db: DbConn # Connection to the shell's database
@@ -271,3 +271,14 @@ proc showHelpList*(command: string; subcommands: openArray[
     showOutput(message = indent(s = "for example: 'help " & command & " " &
         subcommands[0] & "'.", count = 4))
     return QuitSuccess.ResultCode
+
+proc initHelp*(helpContent; db; commands: var CommandsList) {.contractual.} =
+  body:
+    proc help(arguments: UserInput; db: DbConn): ResultCode {.gcsafe, raises: [],
+        contractual.} =
+      body:
+        discard
+
+    addCommand(name = initLimitedString(capacity = 4, text = "help"),
+        command = help, commands = commands)
+    updateHelp(helpContent = helpContent, db = db)
