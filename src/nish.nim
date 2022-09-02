@@ -513,7 +513,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       quitShell(returnCode = returnCode, db = db)
     # Show help screen
     of "help":
-      returnCode = showHelp(topic = arguments, helpContent = helpContent, db = db)
+      returnCode = showHelp(topic = arguments, helpContent = helpContent)
     # Change current directory
     of "cd":
       returnCode = cdCommand(newDirectory = DirectoryPath($arguments),

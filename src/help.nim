@@ -25,7 +25,7 @@
 
 import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, constants, history, input, lstring, options, output, resultcode
+import columnamount, constants, input, lstring, options, output, resultcode
 
 using
   db: DbConn # Connection to the shell's database
@@ -103,10 +103,9 @@ proc showUnknownHelp*(subCommand, command,
                 "` for `" & command & "`. To see all available " & helpType &
                 " commands, type `" & command & "`.")
 
-proc showHelp*(topic: UserInput; helpContent: HelpTable;
-    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
-        WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-            TimeEffect], contractual.} =
+proc showHelp*(topic: UserInput; helpContent: HelpTable): ResultCode {.gcsafe,
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
+    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the selected help section. If the user entered non-existing name of
@@ -123,8 +122,6 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
   ##
   ## QuitSuccess if the selected help's topic was succesully shown, otherwise
   ## QuitFailure.
-  require:
-    db != nil
   body:
     proc showHelpEntry(helpEntry: HelpEntry;
         usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
@@ -156,7 +153,6 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
           content.add(y = "\n    ")
           index = 4
       showOutput(message = content)
-      discard updateHistory(commandToAdd = "help", db = db)
 
     result = ResultCode(QuitSuccess)
     if topic.len == 0:
@@ -197,14 +193,10 @@ proc showHelp*(topic: UserInput; helpContent: HelpTable;
             result = showUnknownHelp(subCommand = args, command = command,
                 helpType = initLimitedString(capacity = maxInputLength, text = (
                     if command == "alias": "aliases" else: $command)))
-            discard updateHistory(commandToAdd = "help " & key, db = db,
-                returnCode = result)
           except CapacityError:
             return showError(message = "Can't show help for unknown command")
       else:
         result = showError(message = "Unknown help topic '" & key & "'")
-        discard updateHistory(commandToAdd = "help " & key, db = db,
-            returnCode = result)
 
 proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect], contractual.} =
