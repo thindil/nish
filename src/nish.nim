@@ -220,6 +220,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     helpContent = initTable[string, HelpEntry]()
     cursorPosition: Natural = 0
     plugins: PluginsList = initTable[string, PluginData]()
+    commands: CommandsList = initTable[string, CommandProc]()
 
   proc ctrlC() {.noconv.} =
     ## FUNCTION
