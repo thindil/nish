@@ -42,7 +42,7 @@ type
   ## RETURNS
   ##
   ## QuitSuccess if the command was succesfull, otherwise QuitFalse
-  CommandsList = Table[string, CommandProc]
+  CommandsList* = Table[string, CommandProc]
   ## FUNCTION
   ##
   ## Used to store the shell's commands
