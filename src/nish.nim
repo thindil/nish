@@ -282,7 +282,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   initVariables(helpContent = helpContent, db = db)
 
   # Set the shell's help
-  updateHelp(helpContent = helpContent, db = db)
+  initHelp(helpContent = helpContent, db = db, commands = commands)
 
   # Initialize the shell's prompt system
   initPrompt(helpContent = helpContent)

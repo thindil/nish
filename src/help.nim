@@ -273,12 +273,18 @@ proc showHelpList*(command: string; subcommands: openArray[
     return QuitSuccess.ResultCode
 
 proc initHelp*(helpContent; db; commands: var CommandsList) {.contractual.} =
+  require:
+    db != nil
   body:
-    proc help(arguments: UserInput; db: DbConn): ResultCode {.gcsafe, raises: [],
-        contractual.} =
-      body:
-        discard
-
-    addCommand(name = initLimitedString(capacity = 4, text = "help"),
-        command = help, commands = commands)
     updateHelp(helpContent = helpContent, db = db)
+    let tempHelp = helpContent
+    proc help(arguments: UserInput; db: DbConn): ResultCode {.gcsafe, raises: [
+        ], contractual.} =
+      body:
+        return showHelp(topic = arguments, helpContent = tempHelp)
+
+    try:
+      addCommand(name = initLimitedString(capacity = 4, text = "help"),
+          command = help, commands = commands)
+    except CapacityError:
+      discard
