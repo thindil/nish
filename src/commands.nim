@@ -28,8 +28,11 @@ import contracts
 import aliases, constants, directorypath, lstring, output, resultcode, variables
 
 type
+  CommandLists* = object
+    help*: ref HelpTable
+    aliases*: AliasesList
   CommandProc* = proc (arguments: UserInput; db: DbConn;
-      list: ref HelpTable): ResultCode {.gcsafe, raises: [], contractual.}
+      list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.}
   ## FUNCTION
   ##
   ## The shell's command's code

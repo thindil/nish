@@ -278,9 +278,9 @@ proc initHelp*(helpContent; db; commands: var CommandsList) {.contractual.} =
   body:
     updateHelp(helpContent = helpContent, db = db)
     proc help(arguments: UserInput; db: DbConn;
-        list: ref HelpTable): ResultCode {.gcsafe, raises: [], contractual.} =
+        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
       body:
-        return showHelp(topic = arguments, helpContent = list)
+        return showHelp(topic = arguments, helpContent = list.help)
 
     try:
       addCommand(name = initLimitedString(capacity = 4, text = "help"),
