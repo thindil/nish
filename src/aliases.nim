@@ -38,7 +38,7 @@ type
     ## FUNCTION
     ##
     ## Used to store aliases names in tables and database.
-  AliasesList* = OrderedTable[AliasName, int]
+  AliasesList* = OrderedTableRef[AliasName, int]
     ## FUNCTION
     ##
     ## Used to store the available aliases in the selected directory
@@ -68,7 +68,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
     directory.len() > 0
     db != nil
   body:
-    aliases = initOrderedTable[AliasName, int]()
+    aliases = newOrderedTable[AliasName, int]()
     var
       dbQuery: string = "SELECT id, name FROM aliases WHERE path='" &
           directory & "'"
