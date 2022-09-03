@@ -66,7 +66,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
       return HistoryRange.low()
 
-proc initHistory*(db; helpContent: var HelpTable): HistoryRange {.gcsafe,
+proc initHistory*(db; helpContent: ref HelpTable): HistoryRange {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
   ## FUNCTION

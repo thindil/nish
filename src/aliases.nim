@@ -664,7 +664,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             e = getCurrentException())
     return result
 
-proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
+proc initAliases*(helpContent: ref HelpTable; db): AliasesList {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect], contractual.} =
   ## FUNCTION
@@ -685,7 +685,7 @@ proc initAliases*(helpContent: var HelpTable; db): AliasesList {.gcsafe,
   require:
     db != nil
   ensure:
-    helpContent.len() > `helpContent`.len()
+    helpContent != nil
   body:
     helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
         content: "If entered without subcommand, show the list of available subcommands for aliases. Otherwise, execute the selected subcommand.")

@@ -123,7 +123,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       except IOError:
         discard
 
-proc initPrompt*(helpContent: var HelpTable) {.gcsafe, sideEffect, locks: 0,
+proc initPrompt*(helpContent: ref HelpTable) {.gcsafe, sideEffect, locks: 0,
     raises: [], tags: [], contractual.} =
   ## FUNCTION
   ##
@@ -139,7 +139,7 @@ proc initPrompt*(helpContent: var HelpTable) {.gcsafe, sideEffect, locks: 0,
   ## The updated helpContent with the help for the commands related to the
   ## shell's prompt.
   ensure:
-    helpContent.len() > `helpContent`.len()
+    helpContent != nil
   body:
     helpContent["prompt"] = HelpEntry(usage: "set options promptCommand 'program ?arguments?'",
         content: "The shell's prompt can be set as output of a command. It is possible by setting the shell's option promptCommand. For example, to set the prompt to listing the current directory, you can type options set promptCommand 'ls -a .'. Please remember, that the command will be executed every time before you execute another command.")

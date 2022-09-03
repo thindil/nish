@@ -29,7 +29,7 @@ import columnamount, commands, constants, input, lstring, options, output, resul
 
 using
   db: DbConn # Connection to the shell's database
-  helpContent: var HelpTable # The content of the help system
+  helpContent: ref HelpTable # The content of the help system
 
 proc updateHelp*(helpContent; db) {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
@@ -103,7 +103,7 @@ proc showUnknownHelp*(subCommand, command,
                 "` for `" & command & "`. To see all available " & helpType &
                 " commands, type `" & command & "`.")
 
-proc showHelp*(topic: UserInput; helpContent: HelpTable): ResultCode {.gcsafe,
+proc showHelp*(topic: UserInput; helpContent: ref HelpTable): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
@@ -278,7 +278,7 @@ proc initHelp*(helpContent; db; commands: var CommandsList) {.contractual.} =
   body:
     updateHelp(helpContent = helpContent, db = db)
     proc help(arguments: UserInput; db: DbConn;
-        list: var HelpTable): ResultCode {.gcsafe, raises: [], contractual.} =
+        list: ref HelpTable): ResultCode {.gcsafe, raises: [], contractual.} =
       body:
         return showHelp(topic = arguments, helpContent = list)
 

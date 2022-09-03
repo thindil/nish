@@ -29,7 +29,7 @@ import aliases, constants, directorypath, lstring, output, resultcode, variables
 
 type
   CommandProc* = proc (arguments: UserInput; db: DbConn;
-      list: var HelpTable): ResultCode {.gcsafe, raises: [], contractual.}
+      list: ref HelpTable): ResultCode {.gcsafe, raises: [], contractual.}
   ## FUNCTION
   ##
   ## The shell's command's code
@@ -119,7 +119,7 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
     else:
       result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)
 
-func initCommands*(helpContent: var HelpTable) {.gcsafe, locks: 0, raises: [],
+func initCommands*(helpContent: ref HelpTable) {.gcsafe, locks: 0, raises: [],
     tags: [].} =
   ## FUNCTION
   ##

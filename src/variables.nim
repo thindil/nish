@@ -150,7 +150,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
       showError(message = "Can't set environment variables for the new directory. Reason: ",
           e = getCurrentException())
 
-proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
+proc initVariables*(helpContent: ref HelpTable; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, WriteDbEffect], contractual.} =
   ## FUNCTION
@@ -171,7 +171,7 @@ proc initVariables*(helpContent: var HelpTable; db) {.gcsafe, sideEffect,
   require:
     db != nil
   ensure:
-    helpContent.len() > `helpContent`.len()
+    helpContent != nil
   body:
     helpContent["set"] = HelpEntry(usage: "set [name=value]",
         content: "Set the environment variable with the selected name and value.")

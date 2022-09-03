@@ -217,7 +217,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
         DirSep & "nish.db")
-    helpContent = initTable[string, HelpEntry]()
+    helpContent = newTable[string, HelpEntry]()
     cursorPosition: Natural = 0
     plugins: PluginsList = initTable[string, PluginData]()
     commands: CommandsList = initTable[string, CommandProc]()

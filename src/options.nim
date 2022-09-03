@@ -303,7 +303,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             "' to its default value. Reason: ", e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initOptions*(helpContent: var HelpTable) {.gcsafe, sideEffect, locks: 0,
+proc initOptions*(helpContent: ref HelpTable) {.gcsafe, sideEffect, locks: 0,
     raises: [], tags: [], contractual.} =
   ## FUNCTION
   ##
@@ -314,7 +314,7 @@ proc initOptions*(helpContent: var HelpTable) {.gcsafe, sideEffect, locks: 0,
   ##
   ## * helpContent - the HelpTable with help content of the shell
   ensure:
-    helpContent.len() > `helpContent`.len()
+    helpContent != nil
   body:
     helpContent["options"] = HelpEntry(usage: "options ?subcommand?",
         content: "If entered without subcommand, show the list of available subcommands for options. Otherwise, execute the selected subcommand.")

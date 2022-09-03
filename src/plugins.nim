@@ -297,7 +297,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
         "' added as a plugin to the shell.", fgColor = fgGreen);
     return QuitSuccess.ResultCode
 
-proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
+proc initPlugins*(helpContent: ref HelpTable; db): PluginsList {.gcsafe,
     sideEffect, raises: [], tags: [ExecIOEffect, ReadEnvEffect, ReadIOEffect,
     WriteIOEffect, TimeEffect, WriteDbEffect, ReadDbEffect, RootEffect],
     contractual.} =
@@ -318,7 +318,7 @@ proc initPlugins*(helpContent: var HelpTable; db): PluginsList {.gcsafe,
   require:
     db != nil
   ensure:
-    helpContent.len() > `helpContent`.len()
+    helpContent != nil
   body:
     # Set the help related to the plugins
     helpContent["plugin"] = HelpEntry(usage: "plugin ?subcommand?",
