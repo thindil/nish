@@ -28,8 +28,8 @@ import contracts
 import aliases, constants, directorypath, lstring, output, resultcode, variables
 
 type
-  CommandProc* = proc (arguments: UserInput; db: DbConn): ResultCode {.gcsafe,
-      raises: [], contractual.}
+  CommandProc* = proc (arguments: UserInput; db: DbConn;
+      list: var HelpTable): ResultCode {.gcsafe, raises: [], contractual.}
   ## FUNCTION
   ##
   ## The shell's command's code
@@ -38,6 +38,8 @@ type
   ##
   ## * arguments - the arguments entered by the user for the command
   ## * db        - the connection to the shell's database
+  ## * list      - the additional data for the command, like list of help
+  ##               entries, etc
   ##
   ## RETURNS
   ##

@@ -277,11 +277,10 @@ proc initHelp*(helpContent; db; commands: var CommandsList) {.contractual.} =
     db != nil
   body:
     updateHelp(helpContent = helpContent, db = db)
-    let tempHelp = helpContent
-    proc help(arguments: UserInput; db: DbConn): ResultCode {.gcsafe, raises: [
-        ], contractual.} =
+    proc help(arguments: UserInput; db: DbConn;
+        list: var HelpTable): ResultCode {.gcsafe, raises: [], contractual.} =
       body:
-        return showHelp(topic = arguments, helpContent = tempHelp)
+        return showHelp(topic = arguments, helpContent = list)
 
     try:
       addCommand(name = initLimitedString(capacity = 4, text = "help"),
