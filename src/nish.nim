@@ -513,7 +513,12 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       quitShell(returnCode = returnCode, db = db)
     # Show help screen
     of "help":
-      returnCode = showHelp(topic = arguments, helpContent = helpContent)
+      try:
+        returnCode = commands[commandName](arguments = arguments, db = db,
+            list = CommandLists(help: helpContent))
+      except KeyError:
+        showError(message = "Can't execute command '" & commandName &
+            "'. Reason: ", e = getCurrentException())
     # Change current directory
     of "cd":
       returnCode = cdCommand(newDirectory = DirectoryPath($arguments),
