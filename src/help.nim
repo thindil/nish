@@ -275,6 +275,17 @@ proc showHelpList*(command: string; subcommands: openArray[
 proc initHelp*(helpContent; db; commands: var CommandsList) {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, TimeEffect, ReadEnvEffect,
     ReadDbEffect, ReadIOEffect, WriteDbEffect, RootEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Initialize the help system. Update some help entries with current the
+  ## shell's settings and add the help related commands to the shell's
+  ## commands' list.
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ## * db          - the connection to the shell's database
+  ## * commands    - the list of the shell's commands
   require:
     db != nil
   body:
