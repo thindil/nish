@@ -4,7 +4,7 @@ import ../../../src/[constants, directorypath, history, nish]
 proc initTest*(): tuple[db: DbConn, historyIndex: HistoryRange] =
   let db = startDb("test.db".DirectoryPath)
   assert db != nil
-  var helpContent = initTable[string, HelpEntry]()
+  var helpContent = newTable[string, HelpEntry]()
   return (db, initHistory(db, helpContent))
 
 proc setTestHistory*(db: DbConn): int =

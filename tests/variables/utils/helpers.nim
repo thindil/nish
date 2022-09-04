@@ -1,10 +1,10 @@
 import std/[db_sqlite, strutils, tables]
 import ../../../src/[constants, directorypath, nish, variables]
 
-proc initTest*(): tuple[db: DbConn, helpContent: HelpTable] =
+proc initTest*(): tuple[db: DbConn, helpContent: ref HelpTable] =
   let db = startDb("test.db".DirectoryPath)
   assert db != nil
-  var helpContent = initTable[string, HelpEntry]()
+  var helpContent = newTable[string, HelpEntry]()
   initVariables(helpContent, db)
   return (db, helpContent)
 

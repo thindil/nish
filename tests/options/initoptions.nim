@@ -5,6 +5,6 @@ discard """
 import std/[tables]
 import ../../src/[constants, options]
 
-var helpContent = initTable[string, HelpEntry]()
+var helpContent = newTable[string, HelpEntry]()
 initOptions(helpContent)
 assert helpContent.len() > 0

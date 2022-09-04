@@ -9,6 +9,6 @@ let db = startDb("test.db".DirectoryPath)
 assert db != nil
 var
     historyIndex: int
-    helpContent = initTable[string, HelpEntry]()
+    helpContent = newTable[string, HelpEntry]()
 historyIndex = initHistory(db, helpContent)
 quitShell(ResultCode(QuitSuccess), db)
