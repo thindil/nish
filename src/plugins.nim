@@ -46,7 +46,7 @@ type
     ## Store information about the shell's plugin
     path*: string ## Full path to the selected plugin
     api*: seq[string] ## The list of API calls supported by the plugin
-  PluginsList* = Table[string, PluginData]
+  PluginsList* = TableRef[string, PluginData]
   ## FUNCTION
   ##
   ## Used to store the enabled shell's plugins
@@ -320,6 +320,7 @@ proc initPlugins*(helpContent: ref HelpTable; db): PluginsList {.gcsafe,
   ensure:
     helpContent != nil
   body:
+    result = newTable[string, PluginData]()
     # Set the help related to the plugins
     helpContent["plugin"] = HelpEntry(usage: "plugin ?subcommand?",
         content: "If entered without subcommand, show the list of available subcommands for plugins. Otherwise, execute the selected subcommand.")
