@@ -5,6 +5,6 @@ discard """
 import std/tables
 import ../../src/[commands, constants]
 
-var helpContent = initTable[string, HelpEntry]()
+var helpContent = newTable[string, HelpEntry]()
 initCommands(helpContent)
 assert helpContent.len() == 4
