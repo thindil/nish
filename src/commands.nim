@@ -25,7 +25,7 @@
 
 import std/[db_sqlite, os, tables]
 import contracts
-import aliases, constants, directorypath, lstring, output, resultcode, variables
+import aliases, constants, directorypath, lstring, output, plugins, resultcode, variables
 
 type
   CommandLists* = object
@@ -34,6 +34,7 @@ type
     ## Store additional data for the shell's command
     help*: ref HelpTable ## List with the content of the shell's help
     aliases*: AliasesList ## List of shell's aliases
+    plugins*: PluginsList ## List of enables shell's plugins
   CommandProc* = proc (arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.}
     ## FUNCTION
