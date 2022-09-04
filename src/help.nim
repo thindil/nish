@@ -272,7 +272,9 @@ proc showHelpList*(command: string; subcommands: openArray[
         subcommands[0] & "'.", count = 4))
     return QuitSuccess.ResultCode
 
-proc initHelp*(helpContent; db; commands: var CommandsList) {.contractual.} =
+proc initHelp*(helpContent; db; commands: var CommandsList) {.gcsafe,
+    sideEffect, raises: [], tags: [WriteIOEffect, TimeEffect, ReadEnvEffect,
+    ReadDbEffect, ReadIOEffect, WriteDbEffect, RootEffect], contractual.} =
   require:
     db != nil
   body:
