@@ -25,7 +25,7 @@
 
 import std/[db_sqlite, os, tables]
 import contracts
-import aliases, constants, directorypath, lstring, output, plugins, resultcode, variables
+import aliases, constants, directorypath, lstring, output, resultcode, variables
 
 type
   CommandLists* = object
