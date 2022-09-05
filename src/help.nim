@@ -292,6 +292,20 @@ proc initHelp*(helpContent; db; commands: var CommandsList) {.gcsafe,
     updateHelp(helpContent = helpContent, db = db)
     proc help(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      ## FUNCTION
+      ##
+      ## The code of the shell's command "help"
+      ##
+      ## PARAMETERS
+      ##
+      ## * arguments - the arguments entered by the user for the command
+      ## * db        - the connection to the shell's database
+      ## * list      - the additional data for the command, like list of help
+      ##               entries, etc
+      ##
+      ## RETURNS
+      ## QuitSuccess if the selected help's topic was succesully shown, otherwise
+      ## QuitFailure.
       body:
         return showHelp(topic = arguments, helpContent = list.help)
 
