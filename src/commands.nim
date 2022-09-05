@@ -27,35 +27,6 @@ import std/[db_sqlite, os, tables]
 import contracts
 import aliases, constants, directorypath, lstring, output, resultcode, variables
 
-type
-  CommandLists* = object
-    ## FUNCTION
-    ##
-    ## Store additional data for the shell's command
-    help*: ref HelpTable ## List with the content of the shell's help
-    aliases*: AliasesList ## List of shell's aliases
-    plugins*: PluginsList ## List of enables shell's plugins
-  CommandProc* = proc (arguments: UserInput; db: DbConn;
-      list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.}
-    ## FUNCTION
-    ##
-    ## The shell's command's code
-    ##
-    ## PARAMETERS
-    ##
-    ## * arguments - the arguments entered by the user for the command
-    ## * db        - the connection to the shell's database
-    ## * list      - the additional data for the command, like list of help
-    ##               entries, etc
-    ##
-    ## RETURNS
-    ##
-    ## QuitSuccess if the command was succesfull, otherwise QuitFalse
-  CommandsList* = Table[string, CommandProc]
-    ## FUNCTION
-    ##
-    ## Used to store the shell's commands
-
 using
   db: DbConn # Connection to the shell's database
   aliases: var AliasesList # The list of aliases available in the selected directory
