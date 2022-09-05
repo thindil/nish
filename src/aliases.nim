@@ -33,16 +33,6 @@ const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
   ##
   ## The list of available subcommands for command alias
 
-type
-  AliasName* = LimitedString
-    ## FUNCTION
-    ##
-    ## Used to store aliases names in tables and database.
-  AliasesList* = OrderedTableRef[AliasName, int]
-    ## FUNCTION
-    ##
-    ## Used to store the available aliases in the selected directory
-
 using
   db: DbConn # Connection to the shell's database
   aliases: var AliasesList # The list of aliases available in the selected directory

@@ -66,3 +66,11 @@ type
     ## Used to set the sort type for showing the last commands in the shell's
     ## history
     recent, amount, name, recentamount
+  AliasName* = LimitedString
+    ## FUNCTION
+    ##
+    ## Used to store aliases names in tables and database.
+  AliasesList* = OrderedTableRef[AliasName, int]
+    ## FUNCTION
+    ##
+    ## Used to store the available aliases in the selected directory
