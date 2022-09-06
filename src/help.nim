@@ -290,7 +290,7 @@ proc initHelp*(helpContent; db; commands: var CommandsList) {.gcsafe,
     db != nil
   body:
     updateHelp(helpContent = helpContent, db = db)
-    proc help(arguments: UserInput; db: DbConn;
+    proc helpCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
       ## FUNCTION
       ##
@@ -311,6 +311,6 @@ proc initHelp*(helpContent; db; commands: var CommandsList) {.gcsafe,
 
     try:
       addCommand(name = initLimitedString(capacity = 4, text = "help"),
-          command = help, commands = commands)
+          command = helpCommand, commands = commands)
     except CapacityError:
       discard
