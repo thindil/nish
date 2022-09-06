@@ -25,8 +25,8 @@
 
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import contracts
-import aliases, commands, completion, constants, directorypath, help, history,
-    input, lstring, options, output, plugins, prompt, resultcode, variables
+import aliases, commands, commandslist, completion, constants, directorypath,
+    help, history, input, lstring, options, output, plugins, prompt, resultcode, variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =

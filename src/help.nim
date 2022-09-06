@@ -25,7 +25,7 @@
 
 import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, commands, constants, input, lstring, options, output, resultcode
+import columnamount, commandslist, constants, input, lstring, options, output, resultcode
 
 using
   db: DbConn # Connection to the shell's database

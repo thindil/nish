@@ -25,7 +25,7 @@
 
 import std/[db_sqlite, os, tables]
 import contracts
-import aliases, constants, directorypath, lstring, output, resultcode, variables
+import aliases, constants, directorypath, output, resultcode, variables
 
 using
   db: DbConn # Connection to the shell's database
@@ -122,35 +122,3 @@ func initCommands*(helpContent: ref HelpTable) {.gcsafe, locks: 0, raises: [],
       usage: "command [&& or ||] command ...",
       content: "Commands can be merged to execute each after another. If merged with && then the next command(s) will be executed only when the previous was successfull. If merged with || then the next commands will be executed only when the previous failed.")
 
-proc addCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
-  ## Add a new command to the shell's commands' list
-  ##
-  ## PARAMETERS
-  ##
-  ## * name     - the name of the new command to add
-  ## * command  - the pointer to the procedure which will be called when the
-  ##              command is invoked
-  ## * commands - the list of shell's commands
-  ##
-  ## RETURNS
-  ##
-  ## The updated parameter commands with the list of available shell's commands
-  require:
-    name.len() > 0
-    command != nil
-  body:
-    if $name in commands:
-      showError(message = "Can't add command '" & $name & "' because there is one with that name.")
-      return
-    if $name in ["cd", "exit", "set", "unset"]:
-      showError(message = "Can't replace built-in commands.")
-      return
-    try:
-      commands[$name] = command
-    except Exception:
-      showError(message = "Can't add command '" & name & "'. Reason: ",
-          e = getCurrentException())
