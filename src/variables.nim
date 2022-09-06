@@ -25,8 +25,8 @@
 
 import std/[db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, constants, databaseid, directorypath, input, lstring,
-    output, resultcode
+import columnamount, commandslist, constants, databaseid, directorypath, input,
+    lstring, output, resultcode
 
 const
   variableNameLength*: Positive = maxNameLength
@@ -150,9 +150,10 @@ proc setVariables*(newDirectory: DirectoryPath; db;
       showError(message = "Can't set environment variables for the new directory. Reason: ",
           e = getCurrentException())
 
-proc initVariables*(helpContent: ref HelpTable; db) {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect, WriteDbEffect], contractual.} =
+proc initVariables*(helpContent: ref HelpTable; db;
+    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+    WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize enviroment variables. Set help related to the variables and
@@ -188,6 +189,18 @@ proc initVariables*(helpContent: ref HelpTable; db) {.gcsafe, sideEffect,
         content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
     helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
         content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
+    # Add commands related to the variables, except commands set and unset,
+    # they are build-in commands, thus cannot be replaced
+    proc variableCommand(arguments: UserInput; db: DbConn;
+        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      body:
+        return QuitSuccess.ResultCode
+
+    try:
+      addCommand(name = initLimitedString(capacity = 8, text = "variable"),
+          command = variableCommand, commands = commands)
+    except CapacityError:
+      discard
     # Set the environment variables for the current directory
     try:
       setVariables(getCurrentDir().DirectoryPath, db)
