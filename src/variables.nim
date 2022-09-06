@@ -173,6 +173,7 @@ proc initVariables*(helpContent: ref HelpTable; db) {.gcsafe, sideEffect,
   ensure:
     helpContent != nil
   body:
+    # Add help entries related to the environment variables commands
     helpContent["set"] = HelpEntry(usage: "set [name=value]",
         content: "Set the environment variable with the selected name and value.")
     helpContent["unset"] = HelpEntry(usage: "unset [name]",
@@ -187,6 +188,7 @@ proc initVariables*(helpContent: ref HelpTable; db) {.gcsafe, sideEffect,
         content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
     helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
         content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
+    # Set the environment variables for the current directory
     try:
       setVariables(getCurrentDir().DirectoryPath, db)
     except OSError:
