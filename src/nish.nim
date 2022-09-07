@@ -511,14 +511,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "exit":
       historyIndex = updateHistory(commandToAdd = "exit", db = db)
       quitShell(returnCode = returnCode, db = db)
-    # Show help screen
-    of "help":
-      try:
-        returnCode = commands[commandName](arguments = arguments, db = db,
-            list = CommandLists(help: helpContent))
-      except KeyError:
-        showError(message = "Can't execute command '" & commandName &
-            "'. Reason: ", e = getCurrentException())
     # Change current directory
     of "cd":
       returnCode = cdCommand(newDirectory = DirectoryPath($arguments),
@@ -529,32 +521,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     # Delete environment variable
     of "unset":
       returnCode = unsetCommand(arguments = arguments)
-    # Various commands related to environment variables
-    of "variable":
-      # No subcommand entered, show available options
-      if arguments.len() == 0:
-        returnCode = showHelpList(command = "variable",
-            subcommands = variablesCommands)
-      # Show the list of declared environment variables
-      elif arguments.startsWith(prefix = "list"):
-        returnCode = listVariables(arguments = arguments, db = db)
-      # Delete the selected environment variable
-      elif arguments.startsWith(prefix = "delete"):
-        returnCode = deleteVariable(arguments = arguments, db = db)
-      # Add a new variable
-      elif arguments == "add":
-        returnCode = addVariable(db = db)
-      # Edit an existing variable
-      elif arguments.startsWith(prefix = "edit"):
-        returnCode = editVariable(arguments = arguments, db = db)
-      else:
-        try:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 8, text = "variable"),
-                  helpType = initLimitedString(capacity = 9,
-                      text = "variables"))
-        except CapacityError:
-          returnCode = QuitFailure.ResultCode
+    # Commands related to help or environment variables
+    of "help", "variable":
+      try:
+        returnCode = commands[commandName](arguments = arguments, db = db,
+            list = CommandLists(help: helpContent))
+      except KeyError:
+        showError(message = "Can't execute command '" & commandName &
+            "'. Reason: ", e = getCurrentException())
     # Various commands related to the shell's commands' history
     of "history":
       # No subcommand entered, show available options
