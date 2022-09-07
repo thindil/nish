@@ -25,7 +25,8 @@
 
 import std/[db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, constants, input, lstring, options, output, resultcode
+import columnamount, commandslist, constants, help, input, lstring, options,
+    output, resultcode
 
 const historyCommands* = ["clear", "list"]
   ## FUNCTION
@@ -65,33 +66,6 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
       showError(message = "Can't get the length of the shell's commands history. Reason: ",
           e = getCurrentException())
       return HistoryRange.low()
-
-proc initHistory*(db; helpContent: ref HelpTable): HistoryRange {.gcsafe,
-    sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
-  ## FUNCTION
-  ##
-  ## Initialize shell's commands history and set help related to the history
-  ## commands
-  ##
-  ## PARAMETERS
-  ##
-  ## * db          - the connection to the shell's database
-  ## * helpContent - the content of the shell's help system
-  ##
-  ## RETURNS
-  ##
-  ## The length of the shell's commands' history
-  require:
-    db != nil
-  body:
-    # Set the history related help content
-    helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
-    helpContent["history clear"] = HelpEntry(usage: "history clear",
-        content: "Clear the shell's commands' history.")
-    # Return the current help index set on the last command in the shell's history
-    return historyLength(db = db)
 
 proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
@@ -392,3 +366,58 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       return showError(message = "Can't create 'history' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
+
+proc initHistory*(db; helpContent: ref HelpTable;
+    commands: var CommandsList): HistoryRange {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], locks: 0, contractual.} =
+  ## FUNCTION
+  ##
+  ## Initialize shell's commands history and set help related to the history
+  ## commands
+  ##
+  ## PARAMETERS
+  ##
+  ## * db          - the connection to the shell's database
+  ## * helpContent - the content of the shell's help system
+  ##
+  ## RETURNS
+  ##
+  ## The length of the shell's commands' history
+  require:
+    db != nil
+  body:
+    # Set the history related help content
+    helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
+        content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
+    helpContent["history clear"] = HelpEntry(usage: "history clear",
+        content: "Clear the shell's commands' history.")
+    # Add commands related to the shell's history system
+    proc historyCommand(arguments: UserInput; db: DbConn;
+        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      body:
+        # No subcommand entered, show available options
+        if arguments.len() == 0:
+          return showHelpList(command = "history",
+              subcommands = historyCommands)
+        # Clear the shell's commands' history
+        elif arguments == "clear":
+          return clearHistory(db = db)
+        # Show the last executed shell's commands
+        elif arguments.len() > 3 and arguments[0 .. 3] == "list":
+          return showHistory(db = db, arguments = arguments)
+        else:
+          try:
+            return showUnknownHelp(subCommand = arguments,
+                command = initLimitedString(capacity = 7, text = "history"),
+                    helpType = initLimitedString(capacity = 7,
+                        text = "history"))
+          except CapacityError:
+            return QuitFailure.ResultCode
+    try:
+      addCommand(name = initLimitedString(capacity = 8, text = "history"),
+          command = historyCommand, commands = commands)
+    except CapacityError:
+      discard
+    # Return the current help index set on the last command in the shell's history
+    return historyLength(db = db)
