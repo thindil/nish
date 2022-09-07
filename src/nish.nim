@@ -267,7 +267,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     quit QuitFailure
 
   # Initialize the shell's commands history
-  historyIndex = initHistory(db = db, helpContent = helpContent)
+  historyIndex = initHistory(db = db, helpContent = helpContent,
+      commands = commands)
 
   # Initialize the shell's options system
   initOptions(helpContent = helpContent)
@@ -521,33 +522,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     # Delete environment variable
     of "unset":
       returnCode = unsetCommand(arguments = arguments)
-    # Commands related to help or environment variables
-    of "help", "variable":
+    # Commands related to help, environment variables or shell's history
+    of "help", "variable", "history":
       try:
         returnCode = commands[commandName](arguments = arguments, db = db,
             list = CommandLists(help: helpContent))
       except KeyError:
         showError(message = "Can't execute command '" & commandName &
             "'. Reason: ", e = getCurrentException())
-    # Various commands related to the shell's commands' history
-    of "history":
-      # No subcommand entered, show available options
-      if arguments.len() == 0:
-        returnCode = showHelpList(command = "history",
-            subcommands = historyCommands)
-      # Clear the shell's commands' history
-      elif arguments == "clear":
-        returnCode = clearHistory(db = db)
-      # Show the last executed shell's commands
-      elif arguments.len() > 3 and arguments[0 .. 3] == "list":
-        returnCode = showHistory(db = db, arguments = arguments)
-      else:
-        try:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 7, text = "history"),
-                  helpType = initLimitedString(capacity = 7, text = "history"))
-        except CapacityError:
-          returnCode = QuitFailure.ResultCode
     # Various commands related to the shell's options
     of "options":
       # No subcommand entered, show available options
