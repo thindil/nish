@@ -25,8 +25,8 @@
 
 import std/[db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, commandslist, constants, databaseid, directorypath, input,
-    lstring, output, resultcode
+import columnamount, commandslist, constants, databaseid, directorypath, help,
+    input, lstring, output, resultcode
 
 const
   variableNameLength*: Positive = maxNameLength
@@ -148,64 +148,6 @@ proc setVariables*(newDirectory: DirectoryPath; db;
         putEnv(key = dbResult[0], val = value)
     except DbError, OSError:
       showError(message = "Can't set environment variables for the new directory. Reason: ",
-          e = getCurrentException())
-
-proc initVariables*(helpContent: ref HelpTable; db;
-    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
-    WriteDbEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
-  ## Initialize enviroment variables. Set help related to the variables and
-  ## load the local environment variables.
-  ##
-  ## PARAMETERS
-  ##
-  ## * helpContent - the HelpTable with help content of the shell
-  ## * db          - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## The list of available environment variables in the current directory and
-  ## the updated helpContent with the help for the commands related to the
-  ## variables.
-  require:
-    db != nil
-  ensure:
-    helpContent != nil
-  body:
-    # Add help entries related to the environment variables commands
-    helpContent["set"] = HelpEntry(usage: "set [name=value]",
-        content: "Set the environment variable with the selected name and value.")
-    helpContent["unset"] = HelpEntry(usage: "unset [name]",
-        content: "Remove the environment variable with the selected name.")
-    helpContent["variable"] = HelpEntry(usage: "variable ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for variables. Otherwise, execute the selected subcommand.")
-    helpContent["variable list"] = HelpEntry(usage: "variable list ?all?",
-        content: "Show the list of all declared in shell environment variables in the current directory. If parameter all added, show all declared environment variables.")
-    helpContent["variable delete"] = HelpEntry(usage: "variable delete [index]",
-        content: "Delete the declared in shell environment variable with the selected index.")
-    helpContent["variable add"] = HelpEntry(usage: "variable add",
-        content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
-    helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
-        content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
-    # Add commands related to the variables, except commands set and unset,
-    # they are build-in commands, thus cannot be replaced
-    proc variableCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
-      body:
-        return QuitSuccess.ResultCode
-
-    try:
-      addCommand(name = initLimitedString(capacity = 8, text = "variable"),
-          command = variableCommand, commands = commands)
-    except CapacityError:
-      discard
-    # Set the environment variables for the current directory
-    try:
-      setVariables(getCurrentDir().DirectoryPath, db)
-    except OSError:
-      showError("Can't set environment variables for the current directory. Reason:",
           e = getCurrentException())
 
 proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
@@ -661,4 +603,84 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Can't create 'variables' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
+
+proc initVariables*(helpContent: ref HelpTable; db;
+    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+    WriteDbEffect, RootEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Initialize enviroment variables. Set help related to the variables and
+  ## load the local environment variables.
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ## * db          - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## The list of available environment variables in the current directory and
+  ## the updated helpContent with the help for the commands related to the
+  ## variables.
+  require:
+    db != nil
+  ensure:
+    helpContent != nil
+  body:
+    # Add help entries related to the environment variables commands
+    helpContent["set"] = HelpEntry(usage: "set [name=value]",
+        content: "Set the environment variable with the selected name and value.")
+    helpContent["unset"] = HelpEntry(usage: "unset [name]",
+        content: "Remove the environment variable with the selected name.")
+    helpContent["variable"] = HelpEntry(usage: "variable ?subcommand?",
+        content: "If entered without subcommand, show the list of available subcommands for variables. Otherwise, execute the selected subcommand.")
+    helpContent["variable list"] = HelpEntry(usage: "variable list ?all?",
+        content: "Show the list of all declared in shell environment variables in the current directory. If parameter all added, show all declared environment variables.")
+    helpContent["variable delete"] = HelpEntry(usage: "variable delete [index]",
+        content: "Delete the declared in shell environment variable with the selected index.")
+    helpContent["variable add"] = HelpEntry(usage: "variable add",
+        content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
+    helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
+        content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
+    # Add commands related to the variables, except commands set and unset,
+    # they are build-in commands, thus cannot be replaced
+    proc variableCommand(arguments: UserInput; db: DbConn;
+        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      body:
+        # No subcommand entered, show available options
+        if arguments.len() == 0:
+          return showHelpList(command = "variable",
+              subcommands = variablesCommands)
+        # Show the list of declared environment variables
+        elif arguments.startsWith(prefix = "list"):
+          return listVariables(arguments = arguments, db = db)
+        # Delete the selected environment variable
+        elif arguments.startsWith(prefix = "delete"):
+          return deleteVariable(arguments = arguments, db = db)
+        # Add a new variable
+        elif arguments == "add":
+          return addVariable(db = db)
+        # Edit an existing variable
+        elif arguments.startsWith(prefix = "edit"):
+          return editVariable(arguments = arguments, db = db)
+        else:
+          try:
+            return showUnknownHelp(subCommand = arguments,
+                command = initLimitedString(capacity = 8, text = "variable"),
+                helpType = initLimitedString(capacity = 9, text = "variables"))
+          except CapacityError:
+            return QuitFailure.ResultCode
+
+    try:
+      addCommand(name = initLimitedString(capacity = 8, text = "variable"),
+          command = variableCommand, commands = commands)
+    except CapacityError:
+      discard
+    # Set the environment variables for the current directory
+    try:
+      setVariables(getCurrentDir().DirectoryPath, db)
+    except OSError:
+      showError("Can't set environment variables for the current directory. Reason:",
+          e = getCurrentException())
 
