@@ -647,6 +647,20 @@ proc initVariables*(helpContent: ref HelpTable; db;
     # they are build-in commands, thus cannot be replaced
     proc variableCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      ## FUNCTION
+      ##
+      ## The code of the shell's command "variable" and its subcommands
+      ##
+      ## PARAMETERS
+      ##
+      ## * arguments - the arguments entered by the user for the command
+      ## * db        - the connection to the shell's database
+      ## * list      - the additional data for the command, like list of help
+      ##               entries, etc
+      ##
+      ## RETURNS
+      ## QuitSuccess if the selected help's topic was succesully shown, otherwise
+      ## QuitFailure.
       body:
         # No subcommand entered, show available options
         if arguments.len() == 0:
