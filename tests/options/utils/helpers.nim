@@ -1,8 +1,10 @@
 import std/[db_sqlite, tables]
-import ../../../src/[constants, directorypath, history, nish]
+import ../../../src/[commandslist, constants, directorypath, history, nish]
 
 proc initTest*(): DbConn =
   result = startDb("test.db".DirectoryPath)
   assert result != nil
-  var helpContent = newTable[string, HelpEntry]()
-  discard initHistory(result, helpContent)
+  var 
+    helpContent = newTable[string, HelpEntry]()
+    commands: CommandsList = initTable[string, CommandProc]()
+  discard initHistory(result, helpContent, commands)

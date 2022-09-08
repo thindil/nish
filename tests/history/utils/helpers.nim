@@ -1,11 +1,13 @@
 import std/[db_sqlite, tables]
-import ../../../src/[constants, directorypath, history, nish]
+import ../../../src/[commandslist, constants, directorypath, history, nish]
 
 proc initTest*(): tuple[db: DbConn, historyIndex: HistoryRange] =
   let db = startDb("test.db".DirectoryPath)
   assert db != nil
-  var helpContent = newTable[string, HelpEntry]()
-  return (db, initHistory(db, helpContent))
+  var
+    helpContent = newTable[string, HelpEntry]()
+    commands: CommandsList = initTable[string, CommandProc]()
+  return (db, initHistory(db, helpContent, commands))
 
 proc setTestHistory*(db: DbConn): int =
   if db.tryInsertID(sql"INSERT INTO history (command, amount, lastused) VALUES (?, 1, datetime('now'))",
