@@ -130,9 +130,9 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
       showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException())
 
-proc showOptions*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
-    locks: 0, contractual.} =
+proc showOptions*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
+    TimeEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Show the shell's options
@@ -303,30 +303,6 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             "' to its default value. Reason: ", e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initOptions*(helpContent: ref HelpTable) {.gcsafe, sideEffect, locks: 0,
-    raises: [], tags: [], contractual.} =
-  ## FUNCTION
-  ##
-  ## Initialize the shell's options. At this moment only set help related to
-  ## the options
-  ##
-  ## PARAMETERS
-  ##
-  ## * helpContent - the HelpTable with help content of the shell
-  ensure:
-    helpContent != nil
-  body:
-    helpContent["options"] = HelpEntry(usage: "options ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for options. Otherwise, execute the selected subcommand.")
-    helpContent["options list"] = HelpEntry(usage: "options list",
-        content: "Show the list of all available shell's options with detailed information about them.")
-    helpContent["options set"] = HelpEntry(usage: "options set [name] [value]",
-        content: "Set the selected shell's option with name to the selected value. The value can't contain new line character.")
-    helpContent["options reset"] = HelpEntry(
-        usage: "options reset [name or all]",
-
-content: "Reset the selected shell's option with name to the default value. If the name parameter is set to 'all', reset all shell's options to their default values.")
-
 proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
@@ -415,3 +391,26 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
+proc initOptions*(helpContent: ref HelpTable) {.gcsafe, sideEffect, locks: 0,
+    raises: [], tags: [], contractual.} =
+  ## FUNCTION
+  ##
+  ## Initialize the shell's options. At this moment only set help related to
+  ## the options
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ensure:
+    helpContent != nil
+  body:
+    # Set the options related help content
+    helpContent["options"] = HelpEntry(usage: "options ?subcommand?",
+        content: "If entered without subcommand, show the list of available subcommands for options. Otherwise, execute the selected subcommand.")
+    helpContent["options list"] = HelpEntry(usage: "options list",
+        content: "Show the list of all available shell's options with detailed information about them.")
+    helpContent["options set"] = HelpEntry(usage: "options set [name] [value]",
+        content: "Set the selected shell's option with name to the selected value. The value can't contain new line character.")
+    helpContent["options reset"] = HelpEntry(
+        usage: "options reset [name or all]",
+        content: "Reset the selected shell's option with name to the default value. If the name parameter is set to 'all', reset all shell's options to their default values.")
