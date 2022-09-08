@@ -25,7 +25,7 @@
 
 import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, commandslist, constants, input, lstring, options, output, resultcode
+import columnamount, commandslist, constants, input, lstring, output, resultcode
 
 using
   db: DbConn # Connection to the shell's database
@@ -50,30 +50,27 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     let sortOrder: string = try:
-          case $getOption(optionName = initLimitedString(capacity = 11,
-              text = "historySort"), db = db)
+          case db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historySort'")):
           of "recent": "recently used"
           of "amount": "how many times used"
           of "name": "name"
           of "recentamount": "recently used and how many times"
           else:
             "unknown"
-      except CapacityError:
+      except DbError:
         "recently used and how many times"
     let sortDirection: string = try:
-          if $getOption(optionName = initLimitedString(capacity = 14,
-            text = "historyReverse"), db = db) ==
+          if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
                 "true": " in reversed order." else: "."
-      except CapacityError:
+      except DbError:
         "."
     helpContent["history list"] = try:
         HelpEntry(usage: "history list ?amount? ?order? ?reverse?",
-            content: "Show the last " & getOption(
-                optionName = initLimitedString(capacity = 13,
-                    text = "historyAmount"),
-            db = db) & " commands from the shell's history ordered by " &
-                sortOrder & sortDirection & " You can also set the amount, order and direction of order of commands to show by adding optional parameters amount, order and reverse. For example, to show the last 10 commands sorted by name in reversed order: history list 10 name true. Available switches for order are: amount, recent, name, recentamount. Available values for reverse are true or false.")
-      except CapacityError:
+            content: "Show the last " & db.getValue(query = sql(
+            query = "SELECT value FROM options WHERE option='historyAmount'")) &
+            " commands from the shell's history ordered by " & sortOrder &
+            sortDirection & " You can also set the amount, order and direction of order of commands to show by adding optional parameters amount, order and reverse. For example, to show the last 10 commands sorted by name in reversed order: history list 10 name true. Available switches for order are: amount, recent, name, recentamount. Available values for reverse are true or false.")
+      except DbError:
         HelpEntry(usage: "history list",
             content: "Show the last commands from the shell's history.")
 
