@@ -271,7 +271,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       commands = commands)
 
   # Initialize the shell's options system
-  initOptions(helpContent = helpContent)
+  initOptions(helpContent = helpContent, commands = commands)
 
   # Initialize the shell's aliases system
   aliases = initAliases(helpContent = helpContent, db = db)
@@ -523,35 +523,13 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "unset":
       returnCode = unsetCommand(arguments = arguments)
     # Commands related to help, environment variables or shell's history
-    of "help", "variable", "history":
+    of "help", "variable", "history", "options":
       try:
         returnCode = commands[commandName](arguments = arguments, db = db,
             list = CommandLists(help: helpContent))
       except KeyError:
         showError(message = "Can't execute command '" & commandName &
             "'. Reason: ", e = getCurrentException())
-    # Various commands related to the shell's options
-    of "options":
-      # No subcommand entered, show available options
-      if arguments.len() == 0:
-        returnCode = showHelpList(command = "options",
-            subcommands = optionsCommands)
-      # Show the list of available options
-      elif arguments == "list":
-        returnCode = showOptions(db = db)
-      elif arguments.startsWith(prefix = "set"):
-        returnCode = setOptions(arguments = arguments, db = db)
-        updateHelp(helpContent = helpContent, db = db)
-      elif arguments.startsWith(prefix = "reset"):
-        returnCode = resetOptions(arguments = arguments, db = db)
-        updateHelp(helpContent = helpContent, db = db)
-      else:
-        try:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 7, text = "options"),
-                  helpType = initLimitedString(capacity = 7, text = "options"))
-        except CapacityError:
-          returnCode = QuitFailure.ResultCode
     # Various commands related to the aliases (like show list of available
     # aliases, add, delete, edit them)
     of "alias":
