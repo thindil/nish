@@ -25,8 +25,7 @@
 
 import std/[db_sqlite, os, strutils, tables, terminal]
 import contracts
-import columnamount, commandslist, constants, help, input, lstring, options,
-    output, resultcode
+import columnamount, commandslist, constants, help, input, lstring, output, resultcode
 
 const historyCommands* = ["clear", "list"]
   ## FUNCTION
@@ -226,9 +225,9 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
       argumentsList: seq[string] = split(s = $arguments)
       amount: HistoryRange = try:
           parseInt(s = (if argumentsList.len() > 1: argumentsList[
-              1] else: $getOption(optionName = initLimitedString(capacity = 13,
-              text = "historyAmount"), db = db)))
-        except ValueError, CapacityError:
+              1] else: db.getValue(query = sql(
+                  query = "SELECT value FROM options WHERE option='historyAmount'"))))
+        except ValueError, DbError:
           return showError(message = "Can't get setting for the amount of history commands to show.")
       spacesAmount: ColumnAmount = try:
             (terminalWidth() / 12).ColumnAmount
@@ -237,15 +236,15 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
       historyDirection: string = try:
           if argumentsList.len() > 3: (if argumentsList[3] ==
               "true": "ASC" else: "DESC") else:
-            if $getOption(optionName = initLimitedString(capacity = 14,
-              text = "historyReverse"), db = db) == "true": "ASC" else: "DESC"
-        except CapacityError:
+            if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
+                "true": "ASC" else: "DESC"
+        except DbError:
           return showError(message = "Can't get setting for the reverse order of history commands to show.")
       orderText: string = try:
-          if argumentsList.len() > 2: argumentsList[2] else: $getOption(
-              optionName = initLimitedString(capacity = 11,
-                  text = "historySort"), db = db)
-        except CapacityError:
+          if argumentsList.len() > 2: argumentsList[2] else: db.getValue(
+              query = sql(
+              query = "SELECT value FROM options WHERE option='historySort'"))
+        except DbError:
           return showError(message = "Can't get setting for the order of history commands to show.")
       historyOrder: string =
         case orderText
@@ -291,20 +290,10 @@ proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     try:
       db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
           $maxInputLength & """)"""))
-      setOption(optionName = initLimitedString(capacity = 13,
-          text = "historyLength"), valueType = ValueType.natural, db = db)
-      setOption(optionName = initLimitedString(capacity = 13,
-          text = "historyAmount"), valueType = ValueType.natural, db = db)
-      setOption(optionName = initLimitedString(capacity = 11,
-          text = "historySort"), value = initLimitedString(capacity = 12,
-          text = "recentamount"), description = initLimitedString(capacity = 63,
-          text = "How to sort the list of the last commands from shell history."),
-          valueType = ValueType.historysort, db = db)
-      setOption(optionName = initLimitedString(capacity = 14,
-          text = "historyReverse"), value = initLimitedString(capacity = 5,
-          text = "false"), description = initLimitedString(capacity = 64,
-          text = "Reverse order when showing the last commands from shell history."),
-          valueType = ValueType.boolean, db = db)
+      db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyLength'"))
+      db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyAmount'"))
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
     except DbError, CapacityError:
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException())
@@ -337,31 +326,11 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
                    path        VARCHAR(""" & $maxInputLength &
             """)
                 )"""))
-      setOption(optionName = initLimitedString(capacity = 13,
-          text = "historyLength"), value = initLimitedString(capacity = 3,
-          text = "500"), description = initLimitedString(capacity = 48,
-          text = "Max amount of entries in shell commands history."),
-          valueType = ValueType.natural, db = db)
-      setOption(optionName = initLimitedString(capacity = 13,
-          text = "historyAmount"), value = initLimitedString(capacity = 2,
-          text = "20"), description = initLimitedString(capacity = 78,
-          text = "Amount of entries in shell commands history to show with history list command."),
-          valueType = ValueType.natural, db = db)
-      setOption(optionName = initLimitedString(capacity = 20,
-          text = "historySaveInvalid"), value = initLimitedString(capacity = 5,
-          text = "false"), description = initLimitedString(capacity = 52,
-          text = "Save in shell command history also invalid commands."),
-          valueType = ValueType.boolean, db = db)
-      setOption(optionName = initLimitedString(capacity = 11,
-          text = "historySort"), value = initLimitedString(capacity = 12,
-          text = "recentamount"), description = initLimitedString(capacity = 63,
-          text = "How to sort the list of the last commands from shell history."),
-          valueType = ValueType.historysort, db = db)
-      setOption(optionName = initLimitedString(capacity = 14,
-          text = "historyReverse"), value = initLimitedString(capacity = 5,
-          text = "false"), description = initLimitedString(capacity = 64,
-          text = "Reverse order when showing the last commands from shell history."),
-          valueType = ValueType.boolean, db = db)
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyLength', '500', 'Max amount of entries in shell commands history.', 'natural', '500', '0')"))
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyAmount', '20', 'Amount of entries in shell commands history to show with history list command.', 'natural', '20', '0')"))
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySaveInvalid', 'false', 'Save in shell command history also invalid commands.', 'boolean', 'false', '0')"))
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
     except DbError, CapacityError:
       return showError(message = "Can't create 'history' table. Reason: ",
           e = getCurrentException())
