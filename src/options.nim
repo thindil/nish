@@ -25,7 +25,7 @@
 
 import std/[db_sqlite, os, osproc, strutils, tables, terminal]
 import contracts
-import columnamount, constants, input, lstring, output, resultcode
+import columnamount, commandslist, constants, help, input, lstring, output, resultcode
 
 const optionsCommands* = ["list", "set", "reset"]
   ## FUNCTION
@@ -391,8 +391,10 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initOptions*(helpContent: ref HelpTable) {.gcsafe, sideEffect, locks: 0,
-    raises: [], tags: [], contractual.} =
+proc initOptions*(helpContent: ref HelpTable;
+    commands: var CommandsList) {.gcsafe, sideEffect, locks: 0, raises: [],
+    tags: [WriteDbEffect, WriteIOEffect, ReadDbEffect, ReadIOEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize the shell's options. At this moment only set help related to
@@ -401,6 +403,7 @@ proc initOptions*(helpContent: ref HelpTable) {.gcsafe, sideEffect, locks: 0,
   ## PARAMETERS
   ##
   ## * helpContent - the HelpTable with help content of the shell
+  ## * commands    - the list of the shell's commands
   ensure:
     helpContent != nil
   body:
@@ -414,3 +417,35 @@ proc initOptions*(helpContent: ref HelpTable) {.gcsafe, sideEffect, locks: 0,
     helpContent["options reset"] = HelpEntry(
         usage: "options reset [name or all]",
         content: "Reset the selected shell's option with name to the default value. If the name parameter is set to 'all', reset all shell's options to their default values.")
+    # Add commands related to the shell's options
+    proc optionCommand(arguments: UserInput; db: DbConn;
+        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      body:
+        # No subcommand entered, show available options
+        if arguments.len() == 0:
+          return showHelpList(command = "options",
+              subcommands = optionsCommands)
+        # Show the list of available options
+        elif arguments == "list":
+          return showOptions(db = db)
+        elif arguments.startsWith(prefix = "set"):
+          result = setOptions(arguments = arguments, db = db)
+          updateHelp(helpContent = helpContent, db = db)
+          return
+        elif arguments.startsWith(prefix = "reset"):
+          result = resetOptions(arguments = arguments, db = db)
+          updateHelp(helpContent = helpContent, db = db)
+          return
+        else:
+          try:
+            return showUnknownHelp(subCommand = arguments,
+                command = initLimitedString(capacity = 7, text = "options"),
+                helpType = initLimitedString(capacity = 7, text = "options"))
+          except CapacityError:
+            return QuitFailure.ResultCode
+
+    try:
+      addCommand(name = initLimitedString(capacity = 6, text = "option"),
+          command = optionCommand, commands = commands)
+    except CapacityError:
+      discard
