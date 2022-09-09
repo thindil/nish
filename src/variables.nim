@@ -660,8 +660,8 @@ proc initVariables*(helpContent: ref HelpTable; db;
       ##               entries, etc
       ##
       ## RETURNS
-      ## QuitSuccess if the selected help's topic was succesully shown, otherwise
-      ## QuitFailure.
+      ## QuitSuccess if the selected variable command was successfully executed,
+      ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
         if arguments.len() == 0:
