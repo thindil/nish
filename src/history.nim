@@ -349,6 +349,7 @@ proc initHistory*(db; helpContent: ref HelpTable;
   ##
   ## * db          - the connection to the shell's database
   ## * helpContent - the content of the shell's help system
+  ## * commands    - the list of the shell's commands
   ##
   ## RETURNS
   ##
