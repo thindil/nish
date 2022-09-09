@@ -418,7 +418,7 @@ proc initOptions*(helpContent: ref HelpTable;
         usage: "options reset [name or all]",
         content: "Reset the selected shell's option with name to the default value. If the name parameter is set to 'all', reset all shell's options to their default values.")
     # Add commands related to the shell's options
-    proc optionCommand(arguments: UserInput; db: DbConn;
+    proc optionsCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
       body:
         # No subcommand entered, show available options
@@ -445,7 +445,7 @@ proc initOptions*(helpContent: ref HelpTable;
             return QuitFailure.ResultCode
 
     try:
-      addCommand(name = initLimitedString(capacity = 6, text = "option"),
-          command = optionCommand, commands = commands)
+      addCommand(name = initLimitedString(capacity = 7, text = "options"),
+          command = optionsCommand, commands = commands)
     except CapacityError:
       discard
