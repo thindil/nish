@@ -660,7 +660,7 @@ proc initVariables*(helpContent: ref HelpTable; db;
       ##               entries, etc
       ##
       ## RETURNS
-      ## QuitSuccess if the selected variable command was successfully executed,
+      ## QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
