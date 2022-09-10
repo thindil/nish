@@ -677,6 +677,7 @@ proc initAliases*(helpContent: ref HelpTable; db): AliasesList {.gcsafe,
   ensure:
     helpContent != nil
   body:
+    # Add help entries related to the shell's aliases' commands
     helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
         content: "If entered without subcommand, show the list of available subcommands for aliases. Otherwise, execute the selected subcommand.")
     helpContent["alias list"] = HelpEntry(usage: "alias list ?all?",
@@ -689,6 +690,7 @@ proc initAliases*(helpContent: ref HelpTable; db): AliasesList {.gcsafe,
         content: "Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.")
     helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
         content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
+    # Set the shell's aliases for the current directory
     try:
       result.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
     except OSError:
