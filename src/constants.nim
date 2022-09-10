@@ -70,7 +70,7 @@ type
     ## FUNCTION
     ##
     ## Used to store aliases names in tables and database.
-  AliasesList* = OrderedTableRef[AliasName, int]
+  AliasesList* = OrderedTable[AliasName, int]
     ## FUNCTION
     ##
     ## Used to store the available aliases in the selected directory

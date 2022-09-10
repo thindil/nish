@@ -214,7 +214,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     historyIndex: HistoryRange
     oneTimeCommand, conjCommands, keyWasArrow, insertMode: bool = false
     returnCode: ResultCode = QuitSuccess.ResultCode
-    aliases: AliasesList = newOrderedTable[AliasName, int]()
+    aliases: AliasesList = initOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
         DirSep & "nish.db")
     helpContent = newTable[string, HelpEntry]()

@@ -33,7 +33,7 @@ type
     ##
     ## Store additional data for the shell's command
     help*: ref HelpTable ## List with the content of the shell's help
-    aliases*: AliasesList ## List of shell's aliases
+    aliases*: ref AliasesList ## List of shell's aliases
     plugins*: PluginsList ## List of enables shell's plugins
   CommandProc* = proc (arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.}

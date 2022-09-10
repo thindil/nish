@@ -61,7 +61,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
     directory.len() > 0
     db != nil
   body:
-    aliases = newOrderedTable[AliasName, int]()
+    aliases = initOrderedTable[AliasName, int]()
     var
       dbQuery: string = "SELECT id, name FROM aliases WHERE path='" &
           directory & "'"
