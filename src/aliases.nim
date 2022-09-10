@@ -28,8 +28,8 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 # External modules imports
 import contracts
 # Internal imports
-import columnamount, constants, databaseid, directorypath, input, lstring,
-    output, resultcode, variables
+import columnamount, commandslist, constants, databaseid, directorypath, help,
+    input, lstring, output, resultcode, variables
 
 const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
   ## FUNCTION
@@ -659,9 +659,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             e = getCurrentException())
     return result
 
-proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList) {.gcsafe,
-    sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], contractual.} =
+proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList;
+    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect,
+    ReadIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize the shell's aliases. Set help related to the aliases and
@@ -695,6 +696,57 @@ proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList) {.gc
         content: "Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.")
     helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
         content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
+    # Add commands related to the shell's options
+    proc aliasCommand(arguments: UserInput; db: DbConn;
+        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      ## FUNCTION
+      ##
+      ## The code of the shell's command "options" and its subcommands
+      ##
+      ## PARAMETERS
+      ##
+      ## * arguments - the arguments entered by the user for the command
+      ## * db        - the connection to the shell's database
+      ## * list      - the additional data for the command, like list of help
+      ##               entries, etc
+      ##
+      ## RETURNS
+      ## QuitSuccess if the selected command was successfully executed,
+      ## otherwise QuitFailure.
+      body:
+        # No subcommand entered, show available options
+        if arguments.len() == 0:
+          return showHelpList(command = "alias",
+              subcommands = aliasesCommands)
+        # Show the list of available aliases
+        elif arguments.startsWith(prefix = "list"):
+          return listAliases(arguments = arguments, aliases = aliases, db = db)
+        # Delete the selected alias
+        elif arguments.startsWith(prefix = "delete"):
+          return deleteAlias(arguments = arguments, aliases = aliases, db = db)
+        # Show the selected alias
+        elif arguments.startsWith(prefix = "show"):
+          return showAlias(arguments = arguments, aliases = aliases, db = db)
+        # Add a new alias
+        elif arguments.startsWith(prefix = "add"):
+          return addAlias(aliases = aliases, db = db)
+        # Edit the selected alias
+        elif arguments.startsWith(prefix = "edit"):
+          return editAlias(arguments = arguments, aliases = aliases, db = db)
+        else:
+          try:
+            return showUnknownHelp(subCommand = arguments,
+                command = initLimitedString(capacity = 5, text = "alias"),
+                    helpType = initLimitedString(capacity = 7,
+                        text = "aliases"))
+          except CapacityError:
+            return QuitFailure.ResultCode
+
+    try:
+      addCommand(name = initLimitedString(capacity = 5, text = "alias"),
+          command = aliasCommand, commands = commands)
+    except CapacityError:
+      discard
     # Set the shell's aliases for the current directory
     try:
       aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
