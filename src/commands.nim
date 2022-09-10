@@ -29,7 +29,7 @@ import aliases, constants, directorypath, output, resultcode, variables
 
 using
   db: DbConn # Connection to the shell's database
-  aliases: var AliasesList # The list of aliases available in the selected directory
+  aliases: ref AliasesList # The list of aliases available in the selected directory
   newDirectory: DirectoryPath # The directory to which the current directory will be changed
 
 proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,

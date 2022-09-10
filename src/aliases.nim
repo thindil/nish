@@ -38,7 +38,7 @@ const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
 
 using
   db: DbConn # Connection to the shell's database
-  aliases: var AliasesList # The list of aliases available in the selected directory
+  aliases: ref AliasesList # The list of aliases available in the selected directory
   arguments: UserInput # The string with arguments entered by the user for the command
 
 proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
@@ -61,7 +61,9 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
     directory.len() > 0
     db != nil
   body:
-    aliases = initOrderedTable[AliasName, int]()
+    {.warning[ProveInit]: off.}
+    aliases.clear()
+    {.warning[ProveInit]: on.}
     var
       dbQuery: string = "SELECT id, name FROM aliases WHERE path='" &
           directory & "'"
@@ -91,7 +93,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
       showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
 
-proc listAliases*(arguments; aliases: AliasesList; db): ResultCode {.gcsafe,
+proc listAliases*(arguments; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
@@ -207,7 +209,7 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
     showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc showAlias*(arguments; aliases: AliasesList; db): ResultCode {.gcsafe,
+proc showAlias*(arguments; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
@@ -657,7 +659,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             e = getCurrentException())
     return result
 
-proc initAliases*(helpContent: ref HelpTable; db): AliasesList {.gcsafe,
+proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList) {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect], contractual.} =
   ## FUNCTION
@@ -695,7 +697,7 @@ proc initAliases*(helpContent: ref HelpTable; db): AliasesList {.gcsafe,
         content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
     # Set the shell's aliases for the current directory
     try:
-      result.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
     except OSError:
       showError(message = "Can't initialize aliases. Reason: ",
           e = getCurrentException())

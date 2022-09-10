@@ -214,7 +214,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     historyIndex: HistoryRange
     oneTimeCommand, conjCommands, keyWasArrow, insertMode: bool = false
     returnCode: ResultCode = QuitSuccess.ResultCode
-    aliases: AliasesList = initOrderedTable[AliasName, int]()
+    aliases = newOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
         DirSep & "nish.db")
     helpContent = newTable[string, HelpEntry]()
@@ -274,7 +274,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   initOptions(helpContent = helpContent, commands = commands)
 
   # Initialize the shell's aliases system
-  aliases = initAliases(helpContent = helpContent, db = db)
+  initAliases(helpContent = helpContent, db = db, aliases = aliases)
 
   # Initialize the shell's build-in commands
   initCommands(helpContent = helpContent)
