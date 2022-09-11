@@ -25,7 +25,8 @@
 
 import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
 import contracts
-import columnamount, constants, databaseid, input, lstring, options, output, resultcode
+import columnamount, commandslist, constants, databaseid, input, lstring,
+    options, output, resultcode
 
 const
   minApiVersion: float = 0.2
@@ -42,7 +43,7 @@ const
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
-  pluginsList: var PluginsList # The list of enabled plugins
+  pluginsList: ref PluginsList # The list of enabled plugins
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
@@ -285,68 +286,7 @@ proc addPlugin*(db; arguments; pluginsList): ResultCode {.gcsafe, sideEffect,
         "' added as a plugin to the shell.", fgColor = fgGreen);
     return QuitSuccess.ResultCode
 
-proc initPlugins*(helpContent: ref HelpTable; db): PluginsList {.gcsafe,
-    sideEffect, raises: [], tags: [ExecIOEffect, ReadEnvEffect, ReadIOEffect,
-    WriteIOEffect, TimeEffect, WriteDbEffect, ReadDbEffect, RootEffect],
-    contractual.} =
-  ## FUNCTION
-  ##
-  ## Initialize the shell's plugins. Set help related to the plugins, load
-  ## the enabled plugins and initialize them
-  ##
-  ## PARAMETERS
-  ##
-  ## * helpContent - the HelpTable with help content of the shell
-  ## * db          - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## The list of enabled plugins and the updated helpContent with the help
-  ## for the commands related to the shell's plugins.
-  require:
-    db != nil
-  ensure:
-    helpContent != nil
-  body:
-    result = newTable[string, PluginData]()
-    # Set the help related to the plugins
-    helpContent["plugin"] = HelpEntry(usage: "plugin ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for plugins. Otherwise, execute the selected subcommand.")
-    helpContent["plugin list"] = HelpEntry(usage: "plugin list ?all?",
-        content: "Show the list of all enabled plugins. If parameter all added, show all installed plugins.")
-    helpContent["plugin remove"] = HelpEntry(usage: "plugin remove [index]",
-        content: "Uninstall the plugin with the selected index.")
-    helpContent["plugin show"] = HelpEntry(usage: "plugin show [index]",
-        content: "Show details (path, status, etc) for the plugin with the selected index.")
-    helpContent["plugin add"] = HelpEntry(usage: "plugin add [path]",
-        content: "Install the selected plugin in the shell. Path must be absolute or relative path to the plugin.")
-    helpContent["plugin enable"] = HelpEntry(usage: "plugin enable [index]",
-        content: "Enable the selected plugin. Index must be the index of an installed plugin.")
-    helpContent["alias disable"] = HelpEntry(usage: "alias disable [index]",
-        content: "Disable the selected plugin. Index must be the index of an installed plugin.")
-    # Load all enabled plugins and execute the initialization code of the plugin
-    try:
-      for dbResult in db.fastRows(query = sql(
-          query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
-        if dbResult[2] == "1":
-          let newPlugin = checkPlugin(pluginPath = dbResult[1], db = db)
-          if newPlugin.path.len() == 0:
-            db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
-                dbResult[0])
-            showError(message = "Plugin '" & dbResult[1] & "' isn't compatible with the current version of shell's API and will be disabled.")
-            continue
-          if "init" in newPlugin.api:
-            if execPlugin(pluginPath = dbResult[1], arguments = ["init"],
-                db = db).code != QuitSuccess:
-              showError(message = "Can't initialize plugin '" & dbResult[
-                  1] & "'.")
-              continue
-          result[dbResult[0]] = newPlugin
-    except DbError:
-      showError(message = "Can't read data about the shell's plugins. Reason: ",
-          e = getCurrentException())
-
-proc removePlugin*(db; arguments; pluginsList: var PluginsList): ResultCode {.gcsafe,
+proc removePlugin*(db; arguments; pluginsList): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect],
     contractual.} =
@@ -404,7 +344,7 @@ proc removePlugin*(db; arguments; pluginsList: var PluginsList): ResultCode {.gc
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
+proc togglePlugin*(db; arguments; pluginsList;
     disable: bool = true): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
     ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
@@ -477,9 +417,9 @@ proc togglePlugin*(db; arguments; pluginsList: var PluginsList;
         " the plugin '" & $pluginPath & "'", fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc listPlugins*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc listPlugins*(arguments; pluginsList; db): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## List enabled plugins, if entered command was "plugin list all" list all
@@ -515,7 +455,7 @@ proc listPlugins*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe,
       except ValueError:
         showOutput(message = indent(s = "ID   Path",
             count = spacesAmount.int), fgColor = fgMagenta)
-      for id, data in plugins.pairs:
+      for id, data in pluginsList.pairs:
         showOutput(message = indent(s = alignLeft(id, count = 4) & " " &
             alignLeft(s = data.path, count = columnLength.int),
                 count = spacesAmount.int))
@@ -540,10 +480,9 @@ proc listPlugins*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe,
             e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc showPlugin*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect],
-    contractual.} =
+proc showPlugin*(arguments; pluginsList; db): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show details about the selected plugin, its ID, path and status
@@ -613,3 +552,93 @@ proc showPlugin*(arguments; plugins: PluginsList; db): ResultCode {.gcsafe,
     else:
       showOutput(message = "0.1")
     return QuitSuccess.ResultCode
+
+proc initPlugins*(helpContent: ref HelpTable; db; pluginsList;
+    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect,
+    WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Initialize the shell's plugins. Set help related to the plugins, load
+  ## the enabled plugins and initialize them
+  ##
+  ## PARAMETERS
+  ##
+  ## * helpContent - the HelpTable with help content of the shell
+  ## * db          - the connection to the shell's database
+  ## * pluginsList - the list of enabled plugins
+  ## * commands    - the list of the shell's commands
+  ##
+  ## RETURNS
+  ##
+  ## The updated list of enabled plugins, the updated helpContent with the help
+  ## for the commands related to the shell's plugins and the updated list of the
+  ## shell's commands.
+  require:
+    db != nil
+  ensure:
+    helpContent != nil
+  body:
+    {.warning[ProveInit]: off.}
+    pluginsList.clear()
+    {.warning[ProveInit]: on.}
+    # Set the help related to the plugins
+    helpContent["plugin"] = HelpEntry(usage: "plugin ?subcommand?",
+        content: "If entered without subcommand, show the list of available subcommands for plugins. Otherwise, execute the selected subcommand.")
+    helpContent["plugin list"] = HelpEntry(usage: "plugin list ?all?",
+        content: "Show the list of all enabled plugins. If parameter all added, show all installed plugins.")
+    helpContent["plugin remove"] = HelpEntry(usage: "plugin remove [index]",
+        content: "Uninstall the plugin with the selected index.")
+    helpContent["plugin show"] = HelpEntry(usage: "plugin show [index]",
+        content: "Show details (path, status, etc) for the plugin with the selected index.")
+    helpContent["plugin add"] = HelpEntry(usage: "plugin add [path]",
+        content: "Install the selected plugin in the shell. Path must be absolute or relative path to the plugin.")
+    helpContent["plugin enable"] = HelpEntry(usage: "plugin enable [index]",
+        content: "Enable the selected plugin. Index must be the index of an installed plugin.")
+    helpContent["alias disable"] = HelpEntry(usage: "alias disable [index]",
+        content: "Disable the selected plugin. Index must be the index of an installed plugin.")
+    # Add commands related to the shell's aliases
+    proc pluginCommand(arguments: UserInput; db: DbConn;
+        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      ## FUNCTION
+      ##
+      ## The code of the shell's command "plugin" and its subcommands
+      ##
+      ## PARAMETERS
+      ##
+      ## * arguments - the arguments entered by the user for the command
+      ## * db        - the connection to the shell's database
+      ## * list      - the additional data for the command, like id of plugin, etc
+      ##
+      ## RETURNS
+      ## QuitSuccess if the selected command was successfully executed,
+      ## otherwise QuitFailure.
+      body:
+        # No subcommand entered, show available options
+        discard
+    try:
+      addCommand(name = initLimitedString(capacity = 6, text = "plugin"),
+          command = pluginCommand, commands = commands)
+    except CapacityError:
+      discard
+    # Load all enabled plugins and execute the initialization code of the plugin
+    try:
+      for dbResult in db.fastRows(query = sql(
+          query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
+        if dbResult[2] == "1":
+          let newPlugin = checkPlugin(pluginPath = dbResult[1], db = db)
+          if newPlugin.path.len() == 0:
+            db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
+                dbResult[0])
+            showError(message = "Plugin '" & dbResult[1] & "' isn't compatible with the current version of shell's API and will be disabled.")
+            continue
+          if "init" in newPlugin.api:
+            if execPlugin(pluginPath = dbResult[1], arguments = ["init"],
+                db = db).code != QuitSuccess:
+              showError(message = "Can't initialize plugin '" & dbResult[
+                  1] & "'.")
+              continue
+          pluginsList[dbResult[0]] = newPlugin
+    except DbError:
+      showError(message = "Can't read data about the shell's plugins. Reason: ",
+          e = getCurrentException())
