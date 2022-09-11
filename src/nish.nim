@@ -274,7 +274,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   initOptions(helpContent = helpContent, commands = commands)
 
   # Initialize the shell's aliases system
-  initAliases(helpContent = helpContent, db = db, aliases = aliases)
+  initAliases(helpContent = helpContent, db = db, aliases = aliases,
+      commands = commands)
 
   # Initialize the shell's build-in commands
   initCommands(helpContent = helpContent)
@@ -522,43 +523,15 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     # Delete environment variable
     of "unset":
       returnCode = unsetCommand(arguments = arguments)
-    # Commands related to help, environment variables or shell's history
-    of "help", "variable", "history", "options":
+    # Commands related to help, environment variables, shell's history,
+    # options and aliases
+    of "help", "variable", "history", "options", "alias":
       try:
         returnCode = commands[commandName](arguments = arguments, db = db,
             list = CommandLists(help: helpContent))
       except KeyError:
         showError(message = "Can't execute command '" & commandName &
             "'. Reason: ", e = getCurrentException())
-    # Various commands related to the aliases (like show list of available
-    # aliases, add, delete, edit them)
-    of "alias":
-      # No subcommand entered, show available options
-      if arguments.len() == 0:
-        returnCode = showHelpList(command = "alias",
-            subcommands = aliasesCommands)
-      # Show the list of available aliases
-      elif arguments.startsWith(prefix = "list"):
-        returnCode = listAliases(arguments = arguments, aliases = aliases, db = db)
-      # Delete the selected alias
-      elif arguments.startsWith(prefix = "delete"):
-        returnCode = deleteAlias(arguments = arguments, aliases = aliases, db = db)
-      # Show the selected alias
-      elif arguments.startsWith(prefix = "show"):
-        returnCode = showAlias(arguments = arguments, aliases = aliases, db = db)
-      # Add a new alias
-      elif arguments.startsWith(prefix = "add"):
-        returnCode = addAlias(aliases = aliases, db = db)
-      # Edit the selected alias
-      elif arguments.startsWith(prefix = "edit"):
-        returnCode = editAlias(arguments = arguments, aliases = aliases, db = db)
-      else:
-        try:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 5, text = "alias"),
-                  helpType = initLimitedString(capacity = 7, text = "aliases"))
-        except CapacityError:
-          returnCode = QuitFailure.ResultCode
     # Various commands related to the plugins (like show list of available
     # plugins, add, delete)
     of "plugin":
