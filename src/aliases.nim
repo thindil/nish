@@ -696,19 +696,18 @@ proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList;
         content: "Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.")
     helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
         content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
-    # Add commands related to the shell's options
+    # Add commands related to the shell's aliases
     proc aliasCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
       ## FUNCTION
       ##
-      ## The code of the shell's command "options" and its subcommands
+      ## The code of the shell's command "alias" and its subcommands
       ##
       ## PARAMETERS
       ##
       ## * arguments - the arguments entered by the user for the command
       ## * db        - the connection to the shell's database
-      ## * list      - the additional data for the command, like list of help
-      ##               entries, etc
+      ## * list      - the additional data for the command, like id of alias, etc
       ##
       ## RETURNS
       ## QuitSuccess if the selected command was successfully executed,
