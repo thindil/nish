@@ -219,7 +219,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         DirSep & "nish.db")
     helpContent = newTable[string, HelpEntry]()
     cursorPosition: Natural = 0
-    plugins: PluginsList = newTable[string, PluginData]()
+    plugins = newTable[string, PluginData]()
     commands: CommandsList = initTable[string, CommandProc]()
 
   proc ctrlC() {.noconv.} =
@@ -290,7 +290,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   initPrompt(helpContent = helpContent)
 
   # Initialize the shell's plugins system
-  plugins = initPlugins(helpContent = helpContent, db = db)
+  initPlugins(helpContent = helpContent, db = db, pluginsList = plugins,
+      commands = commands)
 
   # Set the main help screen for the shell
   setMainHelp(helpContent = helpContent)
@@ -555,10 +556,10 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             db = db, disable = false)
       # Show the list of available plugins
       elif arguments.startsWith(prefix = "list"):
-        returnCode = listPlugins(arguments = arguments, plugins = plugins, db = db)
+        returnCode = listPlugins(arguments = arguments, pluginsList = plugins, db = db)
       # Show the selected plugin
       elif arguments.startsWith(prefix = "show"):
-        returnCode = showPlugin(arguments = arguments, plugins = plugins, db = db)
+        returnCode = showPlugin(arguments = arguments, pluginsList = plugins, db = db)
       else:
         try:
           returnCode = showUnknownHelp(subCommand = arguments,
