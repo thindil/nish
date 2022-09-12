@@ -25,11 +25,13 @@
 
 # Standard library imports
 import std/[os, strutils]
+# External modules imports
+import contracts
 # Internal imports
 import output
 
 proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDirEffect, WriteIOEffect].} =
+    tags: [ReadDirEffect, WriteIOEffect], contractual.} =
   ## FUNCTION
   ##
   ## Get the relative path of file or directory, based on the selected prefix
@@ -44,18 +46,19 @@ proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
   ## The relative path to the first file or directory which match the parameter
   ## prefix. If prefix is empty, or there is no matching file or directory,
   ## returns empty string.
-  if prefix.len() == 0:
-    return
-  try:
-    let
-      parent: string = parentDir(path = prefix)
-      dirToCheck = getCurrentDir() & (if dirExists(dir = parent): DirSep &
-          parent else: "")
-      newPrefix: string = (if dirToCheck != getCurrentDir(): lastPathPart(
-          path = prefix) else: prefix)
-    for item in walkDir(dir = dirToCheck, relative = true):
-      if item.path.startsWith(prefix = newPrefix):
-        return (if parent != ".": parent & DirSep else: "") & item.path
-  except OSError:
-    showError(message = "Can't get completion. Reason: ",
-        e = getCurrentException())
+  body:
+    if prefix.len() == 0:
+      return
+    try:
+      let
+        parent: string = parentDir(path = prefix)
+        dirToCheck = getCurrentDir() & (if dirExists(dir = parent): DirSep &
+            parent else: "")
+        newPrefix: string = (if dirToCheck != getCurrentDir(): lastPathPart(
+            path = prefix) else: prefix)
+      for item in walkDir(dir = dirToCheck, relative = true):
+        if item.path.startsWith(prefix = newPrefix):
+          return (if parent != ".": parent & DirSep else: "") & item.path
+    except OSError:
+      showError(message = "Can't get completion. Reason: ",
+          e = getCurrentException())
