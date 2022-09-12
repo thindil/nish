@@ -25,7 +25,7 @@
 
 import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
 import contracts
-import columnamount, commandslist, constants, databaseid, input, lstring,
+import columnamount, commandslist, constants, databaseid, help, input, lstring,
     options, output, resultcode
 
 const
@@ -615,7 +615,35 @@ proc initPlugins*(helpContent: ref HelpTable; db; pluginsList;
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
-        discard
+        if arguments.len() == 0:
+          return showHelpList(command = "plugin", subcommands = pluginsCommands)
+        # Add a new plugin
+        elif arguments.startsWith(prefix = "add"):
+          return addPlugin(arguments = arguments, db = db,
+              pluginsList = pluginsList)
+        # Delete the selected plugin
+        elif arguments.startsWith(prefix = "remove"):
+          return removePlugin(arguments = arguments, pluginsList = pluginsList, db = db)
+        # Disable the selected plugin
+        elif arguments.startsWith(prefix = "disable"):
+          return togglePlugin(arguments = arguments, pluginsList = pluginsList, db = db)
+        # Enable the selected plugin
+        elif arguments.startsWith(prefix = "enable"):
+          return togglePlugin(arguments = arguments, pluginsList = pluginsList,
+              db = db, disable = false)
+        # Show the list of available plugins
+        elif arguments.startsWith(prefix = "list"):
+          return listPlugins(arguments = arguments, pluginsList = pluginsList, db = db)
+        # Show the selected plugin
+        elif arguments.startsWith(prefix = "show"):
+          return showPlugin(arguments = arguments, pluginsList = pluginsList, db = db)
+        else:
+          try:
+            return showUnknownHelp(subCommand = arguments,
+                command = initLimitedString(capacity = 6, text = "plugin"),
+                helpType = initLimitedString(capacity = 6, text = "plugin"))
+          except CapacityError:
+            return QuitFailure.ResultCode
     try:
       addCommand(name = initLimitedString(capacity = 6, text = "plugin"),
           command = pluginCommand, commands = commands)
