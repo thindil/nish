@@ -525,48 +525,14 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     of "unset":
       returnCode = unsetCommand(arguments = arguments)
     # Commands related to help, environment variables, shell's history,
-    # options and aliases
-    of "help", "variable", "history", "options", "alias":
+    # options, aliases and plugins
+    of "help", "variable", "history", "options", "alias", "plugin":
       try:
         returnCode = commands[commandName](arguments = arguments, db = db,
             list = CommandLists(help: helpContent))
       except KeyError:
         showError(message = "Can't execute command '" & commandName &
             "'. Reason: ", e = getCurrentException())
-    # Various commands related to the plugins (like show list of available
-    # plugins, add, delete)
-    of "plugin":
-      # No subcommand entered, show available options
-      if arguments.len() == 0:
-        returnCode = showHelpList(command = "plugin",
-            subcommands = pluginsCommands)
-      # Add a new plugin
-      elif arguments.startsWith(prefix = "add"):
-        returnCode = addPlugin(arguments = arguments, db = db,
-            pluginsList = plugins)
-      # Delete the selected plugin
-      elif arguments.startsWith(prefix = "remove"):
-        returnCode = removePlugin(arguments = arguments, pluginsList = plugins, db = db)
-      # Disable the selected plugin
-      elif arguments.startsWith(prefix = "disable"):
-        returnCode = togglePlugin(arguments = arguments, pluginsList = plugins, db = db)
-      # Enable the selected plugin
-      elif arguments.startsWith(prefix = "enable"):
-        returnCode = togglePlugin(arguments = arguments, pluginsList = plugins,
-            db = db, disable = false)
-      # Show the list of available plugins
-      elif arguments.startsWith(prefix = "list"):
-        returnCode = listPlugins(arguments = arguments, pluginsList = plugins, db = db)
-      # Show the selected plugin
-      elif arguments.startsWith(prefix = "show"):
-        returnCode = showPlugin(arguments = arguments, pluginsList = plugins, db = db)
-      else:
-        try:
-          returnCode = showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 6, text = "plugin"),
-                  helpType = initLimitedString(capacity = 6, text = "plugin"))
-        except CapacityError:
-          returnCode = QuitFailure.ResultCode
     # Execute external command or alias
     else:
       let commandToExecute: string = commandName & (if arguments.len() >
