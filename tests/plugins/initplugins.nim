@@ -2,11 +2,14 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[nish, plugins, resultcode]
+import std/tables
+import ../../src/[commandslist, constants, nish, plugins, resultcode]
 import utils/helpers
 
 var
   (db, helpContent) = initTest()
-  pluginsList = initPlugins(helpContent, db)
+  pluginsList = newTable[string, PluginData]()
+  commands: CommandsList = initTable[string, CommandProc]()
+initPlugins(helpContent, db, pluginsList, commands)
 assert setTestPlugin(db, pluginsList) == QuitSuccess
 quitShell(QuitSuccess.ResultCode, db)
