@@ -746,8 +746,9 @@ proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList;
     try:
       addCommand(name = initLimitedString(capacity = 5, text = "alias"),
           command = aliasCommand, commands = commands)
-    except CapacityError:
-      discard
+    except CapacityError, CommandsListError:
+      showError(message = "Can't add commands related to the shell's aliases. Reason: ",
+          e = getCurrentException())
     # Set the shell's aliases for the current directory
     try:
       aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)

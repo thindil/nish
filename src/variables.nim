@@ -690,8 +690,9 @@ proc initVariables*(helpContent: ref HelpTable; db;
     try:
       addCommand(name = initLimitedString(capacity = 8, text = "variable"),
           command = variableCommand, commands = commands)
-    except CapacityError:
-      discard
+    except CapacityError, CommandsListError:
+      showError(message = "Can't add commands related to the shell's variables system. Reason: ",
+          e = getCurrentException())
     # Set the environment variables for the current directory
     try:
       setVariables(getCurrentDir().DirectoryPath, db)

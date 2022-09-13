@@ -461,5 +461,6 @@ proc initOptions*(helpContent: ref HelpTable;
     try:
       addCommand(name = initLimitedString(capacity = 7, text = "options"),
           command = optionsCommand, commands = commands)
-    except CapacityError:
-      discard
+    except CapacityError, CommandsListError:
+      showError(message = "Can't add commands related to the shell's options. Reason: ",
+          e = getCurrentException())

@@ -309,5 +309,6 @@ proc initHelp*(helpContent; db; commands: var CommandsList) {.gcsafe,
     try:
       addCommand(name = initLimitedString(capacity = 4, text = "help"),
           command = helpCommand, commands = commands)
-    except CapacityError:
-      discard
+    except CapacityError, CommandsListError:
+      showError(message = "Can't add commands related to the shell's help. Reason: ",
+          e = getCurrentException())

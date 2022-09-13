@@ -401,7 +401,8 @@ proc initHistory*(db; helpContent: ref HelpTable;
     try:
       addCommand(name = initLimitedString(capacity = 8, text = "history"),
           command = historyCommand, commands = commands)
-    except CapacityError:
-      discard
+    except CapacityError, CommandsListError:
+      showError(message = "Can't add commands related to the shell's history. Reason: ",
+          e = getCurrentException())
     # Return the current help index set on the last command in the shell's history
     return historyLength(db = db)

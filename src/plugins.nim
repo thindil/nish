@@ -647,8 +647,9 @@ proc initPlugins*(helpContent: ref HelpTable; db; pluginsList;
     try:
       addCommand(name = initLimitedString(capacity = 6, text = "plugin"),
           command = pluginCommand, commands = commands)
-    except CapacityError:
-      discard
+    except CapacityError, CommandsListError:
+      showError(message = "Can't add commands related to the shell's plugins. Reason: ",
+          e = getCurrentException())
     # Load all enabled plugins and execute the initialization code of the plugin
     try:
       for dbResult in db.fastRows(query = sql(
