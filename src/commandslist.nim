@@ -28,7 +28,7 @@ import std/[db_sqlite, tables]
 # External modules imports
 import contracts
 # Internal imports
-import constants, lstring, output, resultcode
+import constants, lstring, resultcode
 
 type
   CommandLists* = object
@@ -58,10 +58,14 @@ type
     ## FUNCTION
     ##
     ## Used to store the shell's commands
+  CommandsListError* = object of CatchableError
+    ## FUNCTION
+    ##
+    ## Raised when the command can't be added to the shell
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect, RootEffect], contractual.} =
+    commands: var CommandsList) {.gcsafe, sideEffect, raises: [
+    CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Add a new command to the shell's commands' list
@@ -81,13 +85,9 @@ proc addCommand*(name: UserInput; command: CommandProc;
     command != nil
   body:
     if $name in commands:
-      showError(message = "Can't add command '" & $name & "' because there is one with that name.")
-      return
+      raise newException(exceptn = CommandsListError,
+          message = "Command with name '" & $name & "' exists.")
     if $name in ["cd", "exit", "set", "unset"]:
-      showError(message = "Can't replace built-in commands.")
-      return
-    try:
-      commands[$name] = command
-    except Exception:
-      showError(message = "Can't add command '" & name & "'. Reason: ",
-          e = getCurrentException())
+      raise newException(exceptn = CommandsListError,
+          message = "Can't replace built-in commands.")
+    commands[$name] = command
