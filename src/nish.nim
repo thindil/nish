@@ -524,30 +524,30 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     # Delete environment variable
     of "unset":
       returnCode = unsetCommand(arguments = arguments)
-    # Commands related to help, environment variables, shell's history,
-    # options, aliases and plugins
-    of "help", "variable", "history", "options", "alias", "plugin":
-      try:
-        returnCode = commands[commandName](arguments = arguments, db = db,
-            list = CommandLists(help: helpContent))
-      except KeyError:
-        showError(message = "Can't execute command '" & commandName &
-            "'. Reason: ", e = getCurrentException())
-    # Execute external command or alias
+    # Execute command (the shell's or external) or the shell's alias
     else:
-      let commandToExecute: string = commandName & (if arguments.len() >
-          0: " " & arguments else: "")
-      try:
-        # Check if command is an alias, if yes, execute it
-        if initLimitedString(capacity = maxInputLength, text = commandName) in aliases:
-          returnCode = execAlias(arguments = arguments, aliasId = commandName,
-              aliases = aliases, db = db)
-          cursorPosition = inputString.len()
-        else:
-          # Execute external command
-          returnCode = ResultCode(execCmd(command = commandToExecute))
-      except CapacityError:
-        returnCode = QuitFailure.ResultCode
+      # Check if command is the shell's command, if yes, execute it
+      if commands.hasKey(key = commandName):
+        try:
+          returnCode = commands[commandName](arguments = arguments, db = db,
+              list = CommandLists(help: helpContent))
+        except KeyError:
+          showError(message = "Can't execute command '" & commandName &
+              "'. Reason: ", e = getCurrentException())
+      else:
+        let commandToExecute: string = commandName & (if arguments.len() >
+            0: " " & arguments else: "")
+        try:
+          # Check if command is an alias, if yes, execute it
+          if initLimitedString(capacity = maxInputLength, text = commandName) in aliases:
+            returnCode = execAlias(arguments = arguments, aliasId = commandName,
+                aliases = aliases, db = db)
+            cursorPosition = inputString.len()
+          else:
+            # Execute external command
+            returnCode = ResultCode(execCmd(command = commandToExecute))
+        except CapacityError:
+          returnCode = QuitFailure.ResultCode
     # Update the shell's history with info about the executed command
     historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len(
       ) > 0: " " & arguments else: ""), db = db, returnCode = returnCode)
