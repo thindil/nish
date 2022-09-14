@@ -92,7 +92,8 @@ proc addCommand*(name: UserInput; command: CommandProc;
           message = "Can't replace built-in commands.")
     commands[$name] = command
 
-proc deleteCommand*(name: UserInput; commands: var CommandsList) {.contractual.} =
+proc deleteCommand*(name: UserInput; commands: var CommandsList) {.gcsafe,
+    sideEffect, raises: [CommandsListError], tags: [], contractual.} =
   require:
     name.len() > 0
     commands.len() > 0
