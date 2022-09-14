@@ -94,6 +94,18 @@ proc addCommand*(name: UserInput; command: CommandProc;
 
 proc deleteCommand*(name: UserInput; commands: var CommandsList) {.gcsafe,
     sideEffect, raises: [CommandsListError], tags: [], contractual.} =
+  ## FUNCTION
+  ##
+  ## Delete the selected command from the shell's commands' list
+  ##
+  ## PARAMETERS
+  ##
+  ## * name     - the name of the new command to delete
+  ## * commands - the list of shell's commands
+  ##
+  ## RETURNS
+  ##
+  ## The updated parameter commands with the list of available shell's commands
   require:
     name.len() > 0
     commands.len() > 0
