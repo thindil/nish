@@ -61,7 +61,7 @@ type
   CommandsListError* = object of CatchableError
     ## FUNCTION
     ##
-    ## Raised when the command can't be added to the shell
+    ## Raised when a problem with a command occurs
 
 proc addCommand*(name: UserInput; command: CommandProc;
     commands: var CommandsList) {.gcsafe, sideEffect, raises: [
@@ -91,3 +91,13 @@ proc addCommand*(name: UserInput; command: CommandProc;
       raise newException(exceptn = CommandsListError,
           message = "Can't replace built-in commands.")
     commands[$name] = command
+
+proc deleteCommand*(name: UserInput; commands: var CommandsList) {.contractual.} =
+  require:
+    name.len() > 0
+    commands.len() > 0
+  body:
+    if $name notin commands:
+      raise newException(exceptn = CommandsListError,
+          message = "Command with name '" & $name & "' doesn't exists.")
+    commands.del(key = $name)
