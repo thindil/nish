@@ -118,6 +118,20 @@ proc deleteCommand*(name: UserInput; commands: var CommandsList) {.gcsafe,
 proc replaceCommand*(name: UserInput; command: CommandProc;
     commands: var CommandsList) {.gcsafe, sideEffect, raises: [
     CommandsListError], tags: [RootEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Replace the code of the selected command with the new procedure
+  ##
+  ## PARAMETERS
+  ##
+  ## * name     - the name of the new command to delete
+  ## * command  - the pointer to the procedure which will replace the existing
+  ##              procedure
+  ## * commands - the list of shell's commands
+  ##
+  ## RETURNS
+  ##
+  ## The updated parameter commands with the list of available shell's commands
   require:
     name.len() > 0
     command != nil
