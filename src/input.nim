@@ -23,8 +23,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Standard library imports
 import std/[parseopt, strutils, terminal]
+# External modules imports
 import contracts
+# Internal imports
 import constants, lstring, output
 
 const maxInputLength*: Positive = 4096
