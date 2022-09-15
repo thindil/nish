@@ -114,3 +114,15 @@ proc deleteCommand*(name: UserInput; commands: var CommandsList) {.gcsafe,
       raise newException(exceptn = CommandsListError,
           message = "Command with name '" & $name & "' doesn't exists.")
     commands.del(key = $name)
+
+proc replaceCommand*(name: UserInput; command: CommandProc;
+    commands: var CommandsList) {.contractual.} =
+  require:
+    name.len() > 0
+    command != nil
+    commands.len() > 0
+  body:
+    if $name notin commands:
+      raise newException(exceptn = CommandsListError,
+          message = "Command with name '" & $name & "' doesn't exists.")
+    commands[$name] = command
