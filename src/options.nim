@@ -23,11 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Standard library imports
 import std/[db_sqlite, os, osproc, strutils, tables, terminal]
-# External modules imports
 import contracts
-# Internal imports
 import columnamount, commandslist, constants, help, input, lstring, output, resultcode
 
 const optionsCommands* = ["list", "set", "reset"]
