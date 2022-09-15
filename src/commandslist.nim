@@ -116,7 +116,8 @@ proc deleteCommand*(name: UserInput; commands: var CommandsList) {.gcsafe,
     commands.del(key = $name)
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList) {.contractual.} =
+    commands: var CommandsList) {.gcsafe, sideEffect, raises: [
+    CommandsListError], tags: [RootEffect], contractual.} =
   require:
     name.len() > 0
     command != nil
