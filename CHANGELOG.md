@@ -10,6 +10,7 @@ of the shell.
 - **BREAKING**: Version to the plugins API
 - Information about supported API version by plugin to `plugin show` command
 - Information about used API calls by plugin to `plugin show` command
+- Deleting a character with Backspace key in the middle of the user's input
 
 ### Changed
 - Updated README.md
