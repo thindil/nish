@@ -556,8 +556,6 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
   body:
     result = QuitSuccess.ResultCode
     let
-      commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
-          cmdline = $arguments).remainingArgs() else: @[])
       aliasIndex: LimitedString = try:
           initLimitedString(capacity = maxInputLength, text = aliasId)
         except CapacityError:
@@ -573,12 +571,19 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       except OSError:
         return showError(message = "Can't get current directory. Reason: ",
             e = getCurrentException())
-    var inputString: string = try:
-        db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
-            aliases[aliasIndex])
-      except KeyError, DbError:
-        return showError(message = "Can't get commands for alias. Reason: ",
-            e = getCurrentException())
+    var
+      inputString: string = try:
+          db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
+              aliases[aliasIndex])
+        except KeyError, DbError:
+          return showError(message = "Can't get commands for alias. Reason: ",
+              e = getCurrentException())
+      commandArguments: seq[string] = (if arguments.len() > 0: initOptParser(
+          cmdline = $arguments).remainingArgs() else: @[])
+    # Add quotes to arguments which contains spaces
+    for argument in commandArguments.mitems():
+      if " " in argument and argument[0] != '"':
+        argument = '"' & argument & '"'
     # Convert all $number in commands to arguments taken from the user
     # input
     var
