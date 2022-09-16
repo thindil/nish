@@ -23,8 +23,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Standard library imports
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
+# External modules imports
 import contracts
+# Internal imports
 import aliases, commands, commandslist, completion, constants, directorypath,
     help, history, input, lstring, options, output, plugins, prompt, resultcode, variables
 
