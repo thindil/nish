@@ -20,6 +20,7 @@ of the shell.
 ### Fixed
 - Typos in README.md
 - Crash when trying to enter a directory outside the user's home directory tree
+- Executing aliases which arguments contain whitespaces
 
 ## [0.3.0] - 2022-07-29
 
