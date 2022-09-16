@@ -366,20 +366,31 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       # Read the user input until not meet new line character or the input
       # reach the maximum length
       while inputChar.ord() != 13 and inputString.len() < maxInputLength:
-        # Backspace pressed, delete the last character from the user input
+        # Backspace pressed, delete the character before cursor from the user
+        # input
         if inputChar.ord() == 127:
           keyWasArrow = false
           if inputString.len() > 0:
             try:
-              inputString.setString(text = $inputString[0..^2])
-              cursorPosition.dec()
+              if cursorPosition == inputString.len():
+                inputString.setString(text = $inputString[0..^2])
+                try:
+                  stdout.cursorBackward()
+                  stdout.write(s = " ")
+                  stdout.cursorBackward()
+                except ValueError, IOError:
+                  discard
+                cursorPosition.dec()
+              elif cursorPosition > 0:
+                inputString.setString(text = $inputString[0..cursorPosition -
+                    2] & $inputString[cursorPosition..inputString.len() - 1])
+                refreshOutput(multiLine)
+                try:
+                  stdout.cursorBackward(count = inputString.len() - cursorPosition)
+                except ValueError, IOError:
+                  discard
+                cursorPosition.dec()
             except CapacityError:
-              discard
-            try:
-              stdout.cursorBackward()
-              stdout.write(s = " ")
-              stdout.cursorBackward()
-            except ValueError, IOError:
               discard
         # Tab key pressed, do autocompletion if possible
         elif inputChar.ord() == 9:
