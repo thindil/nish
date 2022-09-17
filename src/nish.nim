@@ -458,6 +458,13 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               keyWasArrow = true
           except ValueError, IOError:
             discard
+        # Ctrl-c pressed, cancel current command and return 130 result code
+        elif inputChar.ord() == 3:
+          inputString = emptyLimitedString(capacity = maxInputLength)
+          returnCode = 130.ResultCode
+          cursorPosition = 0
+          commandName = "ctrl-c"
+          break
         # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
           stdout.write(c = inputChar)
@@ -486,9 +493,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         stdout.writeLine(x = "")
       except IOError:
         discard
-    # User just press Enter key, reset return code and back to beginning
+    # User just press Enter key, reset return code (if user doesn't pressed
+    # ctrl-c) and back to beginning
     if inputString.len() == 0:
-      returnCode = QuitSuccess.ResultCode
+      if returnCode != 130:
+        returnCode = QuitSuccess.ResultCode
       continue
     userInput = initOptParser(cmdLine = $inputString)
     # Reset the return code of the program
