@@ -458,6 +458,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
               keyWasArrow = true
           except ValueError, IOError:
             discard
+        # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
           stdout.write(c = inputChar)
           if cursorPosition == inputString.len():
