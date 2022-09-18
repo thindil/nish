@@ -12,6 +12,8 @@ of the shell.
 - Information about used API calls by plugin to `plugin show` command
 - Deleting a character with Backspace key in the middle of the user's input
 - Canceling entering the command with Ctrl-c
+- Showing error message when a plugin send unknown request or response to the
+  shell
 
 ### Changed
 - Updated README.md
