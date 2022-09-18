@@ -103,13 +103,13 @@ case "${1}" in
    # the full command, with arguments, which will be executed.
    preCommand)
       # Show the message with full to be executed command
-      echo "showOutput \"The command which will be executed: $2\""
+      echo "showOutput \"The command which will be executed: ${2}\""
       ;;
    # Called after execution of each the user's command. The second argument is
    # the full command, with arguments, which was executed.
    postCommand)
       # Show the message with full executed command
-      echo "showOutput \"The command which was executed: $2\""
+      echo "showOutput \"The command which was executed: ${2}\""
       ;;
    # Unknown API option called. Quit with status code 2 so the shell can know
    # about unsupported command
