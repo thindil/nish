@@ -223,7 +223,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     helpContent = newTable[string, HelpEntry]()
     cursorPosition: Natural = 0
     plugins = newTable[string, PluginData]()
-    commands: CommandsList = initTable[string, CommandProc]()
+    commands: CommandsList = initTable[string, CommandData]()
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -543,8 +543,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       # Check if command is the shell's command, if yes, execute it
       if commands.hasKey(key = commandName):
         try:
-          returnCode = commands[commandName](arguments = arguments, db = db,
-              list = CommandLists(help: helpContent))
+          returnCode = commands[commandName].command(arguments = arguments,
+              db = db, list = CommandLists(help: helpContent))
         except KeyError:
           showError(message = "Can't execute command '" & commandName &
               "'. Reason: ", e = getCurrentException())
