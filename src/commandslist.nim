@@ -67,7 +67,7 @@ type
     ## Raised when a problem with a command occurs
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList; plugin: string = "built-in") {.gcsafe,
+    commands: var CommandsList; plugin: string = "") {.gcsafe,
         sideEffect, raises: [
     CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
