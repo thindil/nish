@@ -28,7 +28,7 @@ import std/[db_sqlite, tables]
 # External modules imports
 import contracts
 # Internal imports
-import constants, lstring, resultcode
+import constants, lstring, output, resultcode
 
 type
   CommandLists* = object
@@ -54,7 +54,10 @@ type
     ## RETURNS
     ##
     ## QuitSuccess if the command was succesfull, otherwise QuitFalse
-  CommandsList* = Table[string, CommandProc]
+  CommandData* = object
+    command*: CommandProc
+    plugin*: string
+  CommandsList* = Table[string, CommandData]
     ## FUNCTION
     ##
     ## Used to store the shell's commands
@@ -64,7 +67,8 @@ type
     ## Raised when a problem with a command occurs
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList) {.gcsafe, sideEffect, raises: [
+    commands: var CommandsList; plugin: string = "built-in") {.gcsafe,
+        sideEffect, raises: [
     CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
@@ -90,7 +94,7 @@ proc addCommand*(name: UserInput; command: CommandProc;
     if $name in ["cd", "exit", "set", "unset"]:
       raise newException(exceptn = CommandsListError,
           message = "Can't replace built-in commands.")
-    commands[$name] = command
+    commands[$name] = CommandData(command: command, plugin: plugin)
 
 proc deleteCommand*(name: UserInput; commands: var CommandsList) {.gcsafe,
     sideEffect, raises: [CommandsListError], tags: [], contractual.} =
@@ -140,4 +144,8 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
     if $name notin commands:
       raise newException(exceptn = CommandsListError,
           message = "Command with name '" & $name & "' doesn't exists.")
-    commands[$name] = command
+    try:
+      commands[$name].command = command
+    except KeyError:
+      showError(message = "Can't replace command '" & name & "'. Reason: ",
+          e = getCurrentException())
