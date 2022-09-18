@@ -173,9 +173,10 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db): tuple [
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
-          # Do nothing if the plugin sent any unknown request or response
+          # The plugin sent any unknown request or response, show error about it
           else:
-            discard
+            showError(message = "Unknown request or response from the plugin '" &
+                pluginPath & "'. Got: '" & options.key & "'")
           break
     except OSError, IOError, Exception:
       return (showError(message = "Can't get the plugin '" & pluginPath &
