@@ -38,6 +38,7 @@ type
     help*: ref HelpTable ## List with the content of the shell's help
     aliases*: ref AliasesList ## List of shell's aliases
     plugins*: ref PluginsList ## List of enables shell's plugins
+    commands*: ref Table[string, CommandData] ## List of the shell's commands
   CommandProc* = proc (arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.}
     ## FUNCTION
