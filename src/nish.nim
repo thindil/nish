@@ -543,9 +543,11 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       # Check if command is the shell's command, if yes, execute it
       if commands.hasKey(key = commandName):
         try:
-          returnCode = commands[commandName].command(arguments = arguments,
-              db = db, list = CommandLists(help: helpContent, aliases: aliases,
-                  plugins: plugins))
+          # Build-in shell's command
+          if commands[commandName].command != nil:
+            returnCode = commands[commandName].command(arguments = arguments,
+                db = db, list = CommandLists(help: helpContent, aliases: aliases,
+                    plugins: plugins))
         except KeyError:
           showError(message = "Can't execute command '" & commandName &
               "'. Reason: ", e = getCurrentException())
