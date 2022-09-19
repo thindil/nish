@@ -86,7 +86,7 @@ proc addCommand*(name: UserInput; command: CommandProc;
   ## The updated parameter commands with the list of available shell's commands
   require:
     name.len() > 0
-    command != nil
+    command != nil or plugin.len() > 0
   body:
     if $name in commands:
       raise newException(exceptn = CommandsListError,
