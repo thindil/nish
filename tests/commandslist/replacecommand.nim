@@ -11,11 +11,6 @@ var
   (db, _) = initTest()
   commands: CommandsList = initTable[string, CommandData]()
 
-proc testCommand(arguments: UserInput; db: DbConn;
-    list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
-  body:
-    echo "test"
-
 proc testCommand2(arguments: UserInput; db: DbConn;
     list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
   body:

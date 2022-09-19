@@ -2,19 +2,13 @@ discard """
   exitcode: 0
 """
 
-import std/[db_sqlite, tables]
-import contracts
-import ../../src/[commandslist, constants, lstring, nish, resultcode]
+import std/tables
+import ../../src/[commandslist, lstring, nish, resultcode]
 import utils/helpers
 
 var
   (db, _) = initTest()
   commands: CommandsList = initTable[string, CommandData]()
-
-proc testCommand(arguments: UserInput; db: DbConn;
-    list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
-  body:
-    echo "test"
 
 # Add the command
 addCommand(name = initLimitedString(capacity = 4, text = "test"),

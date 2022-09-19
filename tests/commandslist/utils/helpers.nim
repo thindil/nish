@@ -1,5 +1,6 @@
 import std/[db_sqlite, strutils, tables]
-import ../../../src/[constants, directorypath, lstring, nish]
+import contracts
+import ../../../src/[commandslist, constants, directorypath, lstring, nish, resultcode]
 
 proc initTest*(): tuple[db: DbConn, aliases: ref AliasesList] =
   let db = startDb("test.db".DirectoryPath)
@@ -13,3 +14,9 @@ proc initTest*(): tuple[db: DbConn, aliases: ref AliasesList] =
       quit("Can't add test2 alias.", QuitFailure)
   var aliases = newOrderedTable[LimitedString, int]()
   return (db, aliases)
+
+proc testCommand*(arguments: UserInput; db: DbConn;
+    list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+  body:
+    echo "test"
+
