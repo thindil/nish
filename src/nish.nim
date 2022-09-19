@@ -544,7 +544,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
       if commands.hasKey(key = commandName):
         try:
           returnCode = commands[commandName].command(arguments = arguments,
-              db = db, list = CommandLists(help: helpContent))
+              db = db, list = CommandLists(help: helpContent, aliases: aliases,
+                  plugins: plugins))
         except KeyError:
           showError(message = "Can't execute command '" & commandName &
               "'. Reason: ", e = getCurrentException())
