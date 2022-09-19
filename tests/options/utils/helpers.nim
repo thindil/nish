@@ -4,7 +4,7 @@ import ../../../src/[commandslist, constants, directorypath, history, nish]
 proc initTest*(): DbConn =
   result = startDb("test.db".DirectoryPath)
   assert result != nil
-  var 
+  var
     helpContent = newTable[string, HelpEntry]()
-    commands: CommandsList = initTable[string, CommandProc]()
+    commands: CommandsList = initTable[string, CommandData]()
   discard initHistory(result, helpContent, commands)

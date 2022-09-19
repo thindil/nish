@@ -8,7 +8,7 @@ import utils/helpers
 
 var
   (db, helpContent) = initTest()
-  commands: CommandsList = initTable[string, CommandProc]()
+  commands: CommandsList = initTable[string, CommandData]()
 initHelp(helpContent, db, commands)
 assert commands.len() == 1
 quitShell(ResultCode(QuitSuccess), db)

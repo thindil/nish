@@ -6,7 +6,7 @@ proc initTest*(): tuple[db: DbConn, helpContent: ref HelpTable] =
   assert db != nil
   var
     helpContent = newTable[string, HelpEntry]()
-    commands: CommandsList = initTable[string, CommandProc]()
+    commands: CommandsList = initTable[string, CommandData]()
   initVariables(helpContent, db, commands)
   return (db, helpContent)
 

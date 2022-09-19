@@ -9,7 +9,7 @@ import utils/helpers
 var
   (db, helpContent) = initTest()
   pluginsList = newTable[string, PluginData]()
-  commands: CommandsList = initTable[string, CommandProc]()
+  commands: CommandsList = initTable[string, CommandData]()
 initPlugins(helpContent, db, pluginsList, commands)
 discard removePlugin(db, initLimitedString(capacity = 8, "remove 1"), pluginsList)
 assert addPlugin(db, initLimitedString(capacity = 23,

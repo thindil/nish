@@ -8,7 +8,7 @@ import utils/helpers
 
 var
   (db, helpContent, myaliases) = initTest()
-  commands: CommandsList = initTable[string, CommandProc]()
+  commands: CommandsList = initTable[string, CommandData]()
 assert setTestAliases(db) == QuitSuccess
 initAliases(helpContent, db, myaliases, commands)
 assert myaliases.len() == 1

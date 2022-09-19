@@ -9,7 +9,7 @@ import utils/helpers
 
 var
   (db, _) = initTest()
-  commands: CommandsList = initTable[string, CommandProc]()
+  commands: CommandsList = initTable[string, CommandData]()
 
 proc testCommand(arguments: UserInput; db: DbConn;
     list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
