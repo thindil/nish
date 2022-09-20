@@ -665,7 +665,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     return result
 
 proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList;
-    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect,
     ReadIOEffect, RootEffect], contractual.} =
   ## FUNCTION

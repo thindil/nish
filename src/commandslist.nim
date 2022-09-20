@@ -68,7 +68,7 @@ type
     ## Raised when a problem with a command occurs
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList; plugin: string = "") {.gcsafe,
+    commands: ref CommandsList; plugin: string = "") {.gcsafe,
         sideEffect, raises: [
     CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
@@ -97,7 +97,7 @@ proc addCommand*(name: UserInput; command: CommandProc;
           message = "Can't replace built-in commands.")
     commands[$name] = CommandData(command: command, plugin: plugin)
 
-proc deleteCommand*(name: UserInput; commands: var CommandsList) {.gcsafe,
+proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.gcsafe,
     sideEffect, raises: [CommandsListError], tags: [], contractual.} =
   ## FUNCTION
   ##
@@ -121,7 +121,7 @@ proc deleteCommand*(name: UserInput; commands: var CommandsList) {.gcsafe,
     commands.del(key = $name)
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
-    commands: var CommandsList) {.gcsafe, sideEffect, raises: [
+    commands: ref CommandsList) {.gcsafe, sideEffect, raises: [
     CommandsListError], tags: [RootEffect], contractual.} =
   ## FUNCTION
   ##

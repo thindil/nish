@@ -340,7 +340,7 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc initHistory*(db; helpContent: ref HelpTable;
-    commands: var CommandsList): HistoryRange {.gcsafe, sideEffect, raises: [],
+    commands: ref CommandsList): HistoryRange {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION

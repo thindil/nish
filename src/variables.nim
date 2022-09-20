@@ -608,7 +608,7 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     return QuitSuccess.ResultCode
 
 proc initVariables*(helpContent: ref HelpTable; db;
-    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION

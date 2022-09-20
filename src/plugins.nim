@@ -558,7 +558,7 @@ proc showPlugin*(arguments; pluginsList; db): ResultCode {.gcsafe, sideEffect,
     return QuitSuccess.ResultCode
 
 proc initPlugins*(helpContent: ref HelpTable; db; pluginsList;
-    commands: var CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
     ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect,
     WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
   ## FUNCTION

@@ -395,7 +395,7 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
     return QuitSuccess.ResultCode
 
 proc initOptions*(helpContent: ref HelpTable;
-    commands: var CommandsList) {.gcsafe, sideEffect, locks: 0, raises: [],
+    commands: ref CommandsList) {.gcsafe, sideEffect, locks: 0, raises: [],
     tags: [WriteDbEffect, WriteIOEffect, ReadDbEffect, ReadIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
