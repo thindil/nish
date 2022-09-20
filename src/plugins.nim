@@ -639,26 +639,26 @@ proc initPlugins*(helpContent: ref HelpTable; db; pluginsList;
         # Add a new plugin
         elif arguments.startsWith(prefix = "add"):
           return addPlugin(arguments = arguments, db = db,
-              pluginsList = pluginsList, commands = commands)
+              pluginsList = list.plugins, commands = list.commands)
         # Delete the selected plugin
         elif arguments.startsWith(prefix = "remove"):
-          return removePlugin(arguments = arguments, pluginsList = pluginsList,
-              db = db, commands = commands)
+          return removePlugin(arguments = arguments, pluginsList = list.plugins,
+              db = db, commands = list.commands)
         # Disable the selected plugin
         elif arguments.startsWith(prefix = "disable"):
-          return togglePlugin(arguments = arguments, pluginsList = pluginsList,
-              db = db, commands = commands)
+          return togglePlugin(arguments = arguments, pluginsList = list.plugins,
+              db = db, commands = list.commands)
         # Enable the selected plugin
         elif arguments.startsWith(prefix = "enable"):
-          return togglePlugin(arguments = arguments, pluginsList = pluginsList,
-              db = db, disable = false, commands = commands)
+          return togglePlugin(arguments = arguments, pluginsList = list.plugins,
+              db = db, disable = false, commands = list.commands)
         # Show the list of available plugins
         elif arguments.startsWith(prefix = "list"):
-          return listPlugins(arguments = arguments, pluginsList = pluginsList, db = db)
+          return listPlugins(arguments = arguments, pluginsList = list.plugins, db = db)
         # Show the selected plugin
         elif arguments.startsWith(prefix = "show"):
-          return showPlugin(arguments = arguments, pluginsList = pluginsList,
-              db = db, commands = commands)
+          return showPlugin(arguments = arguments, pluginsList = list.plugins,
+              db = db, commands = list.commands)
         else:
           try:
             return showUnknownHelp(subCommand = arguments,
