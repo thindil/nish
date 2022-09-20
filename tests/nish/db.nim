@@ -10,6 +10,6 @@ assert db != nil
 var
     historyIndex: int
     helpContent = newTable[string, HelpEntry]()
-    commands: CommandsList = initTable[string, CommandData]()
+    commands = newTable[string, CommandData]()
 historyIndex = initHistory(db, helpContent, commands)
 quitShell(ResultCode(QuitSuccess), db)

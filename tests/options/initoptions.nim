@@ -7,6 +7,6 @@ import ../../src/[commandslist, constants, options]
 
 var
   helpContent = newTable[string, HelpEntry]()
-  commands: CommandsList = initTable[string, CommandData]()
+  commands = newTable[string, CommandData]()
 initOptions(helpContent, commands)
 assert helpContent.len() > 0

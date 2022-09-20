@@ -8,6 +8,6 @@ import utils/helpers
 
 var
   (db, helpContent) = initTest()
-  commands: CommandsList = initTable[string, CommandData]()
+  commands = newTable[string, CommandData]()
 initVariables(helpContent, db, commands)
 quitShell(ResultCode(QuitSuccess), db)

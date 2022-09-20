@@ -6,5 +6,5 @@ proc initTest*(): DbConn =
   assert result != nil
   var
     helpContent = newTable[string, HelpEntry]()
-    commands: CommandsList = initTable[string, CommandData]()
+    commands = newTable[string, CommandData]()
   discard initHistory(result, helpContent, commands)

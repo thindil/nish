@@ -8,7 +8,7 @@ import utils/helpers
 
 var
   (db, _) = initTest()
-  commands: CommandsList = initTable[string, CommandData]()
+  commands = newTable[string, CommandData]()
 
 # Add a command
 addCommand(name = initLimitedString(capacity = 4, text = "test"),

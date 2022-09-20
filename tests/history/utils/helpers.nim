@@ -6,7 +6,7 @@ proc initTest*(): tuple[db: DbConn, historyIndex: HistoryRange] =
   assert db != nil
   var
     helpContent = newTable[string, HelpEntry]()
-    commands: CommandsList = initTable[string, CommandData]()
+    commands = newTable[string, CommandData]()
   return (db, initHistory(db, helpContent, commands))
 
 proc setTestHistory*(db: DbConn): int =
