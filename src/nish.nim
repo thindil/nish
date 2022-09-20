@@ -521,7 +521,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     for plugin in plugins.values:
       if "preCommand" in plugin.api:
         discard execPlugin(pluginPath = plugin.path, arguments = ["preCommand",
-            commandName & " " & arguments], db = db)
+            commandName & " " & arguments], db = db, commands = commands)
     # Parse commands
     case commandName
     # Quit from shell
@@ -546,8 +546,8 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
           # Build-in shell's command
           if commands[commandName].command != nil:
             returnCode = commands[commandName].command(arguments = arguments,
-                db = db, list = CommandLists(help: helpContent, aliases: aliases,
-                    plugins: plugins, commands: commands))
+                db = db, list = CommandLists(help: helpContent,
+                    aliases: aliases, plugins: plugins, commands: commands))
         except KeyError:
           showError(message = "Can't execute command '" & commandName &
               "'. Reason: ", e = getCurrentException())
@@ -572,7 +572,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     for plugin in plugins.values:
       if "postCommand" in plugin.api:
         discard execPlugin(pluginPath = plugin.path, arguments = ["postCommand",
-            commandName & " " & arguments], db = db)
+            commandName & " " & arguments], db = db, commands = commands)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
