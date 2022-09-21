@@ -11,11 +11,11 @@ var
   pluginsList = newTable[string, PluginData]()
   commands = newTable[string, CommandData]()
 initPlugins(helpContent, db, pluginsList, commands)
-assert setTestPlugin(db, pluginsList) == QuitSuccess
+assert setTestPlugin(db, pluginsList, commands) == QuitSuccess
 assert togglePlugin(db, initLimitedString(capacity = 9, "disable 1"),
-    pluginsList) == QuitSuccess
+    pluginsList, true, commands) == QuitSuccess
 assert togglePlugin(db, initLimitedString(capacity = 8, "enable 1"),
-    pluginsList, false) == QuitSuccess
+    pluginsList, false, commands) == QuitSuccess
 assert togglePlugin(db, initLimitedString(capacity = 8, "enable 2"),
-    pluginsList, false) == QuitFailure
+    pluginsList, false, commands) == QuitFailure
 quitShell(QuitSuccess.ResultCode, db)

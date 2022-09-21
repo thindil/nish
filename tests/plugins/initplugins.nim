@@ -11,5 +11,5 @@ var
   pluginsList = newTable[string, PluginData]()
   commands = newTable[string, CommandData]()
 initPlugins(helpContent, db, pluginsList, commands)
-assert setTestPlugin(db, pluginsList) == QuitSuccess
+assert setTestPlugin(db, pluginsList, commands) == QuitSuccess
 quitShell(QuitSuccess.ResultCode, db)
