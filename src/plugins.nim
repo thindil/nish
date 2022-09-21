@@ -175,10 +175,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
+          # Add a new command to the shell. The argument is the name of the
+          # command which will be added
           of "addCommand":
             let remainingOptions = options.remainingArgs()
             if remainingOptions.len() == 0:
               showError(message = "Insufficient arguments for addCommand.")
+              break
+            try:
+              addCommand(name = initLimitedString(capacity = maxNameLength,
+                  text = remainingOptions[0]), command = nil,
+                      commands = commands,
+                  plugin = pluginPath)
+            except CommandsListError:
+              showError(message = "Can't add command '" & remainingOptions[0] &
+                  "'. Reason: " & getCurrentExceptionMsg())
               break
           # The plugin sent any unknown request or response, show error about it
           else:
