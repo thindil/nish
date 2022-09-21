@@ -73,7 +73,9 @@ proc addCommand*(name: UserInput; command: CommandProc;
     CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
-  ## Add a new command to the shell's commands' list
+  ## Add a new command to the shell's commands' list. If command argument is
+  ## different than nil, it will be used as the command code, otherwise, the
+  ## argument plugin must be supplied.
   ##
   ## PARAMETERS
   ##
@@ -81,6 +83,8 @@ proc addCommand*(name: UserInput; command: CommandProc;
   ## * command  - the pointer to the procedure which will be called when the
   ##              command is invoked
   ## * commands - the list of shell's commands
+  ## * plugin   - the full path to the plugin which contains the code for the
+  ##              command
   ##
   ## RETURNS
   ##
