@@ -191,6 +191,20 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               showError(message = "Can't add command '" & remainingOptions[0] &
                   "'. Reason: " & getCurrentExceptionMsg())
               break
+          # Delete the command to the shell. The argument is the name of the
+          # command which will be deleted
+          of "deleteCommand":
+            let remainingOptions = options.remainingArgs()
+            if remainingOptions.len() == 0:
+              showError(message = "Insufficient arguments for deleteCommand.")
+              break
+            try:
+              deleteCommand(name = initLimitedString(capacity = maxNameLength,
+                  text = remainingOptions[0]), commands = commands)
+            except CommandsListError:
+              showError(message = "Can't delete command '" & remainingOptions[
+                  0] & "'. Reason: " & getCurrentExceptionMsg())
+              break
           # The plugin sent any unknown request or response, show error about it
           else:
             showError(message = "Unknown request or response from the plugin '" &
