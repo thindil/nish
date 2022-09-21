@@ -2,14 +2,10 @@ discard """
   outputsub: plugins are
 """
 
-import std/tables
-import ../../src/[commandslist, constants, lstring, nish, plugins, resultcode]
+import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
-var
-  (db, helpContent) = initTest()
-  pluginsList = newTable[string, PluginData]()
-  commands = newTable[string, CommandData]()
+var (db, helpContent, pluginsList, commands) = initTest()
 initPlugins(helpContent, db, pluginsList, commands)
 assert setTestPlugin(db, pluginsList, commands) == QuitSuccess
 assert listPlugins(initLimitedString(capacity = 4, text = "list"), pluginsList, db) == QuitSuccess

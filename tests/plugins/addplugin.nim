@@ -2,14 +2,10 @@ discard """
   exitcode: 0
 """
 
-import std/tables
-import ../../src/[commandslist, constants, lstring, nish, plugins, resultcode]
+import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
-var
-  (db, helpContent) = initTest()
-  pluginsList = newTable[string, PluginData]()
-  commands = newTable[string, CommandData]()
+var (db, helpContent, pluginsList, commands) = initTest()
 initPlugins(helpContent, db, pluginsList, commands)
 discard removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
     pluginsList, commands)
