@@ -205,6 +205,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               showError(message = "Can't delete command '" & remainingOptions[
                   0] & "'. Reason: " & getCurrentExceptionMsg())
               break
+          # Replace the command with the command from the plugin. The argument
+          # is name of the command to replace
+          of "replaceCommand":
+            let remainingOptions = options.remainingArgs()
+            if remainingOptions.len() == 0:
+              showError(message = "Insufficient arguments for replaceCommand.")
+              break
+            try:
+              replaceCommand(name = initLimitedString(capacity = maxNameLength,
+                  text = remainingOptions[0]), command = nil,
+                  commands = commands, plugin = pluginPath)
+            except CommandsListError:
+              showError(message = "Can't replace command '" & remainingOptions[
+                  0] & "'. Reason: " & getCurrentExceptionMsg())
+              break
           # The plugin sent any unknown request or response, show error about it
           else:
             showError(message = "Unknown request or response from the plugin '" &
