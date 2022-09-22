@@ -125,7 +125,7 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.gcsafe,
     commands.del(key = $name)
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList) {.gcsafe, sideEffect, raises: [
+    commands: ref CommandsList; plugin: string = "") {.gcsafe, sideEffect, raises: [
     CommandsListError], tags: [RootEffect], contractual.} =
   ## FUNCTION
   ##
@@ -143,14 +143,15 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
   ## The updated parameter commands with the list of available shell's commands
   require:
     name.len() > 0
-    command != nil
     commands.len() > 0
+    command != nil or plugin.len() > 0
   body:
     if $name notin commands:
       raise newException(exceptn = CommandsListError,
           message = "Command with name '" & $name & "' doesn't exists.")
     try:
       commands[$name].command = command
+      commands[$name].plugin = plugin
     except KeyError:
       showError(message = "Can't replace command '" & name & "'. Reason: ",
           e = getCurrentException())
