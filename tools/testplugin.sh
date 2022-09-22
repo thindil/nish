@@ -60,7 +60,8 @@ case "${1}" in
             showOutput "Uninstalled" fgGreen'
       ;;
    # Called during enabling the plugin and during installing it, after the
-   # install section. A good place to set some settings for the plugin
+   # install section. A good place to set some settings for the plugin, like
+   # new shell's commands, etc
    enable)
       # Show the message and read the value of the selected shell option
       echo 'showOutput "Enabling the testplugin"
@@ -69,6 +70,8 @@ case "${1}" in
       read -t 1 value
       # Show the value of the option, read from the shell
       echo "showOutput \"Value for testPlugin is $value\""
+      # Add the command "hello" to the shell's commands
+      echo "addCommand hello"
       # Show another message, colored in green
       echo "showOutput \"Enabled the testplugin\" fgGreen"
       ;;
@@ -78,7 +81,7 @@ case "${1}" in
       echo 'showOutput "Disabled the testplugin" fgGreen'
       ;;
    # Called during start the shell, when the plugin is enabled. A good place to
-   # set settings for the plugin
+   # set settings for the plugin, like commands, etc.
    init)
       # Show the message and read the value of the selected shell option
       echo 'showOutput "Initializing the testplugin"
@@ -87,6 +90,8 @@ case "${1}" in
       read -t 1 value
       # Show the value of the option, read from the shell
       echo "showOutput \"Value for testPlugin is $value\""
+      # Add the command "hello" to the shell's commands
+      echo "addCommand hello"
       # Show another message, colored in green
       echo "showOutput \"Initialized the testplugin\" fgGreen"
       ;;
