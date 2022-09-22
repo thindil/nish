@@ -129,7 +129,9 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
     CommandsListError], tags: [RootEffect], contractual.} =
   ## FUNCTION
   ##
-  ## Replace the code of the selected command with the new procedure
+  ## Replace the code of the selected command with the new procedure. If
+  ## command argument is different than nil, it will be used as the command
+  ## code, otherwise, the argument plugin must be supplied.
   ##
   ## PARAMETERS
   ##
@@ -137,6 +139,8 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
   ## * command  - the pointer to the procedure which will replace the existing
   ##              procedure
   ## * commands - the list of shell's commands
+  ## * plugin   - the full path to the plugin which contains the code for the
+  ##              command
   ##
   ## RETURNS
   ##
