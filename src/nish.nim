@@ -327,9 +327,13 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         except OSError:
           fgGreen
       if color == fgRed:
-        if $command in ["exit", "cd", "help", "history", "variable", "options",
-            "set", "unset", "plugin"]:
+        # Built-in commands
+        if $command in ["exit", "cd", "set", "unset"]:
           color = fgGreen
+        # The shell's commands
+        elif commands.hasKey(key = $command):
+          color = fgGreen
+        # Aliases
         elif aliases.contains(key = command):
           color = fgGreen
       if not multiLine:
