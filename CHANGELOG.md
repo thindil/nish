@@ -14,6 +14,8 @@ of the shell.
 - Canceling entering the command with Ctrl-c
 - Showing error message when a plugin send unknown request or response to the
   shell
+- Ability to add, remove or replace the shell's commands with the shell's
+  plugins
 
 ### Changed
 - Updated README.md
