@@ -552,6 +552,12 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
             returnCode = commands[commandName].command(arguments = arguments,
                 db = db, list = CommandLists(help: helpContent,
                     aliases: aliases, plugins: plugins, commands: commands))
+          # The shell's command from plugin
+          else:
+            let returnValues = execPlugin(pluginPath = commands[
+                commandName].plugin, arguments = [commandName, $arguments],
+                db = db, commands = commands)
+            returnCode = returnValues.code
         except KeyError:
           showError(message = "Can't execute command '" & commandName &
               "'. Reason: ", e = getCurrentException())
