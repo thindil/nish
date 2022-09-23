@@ -116,6 +116,11 @@ case "${1}" in
       # Show the message with full executed command
       echo "showOutput \"The command which was executed: ${2}\""
       ;;
+   hello)
+      # The new shell's command added by the plugin. The second argument are
+      # arguments entered by the user
+      echo "showOutput \"Hello from testplugin. Entered arguments: ${2}\""
+      ;;
    # Unknown API option called. Quit with status code 2 so the shell can know
    # about unsupported command
    *)
