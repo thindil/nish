@@ -613,9 +613,9 @@ proc showPlugin*(arguments; pluginsList; db; commands): ResultCode {.gcsafe,
     return QuitSuccess.ResultCode
 
 proc initPlugins*(helpContent: ref HelpTable; db; pluginsList;
-    commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
-    ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect,
-    WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
+    commands) {.gcsafe, sideEffect, raises: [], tags: [ExecIOEffect,
+    ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect, WriteDbEffect,
+    ReadDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize the shell's plugins. Set help related to the plugins, load
