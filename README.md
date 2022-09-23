@@ -285,7 +285,12 @@ Available API calls from plugins:
 * `addCommand [command name]`: add the new command to the shell. The name must
   be unique. The command will not be added if there is registered the shell's
   command with that name. If you want to replace existing command, use call
-  `replaceCommand` (see below).
+  `replaceCommand` (see below). Commands named *exit*, *set*, *unset* and *cd*
+  can't be added.
+* `deleteCommand [command name]`: remove the selected command from the shell.
+  The name must be a name of an existing shell's command.
+* `replaceCommand [command name]`: replace the selected command with code from
+  the plugin. The name must be a name of an existing shell's command.
 
 #### Other features
 
