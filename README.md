@@ -253,6 +253,9 @@ At this moment, available API calls from the shell:
 * `postCommand [command]`: called after the user's command execution.
   Command argument is the name of command and all its arguments entered by the
   user.
+* `[command] [arguments]`: called when the plugin added own or replaced one of
+  the build-in commands. Command is the name of the command which will be
+  executed, arguments are string with arguments entered by the user.
 
 **ATTENTION:** the calls set as the `preCommand` and `postCommand` will be
 executed every time before and after you execute your command. Thus, be sure it
@@ -279,6 +282,10 @@ Available API calls from plugins:
 * `getOption [option name]`: get the value of the selected shell's option.
 * `answer [text]`: set the answer for the shell. At this moment, used only in
   `info` call from the shell.
+* `addCommand [command name]`: add the new command to the shell. The name must
+  be unique. The command will not be added if there is registered the shell's
+  command with that name. If you want to replace existing command, use call
+  `replaceCommand` (see below).
 
 #### Other features
 
