@@ -346,11 +346,16 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc addHelpEntry*(topic, usage: UserInput; content: string;
-    db): ResultCode {.contractual.} =
+    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
   body:
-    if db.getValue(query = sql(query = "SELECT id FROM help WHERE topic=?"),
-        topic).len() > 0:
-      return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
-    db.exec(query = sql(query = "INSERT INTO help (topic, usage, content) VALUES (?, ?, ?)"),
-        topic, usage, content)
-    return QuitSuccess.ResultCode
+    try:
+      if db.getValue(query = sql(query = "SELECT id FROM help WHERE topic=?"),
+          topic).len() > 0:
+        return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
+      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content) VALUES (?, ?, ?)"),
+          topic, usage, content)
+      return QuitSuccess.ResultCode
+    except DbError:
+      return showError(message = "Can't add help entry to database. Reason: ",
+          e = getCurrentException())
