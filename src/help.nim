@@ -344,3 +344,13 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
+
+proc addHelpEntry*(topic, usage: UserInput; content: string;
+    db): ResultCode {.contractual.} =
+  body:
+    if db.getValue(query = sql(query = "SELECT id FROM help WHERE topic=?"),
+        topic).len() > 0:
+      return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
+    db.exec(query = sql(query = "INSERT INTO help (topic, usage, content) VALUES (?, ?, ?)"),
+        topic, usage, content)
+    return QuitSuccess.ResultCode
