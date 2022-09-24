@@ -315,3 +315,32 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
+
+proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+  ## FUNCTION
+  ##
+  ## Create the table help
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """CREATE TABLE help (
+                   topic       VARCHAR(""" & $maxInputLength &
+              """) NOT NULL PRIMARY KEY,
+                   usage       VARCHAR(""" & $maxInputLength &
+              """) NOT NULL,
+                   content     TEXT NOT NULL"""))
+    except DbError, CapacityError:
+      return showError(message = "Can't create 'help' table. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode

@@ -163,6 +163,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
         return nil
       if createPluginsDb(db = result) == QuitFailure:
         return nil
+      if createHelpDb(db = result) == QuitFailure:
+        return nil
       try:
         setOption(optionName = versionName, value = versionValue,
             description = initLimitedString(capacity = 43,
@@ -188,6 +190,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
         if updateAliasesDb(db = result) == QuitFailure:
           return nil
         if createPluginsDb(db = result) == QuitFailure:
+          return nil
+        if createHelpDb(db = result) == QuitFailure:
           return nil
         setOption(optionName = versionName, value = versionValue,
             description = initLimitedString(capacity = 43,
