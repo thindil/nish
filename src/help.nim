@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[algorithm, db_sqlite, os, strutils, tables, terminal]
+import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, tables, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -316,11 +316,33 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
 
+proc addHelpEntry*(topic, usage: UserInput; content: string;
+    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+  require:
+    topic.len() > 0
+    usage.len() > 0
+    content.len() > 0
+    db != nil
+  body:
+    try:
+      if db.getValue(query = sql(query = "SELECT id FROM help WHERE topic=?"),
+          topic).len() > 0:
+        return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
+      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content) VALUES (?, ?, ?)"),
+          topic, usage, content)
+      return QuitSuccess.ResultCode
+    except DbError:
+      return showError(message = "Can't add help entry to database. Reason: ",
+          e = getCurrentException())
+
 proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect, RootEffect],
+    contractual.} =
   ## FUNCTION
   ##
-  ## Create the table help
+  ## Create the table help and fill it with help entries from the configuration
+  ## file
   ##
   ## PARAMETERS
   ##
@@ -343,24 +365,47 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     except DbError, CapacityError:
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException())
-    return QuitSuccess.ResultCode
-
-proc addHelpEntry*(topic, usage: UserInput; content: string;
-    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
-  require:
-    topic.len() > 0
-    usage.len() > 0
-    content.len() > 0
-    db != nil
-  body:
+    result = QuitSuccess.ResultCode
+    let helpFile = "help" & DirSep & "help.cfg"
+    var
+      file = newFileStream(helpFile, fmRead)
+      parser: CfgParser
     try:
-      if db.getValue(query = sql(query = "SELECT id FROM help WHERE topic=?"),
-          topic).len() > 0:
-        return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
-      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content) VALUES (?, ?, ?)"),
-          topic, usage, content)
-      return QuitSuccess.ResultCode
-    except DbError:
-      return showError(message = "Can't add help entry to database. Reason: ",
+      open(parser, file, helpFile)
+    except OSError, IOError, Exception:
+      return showError(message = "Can't read file with help entries. Reason: ",
+          e = getCurrentException())
+    while true:
+      try:
+        let entry = parser.next()
+        var topic, usage, content: string = ""
+        case entry.kind
+        of cfgEof:
+          break
+        of cfgSectionStart:
+          if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
+            result = addHelpEntry(topic = initLimitedString(
+                capacity = maxInputLength, text = topic),
+                usage = initLimitedString(capacity = maxInputLength,
+                text = usage), content = content, db = db)
+        of cfgKeyValuePair, cfgOption:
+          case entry.key
+          of "topic":
+            topic = entry.value
+          of "usage":
+            usage = entry.value
+          of "content":
+            content = entry.value
+          else:
+            discard
+        of cfgError:
+          echo entry.msg
+          result = QuitFailure.ResultCode
+      except IOError, OSError, ValueError, CapacityError:
+        return showError(message = "Can't get help entry from configuration file. Reason: ",
+            e = getCurrentException())
+    try:
+      close(parser)
+    except IOError, OSError, Exception:
+      return showError(message = "Can't close file with help entries. Reason: ",
           e = getCurrentException())

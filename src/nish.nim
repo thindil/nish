@@ -96,7 +96,7 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], contractual.} =
+    TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Open connection to the shell database. Create database if not exists.
