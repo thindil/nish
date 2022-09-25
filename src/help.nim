@@ -370,6 +370,7 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
+    # Create table help in the shell's database
     try:
       db.exec(query = sql(query = """CREATE TABLE help (
                    topic       VARCHAR(""" & $maxInputLength &
@@ -381,6 +382,8 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException())
     result = QuitSuccess.ResultCode
+    # Read the help entries from the configuration file and add them to
+    # the database
     let helpFile = "help" & DirSep & "help.cfg"
     var
       file = newFileStream(helpFile, fmRead)
