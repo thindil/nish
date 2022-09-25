@@ -348,6 +348,11 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 proc addHelpEntry*(topic, usage: UserInput; content: string;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+  require:
+    topic.len() > 0
+    usage.len() > 0
+    content.len() > 0
+    db != nil
   body:
     try:
       if db.getValue(query = sql(query = "SELECT id FROM help WHERE topic=?"),
