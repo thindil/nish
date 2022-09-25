@@ -319,6 +319,21 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
 proc addHelpEntry*(topic, usage: UserInput; content: string;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+  ## FUNCTION
+  ##
+  ## Add a new help entry to the help table in the shell's database
+  ##
+  ## PARAMETERS
+  ##
+  ## * topic   - the topic of the help. Used as search entry in help
+  ## * usage   - the content of usage section in the help entry
+  ## * content - the content of the help entry
+  ## * db      - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the help entry was successfully added to the database,
+  ## otherwise QuitFailure and show message what wrong
   require:
     topic.len() > 0
     usage.len() > 0
