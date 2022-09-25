@@ -398,14 +398,14 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         let entry = parser.next()
         var topic, usage, content: string = ""
         case entry.kind
-        of cfgEof:
-          break
-        of cfgSectionStart:
+        of cfgSectionStart, cfgEof:
           if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
             result = addHelpEntry(topic = initLimitedString(
                 capacity = maxInputLength, text = topic),
                 usage = initLimitedString(capacity = maxInputLength,
                 text = usage), content = content, db = db)
+          if entry.kind == cfgEof:
+            break
         of cfgKeyValuePair, cfgOption:
           case entry.key
           of "topic":
