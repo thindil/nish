@@ -393,10 +393,10 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     except OSError, IOError, Exception:
       return showError(message = "Can't read file with help entries. Reason: ",
           e = getCurrentException())
+    var topic, usage, content: string = ""
     while true:
       try:
         let entry = parser.next()
-        var topic, usage, content: string = ""
         case entry.kind
         of cfgSectionStart, cfgEof:
           if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
@@ -404,6 +404,9 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
                 capacity = maxInputLength, text = topic),
                 usage = initLimitedString(capacity = maxInputLength,
                 text = usage), content = content, db = db)
+            topic = ""
+            usage = ""
+            content = ""
           if entry.kind == cfgEof:
             break
         of cfgKeyValuePair, cfgOption:
