@@ -397,25 +397,29 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       return showError(message = "Can't read file with help entries. Reason: ",
           e = getCurrentException())
     var topic, usage, content, plugin: string = ""
+    proc addEntry(): ResultCode =
+      if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
+        result = addHelpEntry(topic = initLimitedString(
+            capacity = maxInputLength, text = topic), usage = initLimitedString(
+            capacity = maxInputLength, text = usage),
+            plugin = initLimitedString(capacity = maxInputLength,
+            text = plugin), content = content, db = db)
+        topic = ""
+        usage = ""
+        content = ""
+        plugin = ""
     while true:
       try:
         let entry = parser.next()
         case entry.kind
-        of cfgSectionStart, cfgEof:
-          if entry.kind == cfgSectionStart and plugin.len() == 0:
+        of cfgSectionStart:
+          if plugin.len() == 0:
             plugin = entry.section
-          if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
-            result = addHelpEntry(topic = initLimitedString(
-                capacity = maxInputLength, text = topic),
-                usage = initLimitedString(capacity = maxInputLength,
-                text = usage), plugin = initLimitedString(
-                capacity = maxInputLength, text = plugin), content = content, db = db)
-            topic = ""
-            usage = ""
-            content = ""
-            plugin = ""
-          if entry.kind == cfgEof:
-            break
+            continue
+          result = addEntry()
+        of cfgEof:
+          result = addEntry()
+          break
         of cfgKeyValuePair, cfgOption:
           case entry.key
           of "topic":
