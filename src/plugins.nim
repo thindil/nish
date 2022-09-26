@@ -458,9 +458,11 @@ proc togglePlugin*(db; arguments; pluginsList; disable: bool = true;
       # Update the state of the plugin
       db.exec(query = sql(query = ("UPDATE plugins SET enabled=? WHERE id=?")),
           pluginState, pluginId)
-      # Remove or add the plugin to the list of enabled plugins
+      # Remove or add the plugin to the list of enabled plugins and clear
+      # the plugin help when disabling it
       if disable:
         pluginsList.del($pluginId)
+        db.exec(query = sql(query = ("DELETE FROM help WHERE plugin=?")), pluginPath)
       else:
         let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
             commands = commands)
