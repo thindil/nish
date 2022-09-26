@@ -316,7 +316,7 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
 
-proc addHelpEntry*(topic, usage: UserInput; content: string;
+proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
     db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
@@ -338,14 +338,15 @@ proc addHelpEntry*(topic, usage: UserInput; content: string;
     topic.len() > 0
     usage.len() > 0
     content.len() > 0
+    plugin.len() > 0
     db != nil
   body:
     try:
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
           topic).len() > 0:
         return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
-      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content) VALUES (?, ?, ?)"),
-          topic, usage, content)
+      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content, plugin) VALUES (?, ?, ?, ?)"),
+          topic, usage, content, plugin)
       return QuitSuccess.ResultCode
     except DbError:
       return showError(message = "Can't add help entry to database. Reason: ",
@@ -395,20 +396,24 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     except OSError, IOError, Exception:
       return showError(message = "Can't read file with help entries. Reason: ",
           e = getCurrentException())
-    var topic, usage, content: string = ""
+    var topic, usage, content, plugin: string = ""
     while true:
       try:
         let entry = parser.next()
         case entry.kind
         of cfgSectionStart, cfgEof:
+          if entry.kind == cfgSectionStart and plugin.len() == 0:
+            plugin = entry.section
           if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
             result = addHelpEntry(topic = initLimitedString(
                 capacity = maxInputLength, text = topic),
                 usage = initLimitedString(capacity = maxInputLength,
-                text = usage), content = content, db = db)
+                text = usage), plugin = initLimitedString(
+                capacity = maxInputLength, text = plugin), content = content, db = db)
             topic = ""
             usage = ""
             content = ""
+            plugin = ""
           if entry.kind == cfgEof:
             break
         of cfgKeyValuePair, cfgOption:
