@@ -377,7 +377,9 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
               """) NOT NULL PRIMARY KEY,
                    usage       VARCHAR(""" & $maxInputLength &
               """) NOT NULL,
-                   content     TEXT NOT NULL)"""))
+                   content     TEXT NOT NULL,
+                   plugin      VARCHAR(""" & $maxInputLength &
+            """) NOT NULL)"""))
     except DbError, CapacityError:
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException())
