@@ -103,7 +103,7 @@ proc showUnknownHelp*(subCommand, command,
                 "` for `" & command & "`. To see all available " & helpType &
                 " commands, type `" & command & "`.")
 
-proc showHelp*(topic: UserInput; helpContent: ref HelpTable): ResultCode {.gcsafe,
+proc showHelp*(topic: UserInput; helpContent: ref HelpTable, db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
@@ -175,28 +175,19 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable): ResultCode {.gcsaf
           except CapacityError:
             return showError(message = "Can't set command for help")
         key: string = command & (if args.len() > 0: " " & args else: "")
-      if helpContent.hasKey(key = key):
-        try:
-          showHelpEntry(helpEntry = helpContent[key])
-        except KeyError:
-          return showError(message = "Can't show the help topic for '" & key &
-              "'. Reason: ", e = getCurrentException())
-      elif helpContent.hasKey(key = $command):
-        if command == key:
-          try:
-            showHelpEntry(helpEntry = helpContent[$command])
-          except KeyError:
-            return showError(message = "Cam't show the help topic for '" &
-                command & "'. Reason: ", e = getCurrentException())
-        else:
-          try:
-            result = showUnknownHelp(subCommand = args, command = command,
-                helpType = initLimitedString(capacity = maxInputLength, text = (
-                    if command == "alias": "aliases" else: $command)))
-          except CapacityError:
-            return showError(message = "Can't show help for unknown command")
+        dbHelp = try:
+            db.getRow(query = sql(query = "SELECT usage, content FROM help WHERE topic=?"), key)
+          except DbError:
+            return showError(message = "Can't read help content from database. Reason: ", e = getCurrentException())
+      if dbHelp[0].len() > 0:
+        showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: dbHelp[1]))
       else:
-        result = showError(message = "Unknown help topic '" & key & "'")
+        try:
+          result = showUnknownHelp(subCommand = args, command = command,
+              helpType = initLimitedString(capacity = maxInputLength, text = (
+                  if command == "alias": "aliases" else: $command)))
+        except CapacityError:
+          return showError(message = "Can't show help for unknown command")
 
 proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect], contractual.} =
@@ -307,7 +298,7 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
       ## QuitSuccess if the selected help's topic was succesully shown, otherwise
       ## QuitFailure.
       body:
-        return showHelp(topic = arguments, helpContent = list.help)
+        return showHelp(topic = arguments, helpContent = list.help, db = db)
 
     try:
       addCommand(name = initLimitedString(capacity = 4, text = "help"),
