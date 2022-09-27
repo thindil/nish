@@ -123,6 +123,8 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
   ##
   ## QuitSuccess if the selected help's topic was succesully shown, otherwise
   ## QuitFailure.
+  require:
+    db != nil
   body:
     proc showHelpEntry(helpEntry: HelpEntry;
         usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
