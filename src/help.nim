@@ -397,17 +397,24 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       return showError(message = "Can't read file with help entries. Reason: ",
           e = getCurrentException())
     var topic, usage, content, plugin: string = ""
-    proc addEntry(): ResultCode =
-      if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
-        result = addHelpEntry(topic = initLimitedString(
-            capacity = maxInputLength, text = topic), usage = initLimitedString(
-            capacity = maxInputLength, text = usage),
-            plugin = initLimitedString(capacity = maxInputLength,
-            text = plugin), content = content, db = db)
-        topic = ""
-        usage = ""
-        content = ""
-        plugin = ""
+    proc addEntry(): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+        ReadDbEffect, WriteDbEffect, WriteIOEffect], contractual.} =
+      body:
+        if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
+          try:
+            result = addHelpEntry(topic = initLimitedString(
+                capacity = maxInputLength, text = topic),
+                usage = initLimitedString(
+                capacity = maxInputLength, text = usage),
+                plugin = initLimitedString(capacity = maxInputLength,
+                text = plugin), content = content, db = db)
+          except CapacityError:
+            return showError(message = "Can't add help entry. Reason: ",
+                e = getCurrentException())
+          topic = ""
+          usage = ""
+          content = ""
+          plugin = ""
     while true:
       try:
         let entry = parser.next()
