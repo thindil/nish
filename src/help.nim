@@ -399,6 +399,15 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     var topic, usage, content, plugin: string = ""
     proc addEntry(): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         ReadDbEffect, WriteDbEffect, WriteIOEffect], contractual.} =
+      ## FUNCTION
+      ##
+      ## Add the selected help entry to the database and reset values of
+      ## variables used to set it
+      ##
+      ## RETURNS
+      ##
+      ## QuitSuccess if the help entry was properly added, otherwise
+      ## QuitFailure with information what goes wrong.
       body:
         if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
           try:
@@ -415,6 +424,7 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
           usage = ""
           content = ""
           plugin = ""
+    # Read the help configuration file
     while true:
       try:
         let entry = parser.next()
