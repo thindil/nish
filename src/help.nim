@@ -103,9 +103,10 @@ proc showUnknownHelp*(subCommand, command,
                 "` for `" & command & "`. To see all available " & helpType &
                 " commands, type `" & command & "`.")
 
-proc showHelp*(topic: UserInput; helpContent: ref HelpTable, db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
+    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
+    WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Show the selected help section. If the user entered non-existing name of
@@ -178,16 +179,20 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable, db): ResultCode {.g
         dbHelp = try:
             db.getRow(query = sql(query = "SELECT usage, content FROM help WHERE topic=?"), key)
           except DbError:
-            return showError(message = "Can't read help content from database. Reason: ", e = getCurrentException())
+            return showError(message = "Can't read help content from database. Reason: ",
+                e = getCurrentException())
       if dbHelp[0].len() > 0:
         showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: dbHelp[1]))
       else:
-        try:
-          result = showUnknownHelp(subCommand = args, command = command,
-              helpType = initLimitedString(capacity = maxInputLength, text = (
-                  if command == "alias": "aliases" else: $command)))
-        except CapacityError:
-          return showError(message = "Can't show help for unknown command")
+        if args.len() > 0:
+          try:
+            result = showUnknownHelp(subCommand = args, command = command,
+                helpType = initLimitedString(capacity = maxInputLength, text = (
+                    if command == "alias": "aliases" else: $command)))
+          except CapacityError:
+            return showError(message = "Can't show help for unknown command")
+        else:
+          return showError(message = "Unknown help topic. For the list of available help topics, type 'help'.")
 
 proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect], contractual.} =
