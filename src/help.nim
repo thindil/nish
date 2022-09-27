@@ -159,12 +159,26 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
 
     result = ResultCode(QuitSuccess)
     if topic.len == 0:
+      var
+        i: Positive = 1
+        keys: seq[string]
+        mainHelp = HelpEntry(usage: "", content: "")
       try:
-        showHelpEntry(helpEntry = helpContent["help"],
-            usageHeader = "Available help topics")
-      except KeyError:
-        return showError(message = "Can't show list of available help topics. Reason: ",
+        for key in db.getAllRows(query = sql(query = "SELECT topic FROM help")):
+          keys.add(y = key[0])
+      except DbError:
+        return showError(message = "Can't get help topics from database. Reason: ",
             e = getCurrentException())
+      keys.sort(cmp = system.cmp)
+      for key in keys:
+        mainHelp.usage.add(y = alignLeft(s = key, count = 20))
+        i.inc()
+        if i == 4:
+          mainHelp.usage.add(y = "\n    ")
+          i = 1
+      mainHelp.usage.removeSuffix(suffix = ", ")
+      mainHelp.content.add(y = "To see more information about the selected topic, type help [topic], for example: help cd.")
+      showHelpEntry(helpEntry = mainHelp, usageHeader = "Available help topics")
     else:
       let
         tokens: seq[string] = split(s = $topic)
