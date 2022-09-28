@@ -687,22 +687,7 @@ proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList;
   ## aliases and the updated list of the shell's commands.
   require:
     db != nil
-  ensure:
-    helpContent != nil
   body:
-    # Add help entries related to the shell's aliases' commands
-    helpContent["alias"] = HelpEntry(usage: "alias ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for aliases. Otherwise, execute the selected subcommand.")
-    helpContent["alias list"] = HelpEntry(usage: "alias list ?all?",
-        content: "Show the list of all available aliases in the current directory. If parameter all added, show all declared aliases.")
-    helpContent["alias delete"] = HelpEntry(usage: "alias delete [index]",
-        content: "Delete the alias with the selected index.")
-    helpContent["alias show"] = HelpEntry(usage: "alias show [index]",
-        content: "Show details (description, commands, etc) for the alias with the selected index.")
-    helpContent["alias add"] = HelpEntry(usage: "alias add",
-        content: "Start adding a new alias to the shell. You will be able to set its name, description, commands, etc.")
-    helpContent["alias edit"] = HelpEntry(usage: "alias edit [index]",
-        content: "Start editing the alias with the selected index. You will be able to set again its all parameters.")
     # Add commands related to the shell's aliases
     proc aliasCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
