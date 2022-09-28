@@ -664,7 +664,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             e = getCurrentException())
     return result
 
-proc initAliases*(helpContent: ref HelpTable; db; aliases: ref AliasesList;
+proc initAliases*(db; aliases: ref AliasesList;
     commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect,
     ReadIOEffect, RootEffect], contractual.} =

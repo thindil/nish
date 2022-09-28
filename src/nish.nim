@@ -271,8 +271,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   initOptions(helpContent = helpContent, commands = commands)
 
   # Initialize the shell's aliases system
-  initAliases(helpContent = helpContent, db = db, aliases = aliases,
-      commands = commands)
+  initAliases(db = db, aliases = aliases, commands = commands)
 
   # Initialize the shell's build-in commands
   initCommands(helpContent = helpContent)
