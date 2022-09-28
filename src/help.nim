@@ -210,52 +210,6 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
         else:
           return showError(message = "Unknown help topic. For the list of available help topics, type 'help'.")
 
-proc setMainHelp*(helpContent) {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, TimeEffect, ReadEnvEffect], contractual.} =
-  ## FUNCTION
-  ##
-  ## Set the content of the main help screen
-  ##
-  ## PARAMETERS
-  ##
-  ## * helpContent - the HelpTable with help content of the shell
-  ##
-  ## RETURNS
-  ##
-  ## Updated argument helpContent
-  ensure:
-    helpContent.contains("help")
-  body:
-    helpContent["help"] = HelpEntry(usage: "\n    ")
-    var
-      i: Positive = 1
-      keys: seq[string]
-    for key in helpContent.keys:
-      keys.add(y = key)
-    keys.sort(cmp = system.cmp)
-    for key in keys:
-      try:
-        helpContent["help"].usage.add(y = alignLeft(s = key, count = 20))
-      except KeyError:
-        showError(message = "Can't set content of the help main screen. Reason: ",
-            e = getCurrentException())
-        return
-      i.inc()
-      if i == 4:
-        try:
-          helpContent["help"].usage.add(y = "\n    ")
-        except KeyError:
-          showError(message = "Can't set content of the help main screen. Reason: ",
-              e = getCurrentException())
-          return
-        i = 1
-    try:
-      helpContent["help"].usage.removeSuffix(suffix = ", ")
-      helpContent["help"].content.add(y = "To see more information about the selected topic, type help [topic], for example: help cd.")
-    except KeyError:
-      showError(message = "Can't set content of the help main screen. Reason: ",
-          e = getCurrentException())
-
 proc showHelpList*(command: string; subcommands: openArray[
     string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],

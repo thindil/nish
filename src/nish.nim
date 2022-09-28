@@ -290,9 +290,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   initPlugins(helpContent = helpContent, db = db, pluginsList = plugins,
       commands = commands)
 
-  # Set the main help screen for the shell
-  setMainHelp(helpContent = helpContent)
-
   proc refreshOutput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [
       WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
     ## FUNCTION
