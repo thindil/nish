@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, tables]
+import std/[db_sqlite, os]
 # External modules imports
 import contracts
 # Internal imports
@@ -99,29 +99,3 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
           aliases = aliases, db = db)
     else:
       result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)
-
-func initCommands*(helpContent: ref HelpTable) {.gcsafe, locks: 0, raises: [],
-    tags: [].} =
-  ## FUNCTION
-  ##
-  ## Initialize the shell's build-in commands. At this moment only set help
-  ## related to the commands
-  ##
-  ## PARAMETERS
-  ##
-  ## * helpContent - the HelpTable with help content of the shell
-  ##
-  ## RETURNS
-  ##
-  ## The updated helpContent with the help for the commands related to the
-  ## shell's build-in commands.
-  helpContent["cd"] = HelpEntry(usage: "cd ?directory?",
-      content: "You must have permissions to enter the directory and directory need to exists. If you enter just 'cd' without the name of the directory to enter, the current directory will be switched to your home directory.")
-  helpContent["exit"] = HelpEntry(usage: "exit",
-      content: "Exit from the shell.")
-  helpContent["help"] = HelpEntry(usage: "help ?command?",
-      content: "If entered only as help, show the list of available help topics, when also command entered, show the information about the selected command.")
-  helpContent["merge commands"] = HelpEntry(
-      usage: "command [&& or ||] command ...",
-      content: "Commands can be merged to execute each after another. If merged with && then the next command(s) will be executed only when the previous was successfull. If merged with || then the next commands will be executed only when the previous failed.")
-

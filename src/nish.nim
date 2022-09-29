@@ -273,9 +273,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   # Initialize the shell's aliases system
   initAliases(db = db, aliases = aliases, commands = commands)
 
-  # Initialize the shell's build-in commands
-  initCommands(helpContent = helpContent)
-
   # Initialize the shell's environment variables system
   initVariables(helpContent = helpContent, db = db, commands = commands)
 
