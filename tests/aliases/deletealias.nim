@@ -6,7 +6,7 @@ import std/[db_sqlite, strutils]
 import ../../src/[aliases, lstring, nish, resultcode]
 import utils/helpers
 
-var (db, _, myaliases) = initTest()
+var (db, myaliases) = initTest()
 assert setTestAliases(db) == QuitSuccess
 assert deleteAlias(initLimitedString(capacity = 8, text = "delete 2"), myaliases, db) == QuitSuccess
 assert parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 1
