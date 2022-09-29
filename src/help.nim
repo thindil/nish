@@ -401,6 +401,7 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
             plugin = entry.section
             continue
           result = addEntry()
+          plugin = entry.section
         of cfgEof:
           result = addEntry()
           break
