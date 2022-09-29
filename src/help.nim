@@ -375,7 +375,8 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       ## QuitSuccess if the help entry was properly added, otherwise
       ## QuitFailure with information what goes wrong.
       body:
-        if topic.len() > 0 and usage.len() > 0 and content.len() > 0:
+        if topic.len() > 0 and usage.len() > 0 and content.len() > 0 and
+            plugin.len() > 0:
           try:
             result = addHelpEntry(topic = initLimitedString(
                 capacity = maxInputLength, text = topic),
