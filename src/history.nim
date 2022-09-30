@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, strutils, tables, terminal]
+import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -339,10 +339,9 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initHistory*(db; helpContent: ref HelpTable;
-    commands: ref CommandsList): HistoryRange {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
-    TimeEffect, RootEffect], locks: 0, contractual.} =
+proc initHistory*(db; commands: ref CommandsList): HistoryRange {.gcsafe,
+    sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Initialize shell's commands history and set help related to the history
@@ -360,11 +359,6 @@ proc initHistory*(db; helpContent: ref HelpTable;
   require:
     db != nil
   body:
-    # Set the history related help content
-    helpContent["history"] = HelpEntry(usage: "history ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for history. Otherwise, execute the selected subcommand.")
-    helpContent["history clear"] = HelpEntry(usage: "history clear",
-        content: "Clear the shell's commands' history.")
     # Add commands related to the shell's history system
     proc historyCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =

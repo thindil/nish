@@ -264,8 +264,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     quit QuitFailure
 
   # Initialize the shell's commands history
-  historyIndex = initHistory(db = db, helpContent = helpContent,
-      commands = commands)
+  historyIndex = initHistory(db = db, commands = commands)
 
   # Initialize the shell's options system
   initOptions(helpContent = helpContent, commands = commands)
