@@ -344,13 +344,11 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.gcsafe,
     ReadEnvEffect, TimeEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
-  ## Initialize shell's commands history and set help related to the history
-  ## commands
+  ## Initialize shell's commands history and set the history commands
   ##
   ## PARAMETERS
   ##
   ## * db          - the connection to the shell's database
-  ## * helpContent - the content of the shell's help system
   ## * commands    - the list of the shell's commands
   ##
   ## RETURNS
