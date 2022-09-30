@@ -170,6 +170,7 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
         return showError(message = "Can't get help topics from database. Reason: ",
             e = getCurrentException())
       keys.sort(cmp = system.cmp)
+      mainHelp.usage.add(y = "\n    ")
       for key in keys:
         mainHelp.usage.add(y = alignLeft(s = key, count = 20))
         i.inc()
