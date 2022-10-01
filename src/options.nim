@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, strutils, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -407,19 +407,7 @@ proc initOptions*(helpContent: ref HelpTable;
   ##
   ## * helpContent - the HelpTable with help content of the shell
   ## * commands    - the list of the shell's commands
-  ensure:
-    helpContent != nil
   body:
-    # Set the options related help content
-    helpContent["options"] = HelpEntry(usage: "options ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for options. Otherwise, execute the selected subcommand.")
-    helpContent["options list"] = HelpEntry(usage: "options list",
-        content: "Show the list of all available shell's options with detailed information about them.")
-    helpContent["options set"] = HelpEntry(usage: "options set [name] [value]",
-        content: "Set the selected shell's option with name to the selected value. The value can't contain new line character.")
-    helpContent["options reset"] = HelpEntry(
-        usage: "options reset [name or all]",
-        content: "Reset the selected shell's option with name to the default value. If the name parameter is set to 'all', reset all shell's options to their default values.")
     # Add commands related to the shell's options
     proc optionsCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
