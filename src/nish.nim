@@ -267,7 +267,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   historyIndex = initHistory(db = db, commands = commands)
 
   # Initialize the shell's options system
-  initOptions(helpContent = helpContent, commands = commands)
+  initOptions(commands = commands)
 
   # Initialize the shell's aliases system
   initAliases(db = db, aliases = aliases, commands = commands)

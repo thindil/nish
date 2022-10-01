@@ -394,9 +394,8 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initOptions*(helpContent: ref HelpTable;
-    commands: ref CommandsList) {.gcsafe, sideEffect, locks: 0, raises: [],
-    tags: [WriteDbEffect, WriteIOEffect, ReadDbEffect, ReadIOEffect,
+proc initOptions*(commands: ref CommandsList) {.gcsafe, sideEffect, locks: 0,
+    raises: [], tags: [WriteDbEffect, WriteIOEffect, ReadDbEffect, ReadIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
