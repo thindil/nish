@@ -3,10 +3,8 @@ discard """
 """
 
 import std/[tables]
-import ../../src/[commandslist, constants, options]
+import ../../src/[commandslist, options]
 
-var
-  helpContent = newTable[string, HelpEntry]()
-  commands = newTable[string, CommandData]()
-initOptions(helpContent, commands)
-assert helpContent.len() > 0
+var commands = newTable[string, CommandData]()
+initOptions(commands)
+assert commands.len() > 0
