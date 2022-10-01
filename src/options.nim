@@ -399,12 +399,11 @@ proc initOptions*(commands: ref CommandsList) {.gcsafe, sideEffect, locks: 0,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
-  ## Initialize the shell's options. At this moment only set help related to
-  ## the options
+  ## Initialize the shell's options. At this moment only set the shell's commands
+  ## related to the shell's options
   ##
   ## PARAMETERS
   ##
-  ## * helpContent - the HelpTable with help content of the shell
   ## * commands    - the list of the shell's commands
   body:
     # Add commands related to the shell's options
