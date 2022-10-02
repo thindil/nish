@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, strutils, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -125,24 +125,3 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         stdout.write(s = "# ")
       except IOError:
         discard
-
-proc initPrompt*(helpContent: ref HelpTable) {.gcsafe, sideEffect, locks: 0,
-    raises: [], tags: [], contractual.} =
-  ## FUNCTION
-  ##
-  ## Initialize the shell's prompt. At this moment only set help related to
-  ## the prompt
-  ##
-  ## PARAMETERS
-  ##
-  ## * helpContent - the HelpTable with help content of the shell
-  ##
-  ## RETURNS
-  ##
-  ## The updated helpContent with the help for the commands related to the
-  ## shell's prompt.
-  ensure:
-    helpContent != nil
-  body:
-    helpContent["prompt"] = HelpEntry(usage: "set options promptCommand 'program ?arguments?'",
-        content: "The shell's prompt can be set as output of a command. It is possible by setting the shell's option promptCommand. For example, to set the prompt to listing the current directory, you can type options set promptCommand 'ls -a .'. Please remember, that the command will be executed every time before you execute another command.")

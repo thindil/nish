@@ -278,9 +278,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   # Set the shell's help
   initHelp(helpContent = helpContent, db = db, commands = commands)
 
-  # Initialize the shell's prompt system
-  initPrompt(helpContent = helpContent)
-
   # Initialize the shell's plugins system
   initPlugins(db = db, pluginsList = plugins, commands = commands)
 
