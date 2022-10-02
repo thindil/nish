@@ -614,10 +614,9 @@ proc showPlugin*(arguments; pluginsList; db; commands): ResultCode {.gcsafe,
       showOutput(message = "0.1")
     return QuitSuccess.ResultCode
 
-proc initPlugins*(helpContent: ref HelpTable; db; pluginsList;
-    commands) {.gcsafe, sideEffect, raises: [], tags: [ExecIOEffect,
-    ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect, WriteDbEffect,
-    ReadDbEffect, RootEffect], contractual.} =
+proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
+    tags: [ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect,
+    WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize the shell's plugins. Set help related to the plugins, load
@@ -637,27 +636,10 @@ proc initPlugins*(helpContent: ref HelpTable; db; pluginsList;
   ## shell's commands.
   require:
     db != nil
-  ensure:
-    helpContent != nil
   body:
     {.warning[ProveInit]: off.}
     pluginsList.clear()
     {.warning[ProveInit]: on.}
-    # Set the help related to the plugins
-    helpContent["plugin"] = HelpEntry(usage: "plugin ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for plugins. Otherwise, execute the selected subcommand.")
-    helpContent["plugin list"] = HelpEntry(usage: "plugin list ?all?",
-        content: "Show the list of all enabled plugins. If parameter all added, show all installed plugins.")
-    helpContent["plugin remove"] = HelpEntry(usage: "plugin remove [index]",
-        content: "Uninstall the plugin with the selected index.")
-    helpContent["plugin show"] = HelpEntry(usage: "plugin show [index]",
-        content: "Show details (path, status, etc) for the plugin with the selected index.")
-    helpContent["plugin add"] = HelpEntry(usage: "plugin add [path]",
-        content: "Install the selected plugin in the shell. Path must be absolute or relative path to the plugin.")
-    helpContent["plugin enable"] = HelpEntry(usage: "plugin enable [index]",
-        content: "Enable the selected plugin. Index must be the index of an installed plugin.")
-    helpContent["alias disable"] = HelpEntry(usage: "alias disable [index]",
-        content: "Disable the selected plugin. Index must be the index of an installed plugin.")
     # Add commands related to the shell's aliases
     proc pluginCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
