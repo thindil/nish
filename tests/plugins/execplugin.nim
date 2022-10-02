@@ -5,7 +5,7 @@ discard """
 import ../../src/[nish, lstring, plugins, resultcode]
 import utils/helpers
 
-var (db, _, _ , commands) = initTest()
+var (db, _ , commands) = initTest()
 assert execPlugin("tools/testplugin.sh", ["init"], db, commands).code == QuitSuccess
 assert execPlugin("tools/testplugin.sh", ["info"], db, commands).answer.len() > 0
 quitShell(QuitSuccess.ResultCode, db)

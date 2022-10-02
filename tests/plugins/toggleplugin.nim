@@ -5,8 +5,8 @@ discard """
 import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
-var (db, helpContent, pluginsList, commands) = initTest()
-initPlugins(helpContent, db, pluginsList, commands)
+var (db, pluginsList, commands) = initTest()
+initPlugins(db, pluginsList, commands)
 assert setTestPlugin(db, pluginsList, commands) == QuitSuccess
 assert togglePlugin(db, initLimitedString(capacity = 9, "disable 1"),
     pluginsList, true, commands) == QuitSuccess

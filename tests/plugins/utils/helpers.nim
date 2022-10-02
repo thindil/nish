@@ -2,14 +2,13 @@ import std/[db_sqlite, tables]
 import ../../../src/[commandslist, constants, directorypath, lstring, nish,
     plugins, resultcode]
 
-proc initTest*(): tuple[db: DbConn, helpContent: ref HelpTable, pluginsList: ref PluginsList, commands: ref CommandsList] =
+proc initTest*(): tuple[db: DbConn, pluginsList: ref PluginsList, commands: ref CommandsList] =
   let db = startDb("test.db".DirectoryPath)
   assert db != nil
   var
-    helpContent = newTable[string, HelpEntry]()
     pluginsList = newTable[string, PluginData]()
     commands = newTable[string, CommandData]()
-  return (db, helpContent, pluginsList, commands)
+  return (db, pluginsList, commands)
 
 proc setTestPlugin*(db: DbConn; pluginsList: ref PluginsList;
     commands: ref CommandsList): ResultCode =
