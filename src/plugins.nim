@@ -619,20 +619,18 @@ proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
     WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
-  ## Initialize the shell's plugins. Set help related to the plugins, load
-  ## the enabled plugins and initialize them
+  ## Initialize the shell's plugins. Load the enabled plugins, initialize them
+  ## and add the shell's commands related to the plugins' system
   ##
   ## PARAMETERS
   ##
-  ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
   ## * pluginsList - the list of enabled plugins
   ## * commands    - the list of the shell's commands
   ##
   ## RETURNS
   ##
-  ## The updated list of enabled plugins, the updated helpContent with the help
-  ## for the commands related to the shell's plugins and the updated list of the
+  ## The updated list of enabled plugins and the updated list of the
   ## shell's commands.
   require:
     db != nil
