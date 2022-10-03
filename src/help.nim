@@ -34,6 +34,42 @@ using
   db: DbConn # Connection to the shell's database
   helpContent: ref HelpTable # The content of the help system
 
+proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string;
+    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+  ## FUNCTION
+  ##
+  ## Update the help entry in the help table in the shell's database
+  ##
+  ## PARAMETERS
+  ##
+  ## * topic   - the topic of the help. Used as search entry in help
+  ## * usage   - the content of usage section in the help entry
+  ## * content - the content of the help entry
+  ## * db      - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the help entry was successfully updated in the database,
+  ## otherwise QuitFailure and show message what wrong
+  require:
+    topic.len() > 0
+    usage.len() > 0
+    content.len() > 0
+    plugin.len() > 0
+    db != nil
+  body:
+    try:
+      if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
+          topic).len() == 0:
+        return showError(message = "Can't update the help entry for topic '" & topic & "' because there is no that topic.")
+      db.exec(query = sql(query = "UPDATE help SET usage=?, content=?, plugin=? WHERE topic=?"),
+          usage, content, plugin, topic)
+      return QuitSuccess.ResultCode
+    except DbError:
+      return showError(message = "Can't update the help entry in the database. Reason: ",
+          e = getCurrentException())
+
 proc updateHelp*(helpContent; db) {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
