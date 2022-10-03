@@ -62,7 +62,8 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string;
     try:
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
           topic).len() == 0:
-        return showError(message = "Can't update the help entry for topic '" & topic & "' because there is no that topic.")
+        return showError(message = "Can't update the help entry for topic '" &
+            topic & "' because there is no that topic.")
       db.exec(query = sql(query = "UPDATE help SET usage=?, content=?, plugin=? WHERE topic=?"),
           usage, content, plugin, topic)
       return QuitSuccess.ResultCode
@@ -462,4 +463,35 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       close(parser)
     except IOError, OSError, Exception:
       return showError(message = "Can't close file with help entries. Reason: ",
+          e = getCurrentException())
+
+proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0,
+    contractual.} =
+  ## FUNCTION
+  ##
+  ## Delete the help entry from the help table in the shell's database
+  ##
+  ## PARAMETERS
+  ##
+  ## * topic   - the topic of the help. Used as search entry in help
+  ## * db      - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the help entry was successfully deleted from the database,
+  ## otherwise QuitFailure and show message what wrong
+  require:
+    topic.len() > 0
+    db != nil
+  body:
+    try:
+      if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
+          topic).len() == 0:
+        return showError(message = "Can't delete the help entry for topic '" &
+            topic & "' because there is no that topic.")
+      db.exec(query = sql(query = "DELETE FROM help WHERE topic=?"), topic)
+      return QuitSuccess.ResultCode
+    except DbError:
+      return showError(message = "Can't delete the help entry in the database. Reason: ",
           e = getCurrentException())
