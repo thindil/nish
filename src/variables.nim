@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, strutils, tables, terminal]
+import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -607,10 +607,7 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initVariables*(helpContent: ref HelpTable; db;
-    commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
-    WriteDbEffect, RootEffect], contractual.} =
+proc initVariables*(db; commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize enviroment variables. Set help related to the variables and
@@ -629,24 +626,7 @@ proc initVariables*(helpContent: ref HelpTable; db;
   ## variables.
   require:
     db != nil
-  ensure:
-    helpContent != nil
   body:
-    # Add help entries related to the environment variables commands
-    helpContent["set"] = HelpEntry(usage: "set [name=value]",
-        content: "Set the environment variable with the selected name and value.")
-    helpContent["unset"] = HelpEntry(usage: "unset [name]",
-        content: "Remove the environment variable with the selected name.")
-    helpContent["variable"] = HelpEntry(usage: "variable ?subcommand?",
-        content: "If entered without subcommand, show the list of available subcommands for variables. Otherwise, execute the selected subcommand.")
-    helpContent["variable list"] = HelpEntry(usage: "variable list ?all?",
-        content: "Show the list of all declared in shell environment variables in the current directory. If parameter all added, show all declared environment variables.")
-    helpContent["variable delete"] = HelpEntry(usage: "variable delete [index]",
-        content: "Delete the declared in shell environment variable with the selected index.")
-    helpContent["variable add"] = HelpEntry(usage: "variable add",
-        content: "Start adding a new variable to the shell. You will be able to set its name, description, value, etc.")
-    helpContent["variable edit"] = HelpEntry(usage: "variable edit [index]",
-        content: "Start editing the variable with the selected index. You will be able to set again its all parameters.")
     # Add commands related to the variables, except commands set and unset,
     # they are build-in commands, thus cannot be replaced
     proc variableCommand(arguments: UserInput; db: DbConn;
