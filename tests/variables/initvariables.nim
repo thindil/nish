@@ -7,7 +7,7 @@ import ../../src/[commandslist, nish, variables, resultcode]
 import utils/helpers
 
 var
-  (db, helpContent) = initTest()
+  db = initTest()
   commands = newTable[string, CommandData]()
-initVariables(helpContent, db, commands)
+initVariables(db, commands)
 quitShell(ResultCode(QuitSuccess), db)

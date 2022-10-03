@@ -5,7 +5,7 @@ discard """
 import ../../src/[lstring, nish, variables, resultcode]
 import utils/helpers
 
-var (db, _) = initTest()
+var db = initTest()
 assert setTestVariables(db) == QuitSuccess
 assert deleteVariable(initLimitedString(capacity = 10, text = "delete 123"),
     db) == QuitFailure
