@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, tables, terminal]
+import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -72,7 +72,8 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string;
           e = getCurrentException())
 
 proc updateHelp*(helpContent; db) {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
+    ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Update the part of the shell's help content which depends on dynamic
@@ -82,10 +83,6 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## The argument helpContent with updated help for command 'history list'.
   require:
     db != nil
   body:
@@ -104,15 +101,19 @@ proc updateHelp*(helpContent; db) {.gcsafe, sideEffect, raises: [], tags: [
                 "true": " in reversed order." else: "."
       except DbError:
         "."
-    helpContent["history list"] = try:
-        HelpEntry(usage: "history list ?amount? ?order? ?reverse?",
-            content: "Show the last " & db.getValue(query = sql(
-            query = "SELECT value FROM options WHERE option='historyAmount'")) &
-            " commands from the shell's history ordered by " & sortOrder &
-            sortDirection & " You can also set the amount, order and direction of order of commands to show by adding optional parameters amount, order and reverse. For example, to show the last 10 commands sorted by name in reversed order: history list 10 name true. Available switches for order are: amount, recent, name, recentamount. Available values for reverse are true or false.")
-      except DbError:
-        HelpEntry(usage: "history list",
-            content: "Show the last commands from the shell's history.")
+    try:
+      discard updateHelpEntry(topic = initLimitedString(capacity = 13,
+          text = "history list"), usage = initLimitedString(capacity = 39,
+          text = "history list ?amount? ?order? ?reverse?"),
+          plugin = initLimitedString(capacity = 4, text = "Help"),
+          content = "Show the last " & db.getValue(query = sql(
+          query = "SELECT value FROM options WHERE option='historyAmount'")) &
+          " commands from the shell's history ordered by " & sortOrder &
+          sortDirection &
+          " You can also set the amount, order and direction of order of commands to show by adding optional parameters amount, order and reverse. For example, to show the last 10 commands sorted by name in reversed order: history list 10 name true. Available switches for order are: amount, recent, name, recentamount. Available values for reverse are true or false.", db = db)
+    except DbError, CapacityError:
+      discard showError(message = "Can't update the shell's help. Reason: ",
+          e = getCurrentException())
 
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
