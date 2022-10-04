@@ -322,8 +322,8 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
           e = getCurrentException())
 
 proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
-    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    isTemplate: bool; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Add a new help entry to the help table in the shell's database
@@ -350,8 +350,8 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
           topic).len() > 0:
         return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
-      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content, plugin) VALUES (?, ?, ?, ?)"),
-          topic, usage, content, plugin)
+      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content, plugin, template) VALUES (?, ?, ?, ?, ?)"),
+          topic, usage, content, plugin, (if isTemplate: 1 else: 0))
       return QuitSuccess.ResultCode
     except DbError:
       return showError(message = "Can't add help entry to database. Reason: ",
@@ -385,7 +385,8 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
               """) NOT NULL,
                    content     TEXT NOT NULL,
                    plugin      VARCHAR(""" & $maxInputLength &
-            """) NOT NULL)"""))
+            """) NOT NULL,
+                   template     BOOLEAN NOT NULL)"""))
     except DbError, CapacityError:
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException())
@@ -401,7 +402,9 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     except OSError, IOError, Exception:
       return showError(message = "Can't read file with help entries. Reason: ",
           e = getCurrentException())
-    var topic, usage, content, plugin: string = ""
+    var
+      topic, usage, content, plugin: string = ""
+      isTemplate: bool = false
     proc addEntry(): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         ReadDbEffect, WriteDbEffect, WriteIOEffect], contractual.} =
       ## FUNCTION
@@ -422,7 +425,7 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
                 usage = initLimitedString(
                 capacity = maxInputLength, text = usage),
                 plugin = initLimitedString(capacity = maxInputLength,
-                text = plugin), content = content, db = db)
+                text = plugin), content = content, isTemplate = isTemplate, db = db)
           except CapacityError:
             return showError(message = "Can't add help entry. Reason: ",
                 e = getCurrentException())
@@ -430,6 +433,7 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
           usage = ""
           content = ""
           plugin = ""
+          isTemplate = false
     # Read the help configuration file
     while true:
       try:
@@ -452,6 +456,8 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
             usage = entry.value
           of "content":
             content = entry.value
+          of "template":
+            isTemplate = true
           else:
             discard
         of cfgError:
