@@ -233,13 +233,40 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
           return showError(message = "Can't set command for help")
       key: string = command & (if args.len() > 0: " " & args else: "")
       dbHelp = try:
-          db.getRow(query = sql(query = "SELECT usage, content FROM help WHERE topic=?"), key)
+          db.getRow(query = sql(query = "SELECT usage, content, template FROM help WHERE topic=?"), key)
         except DbError:
           return showError(message = "Can't read help content from database. Reason: ",
               e = getCurrentException())
     # It the topic exists, show it to the user
     if dbHelp[0].len() > 0:
-      showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: dbHelp[1]))
+      var content = dbHelp[1]
+      if dbHelp[2] == "1":
+        let sortOrder: string = try:
+              case db.getValue(query = sql(
+                  query = "SELECT value FROM options WHERE option='historySort'")):
+              of "recent": "recently used"
+              of "amount": "how many times used"
+              of "name": "name"
+              of "recentamount": "recently used and how many times"
+              else:
+                "unknown"
+          except DbError:
+            "recently used and how many times"
+        let sortDirection: string = try:
+              if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
+                    "true": " in reversed order." else: "."
+          except DbError:
+            "."
+        try:
+          content = replace(s = content, sub = "$1", by = db.getValue(
+              query = sql(
+              query = "SELECT value FROM options WHERE option='historyAmount'")))
+          content = replace(s = content, sub = "$2", by = sortOrder)
+          content = replace(s = content, sub = "$3", by = sortDirection)
+        except DbError:
+          discard showError(message = "Can't set the shell's help. Reason: ",
+              e = getCurrentException())
+      showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: content))
       return QuitSuccess.ResultCode
     # The user selected uknown topic, show the uknown command help entry
     if args.len() > 0:
