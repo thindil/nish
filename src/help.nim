@@ -195,6 +195,7 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
           index = 4
       showOutput(message = content)
 
+    # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
       var
         i: Positive = 1
@@ -218,6 +219,7 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
       mainHelp.content.add(y = "To see more information about the selected topic, type help [topic], for example: help cd.")
       showHelpEntry(helpEntry = mainHelp, usageHeader = "Available help topics")
       return QuitSuccess.ResultCode
+    # Try to get the selected help topic from the database
     let
       tokens: seq[string] = split(s = $topic)
       args: UserInput = try:
@@ -235,9 +237,11 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
         except DbError:
           return showError(message = "Can't read help content from database. Reason: ",
               e = getCurrentException())
+    # It the topic exists, show it to the user
     if dbHelp[0].len() > 0:
       showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: dbHelp[1]))
       return QuitSuccess.ResultCode
+    # The user selected uknown topic, show the uknown command help entry
     if args.len() > 0:
       try:
         result = showUnknownHelp(subCommand = args, command = command,
@@ -246,6 +250,7 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
       except CapacityError:
         return showError(message = "Can't show help for unknown command")
       return QuitSuccess.ResultCode
+    # The user entered the help topic which doesn't exists
     return showError(message = "Unknown help topic. For the list of available help topics, type 'help'.")
 
 proc showHelpList*(command: string; subcommands: openArray[
