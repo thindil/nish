@@ -217,37 +217,36 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
       mainHelp.usage.removeSuffix(suffix = ", ")
       mainHelp.content.add(y = "To see more information about the selected topic, type help [topic], for example: help cd.")
       showHelpEntry(helpEntry = mainHelp, usageHeader = "Available help topics")
-    else:
-      let
-        tokens: seq[string] = split(s = $topic)
-        args: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = join(a = tokens[
-                1 .. ^1], " "))
-          except CapacityError:
-            return showError(message = "Can't set arguments for help")
-        command: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = tokens[0])
-          except CapacityError:
-            return showError(message = "Can't set command for help")
-        key: string = command & (if args.len() > 0: " " & args else: "")
-        dbHelp = try:
-            db.getRow(query = sql(query = "SELECT usage, content FROM help WHERE topic=?"), key)
-          except DbError:
-            return showError(message = "Can't read help content from database. Reason: ",
-                e = getCurrentException())
-      if dbHelp[0].len() > 0:
-        showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: dbHelp[1]))
-      else:
-        if args.len() > 0:
-          try:
-            result = showUnknownHelp(subCommand = args, command = command,
-                helpType = initLimitedString(capacity = maxInputLength, text = (
-                    if command == "alias": "aliases" else: $command)))
-          except CapacityError:
-            return showError(message = "Can't show help for unknown command")
-        else:
-          return showError(message = "Unknown help topic. For the list of available help topics, type 'help'.")
-    return QuitSuccess.ResultCode
+      return QuitSuccess.ResultCode
+    let
+      tokens: seq[string] = split(s = $topic)
+      args: UserInput = try:
+          initLimitedString(capacity = maxInputLength, text = join(a = tokens[
+              1 .. ^1], " "))
+        except CapacityError:
+          return showError(message = "Can't set arguments for help")
+      command: UserInput = try:
+          initLimitedString(capacity = maxInputLength, text = tokens[0])
+        except CapacityError:
+          return showError(message = "Can't set command for help")
+      key: string = command & (if args.len() > 0: " " & args else: "")
+      dbHelp = try:
+          db.getRow(query = sql(query = "SELECT usage, content FROM help WHERE topic=?"), key)
+        except DbError:
+          return showError(message = "Can't read help content from database. Reason: ",
+              e = getCurrentException())
+    if dbHelp[0].len() > 0:
+      showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: dbHelp[1]))
+      return QuitSuccess.ResultCode
+    if args.len() > 0:
+      try:
+        result = showUnknownHelp(subCommand = args, command = command,
+            helpType = initLimitedString(capacity = maxInputLength, text = (
+                if command == "alias": "aliases" else: $command)))
+      except CapacityError:
+        return showError(message = "Can't show help for unknown command")
+      return QuitSuccess.ResultCode
+    return showError(message = "Unknown help topic. For the list of available help topics, type 'help'.")
 
 proc showHelpList*(command: string; subcommands: openArray[
     string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
