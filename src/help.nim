@@ -195,7 +195,6 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
           index = 4
       showOutput(message = content)
 
-    result = ResultCode(QuitSuccess)
     if topic.len == 0:
       var
         i: Positive = 1
@@ -248,6 +247,7 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
             return showError(message = "Can't show help for unknown command")
         else:
           return showError(message = "Unknown help topic. For the list of available help topics, type 'help'.")
+    return QuitSuccess.ResultCode
 
 proc showHelpList*(command: string; subcommands: openArray[
     string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
