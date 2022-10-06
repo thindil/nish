@@ -196,6 +196,9 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
     # It the topic exists, show it to the user
     if dbHelp[0].len() > 0:
       var content = dbHelp[1]
+      # The help content for the selected topic is template, convert some
+      # variables in it to the proper values. At this moment only history list
+      # need that conversion.
       if dbHelp[2] == "1":
         let sortOrder: string = try:
               case db.getValue(query = sql(
@@ -222,6 +225,7 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
         except DbError:
           discard showError(message = "Can't set the shell's help. Reason: ",
               e = getCurrentException())
+      # Show the help entry to the user
       showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: content))
       return QuitSuccess.ResultCode
     # The user selected uknown topic, show the uknown command help entry
