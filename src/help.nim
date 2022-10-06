@@ -71,50 +71,6 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string;
       return showError(message = "Can't update the help entry in the database. Reason: ",
           e = getCurrentException())
 
-proc updateHelp*(helpContent; db) {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect],
-    contractual.} =
-  ## FUNCTION
-  ##
-  ## Update the part of the shell's help content which depends on dynamic
-  ## data, like the shell's options' values
-  ##
-  ## PARAMETERS
-  ##
-  ## * helpContent - the HelpTable with help content of the shell
-  ## * db          - the connection to the shell's database
-  require:
-    db != nil
-  body:
-    let sortOrder: string = try:
-          case db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historySort'")):
-          of "recent": "recently used"
-          of "amount": "how many times used"
-          of "name": "name"
-          of "recentamount": "recently used and how many times"
-          else:
-            "unknown"
-      except DbError:
-        "recently used and how many times"
-    let sortDirection: string = try:
-          if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
-                "true": " in reversed order." else: "."
-      except DbError:
-        "."
-    try:
-      discard updateHelpEntry(topic = initLimitedString(capacity = 13,
-          text = "history list"), usage = initLimitedString(capacity = 39,
-          text = "history list ?amount? ?order? ?reverse?"),
-          plugin = initLimitedString(capacity = 4, text = "Help"),
-          content = "Show the last " & db.getValue(query = sql(
-          query = "SELECT value FROM options WHERE option='historyAmount'")) &
-          " commands from the shell's history ordered by " & sortOrder &
-          sortDirection &
-          " You can also set the amount, order and direction of order of commands to show by adding optional parameters amount, order and reverse. For example, to show the last 10 commands sorted by name in reversed order: history list 10 name true. Available switches for order are: amount, recent, name, recentamount. Available values for reverse are true or false.", db = db)
-    except DbError, CapacityError:
-      discard showError(message = "Can't update the shell's help. Reason: ",
-          e = getCurrentException())
-
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
@@ -325,7 +281,6 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
   require:
     db != nil
   body:
-    updateHelp(helpContent = helpContent, db = db)
     proc helpCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
       ## FUNCTION

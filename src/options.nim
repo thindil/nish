@@ -433,11 +433,9 @@ proc initOptions*(commands: ref CommandsList) {.gcsafe, sideEffect, locks: 0,
           return showOptions(db = db)
         elif arguments.startsWith(prefix = "set"):
           result = setOptions(arguments = arguments, db = db)
-          updateHelp(helpContent = list.help, db = db)
           return
         elif arguments.startsWith(prefix = "reset"):
           result = resetOptions(arguments = arguments, db = db)
-          updateHelp(helpContent = list.help, db = db)
           return
         else:
           try:
