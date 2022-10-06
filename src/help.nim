@@ -34,9 +34,9 @@ using
   db: DbConn # Connection to the shell's database
   helpContent: ref HelpTable # The content of the help system
 
-proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string;
-    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
+    isTemplate: bool): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Update the help entry in the help table in the shell's database
@@ -64,8 +64,8 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string;
           topic).len() == 0:
         return showError(message = "Can't update the help entry for topic '" &
             topic & "' because there is no that topic.")
-      db.exec(query = sql(query = "UPDATE help SET usage=?, content=?, plugin=? WHERE topic=?"),
-          usage, content, plugin, topic)
+      db.exec(query = sql(query = "UPDATE help SET usage=?, content=?, plugin=?, template=? WHERE topic=?"),
+          usage, content, plugin, topic, (if isTemplate: "1" else: "0"))
       return QuitSuccess.ResultCode
     except DbError:
       return showError(message = "Can't update the help entry in the database. Reason: ",
