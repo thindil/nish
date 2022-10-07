@@ -46,10 +46,6 @@ type
     ## Used to store the shell's help entries
     usage*: string ## The shell's command to enter for the selected entry
     content*: string ## The content of the selected entry
-  HelpTable* = Table[string, HelpEntry]
-    ## FUNCTION
-    ##
-    ## Used to store the shell's help content
   UserInput* = LimitedString
     ## FUNCTION
     ##
