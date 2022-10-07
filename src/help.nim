@@ -30,9 +30,7 @@ import contracts
 # Internal imports
 import columnamount, commandslist, constants, input, lstring, output, resultcode
 
-using
-  db: DbConn # Connection to the shell's database
-  helpContent: ref HelpTable # The content of the help system
+using db: DbConn # Connection to the shell's database
 
 proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
     isTemplate: bool): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
@@ -97,10 +95,9 @@ proc showUnknownHelp*(subCommand, command,
                 "` for `" & command & "`. To see all available " & helpType &
                 " commands, type `" & command & "`.")
 
-proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
-    db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
-    WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect],
-    contractual.} =
+proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the selected help section. If the user entered non-existing name of
@@ -110,7 +107,6 @@ proc showHelp*(topic: UserInput; helpContent: ref HelpTable;
   ##
   ## * topic       - the help's topic to show. If empty, show index of the
   ##                 shell's help
-  ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
   ##
   ## RETURNS
@@ -268,9 +264,9 @@ proc showHelpList*(command: string; subcommands: openArray[
         subcommands[0] & "'.", count = 4))
     return QuitSuccess.ResultCode
 
-proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, TimeEffect, ReadEnvEffect,
-    ReadDbEffect, ReadIOEffect, WriteDbEffect, RootEffect], contractual.} =
+proc initHelp*(db; commands: ref CommandsList) {.gcsafe, sideEffect, raises: [],
+    tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, ReadIOEffect,
+    WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize the help system. Update some help entries with current the
@@ -279,7 +275,6 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
   ##
   ## PARAMETERS
   ##
-  ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
   ## * commands    - the list of the shell's commands
   require:
@@ -302,7 +297,7 @@ proc initHelp*(helpContent; db; commands: ref CommandsList) {.gcsafe,
       ## QuitSuccess if the selected help's topic was succesully shown, otherwise
       ## QuitFailure.
       body:
-        return showHelp(topic = arguments, helpContent = list.help, db = db)
+        return showHelp(topic = arguments, db = db)
 
     try:
       addCommand(name = initLimitedString(capacity = 4, text = "help"),

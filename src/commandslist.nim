@@ -35,7 +35,6 @@ type
     ## FUNCTION
     ##
     ## Store additional data for the shell's command
-    help*: ref HelpTable ## List with the content of the shell's help
     aliases*: ref AliasesList ## List of shell's aliases
     plugins*: ref PluginsList ## List of enables shell's plugins
     commands*: ref Table[string, CommandData] ## List of the shell's commands

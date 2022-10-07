@@ -224,7 +224,6 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
     aliases = newOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
         DirSep & "nish.db")
-    helpContent = newTable[string, HelpEntry]()
     cursorPosition: Natural = 0
     plugins = newTable[string, PluginData]()
     commands = newTable[string, CommandData]()
@@ -276,7 +275,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
   initVariables(db = db, commands = commands)
 
   # Set the shell's help
-  initHelp(helpContent = helpContent, db = db, commands = commands)
+  initHelp(db = db, commands = commands)
 
   # Initialize the shell's plugins system
   initPlugins(db = db, pluginsList = plugins, commands = commands)
@@ -541,9 +540,7 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         try:
           # Build-in shell's command
           if commands[commandName].command != nil:
-            returnCode = commands[commandName].command(arguments = arguments,
-                db = db, list = CommandLists(help: helpContent,
-                    aliases: aliases, plugins: plugins, commands: commands))
+            returnCode = commands[commandName].command(arguments = arguments, db = db, list = CommandLists(aliases: aliases, plugins: plugins, commands: commands))
           # The shell's command from plugin
           else:
             let returnValues = execPlugin(pluginPath = commands[
