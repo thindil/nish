@@ -28,7 +28,8 @@ import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, terminal]
 # External modules imports
 import contracts
 # Internal imports
-import columnamount, commandslist, constants, input, lstring, output, resultcode
+import columnamount, commandslist, helpcontent, constants, input, lstring,
+    output, resultcode
 
 using db: DbConn # Connection to the shell's database
 
@@ -95,8 +96,8 @@ proc showUnknownHelp*(subCommand, command,
                 "` for `" & command & "`. To see all available " & helpType &
                 " commands, type `" & command & "`.")
 
-proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
+    ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -342,7 +343,7 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
       return showError(message = "Can't add help entry to database. Reason: ",
           e = getCurrentException())
 
-proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## FUNCTION
@@ -378,12 +379,15 @@ proc createHelpDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     result = QuitSuccess.ResultCode
     # Read the help entries from the configuration file and add them to
     # the database
-    let helpFile = "help" & DirSep & "help.cfg"
     var
-      file = newFileStream(helpFile, fmRead)
+      file = try:
+          newStringStream(getAsset("help/help.cfg"))
+        except ValueError, OSError, IOError, Exception:
+          return showError(message = "Can't read help content. Reason: ",
+              e = getCurrentException())
       parser: CfgParser
     try:
-      open(parser, file, helpFile)
+      open(parser, file, "helpContent")
     except OSError, IOError, Exception:
       return showError(message = "Can't read file with help entries. Reason: ",
           e = getCurrentException())
