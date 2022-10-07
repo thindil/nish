@@ -5,7 +5,7 @@ discard """
 import ../../src/[help, lstring, resultcode]
 import utils/helpers
 
-var (db, _) = initTest()
+let db = initTest()
 discard deleteHelpEntry(initLimitedString(capacity = 4, text = "test"), db)
 assert addHelpEntry(initLimitedString(capacity = 4, text = "test"),
     initLimitedString(capacity = 10, text = "test topic"), initLimitedString(

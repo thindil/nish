@@ -7,8 +7,8 @@ import ../../src/[commandslist, help, nish, resultcode]
 import utils/helpers
 
 var
-  (db, helpContent) = initTest()
+  db = initTest()
   commands = newTable[string, CommandData]()
-initHelp(helpContent, db, commands)
+initHelp(db, commands)
 assert commands.len() == 1
 quitShell(ResultCode(QuitSuccess), db)

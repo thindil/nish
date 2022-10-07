@@ -5,10 +5,7 @@ discard """
 import ../../src/[help, lstring, nish, resultcode]
 import utils/helpers
 
-var (db, helpContent) = initTest()
-updateHelp(helpContent, db)
-assert showHelp(initLimitedString(capacity = 12, text = "alias"),
-    helpContent, db) == QuitSuccess
-assert showHelp(initLimitedString(capacity = 9, text = "srewfdsfs"),
-    helpContent, db) == QuitFailure
+var db = initTest()
+assert showHelp(initLimitedString(capacity = 12, text = "alias"), db) == QuitSuccess
+assert showHelp(initLimitedString(capacity = 9, text = "srewfdsfs"), db) == QuitFailure
 quitShell(ResultCode(QuitSuccess), db)

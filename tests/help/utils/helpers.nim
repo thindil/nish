@@ -1,7 +1,6 @@
-import std/[db_sqlite, tables]
-import ../../../src/[constants, directorypath, nish]
+import std/[db_sqlite]
+import ../../../src/[directorypath, nish]
 
-proc initTest*(): tuple[db: DbConn, helpContent: ref HelpTable] =
-  let db = startDb("test.db".DirectoryPath)
-  assert db != nil
-  return (db, newTable[string, HelpEntry]())
+proc initTest*(): DbConn =
+  result = startDb("test.db".DirectoryPath)
+  assert result != nil
