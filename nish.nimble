@@ -20,14 +20,14 @@ requires "nimassets >= 0.2.4"
 # Tasks
 
 task debug, "builds the shell in debug mode":
-  exec "nimassets -d=help -o=src/helpcontent.nim"
   exec "nimble install -d -y"
+  exec "nimassets -d=help -o=src/helpcontent.nim"
   exec "nim c -d:debug --styleCheck:hint --spellSuggest:auto --verbosity:2 --errorMax:0 --outdir:" &
       binDir & " " & srcDir & DirSep & "nish.nim"
 
 task release, "builds the project in release mode":
-  exec "nimassets -d=help -o=src/helpcontent.nim"
   exec "nimble install -d -y"
+  exec "nimassets -d=help -o=src/helpcontent.nim"
   exec "nim c -d:release --passc:-flto --passl:-s --outdir:" & binDir & " " &
       srcDir & DirSep & "nish.nim"
 
