@@ -23,13 +23,13 @@ task debug, "builds the shell in debug mode":
   exec "nimble install -d -y"
   exec "nimassets -d=help -o=src/helpcontent.nim"
   exec "nim c -d:debug --styleCheck:hint --spellSuggest:auto --verbosity:2 --errorMax:0 --outdir:" &
-      binDir & " " & srcDir & DirSep & "nish.nim"
+      binDir & " --mm:orc " & srcDir & DirSep & "nish.nim"
 
 task release, "builds the project in release mode":
   exec "nimble install -d -y"
   exec "nimassets -d=help -o=src/helpcontent.nim"
-  exec "nim c -d:release --passc:-flto --passl:-s --outdir:" & binDir & " " &
-      srcDir & DirSep & "nish.nim"
+  exec "nim c -d:release --passc:-flto --passl:-s --outdir:" & binDir &
+      " --mm:orc " & srcDir & DirSep & "nish.nim"
 
 task tests, "run the project unit tests":
   exec "nimassets -d=help -o=src/helpcontent.nim"
