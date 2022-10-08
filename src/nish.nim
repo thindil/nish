@@ -94,8 +94,8 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
           e = getCurrentException()).int
     quit int(returnCode)
 
-proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
+proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
@@ -206,8 +206,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
       return nil
 
-proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
-    WriteIOEffect, ExecIOEffect, RootEffect].} =
+proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
+    ExecIOEffect, RootEffect].} =
   ## FUNCTION
   ##
   ## The main procedure of the shell
@@ -540,7 +540,9 @@ proc main() {.gcsafe, sideEffect, raises: [], tags: [ReadIOEffect,
         try:
           # Build-in shell's command
           if commands[commandName].command != nil:
-            returnCode = commands[commandName].command(arguments = arguments, db = db, list = CommandLists(aliases: aliases, plugins: plugins, commands: commands))
+            returnCode = commands[commandName].command(arguments = arguments,
+                db = db, list = CommandLists(aliases: aliases, plugins: plugins,
+                commands: commands))
           # The shell's command from plugin
           else:
             let returnValues = execPlugin(pluginPath = commands[
