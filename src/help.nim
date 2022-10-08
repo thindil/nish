@@ -381,13 +381,13 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     # the database
     var
       file = try:
-          newStringStream(getAsset("help/help.cfg"))
+          newStringStream(s = getAsset(path = "help/help.cfg"))
         except ValueError, OSError, IOError, Exception:
           return showError(message = "Can't read help content. Reason: ",
               e = getCurrentException())
       parser: CfgParser
     try:
-      open(parser, file, "helpContent")
+      open(c = parser, input = file, filename = "helpContent")
     except OSError, IOError, Exception:
       return showError(message = "Can't read file with help entries. Reason: ",
           e = getCurrentException())
@@ -456,7 +456,7 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
         return showError(message = "Can't get help entry from configuration file. Reason: ",
             e = getCurrentException())
     try:
-      close(parser)
+      close(c = parser)
     except IOError, OSError, Exception:
       return showError(message = "Can't close file with help entries. Reason: ",
           e = getCurrentException())
