@@ -135,7 +135,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
 
 proc showOptions*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], locks: 0, contractual.} =
+    TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the shell's options

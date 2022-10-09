@@ -206,7 +206,7 @@ proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 proc showHistory*(db; arguments: UserInput = emptyLimitedString(
     capacity = maxInputLength)): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
+    ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the last X entries to the shell's history. X can be set in the shell's
