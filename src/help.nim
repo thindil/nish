@@ -156,7 +156,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
         mainHelp = HelpEntry(usage: "", content: "")
       try:
         for key in db.getAllRows(query = sql(query = "SELECT topic FROM help")):
-          keys.add(y = key[0])
+          keys.add(key[0])
       except DbError:
         return showError(message = "Can't get help topics from database. Reason: ",
             e = getCurrentException())

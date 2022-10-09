@@ -120,7 +120,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
           if existingVariable.len() == 0:
             delEnv(key = dbResult[0])
           else:
-            skipped.add(y = existingVariable[0])
+            skipped.add(existingVariable[0])
       except DbError, OSError:
         showError(message = "Can't delete environment variables from the old directory. Reason: ",
             e = getCurrentException())
