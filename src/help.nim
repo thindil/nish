@@ -119,8 +119,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
   body:
     proc showHelpEntry(helpEntry: HelpEntry;
         usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
-        ReadIOEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
-        WriteDbEffect].} =
+        WriteIOEffect, ReadEnvEffect, ReadIOEffect].} =
       ## FUNCTION
       ##
       ## Show the selected help entry
