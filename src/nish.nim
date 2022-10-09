@@ -252,7 +252,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       of "v", "version":
         showProgramVersion()
       of "db":
-        dbPath = DirectoryPath(options.val)
+        dbPath = options.val.DirectoryPath
     else: discard
 
   # Connect to the shell database
