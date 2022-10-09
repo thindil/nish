@@ -147,7 +147,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
           index = 4
       showOutput(message = content)
 
-    proc showHelpList(keys: seq[string]) =
+    proc showHelpList(keys: seq[string]) {.gcsafe, sideEffect, raises: [],
+        tags: [WriteIOEffect, ReadEnvEffect, ReadIOEffect].} =
       var
         i: Positive = 1
         listHelp = HelpEntry(usage: "", content: "")
