@@ -148,12 +148,25 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
           index = 4
       showOutput(message = content)
 
-    # If no topic was selected by the user, show the list of the help's topics
-    if topic.len == 0:
+    proc showHelpList(keys: seq[string]) =
       var
         i: Positive = 1
-        keys: seq[string]
-        mainHelp = HelpEntry(usage: "", content: "")
+        listHelp = HelpEntry(usage: "", content: "")
+      listHelp.usage.add(y = "\n    ")
+      for key in keys:
+        listHelp.usage.add(y = alignLeft(s = key, count = 20))
+        i.inc()
+        if i == 4:
+          listHelp.usage.add(y = "\n    ")
+          i = 1
+      listHelp.usage.removeSuffix(suffix = ", ")
+      listHelp.content.add(y = "To see more information about the selected topic, type help [topic], for example: help " &
+          keys[0] & ".")
+      showHelpEntry(helpEntry = listHelp, usageHeader = "Available help topics")
+
+    # If no topic was selected by the user, show the list of the help's topics
+    if topic.len == 0:
+      var keys: seq[string]
       try:
         for key in db.getAllRows(query = sql(query = "SELECT topic FROM help")):
           keys.add(key[0])
@@ -161,16 +174,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
         return showError(message = "Can't get help topics from database. Reason: ",
             e = getCurrentException())
       keys.sort(cmp = system.cmp)
-      mainHelp.usage.add(y = "\n    ")
-      for key in keys:
-        mainHelp.usage.add(y = alignLeft(s = key, count = 20))
-        i.inc()
-        if i == 4:
-          mainHelp.usage.add(y = "\n    ")
-          i = 1
-      mainHelp.usage.removeSuffix(suffix = ", ")
-      mainHelp.content.add(y = "To see more information about the selected topic, type help [topic], for example: help cd.")
-      showHelpEntry(helpEntry = mainHelp, usageHeader = "Available help topics")
+      showHelpList(keys = keys)
       return QuitSuccess.ResultCode
     # Try to get the selected help topic from the database
     let
@@ -230,24 +234,11 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
             content: content))
         return QuitSuccess.ResultCode
       # There is a few topics which match the criteria, show the list of them
-      var
-        i: Positive = 1
-        keys: seq[string]
-        listHelp = HelpEntry(usage: "", content: "")
+      var keys: seq[string]
       for row in dbHelp:
         keys.add(row[3])
       keys.sort(cmp = system.cmp)
-      listHelp.usage.add(y = "\n    ")
-      for key in keys:
-        listHelp.usage.add(y = alignLeft(s = key, count = 20))
-        i.inc()
-        if i == 4:
-          listHelp.usage.add(y = "\n    ")
-          i = 1
-      listHelp.usage.removeSuffix(suffix = ", ")
-      listHelp.content.add(y = "To see more information about the selected topic, type help [topic], for example: help " &
-          keys[0] & ".")
-      showHelpEntry(helpEntry = listHelp, usageHeader = "Available help topics")
+      showHelpList(keys = keys)
       return QuitSuccess.ResultCode
     # The user selected uknown topic, show the uknown command help entry
     if args.len() > 0:
