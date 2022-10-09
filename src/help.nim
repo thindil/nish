@@ -184,46 +184,70 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
           initLimitedString(capacity = maxInputLength, text = tokens[0])
         except CapacityError:
           return showError(message = "Can't set command for help")
-      key: string = command & (if args.len() > 0: " " & args else: "")
+      key: string = (command & (if args.len() > 0: " " &
+          args else: "")).replace(sub = '*', by = '%')
       dbHelp = try:
-          db.getRow(query = sql(query = "SELECT usage, content, template FROM help WHERE topic=?"), key)
+          db.getAllRows(query = sql(query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), key)
         except DbError:
           return showError(message = "Can't read help content from database. Reason: ",
               e = getCurrentException())
-    # It the topic exists, show it to the user
-    if dbHelp[0].len() > 0:
-      var content = dbHelp[1]
-      # The help content for the selected topic is template, convert some
-      # variables in it to the proper values. At this moment only history list
-      # need that conversion.
-      if dbHelp[2] == "1":
-        let sortOrder: string = try:
-              case db.getValue(query = sql(
-                  query = "SELECT value FROM options WHERE option='historySort'")):
-              of "recent": "recently used"
-              of "amount": "how many times used"
-              of "name": "name"
-              of "recentamount": "recently used and how many times"
-              else:
-                "unknown"
+    # It there are topic or topics which the user is looking for, show them
+    if dbHelp.len() > 0:
+      # There is exactly one topic which the user is looking for, show it
+      if dbHelp.len() == 1:
+        var content = dbHelp[0][1]
+        # The help content for the selected topic is template, convert some
+        # variables in it to the proper values. At this moment only history list
+        # need that conversion.
+        if dbHelp[0][2] == "1":
+          let sortOrder: string = try:
+                case db.getValue(query = sql(
+                    query = "SELECT value FROM options WHERE option='historySort'")):
+                of "recent": "recently used"
+                of "amount": "how many times used"
+                of "name": "name"
+                of "recentamount": "recently used and how many times"
+                else:
+                  "unknown"
+            except DbError:
+              "recently used and how many times"
+          let sortDirection: string = try:
+                if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
+                      "true": " in reversed order." else: "."
+            except DbError:
+              "."
+          try:
+            content = replace(s = content, sub = "$1", by = db.getValue(
+                query = sql(
+                query = "SELECT value FROM options WHERE option='historyAmount'")))
+            content = replace(s = content, sub = "$2", by = sortOrder)
+            content = replace(s = content, sub = "$3", by = sortDirection)
           except DbError:
-            "recently used and how many times"
-        let sortDirection: string = try:
-              if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
-                    "true": " in reversed order." else: "."
-          except DbError:
-            "."
-        try:
-          content = replace(s = content, sub = "$1", by = db.getValue(
-              query = sql(
-              query = "SELECT value FROM options WHERE option='historyAmount'")))
-          content = replace(s = content, sub = "$2", by = sortOrder)
-          content = replace(s = content, sub = "$3", by = sortDirection)
-        except DbError:
-          discard showError(message = "Can't set the shell's help. Reason: ",
-              e = getCurrentException())
-      # Show the help entry to the user
-      showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0], content: content))
+            discard showError(message = "Can't set the shell's help. Reason: ",
+                e = getCurrentException())
+        # Show the help entry to the user
+        showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0][0],
+            content: content))
+        return QuitSuccess.ResultCode
+      # There is a few topics which match the criteria, show the list of them
+      var
+        i: Positive = 1
+        keys: seq[string]
+        listHelp = HelpEntry(usage: "", content: "")
+      for row in dbHelp:
+        keys.add(row[3])
+      keys.sort(cmp = system.cmp)
+      listHelp.usage.add(y = "\n    ")
+      for key in keys:
+        listHelp.usage.add(y = alignLeft(s = key, count = 20))
+        i.inc()
+        if i == 4:
+          listHelp.usage.add(y = "\n    ")
+          i = 1
+      listHelp.usage.removeSuffix(suffix = ", ")
+      listHelp.content.add(y = "To see more information about the selected topic, type help [topic], for example: help " &
+          keys[0] & ".")
+      showHelpEntry(helpEntry = listHelp, usageHeader = "Available help topics")
       return QuitSuccess.ResultCode
     # The user selected uknown topic, show the uknown command help entry
     if args.len() > 0:
