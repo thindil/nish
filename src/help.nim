@@ -259,7 +259,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
         return showError(message = "Can't show help for unknown command")
       return QuitSuccess.ResultCode
     # The user entered the help topic which doesn't exists
-    return showError(message = "Unknown help topic: `" & args & "`. For the list of available help topics, type `help`.")
+    return showError(message = "Unknown help topic: `" & topic & "`. For the list of available help topics, type `help`.")
 
 proc showHelpList*(command: string; subcommands: openArray[
     string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
