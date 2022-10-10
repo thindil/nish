@@ -325,10 +325,21 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
 
 proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Read the help entries from the configuration file and add them to
+  ## the shell's database
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the help content was successfully added to the database,
+  ## otherwise QuitFailure and show message what wrong
   body:
     result = QuitSuccess.ResultCode
-    # Read the help entries from the configuration file and add them to
-    # the database
     var
       file = try:
           newStringStream(s = getAsset(path = "help/help.cfg"))
