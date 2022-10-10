@@ -39,7 +39,7 @@ type
     plugins*: ref PluginsList ## List of enables shell's plugins
     commands*: ref Table[string, CommandData] ## List of the shell's commands
   CommandProc* = proc (arguments: UserInput; db: DbConn;
-      list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.}
+      list: CommandLists): ResultCode {.raises: [], contractual.}
     ## FUNCTION
     ##
     ## The shell's command's code
@@ -124,7 +124,8 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.gcsafe,
     commands.del(key = $name)
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = "") {.gcsafe, sideEffect, raises: [
+    commands: ref CommandsList; plugin: string = "") {.gcsafe, sideEffect,
+        raises: [
     CommandsListError], tags: [RootEffect], contractual.} =
   ## FUNCTION
   ##
