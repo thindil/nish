@@ -287,6 +287,127 @@ proc showHelpList*(command: string; subcommands: openArray[
         subcommands[0] & "'.", count = 4))
     return QuitSuccess.ResultCode
 
+proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
+    isTemplate: bool; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+  ## FUNCTION
+  ##
+  ## Add a new help entry to the help table in the shell's database
+  ##
+  ## PARAMETERS
+  ##
+  ## * topic   - the topic of the help. Used as search entry in help
+  ## * usage   - the content of usage section in the help entry
+  ## * content - the content of the help entry
+  ## * db      - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if the help entry was successfully added to the database,
+  ## otherwise QuitFailure and show message what wrong
+  require:
+    topic.len() > 0
+    usage.len() > 0
+    content.len() > 0
+    plugin.len() > 0
+    db != nil
+  body:
+    try:
+      if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
+          topic).len() > 0:
+        return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
+      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content, plugin, template) VALUES (?, ?, ?, ?, ?)"),
+          topic, usage, content, plugin, (if isTemplate: 1 else: 0))
+      return QuitSuccess.ResultCode
+    except DbError:
+      return showError(message = "Can't add help entry to database. Reason: ",
+          e = getCurrentException())
+
+proc readHelpFromFile(db): ResultCode =
+  # Read the help entries from the configuration file and add them to
+  # the database
+  var
+    file = try:
+        newStringStream(s = getAsset(path = "help/help.cfg"))
+      except ValueError, OSError, IOError, Exception:
+        return showError(message = "Can't read help content. Reason: ",
+            e = getCurrentException())
+    parser: CfgParser
+  try:
+    open(c = parser, input = file, filename = "helpContent")
+  except OSError, IOError, Exception:
+    return showError(message = "Can't read file with help entries. Reason: ",
+        e = getCurrentException())
+  var
+    topic, usage, content, plugin: string = ""
+    isTemplate: bool = false
+  proc addEntry(): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+      ReadDbEffect, WriteDbEffect, WriteIOEffect], contractual.} =
+    ## FUNCTION
+    ##
+    ## Add the selected help entry to the database and reset values of
+    ## variables used to set it
+    ##
+    ## RETURNS
+    ##
+    ## QuitSuccess if the help entry was properly added, otherwise
+    ## QuitFailure with information what goes wrong.
+    body:
+      if topic.len() > 0 and usage.len() > 0 and content.len() > 0 and
+          plugin.len() > 0:
+        try:
+          result = addHelpEntry(topic = initLimitedString(
+              capacity = maxInputLength, text = topic),
+              usage = initLimitedString(
+              capacity = maxInputLength, text = usage),
+              plugin = initLimitedString(capacity = maxInputLength,
+              text = plugin), content = content, isTemplate = isTemplate, db = db)
+        except CapacityError:
+          return showError(message = "Can't add help entry. Reason: ",
+              e = getCurrentException())
+        topic = ""
+        usage = ""
+        content = ""
+        plugin = ""
+        isTemplate = false
+  # Read the help configuration file
+  while true:
+    try:
+      let entry = parser.next()
+      case entry.kind
+      of cfgSectionStart:
+        if plugin.len() == 0:
+          plugin = entry.section
+          continue
+        result = addEntry()
+        plugin = entry.section
+      of cfgEof:
+        result = addEntry()
+        break
+      of cfgKeyValuePair, cfgOption:
+        case entry.key
+        of "topic":
+          topic = entry.value
+        of "usage":
+          usage = entry.value
+        of "content":
+          content = entry.value
+        of "template":
+          isTemplate = true
+        else:
+          discard
+      of cfgError:
+        echo entry.msg
+        result = QuitFailure.ResultCode
+    except IOError, OSError, ValueError, CapacityError:
+      return showError(message = "Can't get help entry from configuration file. Reason: ",
+          e = getCurrentException())
+  try:
+    close(c = parser)
+  except IOError, OSError, Exception:
+    return showError(message = "Can't close file with help entries. Reason: ",
+        e = getCurrentException())
+
 proc initHelp*(db; commands: ref CommandsList) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, ReadIOEffect,
     WriteDbEffect, RootEffect], contractual.} =
@@ -329,42 +450,6 @@ proc initHelp*(db; commands: ref CommandsList) {.gcsafe, sideEffect, raises: [],
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
 
-proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
-    isTemplate: bool; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
-  ## FUNCTION
-  ##
-  ## Add a new help entry to the help table in the shell's database
-  ##
-  ## PARAMETERS
-  ##
-  ## * topic   - the topic of the help. Used as search entry in help
-  ## * usage   - the content of usage section in the help entry
-  ## * content - the content of the help entry
-  ## * db      - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the help entry was successfully added to the database,
-  ## otherwise QuitFailure and show message what wrong
-  require:
-    topic.len() > 0
-    usage.len() > 0
-    content.len() > 0
-    plugin.len() > 0
-    db != nil
-  body:
-    try:
-      if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          topic).len() > 0:
-        return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
-      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content, plugin, template) VALUES (?, ?, ?, ?, ?)"),
-          topic, usage, content, plugin, (if isTemplate: 1 else: 0))
-      return QuitSuccess.ResultCode
-    except DbError:
-      return showError(message = "Can't add help entry to database. Reason: ",
-          e = getCurrentException())
-
 proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect, RootEffect],
     contractual.} =
@@ -398,90 +483,7 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     except DbError, CapacityError:
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException())
-    result = QuitSuccess.ResultCode
-    # Read the help entries from the configuration file and add them to
-    # the database
-    var
-      file = try:
-          newStringStream(s = getAsset(path = "help/help.cfg"))
-        except ValueError, OSError, IOError, Exception:
-          return showError(message = "Can't read help content. Reason: ",
-              e = getCurrentException())
-      parser: CfgParser
-    try:
-      open(c = parser, input = file, filename = "helpContent")
-    except OSError, IOError, Exception:
-      return showError(message = "Can't read file with help entries. Reason: ",
-          e = getCurrentException())
-    var
-      topic, usage, content, plugin: string = ""
-      isTemplate: bool = false
-    proc addEntry(): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-        ReadDbEffect, WriteDbEffect, WriteIOEffect], contractual.} =
-      ## FUNCTION
-      ##
-      ## Add the selected help entry to the database and reset values of
-      ## variables used to set it
-      ##
-      ## RETURNS
-      ##
-      ## QuitSuccess if the help entry was properly added, otherwise
-      ## QuitFailure with information what goes wrong.
-      body:
-        if topic.len() > 0 and usage.len() > 0 and content.len() > 0 and
-            plugin.len() > 0:
-          try:
-            result = addHelpEntry(topic = initLimitedString(
-                capacity = maxInputLength, text = topic),
-                usage = initLimitedString(
-                capacity = maxInputLength, text = usage),
-                plugin = initLimitedString(capacity = maxInputLength,
-                text = plugin), content = content, isTemplate = isTemplate, db = db)
-          except CapacityError:
-            return showError(message = "Can't add help entry. Reason: ",
-                e = getCurrentException())
-          topic = ""
-          usage = ""
-          content = ""
-          plugin = ""
-          isTemplate = false
-    # Read the help configuration file
-    while true:
-      try:
-        let entry = parser.next()
-        case entry.kind
-        of cfgSectionStart:
-          if plugin.len() == 0:
-            plugin = entry.section
-            continue
-          result = addEntry()
-          plugin = entry.section
-        of cfgEof:
-          result = addEntry()
-          break
-        of cfgKeyValuePair, cfgOption:
-          case entry.key
-          of "topic":
-            topic = entry.value
-          of "usage":
-            usage = entry.value
-          of "content":
-            content = entry.value
-          of "template":
-            isTemplate = true
-          else:
-            discard
-        of cfgError:
-          echo entry.msg
-          result = QuitFailure.ResultCode
-      except IOError, OSError, ValueError, CapacityError:
-        return showError(message = "Can't get help entry from configuration file. Reason: ",
-            e = getCurrentException())
-    try:
-      close(c = parser)
-    except IOError, OSError, Exception:
-      return showError(message = "Can't close file with help entries. Reason: ",
-          e = getCurrentException())
+    return readHelpFromFile(db = db)
 
 proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0,
