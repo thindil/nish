@@ -338,6 +338,8 @@ proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
   ##
   ## QuitSuccess if the help content was successfully added to the database,
   ## otherwise QuitFailure and show message what wrong
+  require:
+    db != nil
   body:
     result = QuitSuccess.ResultCode
     var
