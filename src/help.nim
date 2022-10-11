@@ -444,7 +444,11 @@ proc updateHelp(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     except DBError:
       return showError(message = "Can't clear the help content. Reason: ",
           e = getCurrentException())
-    return readHelpFromFile(db = db)
+    result = readHelpFromFile(db = db)
+    if result == QuitFailure:
+      return
+    showOutput(message = "The shell's help content successfully updated.",
+        fgColor = fgGreen)
 
 proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, ReadIOEffect,
