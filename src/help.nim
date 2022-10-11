@@ -424,8 +424,19 @@ proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       return showError(message = "Can't close file with help entries. Reason: ",
           e = getCurrentException())
 
-proc initHelp*(db; commands: ref CommandsList) {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, ReadIOEffect,
+proc updateHelp(db): ResultCode {.contractual.} =
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = "DELETE FROM help"));
+    except DBError:
+      return showError(message = "Can't clear the help content. Reason: ",
+          e = getCurrentException())
+    return readHelpFromFile(db = db)
+
+proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
+    WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, ReadIOEffect,
     WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
@@ -459,9 +470,30 @@ proc initHelp*(db; commands: ref CommandsList) {.gcsafe, sideEffect, raises: [],
       body:
         return showHelp(topic = arguments, db = db)
 
+    proc updateHelpCommand(arguments: UserInput; db: DbConn;
+        list: CommandLists): ResultCode {.raises: [], contractual.} =
+      ## FUNCTION
+      ##
+      ## The code of the shell's command "updateHelp"
+      ##
+      ## PARAMETERS
+      ##
+      ## * arguments - the arguments entered by the user for the command
+      ## * db        - the connection to the shell's database
+      ## * list      - the additional data for the command, like list of help
+      ##               entries, etc
+      ##
+      ## RETURNS
+      ## QuitSuccess if the help content was succesfully updated, otherwise
+      ## QuitFailure.
+      body:
+        return updateHelp(db = db)
+
     try:
       addCommand(name = initLimitedString(capacity = 4, text = "help"),
           command = helpCommand, commands = commands)
+      addCommand(name = initLimitedString(capacity = 10, text = "updatehelp"),
+          command = updateHelpCommand, commands = commands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
