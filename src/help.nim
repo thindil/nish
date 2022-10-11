@@ -413,8 +413,7 @@ proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
           else:
             discard
         of cfgError:
-          echo entry.msg
-          result = QuitFailure.ResultCode
+          result = showError(message = "Can't read help entry from configuration file. Reason: " & entry.msg)
       except IOError, OSError, ValueError, CapacityError:
         return showError(message = "Can't get help entry from configuration file. Reason: ",
             e = getCurrentException())
