@@ -323,7 +323,7 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
       return showError(message = "Can't add help entry to database. Reason: ",
           e = getCurrentException())
 
-proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
+proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
