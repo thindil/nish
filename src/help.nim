@@ -425,6 +425,17 @@ proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
 
 proc updateHelp(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Clear the user help content and replace it with the default values
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ## QuitSuccess if the help content was successfully updated, otherwise
+  ## QuitFailure and show message what wrong
   require:
     db != nil
   body:
