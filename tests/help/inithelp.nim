@@ -10,5 +10,5 @@ var
   db = initTest()
   commands = newTable[string, CommandData]()
 initHelp(db, commands)
-assert commands.len() == 1
+assert commands.len() == 2
 quitShell(ResultCode(QuitSuccess), db)
