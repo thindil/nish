@@ -423,7 +423,7 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       return showError(message = "Can't close file with help entries. Reason: ",
           e = getCurrentException())
 
-proc updateHelp(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
+proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
