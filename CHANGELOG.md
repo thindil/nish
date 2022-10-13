@@ -22,6 +22,7 @@ of the shell.
 - Updated contributing guide
 - **BREAKING**: Better, more effective system of plugins
 - Better help entry for list of subcommands for the selected command
+- **BREAKING**: Better, more advanced system of help
 
 ### Fixed
 - Typos in README.md
