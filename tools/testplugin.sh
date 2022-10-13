@@ -79,6 +79,8 @@ case "${1}" in
       ;;
    # Called during disabling the plugin.
    disable)
+      # Remove the help entry related to the new shell's command
+      echo 'deleteHelp hello'
       # Show the selected text with the selected color on the standard output
       echo 'showOutput "Disabled the testplugin" fgGreen'
       ;;
