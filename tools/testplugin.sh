@@ -72,6 +72,8 @@ case "${1}" in
       echo "showOutput \"Value for testPlugin is $value\""
       # Add the command "hello" to the shell's commands
       echo "addCommand hello"
+      # Add the help related to the new shell's command
+      echo 'addHelp hello "hello ?argument?" "Show the greet message and argument entered for it"'
       # Show another message, colored in green
       echo "showOutput \"Enabled the testplugin\" fgGreen"
       ;;
