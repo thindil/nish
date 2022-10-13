@@ -191,7 +191,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               showError(message = "Can't add command '" & remainingOptions[0] &
                   "'. Reason: " & getCurrentExceptionMsg())
               break
-          # Delete the command to the shell. The argument is the name of the
+          # Delete the command from the shell. The argument is the name of the
           # command which will be deleted
           of "deleteCommand":
             let remainingOptions = options.remainingArgs()
@@ -233,6 +233,17 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
                 plugin = initLimitedString(capacity = maxInputLength,
                 text = pluginPath), content = remainingOptions[2],
                 isTemplate = false, db = db) == QuitFailure:
+              break
+          # Delete the help entry from the shell. The argument is the topic of the
+          # help entry which will be deleted
+          of "deleteHelp":
+            let remainingOptions = options.remainingArgs()
+            if remainingOptions.len() == 0:
+              showError(message = "Insufficient arguments for deleteHelp.")
+              break
+            if deleteHelpEntry(topic = initLimitedString(
+                capacity = maxNameLength, text = remainingOptions[0]),
+                db = db) == QuitFailure:
               break
           # The plugin sent any unknown request or response, show error about it
           else:
