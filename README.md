@@ -292,6 +292,21 @@ Available API calls from plugins:
 * `replaceCommand [command name]`: replace the selected command with code from
   the plugin. The name must be a name of an existing shell's command.
 
+#### Advanced help system
+
+The whole content of the help is added to the local database of the shell. It
+allows searching for help topics, but also to locally modify the help entries.
+The use can in any moment bring back the default content, or update the local
+with the new version, with the one command.
+
+The content of the help is located in file *help/help.cfg*. Each entry has the
+following scheme:
+
+    [PluginPathOrModuleName]
+    topic="The help topic, used to show the help entry"
+    usage="The shell's command related to the help topic"
+    content="The content of the help entry"
+
 #### Other features
 
 * Simple Tab completion for commands with names of files and directories
