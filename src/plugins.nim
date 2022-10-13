@@ -220,6 +220,20 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               showError(message = "Can't replace command '" & remainingOptions[
                   0] & "'. Reason: " & getCurrentExceptionMsg())
               break
+          # Add new help entry to the shell. The argument is the topic of the help,
+          # its usage and the content
+          of "addHelp":
+            let remainingOptions = options.remainingArgs()
+            if remainingOptions.len() < 3:
+              showError(message = "Insufficient arguments for addHelp.")
+              break
+            if addHelpEntry(topic = initLimitedString(capacity = maxNameLength,
+                text = remainingOptions[0]), usage = initLimitedString(
+                capacity = maxInputLength, text = remainingOptions[1]),
+                plugin = initLimitedString(capacity = maxInputLength,
+                text = pluginPath), content = remainingOptions[2],
+                isTemplate = false, db = db) == QuitFailure:
+              break
           # The plugin sent any unknown request or response, show error about it
           else:
             showError(message = "Unknown request or response from the plugin '" &
