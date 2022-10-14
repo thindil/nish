@@ -273,7 +273,7 @@ Available API calls from plugins:
   optional argument is the color of the message. Available options are:
   fgBlack, fgRed, fgGreen, fgYellow, fgBlue, fgMagenta, fgCyan, fgWhite and
   fgDefault
-* `setOption [option name] [option value] [option description] [option type]` -
+* `setOption [option name] [option value] [option description] [option type]`:
   set the shell's option. If the option doesn't exist, create a new with
   selected parameters. Option type should be one of: integer (positive and
   negative), float, boolean (true or false), historySort, natural (0 or above),
@@ -291,6 +291,14 @@ Available API calls from plugins:
   The name must be a name of an existing shell's command.
 * `replaceCommand [command name]`: replace the selected command with code from
   the plugin. The name must be a name of an existing shell's command.
+* `addHelp [topic] [usage] [help content]`: add the new help entry to the
+  shell. The topic must be unique. The help entry will not be added if there is
+  one with that topic. If you want to replace an existing help entry, use call
+  `updateHelp` (see below).
+* `deleteHelp [topic]`: delete the help entry with the selected topic. The
+  topic must be the topic of an existing help entry.
+* `updateHelp [topic] [usage] [help content]`: update the existing help entry
+  with the new values. The topic must be a topic of an existing help entry.
 
 #### Advanced help system
 
