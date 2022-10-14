@@ -16,6 +16,8 @@ of the shell.
   shell
 - Ability to add, remove or replace the shell's commands with the shell's
   plugins
+- Ability to add, remove or update the shell's help's entries with the shell's
+  plugins
 
 ### Changed
 - Updated README.md
