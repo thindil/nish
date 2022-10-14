@@ -2,7 +2,7 @@ import os
 
 # Package
 
-version = "0.3.0"
+version = "0.4.0"
 author = "Bartek thindil Jasicki"
 description = "An experimental command line shell"
 license = "BSD-3-Clause"
