@@ -334,6 +334,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       showOutput(message = $commandArguments, newLine = false)
       if cursorPosition < input.len() - 1:
         stdout.cursorBackward(count = input.len() - cursorPosition - 1)
+      inputString = input
     except ValueError, IOError:
       discard
 
@@ -371,7 +372,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     2] & $inputString[cursorPosition..inputString.len() - 1])
                 refreshOutput(multiLine)
                 try:
-                  stdout.cursorBackward(count = inputString.len() - cursorPosition)
+                  stdout.cursorBackward(count = 2)
                 except ValueError, IOError:
                   discard
                 cursorPosition.dec()
