@@ -439,7 +439,7 @@ proc removePlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc togglePlugin*(db; arguments; pluginsList; disable: bool = true;
+proc togglePlugin*(db; arguments; disable: bool = true;
     commands): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
     ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
@@ -451,7 +451,6 @@ proc togglePlugin*(db; arguments; pluginsList; disable: bool = true;
   ##
   ## * db           - the connection to the shell's database
   ## * arguments    - the arguments which the user entered to the command
-  ## * pluginsList  - the list of currently enabled shell's plugins
   ## * disable      - if true, disable the plugin, otherwise enable it
   ##
   ## RETURNS
@@ -501,14 +500,12 @@ proc togglePlugin*(db; arguments; pluginsList; disable: bool = true;
       # Remove or add the plugin to the list of enabled plugins and clear
       # the plugin help when disabling it
       if disable:
-        pluginsList.del($pluginId)
         db.exec(query = sql(query = ("DELETE FROM help WHERE plugin=?")), pluginPath)
       else:
         let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
             commands = commands)
         if newPlugin.path.len() == 0:
           return QuitFailure.ResultCode
-        pluginsList[$pluginId] = newPlugin
     except DbError:
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
           e = getCurrentException())
@@ -712,12 +709,12 @@ proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
               db = db, commands = list.commands)
         # Disable the selected plugin
         elif arguments.startsWith(prefix = "disable"):
-          return togglePlugin(arguments = arguments, pluginsList = list.plugins,
-              db = db, commands = list.commands)
+          return togglePlugin(arguments = arguments, db = db,
+              commands = list.commands)
         # Enable the selected plugin
         elif arguments.startsWith(prefix = "enable"):
-          return togglePlugin(arguments = arguments, pluginsList = list.plugins,
-              db = db, disable = false, commands = list.commands)
+          return togglePlugin(arguments = arguments, db = db, disable = false,
+              commands = list.commands)
         # Show the list of available plugins
         elif arguments.startsWith(prefix = "list"):
           return listPlugins(arguments = arguments, db = db)
