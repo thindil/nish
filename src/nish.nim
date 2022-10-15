@@ -64,7 +64,7 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
   ## QuitFailure.
   try:
     stdout.writeLine(x = """
-    Nish version: 0.4.0
+    Nish version: 0.5.0
 
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
     License: 3-Clause BSD""")
