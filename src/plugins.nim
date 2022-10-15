@@ -94,6 +94,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
   ## * pluginPath - the full path to the plugin which will be executed
   ## * arguments  - the arguments which will be passed to the plugin
   ## * db         - the connection to the shell's database
+  ## * commands   - the list of the shell's commands
   ##
   ## RETURNS
   ##
@@ -291,6 +292,7 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.gcsafe,
   ##
   ## * pluginPath - the full path to the plugin which will be checked
   ## * db         - the connection to the shell's database
+  ## * commands   - the list of the shell's commands
   ##
   ## RETURNS
   ##
@@ -328,6 +330,7 @@ proc addPlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
   ## * db          - the connection to the shell's database
   ## * arguments   - the arguments which the user entered to the command
   ## * pluginsList - the list of currently enabled shell's plugins
+  ## * commands    - the list of the shell's commands
   ##
   ## RETURNS
   ##
@@ -390,9 +393,9 @@ proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
   ##
   ## PARAMETERS
   ##
-  ## * db           - the connection to the shell's database
-  ## * arguments    - the arguments which the user entered to the command
-  ## * pluginsList  - the list of currently enabled shell's plugins
+  ## * db        - the connection to the shell's database
+  ## * arguments - the arguments which the user entered to the command
+  ## * commands  - the list of the shell's commands
   ##
   ## RETURNS
   ##
@@ -447,9 +450,10 @@ proc togglePlugin*(db; arguments; disable: bool = true;
   ##
   ## PARAMETERS
   ##
-  ## * db           - the connection to the shell's database
-  ## * arguments    - the arguments which the user entered to the command
-  ## * disable      - if true, disable the plugin, otherwise enable it
+  ## * db        - the connection to the shell's database
+  ## * arguments - the arguments which the user entered to the command
+  ## * disable   - if true, disable the plugin, otherwise enable it
+  ## * commands  - the list of the shell's commands
   ##
   ## RETURNS
   ##
@@ -521,8 +525,8 @@ proc listPlugins*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ##
   ## PARAMETERS
   ##
-  ## * arguments    - the user entered text with arguments for showing plugins
-  ## * db           - the connection to the shell's database
+  ## * arguments - the user entered text with arguments for showing plugins
+  ## * db        - the connection to the shell's database
   ##
   ## RETURNS
   ##
@@ -588,10 +592,11 @@ proc showPlugin*(arguments; pluginsList; db; commands): ResultCode {.gcsafe,
   ##
   ## PARAMETERS
   ##
-  ## * arguments    - the user entered text with arguments for the showing
-  ##                  plugin
-  ## * plugins      - the list of enabled plugins
-  ## * db           - the connection to the shell's database
+  ## * arguments - the user entered text with arguments for the showing
+  ##               plugin
+  ## * plugins   - the list of enabled plugins
+  ## * db        - the connection to the shell's database
+  ## * commands  - the list of the shell's commands
   ##
   ## RETURNS
   ##
