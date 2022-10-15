@@ -381,10 +381,9 @@ proc addPlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
         "' added as a plugin to the shell.", fgColor = fgGreen);
     return QuitSuccess.ResultCode
 
-proc removePlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect,
-    ReadEnvEffect, ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect],
-    contractual.} =
+proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
+    ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Disable the plugin and remove it from the shell.
@@ -434,7 +433,6 @@ proc removePlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
       return showError(message = "Can't delete plugin from database. Reason: ",
           e = getCurrentException())
     # Remove the plugin from the list of enabled plugins
-    pluginsList.del($pluginId)
     showOutput(message = "Deleted the plugin with Id: " & $pluginId,
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
@@ -705,8 +703,8 @@ proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
               pluginsList = list.plugins, commands = list.commands)
         # Delete the selected plugin
         elif arguments.startsWith(prefix = "remove"):
-          return removePlugin(arguments = arguments, pluginsList = list.plugins,
-              db = db, commands = list.commands)
+          return removePlugin(arguments = arguments, db = db,
+              commands = list.commands)
         # Disable the selected plugin
         elif arguments.startsWith(prefix = "disable"):
           return togglePlugin(arguments = arguments, db = db,
