@@ -252,8 +252,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             if remainingOptions.len() < 3:
               showError(message = "Insufficient arguments for updateHelp.")
               break
-            if  updateHelpEntry(topic = initLimitedString(capacity = maxNameLength,
-                text = remainingOptions[0]), usage = initLimitedString(
+            if updateHelpEntry(topic = initLimitedString(
+                capacity = maxNameLength, text = remainingOptions[0]),
+                    usage = initLimitedString(
                 capacity = maxInputLength, text = remainingOptions[1]),
                 plugin = initLimitedString(capacity = maxInputLength,
                 text = pluginPath), content = remainingOptions[2],
@@ -515,8 +516,8 @@ proc togglePlugin*(db; arguments; pluginsList; disable: bool = true;
         " the plugin '" & $pluginPath & "'", fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc listPlugins*(arguments; pluginsList; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+proc listPlugins*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -526,7 +527,6 @@ proc listPlugins*(arguments; pluginsList; db): ResultCode {.gcsafe, sideEffect,
   ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for showing plugins
-  ## * plugins      - the list of enabled plugins
   ## * db           - the connection to the shell's database
   ##
   ## RETURNS
@@ -553,10 +553,15 @@ proc listPlugins*(arguments; pluginsList; db): ResultCode {.gcsafe, sideEffect,
       except ValueError:
         showOutput(message = indent(s = "ID   Path",
             count = spacesAmount.int), fgColor = fgMagenta)
-      for id, data in pluginsList.pairs:
-        showOutput(message = indent(s = alignLeft(id, count = 4) & " " &
-            alignLeft(s = data.path, count = columnLength.int),
-                count = spacesAmount.int))
+      try:
+        for plugin in db.fastRows(query = sql(
+            query = "SELECT id, location FROM plugins WHERE enabled=1")):
+          showOutput(message = indent(s = alignLeft(plugin[0], count = 4) &
+              " " & alignLeft(s = plugin[1], count = columnLength.int),
+                  count = spacesAmount.int))
+      except DbError:
+        return showError(message = "Can't show the list of enabled plugins. Reason: ",
+            e = getCurrentException())
     # Show the list of all installed plugins with information about their state
     elif arguments == "list all":
       showFormHeader(message = "All available plugins are:")
@@ -715,7 +720,7 @@ proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
               db = db, disable = false, commands = list.commands)
         # Show the list of available plugins
         elif arguments.startsWith(prefix = "list"):
-          return listPlugins(arguments = arguments, pluginsList = list.plugins, db = db)
+          return listPlugins(arguments = arguments, db = db)
         # Show the selected plugin
         elif arguments.startsWith(prefix = "show"):
           return showPlugin(arguments = arguments, pluginsList = list.plugins,
