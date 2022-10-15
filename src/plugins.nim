@@ -316,9 +316,8 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.gcsafe,
       return
     result = PluginData(path: pluginPath, api: split(s = pluginInfo[3], sep = ","))
 
-proc addPlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect,
-        ExecIOEffect,
+proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, TimeEffect, WriteDbEffect, RootEffect],
     contractual.} =
   ## FUNCTION
@@ -329,7 +328,6 @@ proc addPlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
   ##
   ## * db          - the connection to the shell's database
   ## * arguments   - the arguments which the user entered to the command
-  ## * pluginsList - the list of currently enabled shell's plugins
   ## * commands    - the list of the shell's commands
   ##
   ## RETURNS
@@ -355,9 +353,7 @@ proc addPlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
       if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
           pluginPath) != @[""]:
         return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
-      # Add the plugin to the shell database and the list of enabled plugins
-      let newId = db.insertID(query = sql(
-          query = "INSERT INTO plugins (location, enabled) VALUES (?, 1)"), pluginPath)
+      # Add the plugin to the shell database
       # Check if the plugin can be added
       let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
@@ -376,7 +372,6 @@ proc addPlugin*(db; arguments; pluginsList; commands): ResultCode {.gcsafe,
             db = db, commands = commands).code != QuitSuccess:
           db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
           return showError(message = "Can't enable plugin '" & pluginPath & "'.")
-      pluginsList[$newId] = newPlugin
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
           e = getCurrentException())
@@ -705,7 +700,7 @@ proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
         # Add a new plugin
         elif arguments.startsWith(prefix = "add"):
           return addPlugin(arguments = arguments, db = db,
-              pluginsList = list.plugins, commands = list.commands)
+              commands = list.commands)
         # Delete the selected plugin
         elif arguments.startsWith(prefix = "remove"):
           return removePlugin(arguments = arguments, db = db,
