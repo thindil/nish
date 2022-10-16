@@ -70,7 +70,9 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
                  id          INTEGER       PRIMARY KEY,
                  location    VARCHAR(""" & $maxInputLength &
             """) NOT NULL,
-                 enabled     BOOLEAN       NOT NULL
+                 enabled     BOOLEAN       NOT NULL,
+                 precommand  BOOLEAN       NOT NULL,
+                 postcommand BOOLEAN       NOT NULL
               )"""))
     except DbError:
       return showError(message = "Can't create 'plugins' table. Reason: ",
@@ -750,3 +752,29 @@ proc initPlugins*(db; commands) {.gcsafe, sideEffect, raises: [], tags: [
     except DbError:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException())
+
+proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+  ## FUNCTION
+  ##
+  ## Update the table plugins to the new version if needed
+  ##
+  ## PARAMETERS
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## RETURNS
+  ##
+  ## QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """ALTER TABLE plugins ADD precommand BOOLEAN NOT NULL DEFAULT 0"""))
+      db.exec(query = sql(query = """ALTER TABLE plugins ADD postcommand BOOLEAN NOT NULL DEFAULT 0"""))
+    except DbError:
+      return showError(message = "Can't update table for the shell's aliases. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
+
