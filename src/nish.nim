@@ -523,10 +523,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     except CapacityError:
       discard
     # Execute plugins with precommand hook
-    for plugin in plugins.values:
-      if "preCommand" in plugin.api:
-        discard execPlugin(pluginPath = plugin.path, arguments = ["preCommand",
+    try:
+      for plugin in db.fastRows(query = sql(
+          query = "SELECT location FROM plugins WHERE precommand=1")):
+        discard execPlugin(pluginPath = plugin[0], arguments = ["preCommand",
             commandName & " " & arguments], db = db, commands = commands)
+    except DbError:
+      showError(message = "Can't execute preCommand hook for plugins. Reason: ",
+          e = getCurrentException())
     # Parse commands
     case commandName
     # Quit from shell
@@ -580,10 +584,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len(
       ) > 0: " " & arguments else: ""), db = db, returnCode = returnCode)
     # Execute plugins with postcommand hook
-    for plugin in plugins.values:
-      if "postCommand" in plugin.api:
-        discard execPlugin(pluginPath = plugin.path, arguments = ["postCommand",
+    try:
+      for plugin in db.fastRows(query = sql(
+          query = "SELECT location FROM plugins WHERE postcommand=1")):
+        discard execPlugin(pluginPath = plugin[0], arguments = ["postCommand",
             commandName & " " & arguments], db = db, commands = commands)
+    except DbError:
+      showError(message = "Can't execute postCommand hook for plugins. Reason: ",
+          e = getCurrentException())
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
