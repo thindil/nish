@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 Tag **BREAKING** means the change break compatibility with a previous version
 of the shell.
 
+## [Unreleased]
+
+### Fixed
+- Clearing the plugin's table after failed adding the new plugin to the
+  shell
+
 ## [0.4.0] - 2022-10-14
 
 ### Added
