@@ -359,19 +359,19 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
       let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
       if newPlugin.path.len() == 0:
-        db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
+        db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"), pluginPath)
         return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.")
       # Execute the installation code of the plugin
       if "install" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
             db = db, commands = commands).code != QuitSuccess:
-          db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
+          db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"), pluginPath)
           return showError(message = "Can't install plugin '" & pluginPath & "'.")
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
             db = db, commands = commands).code != QuitSuccess:
-          db.exec(query = sql(query = "DELETE FROM plugins WHERE localtion=?"), pluginPath)
+          db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"), pluginPath)
           return showError(message = "Can't enable plugin '" & pluginPath & "'.")
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
