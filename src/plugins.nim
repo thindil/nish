@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, parseopt, streams, strutils, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -46,7 +46,6 @@ const
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
-  pluginsList: ref PluginsList # The list of enabled plugins
   commands: ref CommandsList # The list of the shell's commands
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
@@ -577,7 +576,7 @@ proc listPlugins*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc showPlugin*(arguments; pluginsList; db; commands): ResultCode {.gcsafe,
+proc showPlugin*(arguments; db; commands): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
         WriteDbEffect,
     ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect], contractual.} =
@@ -653,8 +652,8 @@ proc showPlugin*(arguments; pluginsList; db; commands): ResultCode {.gcsafe,
       showOutput(message = "0.1")
     return QuitSuccess.ResultCode
 
-proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
-    tags: [ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect,
+proc initPlugins*(db; commands) {.gcsafe, sideEffect, raises: [], tags: [
+    ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect,
     WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
@@ -674,9 +673,6 @@ proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
   require:
     db != nil
   body:
-    {.warning[ProveInit]: off.}
-    pluginsList.clear()
-    {.warning[ProveInit]: on.}
     # Add commands related to the shell's aliases
     proc pluginCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
@@ -718,8 +714,8 @@ proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
           return listPlugins(arguments = arguments, db = db)
         # Show the selected plugin
         elif arguments.startsWith(prefix = "show"):
-          return showPlugin(arguments = arguments, pluginsList = list.plugins,
-              db = db, commands = list.commands)
+          return showPlugin(arguments = arguments, db = db,
+              commands = list.commands)
         else:
           try:
             return showUnknownHelp(subCommand = arguments,
@@ -751,7 +747,6 @@ proc initPlugins*(db; pluginsList; commands) {.gcsafe, sideEffect, raises: [],
               showError(message = "Can't initialize plugin '" & dbResult[
                   1] & "'.")
               continue
-          pluginsList[dbResult[0]] = newPlugin
     except DbError:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException())
