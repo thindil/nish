@@ -278,7 +278,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   initHelp(db = db, commands = commands)
 
   # Initialize the shell's plugins system
-  initPlugins(db = db, pluginsList = plugins, commands = commands)
+  initPlugins(db = db, commands = commands)
 
   proc refreshOutput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [
       WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
