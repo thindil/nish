@@ -354,13 +354,15 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
       if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
           pluginPath) != @[""]:
         return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
-      # Add the plugin to the shell database
       # Check if the plugin can be added
       let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
       if newPlugin.path.len() == 0:
-        db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"), pluginPath)
         return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.")
+      # Add the plugin to the shell database
+      db.exec(query = sql(query = "INSERT INTO plugins (location, enabled, precommand, postcommand) VALUES (?, 1, ?, ?)"),
+          pluginPath, (if "preCommand" in newPlugin.api: 1 else: 0), (
+          if "postCommand" in newPlugin.api: 1 else: 0))
       # Execute the installation code of the plugin
       if "install" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
