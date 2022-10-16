@@ -134,7 +134,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               e = getCurrentException())
           return nil
       versionValue: OptionValue = try:
-          initLimitedString(capacity = 1, text = "2")
+          initLimitedString(capacity = 1, text = "3")
         except CapacityError:
           showError(message = "Can't set versionValue. Reason: ",
               e = getCurrentException())
@@ -180,9 +180,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
     # If database version is different than the newest, update database
     try:
-      if parseInt(s = $getOption(optionName = versionName, db = result,
-          defaultValue = initLimitedString(capacity = 1, text = "0"))) <
-              parseInt(s = $versionValue):
+      case parseInt(s = $getOption(optionName = versionName, db = result,
+          defaultValue = initLimitedString(capacity = 1, text = "0")))
+      of 0 .. 1:
         if updateOptionsDb(db = result) == QuitFailure:
           return nil
         if updateHistoryDb(db = result) == QuitFailure:
@@ -201,6 +201,15 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             description = initLimitedString(capacity = 60,
             text = "The command which output will be used as the shell's prompt."),
             valueType = ValueType.command, db = result, readOnly = 1)
+      of 2:
+        if updatePluginsDb(db = result) == QuitFailure:
+          return nil
+        setOption(optionName = versionName, value = versionValue, db = result)
+      of 3:
+        discard
+      else:
+        showError(message = "Invalid version of database.")
+        return nil
     except CapacityError, DbError, ValueError:
       showError(message = "Can't update database. Reason: ",
           e = getCurrentException())
