@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, parseopt, streams, strutils, terminal]
+import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -115,6 +115,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     arguments.len() > 0
     db != nil
   body:
+
+    proc showPluginOutput(options: seq[string]) =
+      let color = (if options.len() == 1: fgDefault else: parseEnum[
+          ForegroundColor](options[1]))
+      showOutput(message = options[0], fgColor = color)
+
     let
       emptyAnswer = emptyLimitedString(capacity = maxInputLength)
       plugin = try:
@@ -122,6 +128,11 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         except OSError, Exception:
           return (showError(message = "Can't execute the plugin '" &
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
+      apiCalls = try:
+          {"showOutput": showPluginOutput}.toTable
+        except ValueError:
+          return (showError(message = "Can't set Api calls table. Reason: ",
+              e = getCurrentException()), emptyAnswer)
     result.answer = emptyAnswer
     try:
       # Read the plugin response and act accordingly to it
@@ -129,13 +140,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         var options = initOptParser(cmdline = line.strip())
         while true:
           options.next()
+          if apiCalls.hasKey(key = options.key):
+            apiCalls[options.key](options = options.remainingArgs())
           case options.key
-          # Show the message sent by the plugin in the standard output
-          of "showOutput":
-            let remainingOptions = options.remainingArgs()
-            let color = (if remainingOptions.len() ==
-                1: fgDefault else: parseEnum[ForegroundColor](remainingOptions[1]))
-            showOutput(message = remainingOptions[0], fgColor = color)
           # Show the message sent by the plugin in the standard error
           of "showError":
             showError(message = options.remainingArgs.join(sep = " "))
@@ -272,8 +279,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               break
           # The plugin sent any unknown request or response, show error about it
           else:
-            showError(message = "Unknown request or response from the plugin '" &
-                pluginPath & "'. Got: '" & options.key & "'")
+            if not apiCalls.hasKey(key = options.key):
+              showError(message = "Unknown request or response from the plugin '" &
+                  pluginPath & "'. Got: '" & options.key & "'")
           break
     except OSError, IOError, Exception:
       return (showError(message = "Can't get the plugin '" & pluginPath &
