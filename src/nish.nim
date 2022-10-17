@@ -234,7 +234,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
         DirSep & "nish.db")
     cursorPosition: Natural = 0
-    plugins = newTable[string, PluginData]()
     commands = newTable[string, CommandData]()
 
   # Check the command line parameters entered by the user. Available options
@@ -555,7 +554,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           # Build-in shell's command
           if commands[commandName].command != nil:
             returnCode = commands[commandName].command(arguments = arguments,
-                db = db, list = CommandLists(aliases: aliases, plugins: plugins,
+                db = db, list = CommandLists(aliases: aliases,
                 commands: commands))
           # The shell's command from plugin
           else:
