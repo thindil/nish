@@ -5,11 +5,11 @@ discard """
 import ../../src/[lstring, nish, plugins, resultcode]
 import utils/helpers
 
-var (db, pluginsList, commands) = initTest()
-initPlugins(db, pluginsList, commands)
-assert setTestPlugin(db, pluginsList, commands) == QuitSuccess
+var (db, commands) = initTest()
+initPlugins(db, commands)
+assert setTestPlugin(db, commands) == QuitSuccess
 assert removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
-    pluginsList, commands) == QuitSuccess
+    commands) == QuitSuccess
 assert removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
-    pluginsList, commands) == QuitFailure
+    commands) == QuitFailure
 quitShell(QuitSuccess.ResultCode, db)

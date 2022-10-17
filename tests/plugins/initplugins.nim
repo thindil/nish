@@ -5,7 +5,7 @@ discard """
 import ../../src/[nish, plugins, resultcode]
 import utils/helpers
 
-var (db, pluginsList, commands) = initTest()
-initPlugins(db, pluginsList, commands)
-assert setTestPlugin(db, pluginsList, commands) == QuitSuccess
+var (db, commands) = initTest()
+initPlugins(db, commands)
+assert setTestPlugin(db, commands) == QuitSuccess
 quitShell(QuitSuccess.ResultCode, db)
