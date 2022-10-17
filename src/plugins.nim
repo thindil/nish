@@ -43,6 +43,14 @@ const
   ##
   ## The list of available subcommands for command plugin
 
+type
+  PluginData = object
+    ## FUNCTION
+    ##
+    ## Store information about the shell's plugin
+    path*: string ## Full path to the selected plugin
+    api: seq[string] ## The list of API calls supported by the plugin
+
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command

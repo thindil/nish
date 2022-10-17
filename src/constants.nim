@@ -72,13 +72,3 @@ type
     ## FUNCTION
     ##
     ## Used to store the available aliases in the selected directory
-  PluginData* = object
-    ## FUNCTION
-    ##
-    ## Store information about the shell's plugin
-    path*: string ## Full path to the selected plugin
-    api*: seq[string] ## The list of API calls supported by the plugin
-  PluginsList* = Table[string, PluginData]
-    ## FUNCTION
-    ##
-    ## Used to store the enabled shell's plugins
