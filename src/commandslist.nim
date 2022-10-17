@@ -36,7 +36,6 @@ type
     ##
     ## Store additional data for the shell's command
     aliases*: ref AliasesList ## List of shell's aliases
-    plugins*: ref PluginsList ## List of enables shell's plugins
     commands*: ref Table[string, CommandData] ## List of the shell's commands
   CommandProc* = proc (arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.raises: [], contractual.}
