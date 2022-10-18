@@ -177,12 +177,24 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
+    proc deletePluginCommand(options: seq[string]): bool =
+      if options.len() == 0:
+        showError(message = "Insufficient arguments for deleteCommand.")
+        return false
+      try:
+        deleteCommand(name = initLimitedString(capacity = maxNameLength, text = options[0]), commands = commands)
+      except CommandsListError:
+        showError(message = "Can't delete command '" & options[0] & "'. Reason: " & getCurrentExceptionMsg())
+        return false
+      return true
+
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
               "setOption": setPluginOption,
               "removeOption": removePluginOption,
               "getOption": getPluginOption,
-              "addCommand": addPluginCommand}.toTable
+              "addCommand": addPluginCommand,
+              "deleteCommand": deletePluginCommand}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -206,20 +218,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
-          # Delete the command from the shell. The argument is the name of the
-          # command which will be deleted
-          of "deleteCommand":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() == 0:
-              showError(message = "Insufficient arguments for deleteCommand.")
-              break
-            try:
-              deleteCommand(name = initLimitedString(capacity = maxNameLength,
-                  text = remainingOptions[0]), commands = commands)
-            except CommandsListError:
-              showError(message = "Can't delete command '" & remainingOptions[
-                  0] & "'. Reason: " & getCurrentExceptionMsg())
-              break
           # Replace the command with the command from the plugin. The argument
           # is name of the command to replace
           of "replaceCommand":
