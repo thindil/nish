@@ -163,11 +163,26 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       plugin.inputStream.flush()
       return true
 
+    proc addPluginCommand(options: seq[string]): bool =
+      if options.len() == 0:
+        showError(message = "Insufficient arguments for addCommand.")
+        return false
+      try:
+        addCommand(name = initLimitedString(capacity = maxNameLength,
+            text = options[0]), command = nil, commands = commands,
+            plugin = pluginPath)
+      except CommandsListError:
+        showError(message = "Can't add command '" & options[0] & "'. Reason: " &
+            getCurrentExceptionMsg())
+        return false
+      return true
+
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
               "setOption": setPluginOption,
               "removeOption": removePluginOption,
-              "getOption": getPluginOption}.toTable
+              "getOption": getPluginOption,
+              "addCommand": addPluginCommand}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -191,22 +206,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
-          # Add a new command to the shell. The argument is the name of the
-          # command which will be added
-          of "addCommand":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() == 0:
-              showError(message = "Insufficient arguments for addCommand.")
-              break
-            try:
-              addCommand(name = initLimitedString(capacity = maxNameLength,
-                  text = remainingOptions[0]), command = nil,
-                      commands = commands,
-                  plugin = pluginPath)
-            except CommandsListError:
-              showError(message = "Can't add command '" & remainingOptions[0] &
-                  "'. Reason: " & getCurrentExceptionMsg())
-              break
           # Delete the command from the shell. The argument is the name of the
           # command which will be deleted
           of "deleteCommand":
