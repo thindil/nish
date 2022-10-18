@@ -116,10 +116,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     db != nil
   body:
 
-    proc showPluginOutput(options: seq[string]) =
+    proc showPluginOutput(options: seq[string]): bool =
       let color = (if options.len() == 1: fgDefault else: parseEnum[
           ForegroundColor](options[1]))
       showOutput(message = options[0], fgColor = color)
+
+    proc showPluginError(options: seq[string]): bool =
+      discard showError(message = options.join(sep = " "))
+      return true
 
     let
       emptyAnswer = emptyLimitedString(capacity = maxInputLength)
@@ -129,7 +133,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return (showError(message = "Can't execute the plugin '" &
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
       apiCalls = try:
-          {"showOutput": showPluginOutput}.toTable
+          {"showOutput": showPluginOutput, "showError": showPluginError}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -141,11 +145,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         while true:
           options.next()
           if apiCalls.hasKey(key = options.key):
-            apiCalls[options.key](options = options.remainingArgs())
+            if not apiCalls[options.key](options = options.remainingArgs()):
+              break
           case options.key
-          # Show the message sent by the plugin in the standard error
-          of "showError":
-            showError(message = options.remainingArgs.join(sep = " "))
           # Set the selected shell's option. Arguments are name of the option,
           # its value, decription and type
           of "setOption":
