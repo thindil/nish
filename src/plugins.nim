@@ -137,6 +137,16 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           text = options[2]), valueType = parseEnum[ValueType](options[3]), db = db)
       return true
 
+    proc removePluginOption(options: seq[string]): bool =
+      if options.len() == 0:
+        showError(message = "Insufficient arguments for removeOption.")
+        return false
+      if deleteOption(optionName = initLimitedString(capacity = maxNameLength,
+          text = options[0]), db = db) == QuitFailure:
+        showError(message = "Failed to remove option '" & options[0] & "'.")
+        return false
+      return true
+
     let
       emptyAnswer = emptyLimitedString(capacity = maxInputLength)
       plugin = try:
@@ -146,7 +156,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
       apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
-              "setOption": setPluginOption}.toTable
+              "setOption": setPluginOption,
+              "removeOption": removePluginOption}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -161,19 +172,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             if not apiCalls[options.key](options = options.remainingArgs()):
               break
           case options.key
-          # Remove the selected shell's option. The argument is the name of the
-          # option to remove
-          of "removeOption":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() == 0:
-              showError(message = "Insufficient arguments for removeOption.")
-              break
-            if deleteOption(optionName = initLimitedString(
-                capacity = maxNameLength, text = remainingOptions[0]),
-                    db = db) == QuitFailure:
-              showError(message = "Failed to remove option '" &
-                  remainingOptions[0] & "'.")
-              break
           # Get the value of the selected shell's option. The argument is the name
           # of the option which value will be get
           of "getOption":
