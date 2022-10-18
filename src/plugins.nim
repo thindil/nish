@@ -116,13 +116,25 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     db != nil
   body:
 
-    proc showPluginOutput(options: seq[string]): bool =
+    proc showPluginOutput(options: seq[string]): bool {.closure.} =
       let color = (if options.len() == 1: fgDefault else: parseEnum[
           ForegroundColor](options[1]))
       showOutput(message = options[0], fgColor = color)
+      return true
 
-    proc showPluginError(options: seq[string]): bool =
-      discard showError(message = options.join(sep = " "))
+    proc showPluginError(options: seq[string]): bool {.closure.} =
+      showError(message = options.join(sep = " "))
+      return true
+
+    proc setPluginOption(options: seq[string]): bool =
+      if options.len() < 4:
+        showError(message = "Insufficient arguments for setOption.")
+        return false
+      setOption(optionName = initLimitedString(capacity = maxNameLength,
+          text = options[0]), value = initLimitedString(
+          capacity = maxInputLength, text = options[1]),
+          description = initLimitedString(capacity = maxInputLength,
+          text = options[2]), valueType = parseEnum[ValueType](options[3]), db = db)
       return true
 
     let
@@ -133,7 +145,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return (showError(message = "Can't execute the plugin '" &
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
       apiCalls = try:
-          {"showOutput": showPluginOutput, "showError": showPluginError}.toTable
+          {"showOutput": showPluginOutput, "showError": showPluginError,
+              "setOption": setPluginOption}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -148,19 +161,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             if not apiCalls[options.key](options = options.remainingArgs()):
               break
           case options.key
-          # Set the selected shell's option. Arguments are name of the option,
-          # its value, decription and type
-          of "setOption":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() < 4:
-              showError(message = "Insufficient arguments for setOption.")
-              break
-            setOption(optionName = initLimitedString(capacity = maxNameLength,
-                text = remainingOptions[0]), value = initLimitedString(
-                capacity = maxInputLength, text = remainingOptions[1]),
-                description = initLimitedString(capacity = maxInputLength,
-                text = remainingOptions[2]), valueType = parseEnum[ValueType](
-                remainingOptions[3]), db = db)
           # Remove the selected shell's option. The argument is the name of the
           # option to remove
           of "removeOption":
