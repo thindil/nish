@@ -115,6 +115,13 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     arguments.len() > 0
     db != nil
   body:
+    let
+      emptyAnswer = emptyLimitedString(capacity = maxInputLength)
+      plugin = try:
+          startProcess(command = pluginPath, args = arguments)
+        except OSError, Exception:
+          return (showError(message = "Can't execute the plugin '" &
+              pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
     proc showPluginOutput(options: seq[string]): bool {.closure.} =
       let color = (if options.len() == 1: fgDefault else: parseEnum[
@@ -147,17 +154,20 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
-    let
-      emptyAnswer = emptyLimitedString(capacity = maxInputLength)
-      plugin = try:
-          startProcess(command = pluginPath, args = arguments)
-        except OSError, Exception:
-          return (showError(message = "Can't execute the plugin '" &
-              pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
-      apiCalls = try:
+    proc getPluginOption(options: seq[string]): bool =
+      if options.len() == 0:
+        showError(message = "Insufficient arguments for getOption.")
+        return false
+      plugin.inputStream.write($getOption(optionName = initLimitedString(
+          capacity = maxNameLength, text = options[0]), db = db) & "\n")
+      plugin.inputStream.flush()
+      return true
+
+    let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
               "setOption": setPluginOption,
-              "removeOption": removePluginOption}.toTable
+              "removeOption": removePluginOption,
+              "getOption": getPluginOption}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -172,17 +182,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             if not apiCalls[options.key](options = options.remainingArgs()):
               break
           case options.key
-          # Get the value of the selected shell's option. The argument is the name
-          # of the option which value will be get
-          of "getOption":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() == 0:
-              showError(message = "Insufficient arguments for getOption.")
-              break
-            plugin.inputStream.write($getOption(optionName = initLimitedString(
-                capacity = maxNameLength, text = remainingOptions[0]),
-                    db = db) & "\n")
-            plugin.inputStream.flush()
           # Set the answer from the plugin. The argument is the plugin's answer
           # with semicolon limited values
           of "answer":
