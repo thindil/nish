@@ -208,36 +208,30 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       if options.len() < 3:
         showError(message = "Insufficient arguments for addHelp.")
         return false
-      if addHelpEntry(topic = initLimitedString(capacity = maxNameLength,
+      return addHelpEntry(topic = initLimitedString(capacity = maxNameLength,
           text = options[0]), usage = initLimitedString(
           capacity = maxInputLength, text = options[1]),
           plugin = initLimitedString(capacity = maxInputLength,
           text = pluginPath), content = options[2], isTemplate = false,
-          db = db) == QuitFailure:
-        return false
-      return true
+          db = db) == QuitFailure
 
     proc deletePluginHelp(options: seq[string]): bool =
       if options.len() == 0:
         showError(message = "Insufficient arguments for deleteHelp.")
         return false
-      if deleteHelpEntry(topic = initLimitedString(capacity = maxNameLength,
-          text = options[0]), db = db) == QuitFailure:
-        return false
-      return true
+      return deleteHelpEntry(topic = initLimitedString(capacity = maxNameLength,
+          text = options[0]), db = db) == QuitFailure
 
     proc updatePluginHelp(options: seq[string]): bool =
       if options.len() < 3:
         showError(message = "Insufficient arguments for updateHelp.")
         return false
-      if updateHelpEntry(topic = initLimitedString(capacity = maxNameLength,
+      return updateHelpEntry(topic = initLimitedString(capacity = maxNameLength,
           text = options[0]), usage = initLimitedString(
           capacity = maxInputLength, text = options[1]),
           plugin = initLimitedString(capacity = maxInputLength,
           text = pluginPath), content = options[2], isTemplate = false,
-          db = db) == QuitFailure:
-        return false
-      return true
+          db = db) == QuitFailure
 
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
