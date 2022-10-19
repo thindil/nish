@@ -217,6 +217,15 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
+    proc deletePluginHelp(options: seq[string]): bool =
+      if options.len() == 0:
+        showError(message = "Insufficient arguments for deleteHelp.")
+        return false
+      if deleteHelpEntry(topic = initLimitedString(capacity = maxNameLength,
+          text = options[0]), db = db) == QuitFailure:
+        return false
+      return true
+
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
               "setOption": setPluginOption,
@@ -225,7 +234,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               "addCommand": addPluginCommand,
               "deleteCommand": deletePluginCommand,
               "replaceCommand": replacePluginCommand,
-              "addHelp": addPluginHelp}.toTable
+              "addHelp": addPluginHelp,
+              "deleteHelp": deletePluginHelp}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -249,17 +259,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
-          # Delete the help entry from the shell. The argument is the topic of the
-          # help entry which will be deleted
-          of "deleteHelp":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() == 0:
-              showError(message = "Insufficient arguments for deleteHelp.")
-              break
-            if deleteHelpEntry(topic = initLimitedString(
-                capacity = maxNameLength, text = remainingOptions[0]),
-                db = db) == QuitFailure:
-              break
           # Update the help entry in the shell. The argument is the topic of the help,
           # its usage and the content
           of "updateHelp":
