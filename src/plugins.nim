@@ -226,6 +226,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
+    proc updatePluginHelp(options: seq[string]): bool =
+      if options.len() < 3:
+        showError(message = "Insufficient arguments for updateHelp.")
+        return false
+      if updateHelpEntry(topic = initLimitedString(capacity = maxNameLength,
+          text = options[0]), usage = initLimitedString(
+          capacity = maxInputLength, text = options[1]),
+          plugin = initLimitedString(capacity = maxInputLength,
+          text = pluginPath), content = options[2], isTemplate = false,
+          db = db) == QuitFailure:
+        return false
+      return true
+
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
               "setOption": setPluginOption,
@@ -235,7 +248,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               "deleteCommand": deletePluginCommand,
               "replaceCommand": replacePluginCommand,
               "addHelp": addPluginHelp,
-              "deleteHelp": deletePluginHelp}.toTable
+              "deleteHelp": deletePluginHelp,
+              "updateHelp": updatePluginHelp}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -259,21 +273,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
-          # Update the help entry in the shell. The argument is the topic of the help,
-          # its usage and the content
-          of "updateHelp":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() < 3:
-              showError(message = "Insufficient arguments for updateHelp.")
-              break
-            if updateHelpEntry(topic = initLimitedString(
-                capacity = maxNameLength, text = remainingOptions[0]),
-                    usage = initLimitedString(
-                capacity = maxInputLength, text = remainingOptions[1]),
-                plugin = initLimitedString(capacity = maxInputLength,
-                text = pluginPath), content = remainingOptions[2],
-                isTemplate = false, db = db) == QuitFailure:
-              break
           # The plugin sent any unknown request or response, show error about it
           else:
             if not apiCalls.hasKey(key = options.key):
