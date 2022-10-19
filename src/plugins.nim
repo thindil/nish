@@ -182,9 +182,25 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         showError(message = "Insufficient arguments for deleteCommand.")
         return false
       try:
-        deleteCommand(name = initLimitedString(capacity = maxNameLength, text = options[0]), commands = commands)
+        deleteCommand(name = initLimitedString(capacity = maxNameLength,
+            text = options[0]), commands = commands)
       except CommandsListError:
-        showError(message = "Can't delete command '" & options[0] & "'. Reason: " & getCurrentExceptionMsg())
+        showError(message = "Can't delete command '" & options[0] &
+            "'. Reason: " & getCurrentExceptionMsg())
+        return false
+      return true
+
+    proc replacePluginCommand(options: seq[string]): bool =
+      if options.len() == 0:
+        showError(message = "Insufficient arguments for replaceCommand.")
+        return false
+      try:
+        replaceCommand(name = initLimitedString(capacity = maxNameLength,
+            text = options[0]), command = nil, commands = commands,
+            plugin = pluginPath)
+      except CommandsListError:
+        showError(message = "Can't replace command '" & options[0] &
+            "'. Reason: " & getCurrentExceptionMsg())
         return false
       return true
 
@@ -194,7 +210,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               "removeOption": removePluginOption,
               "getOption": getPluginOption,
               "addCommand": addPluginCommand,
-              "deleteCommand": deletePluginCommand}.toTable
+              "deleteCommand": deletePluginCommand,
+              "replaceCommand": replacePluginCommand}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -218,21 +235,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
-          # Replace the command with the command from the plugin. The argument
-          # is name of the command to replace
-          of "replaceCommand":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() == 0:
-              showError(message = "Insufficient arguments for replaceCommand.")
-              break
-            try:
-              replaceCommand(name = initLimitedString(capacity = maxNameLength,
-                  text = remainingOptions[0]), command = nil,
-                  commands = commands, plugin = pluginPath)
-            except CommandsListError:
-              showError(message = "Can't replace command '" & remainingOptions[
-                  0] & "'. Reason: " & getCurrentExceptionMsg())
-              break
           # Add new help entry to the shell. The argument is the topic of the help,
           # its usage and the content
           of "addHelp":
