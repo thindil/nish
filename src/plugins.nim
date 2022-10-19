@@ -263,10 +263,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           if apiCalls.hasKey(key = options.key):
             if not apiCalls[options.key](options = options.remainingArgs()):
               break
-          case options.key
           # Set the answer from the plugin. The argument is the plugin's answer
           # with semicolon limited values
-          of "answer":
+          elif options.key == "answer":
             let remainingOptions = options.remainingArgs()
             if remainingOptions.len() == 0:
               showError(message = "Insufficient arguments for answer.")
@@ -275,9 +274,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
                 0].len, text = remainingOptions[0])
           # The plugin sent any unknown request or response, show error about it
           else:
-            if not apiCalls.hasKey(key = options.key):
-              showError(message = "Unknown request or response from the plugin '" &
-                  pluginPath & "'. Got: '" & options.key & "'")
+            showError(message = "Unknown request or response from the plugin '" &
+                pluginPath & "'. Got: '" & options.key & "'")
           break
     except OSError, IOError, Exception:
       return (showError(message = "Can't get the plugin '" & pluginPath &
