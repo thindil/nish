@@ -204,6 +204,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
+    proc addPluginHelp(options: seq[string]): bool =
+      if options.len() < 3:
+        showError(message = "Insufficient arguments for addHelp.")
+        return false
+      if addHelpEntry(topic = initLimitedString(capacity = maxNameLength,
+          text = options[0]), usage = initLimitedString(
+          capacity = maxInputLength, text = options[1]),
+          plugin = initLimitedString(capacity = maxInputLength,
+          text = pluginPath), content = options[2], isTemplate = false,
+          db = db) == QuitFailure:
+        return false
+      return true
+
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
               "setOption": setPluginOption,
@@ -211,7 +224,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               "getOption": getPluginOption,
               "addCommand": addPluginCommand,
               "deleteCommand": deletePluginCommand,
-              "replaceCommand": replacePluginCommand}.toTable
+              "replaceCommand": replacePluginCommand,
+              "addHelp": addPluginHelp}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
               e = getCurrentException()), emptyAnswer)
@@ -235,20 +249,6 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
-          # Add new help entry to the shell. The argument is the topic of the help,
-          # its usage and the content
-          of "addHelp":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() < 3:
-              showError(message = "Insufficient arguments for addHelp.")
-              break
-            if addHelpEntry(topic = initLimitedString(capacity = maxNameLength,
-                text = remainingOptions[0]), usage = initLimitedString(
-                capacity = maxInputLength, text = remainingOptions[1]),
-                plugin = initLimitedString(capacity = maxInputLength,
-                text = pluginPath), content = remainingOptions[2],
-                isTemplate = false, db = db) == QuitFailure:
-              break
           # Delete the help entry from the shell. The argument is the topic of the
           # help entry which will be deleted
           of "deleteHelp":
