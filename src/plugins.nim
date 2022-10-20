@@ -231,6 +231,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return true
 
     proc addPluginCommand(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Add a new command to the shell
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the name of
+      ##             the command to add
+      ##
+      ## RETURNS
+      ##
+      ## True if the command was properly added, otherwise false with
+      ## information what happened
       if options.len() == 0:
         showError(message = "Insufficient arguments for addCommand.")
         return false
@@ -245,6 +258,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return true
 
     proc deletePluginCommand(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Remove the command to the shell
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the name of
+      ##             the command to delete
+      ##
+      ## RETURNS
+      ##
+      ## True if the command was properly deleted, otherwise false with
+      ## information what happened
       if options.len() == 0:
         showError(message = "Insufficient arguments for deleteCommand.")
         return false
@@ -258,6 +284,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return true
 
     proc replacePluginCommand(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Replace the existing shell's command with the selected one
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the name of
+      ##             the command which will be replaced
+      ##
+      ## RETURNS
+      ##
+      ## True if the command was properly replaced, otherwise false with
+      ## information what happened
       if options.len() == 0:
         showError(message = "Insufficient arguments for replaceCommand.")
         return false
