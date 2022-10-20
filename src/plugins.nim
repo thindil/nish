@@ -260,7 +260,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     proc deletePluginCommand(options: seq[string]): bool =
       ## FUNCTION
       ##
-      ## Remove the command to the shell
+      ## Remove the command from the shell
       ##
       ## PARAMETERS
       ##
@@ -311,6 +311,20 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return true
 
     proc addPluginHelp(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Add a new help entry to the shell's help
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the topic of
+      ##             the help entry to add, 1 - the usage section of the help
+      ##             entry, 2 - the content of the help entry
+      ##
+      ## RETURNS
+      ##
+      ## True if the help entry was properly added, otherwise false with
+      ## information what happened
       if options.len() < 3:
         showError(message = "Insufficient arguments for addHelp.")
         return false
@@ -322,6 +336,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           db = db) == QuitFailure
 
     proc deletePluginHelp(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Remove the help entry from the shell's help
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the name of
+      ##             the help entry to delete
+      ##
+      ## RETURNS
+      ##
+      ## True if the help entry was properly deleted, otherwise false with
+      ## information what happened
       if options.len() == 0:
         showError(message = "Insufficient arguments for deleteHelp.")
         return false
@@ -329,6 +356,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           text = options[0]), db = db) == QuitFailure
 
     proc updatePluginHelp(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Update the existing help entry with the selected one
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the topic of
+      ##             the help entry to replace, 1 - the new content of usage
+      ##             section, 2 - the new content of the content of content
+      ##             section
+      ##
+      ## RETURNS
+      ##
+      ## True if the help entry was properly updated, otherwise false with
+      ## information what happened
       if options.len() < 3:
         showError(message = "Insufficient arguments for updateHelp.")
         return false
