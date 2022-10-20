@@ -186,6 +186,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return true
 
     proc removePluginOption(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Remove the selected option from the shell
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the name of
+      ##             the option to remove
+      ##
+      ## RETURNS
+      ##
+      ## True if the option was properly removed, otherwise false with
+      ## information what happened
       if options.len() == 0:
         showError(message = "Insufficient arguments for removeOption.")
         return false
@@ -196,6 +209,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return true
 
     proc getPluginOption(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Get the value of the selected option and send it to the plugin
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the name of
+      ##             the option to get
+      ##
+      ## RETURNS
+      ##
+      ## True if the value of the option was properly sent to the plugin,
+      ## otherwise false with information what happened
       if options.len() == 0:
         showError(message = "Insufficient arguments for getOption.")
         return false
