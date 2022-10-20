@@ -441,7 +441,7 @@ proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
   body:
     try:
       db.exec(query = sql(query = "DELETE FROM help"));
-    except DBError:
+    except DbError:
       return showError(message = "Can't clear the help content. Reason: ",
           e = getCurrentException())
     result = readHelpFromFile(db = db)
