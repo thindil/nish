@@ -124,6 +124,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
     proc showPluginOutput(options: seq[string]): bool {.closure.} =
+      ## FUNCTION
+      ##
+      ## Show the output from the plugin via shell's output system
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the text to
+      ##             show, 1 - the foreground color of the text. If list
+      ##             contains only one element, use default color.
+      ##
+      ## RETURNS
+      ##
+      ## This procedure always returns true
       let color = (if options.len() == 1: fgDefault else: parseEnum[
           ForegroundColor](options[1]))
       showOutput(message = options[0], fgColor = color)
