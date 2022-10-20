@@ -143,10 +143,38 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return true
 
     proc showPluginError(options: seq[string]): bool {.closure.} =
+      ## FUNCTION
+      ##
+      ## Show the output from the plugin via shell's output system as an
+      ## error message
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the text to
+      ##             show
+      ##
+      ## RETURNS
+      ##
+      ## This procedure always returns true
       showError(message = options.join(sep = " "))
       return true
 
     proc setPluginOption(options: seq[string]): bool =
+      ## FUNCTION
+      ##
+      ## Set the shell's option value, description or type. If the option
+      ## doesn't exist, it is created.
+      ##
+      ## PARAMETERS
+      ##
+      ## * options - The list of options from the API call. 0 - the option's name,
+      ##             1 - the option's value, 2 - the option's description,
+      ##             3 - the option's value type
+      ##
+      ## RETURNS
+      ##
+      ## True if the option was properly added or updated, otherwise false
+      ## with information what happened
       if options.len() < 4:
         showError(message = "Insufficient arguments for setOption.")
         return false
