@@ -402,6 +402,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         var options = initOptParser(cmdline = line.strip())
         while true:
           options.next()
+          # If the plugin sent a valid request, execute it
           if apiCalls.hasKey(key = options.key):
             if not apiCalls[options.key](options = options.remainingArgs()):
               break
