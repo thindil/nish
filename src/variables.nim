@@ -350,6 +350,7 @@ proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     showOutput(message = "You can cancel adding a new variable at any time by double press Escape key.")
+    # Set the name for the variable
     showFormHeader(message = "(1/5) Name")
     showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
     var name: VariableName = emptyLimitedString(capacity = variableNameLength)
@@ -368,12 +369,14 @@ proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         showOutput(message = "Name: ", newLine = false)
     if name == "exit":
       return showError(message = "Adding a new variable cancelled.")
+    # Set the description for the variable
     showFormHeader(message = "(2/5) Description")
     showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
     showOutput(message = "Description: ", newLine = false)
     let description: UserInput = readInput()
     if description == "exit":
       return showError(message = "Adding a new variable cancelled.")
+    # Set the working directory for the variable
     showFormHeader(message = "(3/5) Working directory")
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
     showOutput(message = "Path: ", newLine = false)
@@ -389,6 +392,7 @@ proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         showOutput(message = "Path: ", newLine = false)
     if path == "exit":
       return showError(message = "Adding a new variable cancelled.")
+    # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness")
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
     showOutput(message = "Recursive(y/n): ", newLine = false)
@@ -406,6 +410,7 @@ proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       stdout.writeLine(x = "")
     except IOError:
       discard
+    # Set the value for the variable
     showFormHeader(message = "(5/5) Value")
     showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
     showOutput(message = "Value: ", newLine = false)
@@ -476,6 +481,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         except DbError:
           return showError(message = "The variable with the ID: " & $varId & " doesn't exists.")
     showOutput(message = "You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
+    # Set the name for the variable
     showFormHeader(message = "(1/5) Name")
     showOutput(message = "The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
     var name: VariableName = try:
@@ -497,6 +503,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         name.setString(text = row[0])
       except CapacityError:
         return showError("Editing the variable cancelled. Reason: can't set name for the variable.")
+    # Set the description for the variable
     showFormHeader(message = "(2/5) Description")
     showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '" &
         row[3] & "'. Can't contains a new line character.: ")
@@ -508,6 +515,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         description.setString(text = row[3])
       except CapacityError:
         return showError("Editing the variable cancelled. Reason: can't set description for the variable.")
+    # Set the working directory for the variable
     showFormHeader(message = "(3/5) Working directory")
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
         row[1] & "'. Must be a path to the existing directory.:")
@@ -524,6 +532,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Editing the variable cancelled.")
     elif path == "":
       path = row[1].DirectoryPath
+    # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness")
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
     var inputChar: char = try:
@@ -540,6 +549,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       stdout.writeLine(x = "")
     except IOError:
       discard
+    # Set the value for the variable
     showFormHeader(message = "(5/5) Value")
     showOutput(message = "The value of the variable. Current value: '" & row[
         2] &
@@ -607,7 +617,9 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initVariables*(db; commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect, RootEffect], contractual.} =
+proc initVariables*(db; commands: ref CommandsList) {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect, WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Initialize enviroment variables. Set help related to the variables and
