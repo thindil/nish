@@ -196,6 +196,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Can't check if the selected option is read only. Reason: ",
           e = getCurrentException())
     var value: OptionValue = arguments[(separatorIndex + 1) .. ^1]
+    # Check correctness of the option's value
     try:
       case db.getValue(query = sql(query = "SELECT valuetype FROM options WHERE option=?"), optionName)
       of "integer":
@@ -249,6 +250,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     except DbError:
       return showError(message = "Can't get type of value for option '" &
           optionName & "'. Reason: ", e = getCurrentException())
+    # Set the option
     setOption(optionName = optionName, value = value, db = db)
     showOutput(message = "Value for option '" & optionName & "' was set to '" &
         value & "'", fgColor = fgGreen);
@@ -278,6 +280,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     if arguments.len() < 7:
       return showError("Please enter name of the option to reset or 'all' to reset all options.")
     let optionName: OptionName = arguments[6 .. ^1]
+    # Reset all options
     if optionName == "all":
       try:
         db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
@@ -285,6 +288,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       except DbError:
         return showError(message = "Can't reset the shell's options to their default values. Reason: ",
             e = getCurrentException())
+    # Reset the selected option
     else:
       try:
         if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
