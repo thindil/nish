@@ -141,8 +141,11 @@ proc getHistory*(historyIndex: HistoryRange; db;
   ## PARAMETERS
   ##
   ## * historyIndex - the index of command in the shell's commands' history which
-  ##                 will be get
-  ## * db          - the connection to the shell's database
+  ##                  will be get
+  ## * db           - the connection to the shell's database
+  ## * searchFor    - the part of full command which will be get from the shell's
+  ##                  commands' history. Can be empty. If set, will be used instead
+  ##                  of historyIndex
   ##
   ## RETURNS
   ##
@@ -151,6 +154,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
     db != nil
   body:
     try:
+      # Get the command based on the historyIndex parameter
       if searchFor.len() == 0:
         let value = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
@@ -161,6 +165,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
               $(historyLength(db = db) - historyIndex))
         else:
           result = value
+      # Get the command based on the searchFor parameter
       else:
         let value = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
