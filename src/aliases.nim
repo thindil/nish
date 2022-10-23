@@ -121,6 +121,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.gcsafe,
         except DbError: 10.ColumnAmount
       spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
           12 except ValueError: 6.ColumnAmount
+    # Show all available aliases declared in the shell
     if arguments == "list all":
       showFormHeader(message = "All available aliases are:")
       try:
@@ -139,6 +140,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.gcsafe,
       except DbError:
         return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
+    # Show only aliases available in the current directory
     elif arguments[0 .. 3] == "list":
       showFormHeader(message = "Available aliases are:")
       try:
@@ -292,6 +294,7 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
     db != nil
   body:
     showOutput(message = "You can cancel adding a new alias at any time by double press Escape key.")
+    # Set the name for the alias
     showFormHeader(message = "(1/6) Name")
     showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
     showOutput(message = "Name: ", newLine = false)
@@ -310,12 +313,14 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
         showOutput(message = "Name: ", newLine = false)
     if name == "exit":
       return showError(message = "Adding a new alias cancelled.")
+    # Set the description for the alias
     showFormHeader(message = "(2/6) Description")
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
     showOutput(message = "Description: ", newLine = false)
     let description: UserInput = readInput()
     if description == "exit":
       return showError(message = "Adding a new alias cancelled.")
+    # Set the working directory for the alias
     showFormHeader(message = "(3/6) Working directory")
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
     showOutput(message = "Path: ", newLine = false)
@@ -331,6 +336,7 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
         showOutput(message = "Path: ", newLine = false)
     if path == "exit":
       return showError(message = "Adding a new alias cancelled.")
+    # Set the recursiveness for the alias
     showFormHeader(message = "(4/6) Recursiveness")
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
     showOutput(message = "Recursive(y/n): ", newLine = false)
@@ -345,6 +351,7 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
         'y'
     showOutput(message = $inputChar)
     let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
+    # Set the commands to execute for the alias
     showFormHeader(message = "(5/6) Commands")
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
     showOutput(message = "Command(s): ", newLine = false)
@@ -356,6 +363,7 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
         showOutput(message = "Command(s): ", newLine = false)
     if commands == "exit":
       return showError(message = "Adding a new alias cancelled.")
+    # Set the destination for the alias' output
     showFormHeader(message = "(6/6) Output")
     showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.:")
     showOutput(message = "Output to: ", newLine = false)
@@ -426,6 +434,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       except DbError:
         return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
     showOutput(message = "You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
+    # Set the name for the alias
     showFormHeader(message = "(1/6) Name")
     showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
         newLine = false)
@@ -443,6 +452,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
         name.setString(text = row[0])
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
+    # Set the description for the alias
     showFormHeader(message = "(2/6) Description")
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
         newLine = false)
@@ -457,6 +467,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
         description.setString(text = row[3])
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
+    # Set the working directory for the alias
     showFormHeader(message = "(3/6) Working directory")
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
         newLine = false)
@@ -470,6 +481,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Editing the alias cancelled.")
     elif path == "":
       path = row[1].DirectoryPath
+    # Set the recursiveness for the alias
     showFormHeader(message = "(4/6) Recursiveness")
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
     showOutput(message = "Recursive(y/n): ", newLine = false)
@@ -484,6 +496,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
         'y'
     let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
     showOutput(message = "")
+    # Set the commands to execute for the alias
     showFormHeader(message = "(5/6) Commands")
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
         newLine = false)
@@ -498,6 +511,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
         commands.setString(text = row[2])
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
+    # Set the destination for the alias' output
     showFormHeader(message = "(6/6) Output")
     showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
         newLine = false)
