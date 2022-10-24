@@ -6,6 +6,10 @@ of the shell.
 
 ## [Unreleased]
 
+### Added
+- Directory separator to tab completion if the completion's result is a
+  directory
+
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
   plugins again, due how pre-command and post-command hooks are handled
