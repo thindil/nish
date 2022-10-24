@@ -348,9 +348,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
 
   # Start the shell
   while true:
-    # Run only one command, don't show prompt and wait for the user input,
-    # if there is still some data in last entered user input, also don't
-    # ask for more.
+    # Write the shell's prompt and get the input from the user, only when the
+    # shell's didn't start in one command mode and there is no remaining the
+    # user input to parse
     if not oneTimeCommand and inputString.len() == 0:
       # Write prompt
       let multiLine: bool = showPrompt(promptEnabled = not oneTimeCommand,
