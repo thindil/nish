@@ -173,7 +173,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         setOption(optionName = promptName, value = promptValue,
             description = initLimitedString(capacity = 61,
             text = "The command which output will be used as the prompt of shell."),
-            valueType = ValueType.command, db = result, readOnly = 1)
+            valueType = ValueType.command, db = result, readOnly = 0)
       except CapacityError:
         showError(message = "Can't set database schema. Reason: ",
             e = getCurrentException())
@@ -200,7 +200,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         setOption(optionName = promptName, value = promptValue,
             description = initLimitedString(capacity = 60,
             text = "The command which output will be used as the shell's prompt."),
-            valueType = ValueType.command, db = result, readOnly = 1)
+            valueType = ValueType.command, db = result, readOnly = 0)
       of 2:
         if updatePluginsDb(db = result) == QuitFailure:
           return nil
