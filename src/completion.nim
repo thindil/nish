@@ -58,7 +58,9 @@ proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
             path = prefix) else: prefix)
       for item in walkDir(dir = dirToCheck, relative = true):
         if item.path.startsWith(prefix = newPrefix):
-          return (if parent != ".": parent & DirSep else: "") & item.path
+          result = (if parent != ".": parent & DirSep else: "") & item.path
+          if dirExists(dir = result):
+            result = result & DirSep
     except OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
