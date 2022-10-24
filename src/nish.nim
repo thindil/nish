@@ -288,7 +288,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   # Initialize the shell's plugins system
   initPlugins(db = db, commands = commands)
 
-  proc refreshOutput(multiLine: bool) {.gcsafe, sideEffect, raises: [], tags: [
+  proc refreshOutput(promptLength: Natural) {.gcsafe, sideEffect, raises: [], tags: [
       WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
     ## FUNCTION
     ##
@@ -297,8 +297,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     ##
     ## PARAMETERS
     ##
-    ## * multiLine - If true, then the shell's prompt is made of many lines and
-    ##               don't refresh it
+    ## * promptLength - the length of the last line of the shell's prompt. If
+    ##                  equal to 0, don't refresh it
     try:
       stdout.eraseLine()
       let
@@ -335,7 +335,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Aliases
         elif aliases.contains(key = command):
           color = fgGreen
-      if not multiLine:
+      if promptLength > 0:
         showPrompt(promptEnabled = not oneTimeCommand,
             previousCommand = $commandName, resultCode = returnCode, db = db)
       showOutput(message = $command, newLine = false, fgColor = color)
@@ -353,7 +353,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     # user input to parse
     if not oneTimeCommand and inputString.len() == 0:
       # Write prompt
-      let multiLine: bool = showPrompt(promptEnabled = not oneTimeCommand,
+      let promptLength: Natural = showPrompt(promptEnabled = not oneTimeCommand,
           previousCommand = commandName, resultCode = returnCode, db = db)
       # Get the user input and parse it
       var inputChar: char = '\0'
@@ -378,7 +378,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               elif cursorPosition > 0:
                 inputString.setString(text = $inputString[0..cursorPosition -
                     2] & $inputString[cursorPosition..inputString.len() - 1])
-                refreshOutput(multiLine)
+                refreshOutput(promptLength)
                 try:
                   stdout.cursorBackward(count = 2)
                 except ValueError, IOError:
@@ -419,7 +419,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 except CapacityError:
                   discard
                 cursorPosition = inputString.len()
-                refreshOutput(multiLine)
+                refreshOutput(promptLength)
                 historyIndex.dec()
                 if historyIndex < 1:
                   historyIndex = 1;
@@ -437,7 +437,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 except CapacityError:
                   discard
                 cursorPosition = inputString.len()
-                refreshOutput(multiLine)
+                refreshOutput(promptLength)
               # Arrow left key pressed
               elif inputChar == 'D' and inputString.len() > 0 and
                   cursorPosition > 0:
@@ -486,7 +486,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               stdout.cursorBackward(count = inputString.len() - cursorPosition)
             except ValueError, IOError, CapacityError:
               discard
-          refreshOutput(multiLine)
+          refreshOutput(promptLength)
           keyWasArrow = false
           cursorPosition.inc()
         try:

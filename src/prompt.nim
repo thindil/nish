@@ -31,7 +31,7 @@ import contracts
 import constants, directorypath, lstring, options, output, resultcode
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: ResultCode; db: DbConn): bool {.gcsafe, sideEffect, raises: [],
+    resultCode: ResultCode; db: DbConn): Natural {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect, RootEffect],
     discardable, contractual.} =
   ## FUNCTION
@@ -47,11 +47,11 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
   ##
   ## RETURNS
   ##
-  ## True if the prompt is multiline prompt, otherwise false
+  ## The length of the last line of the prompt
   require:
     db != nil
   body:
-    result = false
+    result = 0
     if not promptEnabled:
       return
     try:
@@ -67,10 +67,9 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         if output.endsWith(suffix = '\n'):
           output.stripLineEnd()
           stdout.writeLine(output)
-          return true
-        else:
-          stdout.write(output)
-        return
+          return
+        stdout.write(output)
+        return output.len()
     except CapacityError, Exception:
       showError(message = "Can't get command for prompt. Reason: ",
           e = getCurrentException())
@@ -89,6 +88,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
           stdout.write(s = "~")
         except IOError:
           discard
+      result = 1
     else:
       let
         homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
@@ -102,6 +102,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
             stdout.write(s = "~/" & promptPath)
           except IOError:
             discard
+        result = promptPath.len() + 2
       else:
         try:
           stdout.styledWrite(fgBlue, $currentDirectory)
@@ -110,14 +111,17 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
             stdout.write(s = $currentDirectory)
           except IOError:
             discard
+        result = currentDirectory.len()
     if previousCommand != "" and resultCode != QuitSuccess:
+      let resultString = $resultCode
       try:
         stdout.styledWrite(fgRed, "[" & $resultCode & "]")
       except ValueError, IOError:
         try:
-          stdout.write(s = "[" & $resultCode & "]")
+          stdout.write(s = "[" & resultString & "]")
         except IOError:
           discard
+      result = result + 2 + resultString.len()
     try:
       stdout.styledWrite(fgBlue, "# ")
     except ValueError, IOError:
@@ -125,3 +129,4 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         stdout.write(s = "# ")
       except IOError:
         discard
+    result = result + 2
