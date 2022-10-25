@@ -20,6 +20,7 @@ of the shell.
 - Clearing the plugin's table after failed adding the new plugin to the
   shell
 - The shell option `promptCommand` should be writeable by the user
+- Style issues in README.md
 
 ## [0.4.0] - 2022-10-14
 
