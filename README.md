@@ -361,7 +361,7 @@ install the shell and all dependencies. Generally it is recommended to use
 
 ### License
 
-The project is released under 3-Clause BSD license.
+The project released under 3-Clause BSD license.
 
 ---
 That's all for now, as usual, I have probably forgotten about something important ;)
