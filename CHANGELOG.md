@@ -18,6 +18,7 @@ of the shell.
 ### Fixed
 - Clearing the plugin's table after failed adding the new plugin to the
   shell
+- The shell option `promptCommand` should be writeable by the user
 
 ## [0.4.0] - 2022-10-14
 
