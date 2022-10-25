@@ -335,7 +335,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Aliases
         elif aliases.contains(key = command):
           color = fgGreen
-      if promptLength > 0:
+      if promptLength > 0 and promptLength + input.len() <= terminalWidth():
         showPrompt(promptEnabled = not oneTimeCommand,
             previousCommand = $commandName, resultCode = returnCode, db = db)
       showOutput(message = $command, newLine = false, fgColor = color)
