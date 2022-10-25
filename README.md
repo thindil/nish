@@ -212,8 +212,8 @@ The shell's prompt can be set to the output of the selected program or script.
 To do this, set the value of the shell's option `promptCommand` to the command
 line with the desired program or script and its arguments. For example, to set
 prompt to show the current date, use command `options set promptCommand date`.
-If you want to reset the prompt to the original state set it value to
-`built-in` or just reset with command `options reset promptCommand`.
+If you want to reset the prompt to the original state, reset its calue with
+command `options reset promptCommand`.
 
 **ATTENTION:** the command set as the shell's option `promptCommand` will be
 executed every time before you execute your command. Thus, be sure it isn't too
