@@ -14,6 +14,7 @@ of the shell.
 - **BREAKING**: Updated plugins' system. May require to add the installed
   plugins again, due how pre-command and post-command hooks are handled
   now
+- Updated README.md
 
 ### Fixed
 - Clearing the plugin's table after failed adding the new plugin to the
