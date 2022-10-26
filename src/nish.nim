@@ -288,8 +288,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   # Initialize the shell's plugins system
   initPlugins(db = db, commands = commands)
 
-  proc refreshOutput(promptLength: Natural) {.gcsafe, sideEffect, raises: [], tags: [
-      WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect].} =
+  proc refreshOutput(promptLength: Natural) {.gcsafe, sideEffect, raises: [],
+      tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect,
+          RootEffect].} =
     ## FUNCTION
     ##
     ## Refresh the user input, clear the old and show the new. Color the entered
@@ -339,7 +340,31 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         showPrompt(promptEnabled = not oneTimeCommand,
             previousCommand = $commandName, resultCode = returnCode, db = db)
       showOutput(message = $command, newLine = false, fgColor = color)
-      showOutput(message = $commandArguments, newLine = false)
+      # Check if command's arguments contains quotes
+      var
+        quotePosition = find(s = $commandArguments, chars = {'\'', '"'})
+        startPosition = 0
+      # No quotes, print all
+      if quotePosition == -1:
+        showOutput(message = $commandArguments, newLine = false)
+      # Color the text inside the quotes
+      else:
+        color = fgDefault
+        while quotePosition > -1:
+          showOutput(message = $commandArguments[startPosition..quotePosition -
+              1], newLine = false, fgColor = color)
+          showOutput(message = $commandArguments[quotePosition..quotePosition],
+              newLine = false, fgColor = fgYellow)
+          startPosition = quotePosition + 1
+          if color == fgDefault:
+            color = fgYellow
+          else:
+            color = fgDefault
+          quotePosition = find(s = $commandArguments, chars = {'\'', '"'},
+              start = startPosition)
+        showOutput(message = $commandArguments[startPosition..^1],
+            newLine = false, fgColor = color)
+
       if cursorPosition < input.len() - 1:
         stdout.cursorBackward(count = input.len() - cursorPosition - 1)
       inputString = input
