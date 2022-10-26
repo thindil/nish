@@ -31,7 +31,7 @@ type
     ## FUNCTION
     ##
     ## Store all data related to the string
-    text: string       ## The text of the LimitedString
+    text: string ## The text of the LimitedString
     capacity: Positive ## The maximum capacity of the LimitedString
   CapacityError* = object of CatchableError
     ## FUNCTION
@@ -205,6 +205,22 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
     newValue: string = s.text[x]
     length: Positive = (if newValue.len() == 0: 1 else: newValue.len())
   return LimitedString(capacity: length, text: newValue)
+
+func `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
+    tags: [], locks: 0.} =
+  ## FUNCTION
+  ##
+  ## Get the nth character of the selected LimitedString.
+  ##
+  ## PARAMETERS
+  ##
+  ## * s - The LimitedString which slice of text will be get
+  ## * i - The index of the character to get. Is as same as in normal string
+  ##
+  ## RETURNS
+  ##
+  ## The character at the selected position in the selected LimitedString
+  return s.text[i]
 
 func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
     tags: [], locks: 0.} =
