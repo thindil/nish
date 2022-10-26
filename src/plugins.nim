@@ -123,7 +123,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return (showError(message = "Can't execute the plugin '" &
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-    proc showPluginOutput(options: seq[string]): bool {.closure.} =
+    proc showPluginOutput(options: seq[string]): bool {.closure, raises: [].} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system
@@ -137,12 +137,17 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## RETURNS
       ##
       ## This procedure always returns true
-      let color = (if options.len() == 1: fgDefault else: parseEnum[
-          ForegroundColor](options[1]))
+      let color = try:
+          if options.len() == 1:
+            fgDefault
+          else:
+            parseEnum[ForegroundColor](options[1])
+        except ValueError:
+          fgDefault
       showOutput(message = options[0], fgColor = color)
       return true
 
-    proc showPluginError(options: seq[string]): bool {.closure.} =
+    proc showPluginError(options: seq[string]): bool {.closure, raises: [].} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system as an
