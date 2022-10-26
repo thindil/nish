@@ -353,7 +353,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         while quotePosition > -1:
           showOutput(message = $commandArguments[startPosition..quotePosition -
               1], newLine = false, fgColor = color)
-          showOutput(message = $commandArguments[quotePosition..quotePosition],
+          showOutput(message = $commandArguments[quotePosition],
               newLine = false, fgColor = fgYellow)
           startPosition = quotePosition + 1
           if color == fgDefault:
