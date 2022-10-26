@@ -21,6 +21,7 @@ of the shell.
   shell
 - The shell option `promptCommand` should be writeable by the user
 - Style issues in README.md
+- Refreshing the user input when it is longer than a terminal width
 
 ## [0.4.0] - 2022-10-14
 
