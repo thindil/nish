@@ -276,7 +276,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
-    proc deletePluginCommand(options: seq[string]): bool =
+    proc deletePluginCommand(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Remove the command from the shell
@@ -296,13 +296,13 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       try:
         deleteCommand(name = initLimitedString(capacity = maxNameLength,
             text = options[0]), commands = commands)
-      except CommandsListError:
+      except CommandsListError, CapacityError:
         showError(message = "Can't delete command '" & options[0] &
             "'. Reason: " & getCurrentExceptionMsg())
         return false
       return true
 
-    proc replacePluginCommand(options: seq[string]): bool =
+    proc replacePluginCommand(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Replace the existing shell's command with the selected one
@@ -323,7 +323,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         replaceCommand(name = initLimitedString(capacity = maxNameLength,
             text = options[0]), command = nil, commands = commands,
             plugin = pluginPath)
-      except CommandsListError:
+      except CommandsListError, CapacityError:
         showError(message = "Can't replace command '" & options[0] &
             "'. Reason: " & getCurrentExceptionMsg())
         return false
