@@ -123,7 +123,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return (showError(message = "Can't execute the plugin '" &
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-    proc showPluginOutput(options: seq[string]): bool {.closure, raises: [].} =
+    proc showPluginOutput(options: seq[string]): bool {.closure, sideEffect,
+        raises: [], tags: [WriteIOEffect, ReadIOEffect].} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system
@@ -147,7 +148,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       showOutput(message = options[0], fgColor = color)
       return true
 
-    proc showPluginError(options: seq[string]): bool {.closure, raises: [].} =
+    proc showPluginError(options: seq[string]): bool {.closure, sideEffect,
+        raises: [], tags: [WriteIOEffect].} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system as an
@@ -164,7 +166,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       showError(message = options.join(sep = " "))
       return true
 
-    proc setPluginOption(options: seq[string]): bool {.raises: [].} =
+    proc setPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
+        tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+        TimeEffect].} =
       ## FUNCTION
       ##
       ## Set the shell's option value, description or type. If the option
