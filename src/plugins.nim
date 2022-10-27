@@ -164,7 +164,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       showError(message = options.join(sep = " "))
       return true
 
-    proc setPluginOption(options: seq[string]): bool =
+    proc setPluginOption(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Set the shell's option value, description or type. If the option
@@ -183,14 +183,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       if options.len() < 4:
         showError(message = "Insufficient arguments for setOption.")
         return false
-      setOption(optionName = initLimitedString(capacity = maxNameLength,
-          text = options[0]), value = initLimitedString(
-          capacity = maxInputLength, text = options[1]),
-          description = initLimitedString(capacity = maxInputLength,
-          text = options[2]), valueType = parseEnum[ValueType](options[3]), db = db)
+      try:
+        setOption(optionName = initLimitedString(capacity = maxNameLength,
+            text = options[0]), value = initLimitedString(
+            capacity = maxInputLength, text = options[1]),
+            description = initLimitedString(capacity = maxInputLength,
+            text = options[2]), valueType = parseEnum[ValueType](options[3]), db = db)
+      except CapacityError, ValueError:
+        showError(message = "Can't set plugin's option. Reason: ",
+            e = getCurrentException())
+        return false
       return true
 
-    proc removePluginOption(options: seq[string]): bool =
+    proc removePluginOption(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Remove the selected option from the shell
@@ -207,9 +212,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       if options.len() == 0:
         showError(message = "Insufficient arguments for removeOption.")
         return false
-      if deleteOption(optionName = initLimitedString(capacity = maxNameLength,
-          text = options[0]), db = db) == QuitFailure:
-        showError(message = "Failed to remove option '" & options[0] & "'.")
+      try:
+        if deleteOption(optionName = initLimitedString(capacity = maxNameLength,
+            text = options[0]), db = db) == QuitFailure:
+          showError(message = "Failed to remove option '" & options[0] & "'.")
+          return false
+      except CapacityError:
+        showError(message = "Can't remove plugin's option. Reason: ",
+            e = getCurrentException())
         return false
       return true
 
