@@ -199,7 +199,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
-    proc removePluginOption(options: seq[string]): bool {.raises: [].} =
+    proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [
+        ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
       ## FUNCTION
       ##
       ## Remove the selected option from the shell
@@ -227,7 +228,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
-    proc getPluginOption(options: seq[string]): bool {.raises: [].} =
+    proc getPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
+        tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
       ## FUNCTION
       ##
       ## Get the value of the selected option and send it to the plugin
@@ -253,7 +255,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             e = getCurrentException())
       return true
 
-    proc addPluginCommand(options: seq[string]): bool {.raises: [].} =
+    proc addPluginCommand(options: seq[string]): bool {.sideEffect, raises: [],
+        tags: [WriteIOEffect, RootEffect].} =
       ## FUNCTION
       ##
       ## Add a new command to the shell
