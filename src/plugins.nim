@@ -190,7 +190,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             description = initLimitedString(capacity = maxInputLength,
             text = options[2]), valueType = parseEnum[ValueType](options[3]), db = db)
       except CapacityError, ValueError:
-        showError(message = "Can't set plugin's option. Reason: ",
+        showError(message = "Can't set option '" & options[0] & "'. Reason: ",
             e = getCurrentException())
         return false
       return true
@@ -218,12 +218,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           showError(message = "Failed to remove option '" & options[0] & "'.")
           return false
       except CapacityError:
-        showError(message = "Can't remove plugin's option. Reason: ",
-            e = getCurrentException())
+        showError(message = "Can't remove option '" & options[0] &
+            "'. Reason: ", e = getCurrentException())
         return false
       return true
 
-    proc getPluginOption(options: seq[string]): bool =
+    proc getPluginOption(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Get the value of the selected option and send it to the plugin
@@ -240,12 +240,16 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       if options.len() == 0:
         showError(message = "Insufficient arguments for getOption.")
         return false
-      plugin.inputStream.write($getOption(optionName = initLimitedString(
-          capacity = maxNameLength, text = options[0]), db = db) & "\n")
-      plugin.inputStream.flush()
+      try:
+        plugin.inputStream.write($getOption(optionName = initLimitedString(
+            capacity = maxNameLength, text = options[0]), db = db) & "\n")
+        plugin.inputStream.flush()
+      except CapacityError, IOError, OSError:
+        showError(message = "Can't get the value of the selected option. Reason: ",
+            e = getCurrentException())
       return true
 
-    proc addPluginCommand(options: seq[string]): bool =
+    proc addPluginCommand(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Add a new command to the shell
@@ -266,7 +270,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         addCommand(name = initLimitedString(capacity = maxNameLength,
             text = options[0]), command = nil, commands = commands,
             plugin = pluginPath)
-      except CommandsListError:
+      except CommandsListError, CapacityError:
         showError(message = "Can't add command '" & options[0] & "'. Reason: " &
             getCurrentExceptionMsg())
         return false
