@@ -329,7 +329,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
-    proc addPluginHelp(options: seq[string]): bool =
+    proc addPluginHelp(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Add a new help entry to the shell's help
@@ -347,14 +347,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       if options.len() < 3:
         showError(message = "Insufficient arguments for addHelp.")
         return false
-      return addHelpEntry(topic = initLimitedString(capacity = maxNameLength,
-          text = options[0]), usage = initLimitedString(
-          capacity = maxInputLength, text = options[1]),
-          plugin = initLimitedString(capacity = maxInputLength,
-          text = pluginPath), content = options[2], isTemplate = false,
-          db = db) == QuitFailure
+      try:
+        return addHelpEntry(topic = initLimitedString(capacity = maxNameLength,
+            text = options[0]), usage = initLimitedString(
+            capacity = maxInputLength, text = options[1]),
+            plugin = initLimitedString(capacity = maxInputLength,
+            text = pluginPath), content = options[2], isTemplate = false,
+            db = db) == QuitFailure
+      except CapacityError:
+        showError(message = "Can't add help entry '" & options[0] &
+            "'. Reason: ", e = getCurrentException())
+        return false
 
-    proc deletePluginHelp(options: seq[string]): bool =
+    proc deletePluginHelp(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Remove the help entry from the shell's help
@@ -371,10 +376,15 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       if options.len() == 0:
         showError(message = "Insufficient arguments for deleteHelp.")
         return false
-      return deleteHelpEntry(topic = initLimitedString(capacity = maxNameLength,
-          text = options[0]), db = db) == QuitFailure
+      try:
+        return deleteHelpEntry(topic = initLimitedString(
+            capacity = maxNameLength, text = options[0]), db = db) == QuitFailure
+      except CapacityError:
+        showError(message = "Can't remove help entry '" & options[0] &
+            "'. Reason: ", e = getCurrentException())
+        return false
 
-    proc updatePluginHelp(options: seq[string]): bool =
+    proc updatePluginHelp(options: seq[string]): bool {.raises: [].} =
       ## FUNCTION
       ##
       ## Update the existing help entry with the selected one
@@ -393,12 +403,16 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       if options.len() < 3:
         showError(message = "Insufficient arguments for updateHelp.")
         return false
-      return updateHelpEntry(topic = initLimitedString(capacity = maxNameLength,
-          text = options[0]), usage = initLimitedString(
-          capacity = maxInputLength, text = options[1]),
-          plugin = initLimitedString(capacity = maxInputLength,
-          text = pluginPath), content = options[2], isTemplate = false,
-          db = db) == QuitFailure
+      try:
+        return updateHelpEntry(topic = initLimitedString(
+            capacity = maxNameLength, text = options[0]),
+            usage = initLimitedString(capacity = maxInputLength, text = options[
+            1]), plugin = initLimitedString(capacity = maxInputLength,
+            text = pluginPath), content = options[2], isTemplate = false,
+            db = db) == QuitFailure
+      except CapacityError:
+        showError(message = "Can't update help entry '" & options[0] &
+            "'. Reason: ", e = getCurrentException())
 
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
