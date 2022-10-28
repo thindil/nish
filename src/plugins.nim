@@ -369,7 +369,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             "'. Reason: ", e = getCurrentException())
         return false
 
-    proc deletePluginHelp(options: seq[string]): bool {.raises: [].} =
+    proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
       ## FUNCTION
       ##
       ## Remove the help entry from the shell's help
@@ -394,7 +395,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             "'. Reason: ", e = getCurrentException())
         return false
 
-    proc updatePluginHelp(options: seq[string]): bool {.raises: [].} =
+    proc updatePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
       ## FUNCTION
       ##
       ## Update the existing help entry with the selected one
