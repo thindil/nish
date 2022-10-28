@@ -283,7 +283,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
-    proc deletePluginCommand(options: seq[string]): bool {.raises: [].} =
+    proc deletePluginCommand(options: seq[string]): bool {.sideEffect, raises: [
+        ], tags: [WriteIOEffect].} =
       ## FUNCTION
       ##
       ## Remove the command from the shell
@@ -309,7 +310,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
-    proc replacePluginCommand(options: seq[string]): bool {.raises: [].} =
+    proc replacePluginCommand(options: seq[string]): bool {.sideEffect,
+        raises: [], tags: [WriteIOEffect, RootEffect].} =
       ## FUNCTION
       ##
       ## Replace the existing shell's command with the selected one
@@ -336,7 +338,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return false
       return true
 
-    proc addPluginHelp(options: seq[string]): bool {.raises: [].} =
+    proc addPluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
+        tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
       ## FUNCTION
       ##
       ## Add a new help entry to the shell's help
