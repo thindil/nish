@@ -368,7 +368,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return false
         try:
           return addHelpEntry(topic = initLimitedString(
-              capacity = maxNameLength, text = options[0]), usage = initLimitedString(
+              capacity = maxNameLength, text = options[0]),
+                  usage = initLimitedString(
               capacity = maxInputLength, text = options[1]),
               plugin = initLimitedString(capacity = maxInputLength,
               text = pluginPath), content = options[2], isTemplate = false,
@@ -379,7 +380,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return false
 
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect], contractual.} =
       ## FUNCTION
       ##
       ## Remove the help entry from the shell's help
@@ -393,19 +394,20 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the help entry was properly deleted, otherwise false with
       ## information what happened
-      if options.len() == 0:
-        showError(message = "Insufficient arguments for deleteHelp.")
-        return false
-      try:
-        return deleteHelpEntry(topic = initLimitedString(
-            capacity = maxNameLength, text = options[0]), db = db) == QuitFailure
-      except CapacityError:
-        showError(message = "Can't remove help entry '" & options[0] &
-            "'. Reason: ", e = getCurrentException())
-        return false
+      body:
+        if options.len() == 0:
+          showError(message = "Insufficient arguments for deleteHelp.")
+          return false
+        try:
+          return deleteHelpEntry(topic = initLimitedString(
+              capacity = maxNameLength, text = options[0]), db = db) == QuitFailure
+        except CapacityError:
+          showError(message = "Can't remove help entry '" & options[0] &
+              "'. Reason: ", e = getCurrentException())
+          return false
 
     proc updatePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect], contractual.} =
       ## FUNCTION
       ##
       ## Update the existing help entry with the selected one
@@ -421,19 +423,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the help entry was properly updated, otherwise false with
       ## information what happened
-      if options.len() < 3:
-        showError(message = "Insufficient arguments for updateHelp.")
-        return false
-      try:
-        return updateHelpEntry(topic = initLimitedString(
-            capacity = maxNameLength, text = options[0]),
-            usage = initLimitedString(capacity = maxInputLength, text = options[
-            1]), plugin = initLimitedString(capacity = maxInputLength,
-            text = pluginPath), content = options[2], isTemplate = false,
-            db = db) == QuitFailure
-      except CapacityError:
-        showError(message = "Can't update help entry '" & options[0] &
-            "'. Reason: ", e = getCurrentException())
+      body:
+        if options.len() < 3:
+          showError(message = "Insufficient arguments for updateHelp.")
+          return false
+        try:
+          return updateHelpEntry(topic = initLimitedString(
+              capacity = maxNameLength, text = options[0]),
+              usage = initLimitedString(capacity = maxInputLength,
+              text = options[
+              1]), plugin = initLimitedString(capacity = maxInputLength,
+              text = pluginPath), content = options[2], isTemplate = false,
+              db = db) == QuitFailure
+        except CapacityError:
+          showError(message = "Can't update help entry '" & options[0] &
+              "'. Reason: ", e = getCurrentException())
 
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
