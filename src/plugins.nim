@@ -124,7 +124,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
     proc showPluginOutput(options: seq[string]): bool {.closure, sideEffect,
-        raises: [], tags: [WriteIOEffect, ReadIOEffect].} =
+        raises: [], tags: [WriteIOEffect, ReadIOEffect], contractual.} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system
@@ -138,18 +138,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## RETURNS
       ##
       ## This procedure always returns true
-      let color = try:
-          if options.len() == 1:
+      body:
+        let color = try:
+            if options.len() == 1:
+              fgDefault
+            else:
+              parseEnum[ForegroundColor](options[1])
+          except ValueError:
             fgDefault
-          else:
-            parseEnum[ForegroundColor](options[1])
-        except ValueError:
-          fgDefault
-      showOutput(message = options[0], fgColor = color)
-      return true
+        showOutput(message = options[0], fgColor = color)
+        return true
 
     proc showPluginError(options: seq[string]): bool {.closure, sideEffect,
-        raises: [], tags: [WriteIOEffect].} =
+        raises: [], tags: [WriteIOEffect], contractual.} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system as an
@@ -163,12 +164,13 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## RETURNS
       ##
       ## This procedure always returns true
-      showError(message = options.join(sep = " "))
-      return true
+      body:
+        showError(message = options.join(sep = " "))
+        return true
 
     proc setPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-        TimeEffect].} =
+        TimeEffect], contractual.} =
       ## FUNCTION
       ##
       ## Set the shell's option value, description or type. If the option
@@ -184,20 +186,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the option was properly added or updated, otherwise false
       ## with information what happened
-      if options.len() < 4:
-        showError(message = "Insufficient arguments for setOption.")
-        return false
-      try:
-        setOption(optionName = initLimitedString(capacity = maxNameLength,
-            text = options[0]), value = initLimitedString(
-            capacity = maxInputLength, text = options[1]),
-            description = initLimitedString(capacity = maxInputLength,
-            text = options[2]), valueType = parseEnum[ValueType](options[3]), db = db)
-      except CapacityError, ValueError:
-        showError(message = "Can't set option '" & options[0] & "'. Reason: ",
-            e = getCurrentException())
-        return false
-      return true
+      body:
+        if options.len() < 4:
+          showError(message = "Insufficient arguments for setOption.")
+          return false
+        try:
+          setOption(optionName = initLimitedString(capacity = maxNameLength,
+              text = options[0]), value = initLimitedString(
+              capacity = maxInputLength, text = options[1]),
+              description = initLimitedString(capacity = maxInputLength,
+              text = options[2]), valueType = parseEnum[ValueType](options[3]), db = db)
+        except CapacityError, ValueError:
+          showError(message = "Can't set option '" & options[0] & "'. Reason: ",
+              e = getCurrentException())
+          return false
+        return true
 
     proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [
         ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
