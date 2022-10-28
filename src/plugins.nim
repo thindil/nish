@@ -290,7 +290,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc deletePluginCommand(options: seq[string]): bool {.sideEffect, raises: [
-        ], tags: [WriteIOEffect].} =
+        ], tags: [WriteIOEffect], contractual.} =
       ## FUNCTION
       ##
       ## Remove the command from the shell
@@ -304,20 +304,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the command was properly deleted, otherwise false with
       ## information what happened
-      if options.len() == 0:
-        showError(message = "Insufficient arguments for deleteCommand.")
-        return false
-      try:
-        deleteCommand(name = initLimitedString(capacity = maxNameLength,
-            text = options[0]), commands = commands)
-      except CommandsListError, CapacityError:
-        showError(message = "Can't delete command '" & options[0] &
-            "'. Reason: " & getCurrentExceptionMsg())
-        return false
-      return true
+      body:
+        if options.len() == 0:
+          showError(message = "Insufficient arguments for deleteCommand.")
+          return false
+        try:
+          deleteCommand(name = initLimitedString(capacity = maxNameLength,
+              text = options[0]), commands = commands)
+        except CommandsListError, CapacityError:
+          showError(message = "Can't delete command '" & options[0] &
+              "'. Reason: " & getCurrentExceptionMsg())
+          return false
+        return true
 
     proc replacePluginCommand(options: seq[string]): bool {.sideEffect,
-        raises: [], tags: [WriteIOEffect, RootEffect].} =
+        raises: [], tags: [WriteIOEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Replace the existing shell's command with the selected one
@@ -331,21 +332,22 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the command was properly replaced, otherwise false with
       ## information what happened
-      if options.len() == 0:
-        showError(message = "Insufficient arguments for replaceCommand.")
-        return false
-      try:
-        replaceCommand(name = initLimitedString(capacity = maxNameLength,
-            text = options[0]), command = nil, commands = commands,
-            plugin = pluginPath)
-      except CommandsListError, CapacityError:
-        showError(message = "Can't replace command '" & options[0] &
-            "'. Reason: " & getCurrentExceptionMsg())
-        return false
-      return true
+      body:
+        if options.len() == 0:
+          showError(message = "Insufficient arguments for replaceCommand.")
+          return false
+        try:
+          replaceCommand(name = initLimitedString(capacity = maxNameLength,
+              text = options[0]), command = nil, commands = commands,
+              plugin = pluginPath)
+        except CommandsListError, CapacityError:
+          showError(message = "Can't replace command '" & options[0] &
+              "'. Reason: " & getCurrentExceptionMsg())
+          return false
+        return true
 
     proc addPluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect].} =
+        tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect], contractual.} =
       ## FUNCTION
       ##
       ## Add a new help entry to the shell's help
@@ -360,20 +362,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the help entry was properly added, otherwise false with
       ## information what happened
-      if options.len() < 3:
-        showError(message = "Insufficient arguments for addHelp.")
-        return false
-      try:
-        return addHelpEntry(topic = initLimitedString(capacity = maxNameLength,
-            text = options[0]), usage = initLimitedString(
-            capacity = maxInputLength, text = options[1]),
-            plugin = initLimitedString(capacity = maxInputLength,
-            text = pluginPath), content = options[2], isTemplate = false,
-            db = db) == QuitFailure
-      except CapacityError:
-        showError(message = "Can't add help entry '" & options[0] &
-            "'. Reason: ", e = getCurrentException())
-        return false
+      body:
+        if options.len() < 3:
+          showError(message = "Insufficient arguments for addHelp.")
+          return false
+        try:
+          return addHelpEntry(topic = initLimitedString(
+              capacity = maxNameLength, text = options[0]), usage = initLimitedString(
+              capacity = maxInputLength, text = options[1]),
+              plugin = initLimitedString(capacity = maxInputLength,
+              text = pluginPath), content = options[2], isTemplate = false,
+              db = db) == QuitFailure
+        except CapacityError:
+          showError(message = "Can't add help entry '" & options[0] &
+              "'. Reason: ", e = getCurrentException())
+          return false
 
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
