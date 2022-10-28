@@ -203,7 +203,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [
-        ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect].} =
+        ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect], contractual.} =
       ## FUNCTION
       ##
       ## Remove the selected option from the shell
@@ -217,19 +217,20 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the option was properly removed, otherwise false with
       ## information what happened
-      if options.len() == 0:
-        showError(message = "Insufficient arguments for removeOption.")
-        return false
-      try:
-        if deleteOption(optionName = initLimitedString(capacity = maxNameLength,
-            text = options[0]), db = db) == QuitFailure:
-          showError(message = "Failed to remove option '" & options[0] & "'.")
+      body:
+        if options.len() == 0:
+          showError(message = "Insufficient arguments for removeOption.")
           return false
-      except CapacityError:
-        showError(message = "Can't remove option '" & options[0] &
-            "'. Reason: ", e = getCurrentException())
-        return false
-      return true
+        try:
+          if deleteOption(optionName = initLimitedString(
+              capacity = maxNameLength, text = options[0]), db = db) == QuitFailure:
+            showError(message = "Failed to remove option '" & options[0] & "'.")
+            return false
+        except CapacityError:
+          showError(message = "Can't remove option '" & options[0] &
+              "'. Reason: ", e = getCurrentException())
+          return false
+        return true
 
     proc getPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
@@ -246,20 +247,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the value of the option was properly sent to the plugin,
       ## otherwise false with information what happened
-      if options.len() == 0:
-        showError(message = "Insufficient arguments for getOption.")
-        return false
-      try:
-        plugin.inputStream.write($getOption(optionName = initLimitedString(
-            capacity = maxNameLength, text = options[0]), db = db) & "\n")
-        plugin.inputStream.flush()
-      except CapacityError, IOError, OSError:
-        showError(message = "Can't get the value of the selected option. Reason: ",
-            e = getCurrentException())
-      return true
+      body:
+        if options.len() == 0:
+          showError(message = "Insufficient arguments for getOption.")
+          return false
+        try:
+          plugin.inputStream.write($getOption(optionName = initLimitedString(
+              capacity = maxNameLength, text = options[0]), db = db) & "\n")
+          plugin.inputStream.flush()
+        except CapacityError, IOError, OSError:
+          showError(message = "Can't get the value of the selected option. Reason: ",
+              e = getCurrentException())
+        return true
 
     proc addPluginCommand(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, RootEffect].} =
+        tags: [WriteIOEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Add a new command to the shell
@@ -273,18 +275,19 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## True if the command was properly added, otherwise false with
       ## information what happened
-      if options.len() == 0:
-        showError(message = "Insufficient arguments for addCommand.")
-        return false
-      try:
-        addCommand(name = initLimitedString(capacity = maxNameLength,
-            text = options[0]), command = nil, commands = commands,
-            plugin = pluginPath)
-      except CommandsListError, CapacityError:
-        showError(message = "Can't add command '" & options[0] & "'. Reason: " &
-            getCurrentExceptionMsg())
-        return false
-      return true
+      body:
+        if options.len() == 0:
+          showError(message = "Insufficient arguments for addCommand.")
+          return false
+        try:
+          addCommand(name = initLimitedString(capacity = maxNameLength,
+              text = options[0]), command = nil, commands = commands,
+              plugin = pluginPath)
+        except CommandsListError, CapacityError:
+          showError(message = "Can't add command '" & options[0] &
+              "'. Reason: " & getCurrentExceptionMsg())
+          return false
+        return true
 
     proc deletePluginCommand(options: seq[string]): bool {.sideEffect, raises: [
         ], tags: [WriteIOEffect].} =
