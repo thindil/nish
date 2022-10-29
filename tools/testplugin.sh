@@ -69,13 +69,13 @@ case "${1}" in
       # Get the answer from the shell from the standard input
       read -t 1 value
       # Show the value of the option, read from the shell
-      echo "showOutput \"Value for testPlugin is $value\""
+      echo "showOutput 'Value for testPlugin is $value'"
       # Add the command "hello" to the shell's commands
       echo "addCommand hello"
       # Add the help related to the new shell's command
       echo 'addHelp hello "hello ?argument?" "Show the greet message and argument entered for it"'
       # Show another message, colored in green
-      echo "showOutput \"Enabled the testplugin\" fgGreen"
+      echo "showOutput 'Enabled the testplugin' fgGreen"
       ;;
    # Called during disabling the plugin.
    disable)
@@ -93,11 +93,11 @@ case "${1}" in
       # Get the answer from the shell from the standard input
       read -t 1 value
       # Show the value of the option, read from the shell
-      echo "showOutput \"Value for testPlugin is $value\""
+      echo "showOutput 'Value for testPlugin is $value'"
       # Add the command "hello" to the shell's commands
       echo "addCommand hello"
       # Show another message, colored in green
-      echo "showOutput \"Initialized the testplugin\" fgGreen"
+      echo "showOutput 'Initialized the testplugin' fgGreen"
       ;;
    # It require to return a string with four values: the plugin name, the
    # plugin description, the supported API version and the list of API commands
@@ -112,18 +112,18 @@ case "${1}" in
    # the full command, with arguments, which will be executed.
    preCommand)
       # Show the message with full to be executed command
-      echo "showOutput \"The command which will be executed: ${2}\""
+      echo "showOutput 'The command which will be executed: ${2}'"
       ;;
    # Called after execution of each the user's command. The second argument is
    # the full command, with arguments, which was executed.
    postCommand)
       # Show the message with full executed command
-      echo "showOutput \"The command which was executed: ${2}\""
+      echo "showOutput 'The command which was executed: ${2}'"
       ;;
    hello)
       # The new shell's command added by the plugin. The second argument are
       # arguments entered by the user
-      echo "showOutput \"Hello from testplugin. Entered arguments: ${2}\""
+      echo "showOutput 'Hello from testplugin. Entered arguments: ${2}'"
       ;;
    # Unknown API option called. Quit with status code 2 so the shell can know
    # about unsupported command
