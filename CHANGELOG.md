@@ -24,6 +24,7 @@ of the shell.
 - Refreshing the user input when it is longer than a terminal width
 - Don't mark environment variable as invalid command
 - Better handling arguments in the test plugin
+- Special keys not working with some terminal emulators
 
 ## [0.4.0] - 2022-10-14
 
