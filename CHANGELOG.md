@@ -23,6 +23,7 @@ of the shell.
 - Style issues in README.md
 - Refreshing the user input when it is longer than a terminal width
 - Don't mark environment variable as invalid command
+- Better handling arguments in the test plugin
 
 ## [0.4.0] - 2022-10-14
 
