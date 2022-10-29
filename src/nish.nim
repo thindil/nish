@@ -434,7 +434,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Special keys pressed
         elif inputChar.ord() == 27:
           try:
-            if getch() == '[':
+            if getch() in ['[', 'O']:
               # Arrow up key pressed
               inputChar = getch()
               if inputChar == 'A' and historyIndex > 0:
