@@ -29,7 +29,8 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 import contracts
 # Internal imports
 import aliases, commands, commandslist, completion, constants, directorypath,
-    help, history, input, lstring, options, output, plugins, prompt, resultcode, variables
+    help, highlight, history, input, lstring, options, output, plugins, prompt,
+    resultcode, variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =
@@ -288,91 +289,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   # Initialize the shell's plugins system
   initPlugins(db = db, commands = commands)
 
-  proc refreshOutput(promptLength: Natural) {.gcsafe, sideEffect, raises: [],
-      tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect,
-          RootEffect].} =
-    ## FUNCTION
-    ##
-    ## Refresh the user input, clear the old and show the new. Color the entered
-    ## command on green if it is valid or red if invalid
-    ##
-    ## PARAMETERS
-    ##
-    ## * promptLength - the length of the last line of the shell's prompt. If
-    ##                  equal to 0, don't refresh it
-    try:
-      stdout.eraseLine()
-      let
-        input: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = strip(
-                s = $inputString, trailing = false))
-          except CapacityError:
-            emptyLimitedString(capacity = maxInputLength)
-        spaceIndex: ExtendedNatural = input.find(sub = ' ')
-        command: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
-                1: $input else: $input[0..spaceIndex - 1]))
-          except CapacityError:
-            emptyLimitedString(capacity = maxInputLength)
-        commandArguments: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
-                1: "" else: $input[spaceIndex..^1]))
-          except CapacityError:
-            emptyLimitedString(capacity = maxInputLength)
-      var color: ForegroundColor = try:
-          if findExe(exe = $command).len() > 0:
-            fgGreen
-          else:
-            fgRed
-        except OSError:
-          fgGreen
-      if color == fgRed:
-        # Built-in commands
-        if $command in ["exit", "cd", "set", "unset"]:
-          color = fgGreen
-        # The shell's commands
-        elif commands.hasKey(key = $command):
-          color = fgGreen
-        # Aliases
-        elif aliases.contains(key = command):
-          color = fgGreen
-        # Environment variable
-        elif contains(s = $command, sub = "="):
-          color = fgDefault
-      if promptLength > 0 and promptLength + input.len() <= terminalWidth():
-        showPrompt(promptEnabled = not oneTimeCommand,
-            previousCommand = $commandName, resultCode = returnCode, db = db)
-      showOutput(message = $command, newLine = false, fgColor = color)
-      # Check if command's arguments contains quotes
-      var
-        quotePosition = find(s = $commandArguments, chars = {'\'', '"'})
-        startPosition = 0
-      # No quotes, print all
-      if quotePosition == -1:
-        showOutput(message = $commandArguments, newLine = false)
-      # Color the text inside the quotes
-      else:
-        color = fgDefault
-        while quotePosition > -1:
-          showOutput(message = $commandArguments[startPosition..quotePosition -
-              1], newLine = false, fgColor = color)
-          showOutput(message = $commandArguments[quotePosition],
-              newLine = false, fgColor = fgYellow)
-          startPosition = quotePosition + 1
-          if color == fgDefault:
-            color = fgYellow
-          else:
-            color = fgDefault
-          quotePosition = find(s = $commandArguments, chars = {'\'', '"'},
-              start = startPosition)
-        showOutput(message = $commandArguments[startPosition..^1],
-            newLine = false, fgColor = color)
-      if cursorPosition < input.len() - 1:
-        stdout.cursorBackward(count = input.len() - cursorPosition - 1)
-      inputString = input
-    except ValueError, IOError:
-      discard
-
   # Start the shell
   while true:
     # Write the shell's prompt and get the input from the user, only when the
@@ -405,7 +321,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               elif cursorPosition > 0:
                 inputString.setString(text = $inputString[0..cursorPosition -
                     2] & $inputString[cursorPosition..inputString.len() - 1])
-                refreshOutput(promptLength)
+                highlightOutput(promptLength = promptLength,
+                    inputString = inputString, commands = commands,
+                    aliases = aliases, oneTimeCommand = oneTimeCommand,
+                    commandName = $commandName, returnCode = returnCode,
+                    db = db, cursorPosition = cursorPosition)
                 try:
                   stdout.cursorBackward(count = 2)
                 except ValueError, IOError:
@@ -446,7 +366,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 except CapacityError:
                   discard
                 cursorPosition = inputString.len()
-                refreshOutput(promptLength)
+                highlightOutput(promptLength = promptLength,
+                    inputString = inputString, commands = commands,
+                    aliases = aliases, oneTimeCommand = oneTimeCommand,
+                    commandName = $commandName, returnCode = returnCode,
+                    db = db, cursorPosition = cursorPosition)
                 historyIndex.dec()
                 if historyIndex < 1:
                   historyIndex = 1;
@@ -464,7 +388,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 except CapacityError:
                   discard
                 cursorPosition = inputString.len()
-                refreshOutput(promptLength)
+                highlightOutput(promptLength = promptLength,
+                    inputString = inputString, commands = commands,
+                    aliases = aliases, oneTimeCommand = oneTimeCommand,
+                    commandName = $commandName, returnCode = returnCode,
+                    db = db, cursorPosition = cursorPosition)
               # Arrow left key pressed
               elif inputChar == 'D' and inputString.len() > 0 and
                   cursorPosition > 0:
@@ -513,7 +441,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               stdout.cursorBackward(count = inputString.len() - cursorPosition)
             except ValueError, IOError, CapacityError:
               discard
-          refreshOutput(promptLength)
+          highlightOutput(promptLength = promptLength,
+              inputString = inputString, commands = commands,
+              aliases = aliases, oneTimeCommand = oneTimeCommand,
+              commandName = $commandName, returnCode = returnCode,
+              db = db, cursorPosition = cursorPosition)
           keyWasArrow = false
           cursorPosition.inc()
         try:
