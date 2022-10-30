@@ -80,13 +80,18 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       # If command contains equal sign it must be an environment variable,
       # print the variable and get the next word
       if '=' in $command:
-        let startIndex = (if spaceIndex > -1: spaceIndex else: 0)
-        spaceIndex = input.find(sub = ' ', start = startIndex)
         showOutput(message = (if spaceIndex > 0: $input[
             0..spaceIndex] else: $input), newLine = false)
+        var startIndex = input.find(sub = ' ', start = (if spaceIndex >
+            -1: spaceIndex else: 0))
+        if startIndex < 0:
+          inputString = input
+          return
+        startIndex.inc()
+        spaceIndex = input.find(sub = ' ', start = startIndex)
         command = try:
             initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
-                1: $input else: $input[startIndex..spaceIndex - 1]))
+                1: $input[startIndex..^1] else: $input[startIndex..spaceIndex - 1]))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
       let commandArguments: UserInput = try:
