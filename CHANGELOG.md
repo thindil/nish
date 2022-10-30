@@ -9,6 +9,7 @@ of the shell.
 ### Added
 - Directory separator to tab completion if the completion's result is a
   directory
+- Tab completion now works also with commands not only with their arguments
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
