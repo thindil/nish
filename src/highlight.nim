@@ -43,8 +43,16 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
   ##
   ## PARAMETERS
   ##
-  ## * promptLength - the length of the last line of the shell's prompt. If
-  ##                  equal to 0, don't refresh it
+  ## * promptLength   - the length of the last line of the shell's prompt. If
+  ##                    equal to 0, don't refresh it
+  ## * inputString    - the command with arguments entered by the user
+  ## * commands       - the list of the shell's commands
+  ## * aliases        - the list of available shell's aliases
+  ## * oneTimeCommand - if true, the shell runs only one command and exit
+  ## * commandName    - the name of the previously entered command
+  ## * returnCode     - the code returned by the previously entered command
+  ## * db             - the connection to the shell's database
+  ## * cursorPosition - the position of the cursor on the screen
   require:
     commands != nil
     aliases != nil
