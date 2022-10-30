@@ -66,13 +66,30 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
                 s = $inputString, trailing = false))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
+      var
         spaceIndex: ExtendedNatural = input.find(sub = ' ')
         command: UserInput = try:
             initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
                 1: $input else: $input[0..spaceIndex - 1]))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
-        commandArguments: UserInput = try:
+      # Show the prompt if enabled
+      if promptLength > 0 and promptLength + input.len() <= terminalWidth():
+        showPrompt(promptEnabled = not oneTimeCommand,
+            previousCommand = $commandName, resultCode = returnCode, db = db)
+      # If command contains equal sign it must be an environment variable,
+      # print the variable and get the next word
+      if '=' in $command:
+        let startIndex = (if spaceIndex > -1: spaceIndex else: 0)
+        spaceIndex = input.find(sub = ' ', start = startIndex)
+        showOutput(message = (if spaceIndex > 0: $input[
+            0..spaceIndex] else: $input), newLine = false)
+        command = try:
+            initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
+                1: $input else: $input[startIndex..spaceIndex - 1]))
+          except CapacityError:
+            emptyLimitedString(capacity = maxInputLength)
+      let commandArguments: UserInput = try:
             initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
                 1: "" else: $input[spaceIndex..^1]))
           except CapacityError:
@@ -97,9 +114,6 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         # Environment variable
         elif contains(s = $command, sub = "="):
           color = fgDefault
-      if promptLength > 0 and promptLength + input.len() <= terminalWidth():
-        showPrompt(promptEnabled = not oneTimeCommand,
-            previousCommand = $commandName, resultCode = returnCode, db = db)
       showOutput(message = $command, newLine = false, fgColor = color)
       # Check if command's arguments contains quotes
       var
