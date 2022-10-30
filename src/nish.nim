@@ -417,8 +417,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         elif inputChar.ord() == 9:
           let
             spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-            prefix: string = (if spaceIndex == -1: "" else: $inputString[
-                spaceIndex + 1..^1])
+            prefix: string = (if spaceIndex ==
+                -1: $inputString else: $inputString[spaceIndex + 1..^1])
             completion: string = getCompletion(prefix = prefix)
           if completion.len() > 0:
             try:
