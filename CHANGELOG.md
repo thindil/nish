@@ -16,6 +16,7 @@ of the shell.
   plugins again, due how pre-command and post-command hooks are handled
   now
 - Updated README.md
+- Better syntax highlighting in the user's commands
 
 ### Fixed
 - Clearing the plugin's table after failed adding the new plugin to the
