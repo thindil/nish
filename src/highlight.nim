@@ -80,7 +80,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       # If command contains equal sign it must be an environment variable,
       # print the variable and get the next word
       while '=' in $command:
-        showOutput(message = $command, newLine = false)
+        showOutput(message = $command, newLine = false, fgColor = fgCyan)
         var startIndex = input.find(sub = ' ', start = (if spaceIndex >
             -1: spaceIndex else: 0))
         if startIndex < 0:
