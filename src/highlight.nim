@@ -79,7 +79,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
             previousCommand = $commandName, resultCode = returnCode, db = db)
       # If command contains equal sign it must be an environment variable,
       # print the variable and get the next word
-      if '=' in $command:
+      while '=' in $command:
         showOutput(message = $command, newLine = false)
         var startIndex = input.find(sub = ' ', start = (if spaceIndex >
             -1: spaceIndex else: 0))
@@ -94,6 +94,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
                 1: $input[startIndex..^1] else: $input[startIndex..spaceIndex - 1]))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
+        if spaceIndex == -1:
+          spaceIndex = input.len()
       let commandArguments: UserInput = try:
             initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
                 1: "" else: $input[spaceIndex..^1]))
