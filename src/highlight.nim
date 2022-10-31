@@ -121,7 +121,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       showOutput(message = $command, newLine = false, fgColor = color)
       # Check if command's arguments contains quotes
       var
-        quotePosition = find(s = $commandArguments, chars = {'\'', '"'})
+        quotes = {'\'', '"'}
+        quotePosition = find(s = $commandArguments, chars = quotes)
         startPosition = 0
       # No quotes, print all
       if quotePosition == -1:
@@ -137,9 +138,11 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           startPosition = quotePosition + 1
           if color == fgDefault:
             color = fgYellow
+            quotes = {commandArguments[quotePosition]}
           else:
             color = fgDefault
-          quotePosition = find(s = $commandArguments, chars = {'\'', '"'},
+            quotes = {'\'', '"'}
+          quotePosition = find(s = $commandArguments, chars = quotes,
               start = startPosition)
         showOutput(message = $commandArguments[startPosition..^1],
             newLine = false, fgColor = color)
