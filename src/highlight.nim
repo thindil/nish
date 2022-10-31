@@ -116,9 +116,6 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         # Aliases
         elif aliases.contains(key = command):
           color = fgGreen
-        # Environment variable
-        elif contains(s = $command, sub = "="):
-          color = fgDefault
       showOutput(message = $command, newLine = false, fgColor = color)
       # Check if command's arguments contains quotes
       var
