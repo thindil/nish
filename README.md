@@ -320,7 +320,8 @@ following scheme:
 * Simple Tab completion for commands with names of files and directories
   relative to the current directory
 * Coloring the user entered command on green when it is valid or red when it is
-  invalid
+  invalid, separated colors for environment variables and commands' arguments
+  which contains quotes or double quotes
 
 ### How to install
 
