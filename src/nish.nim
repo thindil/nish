@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
+import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal, unicode]
 # External modules imports
 import contracts
 # Internal imports
@@ -310,14 +310,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           if inputString.len() > 0:
             try:
               if cursorPosition == inputString.len():
-                inputString.setString(text = $inputString[0..^2])
+                inputString.setString(text = runeSubStr(s = $inputString, pos = 0, len = -1))
                 try:
                   stdout.cursorBackward()
                   stdout.write(s = " ")
                   stdout.cursorBackward()
                 except ValueError, IOError:
                   discard
-                cursorPosition.dec()
+                cursorPosition = inputString.len()
               elif cursorPosition > 0:
                 inputString.setString(text = $inputString[0..cursorPosition -
                     2] & $inputString[cursorPosition..inputString.len() - 1])
