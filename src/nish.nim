@@ -321,7 +321,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 cursorPosition = runeLen(s = $inputString)
               elif cursorPosition > 0:
                 var runes = toRunes(s = $inputString)
-                runes.del(i = cursorPosition)
+                runes.del(i = cursorPosition - 1)
                 inputString.setString(text = $runes)
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
@@ -329,7 +329,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     commandName = $commandName, returnCode = returnCode,
                     db = db, cursorPosition = cursorPosition)
                 try:
-                  stdout.cursorBackward(count = 2)
+                  stdout.cursorBackward
                 except ValueError, IOError:
                   discard
                 cursorPosition.dec()
