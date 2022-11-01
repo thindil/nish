@@ -428,8 +428,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           break
         # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
+          let inputLen = runeLen(s = $inputString)
           stdout.write(c = inputChar)
-          if cursorPosition == runeLen(s = $inputString):
+          if cursorPosition == inputLen:
             try:
               inputString.add(y = inputChar)
             except CapacityError:
@@ -440,7 +441,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             try:
               inputString.insert(item = $inputChar, i = cursorPosition)
               stdout.write(s = " ")
-              stdout.cursorBackward(count = inputString.len() - cursorPosition)
+              stdout.cursorBackward(count = runeLen(s = $inputString) - cursorPosition)
             except ValueError, IOError, CapacityError:
               discard
           highlightOutput(promptLength = promptLength,
@@ -449,7 +450,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               commandName = $commandName, returnCode = returnCode,
               db = db, cursorPosition = cursorPosition)
           keyWasArrow = false
-          cursorPosition.inc()
+          if inputLen < runeLen(s = $inputString):
+            cursorPosition.inc()
         try:
           inputChar = getch()
         except IOError:
