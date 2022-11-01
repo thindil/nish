@@ -309,18 +309,20 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           keyWasArrow = false
           if inputString.len() > 0:
             try:
-              if cursorPosition == inputString.len():
-                inputString.setString(text = runeSubStr(s = $inputString, pos = 0, len = -1))
+              if cursorPosition == runeLen(s = $inputString):
+                inputString.setString(text = runeSubStr(s = $inputString,
+                    pos = 0, len = -1))
                 try:
                   stdout.cursorBackward()
                   stdout.write(s = " ")
                   stdout.cursorBackward()
                 except ValueError, IOError:
                   discard
-                cursorPosition = inputString.len()
+                cursorPosition = runeLen(s = $inputString)
               elif cursorPosition > 0:
-                inputString.setString(text = $inputString[0..cursorPosition -
-                    2] & $inputString[cursorPosition..inputString.len() - 1])
+                var runes = toRunes(s = $inputString)
+                runes.del(i = cursorPosition)
+                inputString.setString(text = $runes)
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
                     aliases = aliases, oneTimeCommand = oneTimeCommand,
@@ -348,7 +350,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 inputString.setString(text = inputString[0..spaceIndex] & completion)
               except CapacityError:
                 discard
-              cursorPosition = inputString.len()
+              cursorPosition = runeLen(s = $inputString)
             except ValueError, IOError:
               discard
         # Special keys pressed
@@ -365,7 +367,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                           text = (if keyWasArrow: "" else: $inputString))))
                 except CapacityError:
                   discard
-                cursorPosition = inputString.len()
+                cursorPosition = runeLen(s = $inputString)
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
                     aliases = aliases, oneTimeCommand = oneTimeCommand,
@@ -387,7 +389,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                           text = (if keyWasArrow: "" else: $inputString))))
                 except CapacityError:
                   discard
-                cursorPosition = inputString.len()
+                cursorPosition = runeLen(s = $inputString)
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
                     aliases = aliases, oneTimeCommand = oneTimeCommand,
@@ -413,7 +415,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               # End key pressed
               elif inputChar == 'F' and cursorPosition <= inputString.len():
                 stdout.cursorForward(count = inputString.len() - cursorPosition)
-                cursorPosition = inputString.len()
+                cursorPosition = runeLen(s = $inputString)
               keyWasArrow = true
           except ValueError, IOError:
             discard
@@ -427,7 +429,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
           stdout.write(c = inputChar)
-          if cursorPosition == inputString.len():
+          if cursorPosition == runeLen(s = $inputString):
             try:
               inputString.add(y = inputChar)
             except CapacityError:
@@ -532,7 +534,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           if initLimitedString(capacity = maxInputLength, text = commandName) in aliases:
             returnCode = execAlias(arguments = arguments, aliasId = commandName,
                 aliases = aliases, db = db)
-            cursorPosition = inputString.len()
+            cursorPosition = runeLen(s = $inputString)
           else:
             # Execute external command
             returnCode = ResultCode(execCmd(command = commandToExecute))
@@ -560,7 +562,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     # Run only one command, quit from the shell
     if oneTimeCommand and inputString.len() == 0:
       quitShell(returnCode = returnCode, db = db)
-    cursorPosition = inputString.len()
+    cursorPosition = runeLen(s = $inputString)
 
 when isMainModule:
   main()

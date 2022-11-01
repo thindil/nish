@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os, strutils, tables, terminal]
+import std/[db_sqlite, os, strutils, tables, terminal, unicode]
 # External modules imports
 import contracts
 # Internal imports
@@ -62,7 +62,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       stdout.eraseLine()
       let
         input: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = strip(
+            initLimitedString(capacity = maxInputLength, text = strutils.strip(
                 s = $inputString, trailing = false))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
@@ -74,7 +74,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
       # Show the prompt if enabled
-      if promptLength > 0 and promptLength + input.len() <= terminalWidth():
+      if promptLength > 0 and promptLength + runeLen(s = $input) <= terminalWidth():
         showPrompt(promptEnabled = not oneTimeCommand,
             previousCommand = $commandName, resultCode = returnCode, db = db)
       # If command contains equal sign it must be an environment variable,
@@ -146,8 +146,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
               start = startPosition)
         showOutput(message = $commandArguments[startPosition..^1],
             newLine = false, fgColor = color)
-      if cursorPosition < input.len() - 1:
-        stdout.cursorBackward(count = input.len() - cursorPosition - 1)
+      if cursorPosition < runeLen(s = $input) - 1:
+        stdout.cursorBackward(count = runeLen(s = $input) - cursorPosition - 1)
       inputString = input
     except ValueError, IOError:
       discard
