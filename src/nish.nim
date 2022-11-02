@@ -441,9 +441,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           else:
             try:
               inputString.insert(item = $inputChar, i = cursorPosition)
-              stdout.write(s = " ")
-              stdout.cursorBackward(count = runeLen(s = $inputString) - cursorPosition)
-            except ValueError, IOError, CapacityError:
+            except CapacityError:
               discard
           highlightOutput(promptLength = promptLength,
               inputString = inputString, commands = commands,
