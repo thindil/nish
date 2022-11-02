@@ -402,7 +402,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 cursorPosition.dec()
               # Arrow right key pressed
               elif inputChar == 'C' and inputString.len() > 0 and
-                  cursorPosition < inputString.len():
+                  cursorPosition < runeLen(s = $inputString):
                 stdout.cursorForward()
                 cursorPosition.inc()
               # Insert key pressed
