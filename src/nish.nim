@@ -329,7 +329,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     commandName = $commandName, returnCode = returnCode,
                     db = db, cursorPosition = cursorPosition)
                 try:
-                  stdout.cursorBackward(count = 2)
+                  stdout.cursorBackward()
                 except ValueError, IOError:
                   discard
                 cursorPosition.dec()
