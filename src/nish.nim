@@ -320,19 +320,16 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                   discard
                 cursorPosition = runeLen(s = $inputString)
               elif cursorPosition > 0:
-                var runes = toRunes(s = $inputString)
-                echo "runes:", runes
-                runes.del(i = cursorPosition - 1)
-                echo "runes2:", runes
-                inputString.setString(text = $runes)
-                echo "string:", inputString
+                inputString.setString(text = runeSubStr(s = $inputString,
+                    pos = 0, len = cursorPosition - 1) & runeSubStr(
+                    s = $inputString, pos = cursorPosition))
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
                     aliases = aliases, oneTimeCommand = oneTimeCommand,
                     commandName = $commandName, returnCode = returnCode,
                     db = db, cursorPosition = cursorPosition)
                 try:
-                  stdout.cursorBackward()
+                  stdout.cursorBackward(count = 2)
                 except ValueError, IOError:
                   discard
                 cursorPosition.dec()
@@ -416,7 +413,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 stdout.cursorBackward(count = cursorPosition)
                 cursorPosition = 0
               # End key pressed
-              elif inputChar == 'F' and cursorPosition <= runeLen(s = $inputString):
+              elif inputChar == 'F' and cursorPosition < runeLen(
+                  s = $inputString):
                 stdout.cursorForward(count = runeLen(s = $inputString) - cursorPosition)
                 cursorPosition = runeLen(s = $inputString)
               keyWasArrow = true
