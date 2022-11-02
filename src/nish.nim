@@ -440,7 +440,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             inputString[cursorPosition] = inputChar
           else:
             try:
-              inputString.insert(item = $inputChar, i = cursorPosition)
+              inputString.insert(item = $inputChar, i = runeOffset(
+                  s = $inputString, pos = cursorPosition))
             except CapacityError:
               discard
           highlightOutput(promptLength = promptLength,
