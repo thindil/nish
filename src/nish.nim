@@ -315,12 +315,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           if cursorPosition == 0:
             continue
           var runes = toRunes(s = $inputString)
-          runes.delete(i = cursorPosition - 1)
           cursorPosition.dec()
-          try:
-            stdout.cursorBackward()
-          except ValueError, IOError:
-            discard
+          runes.delete(i = cursorPosition)
           try:
             inputString.setString(text = $runes)
           except CapacityError:
