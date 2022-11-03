@@ -312,24 +312,23 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # input
         if inputChar.ord() == 127:
           keyWasArrow = false
-          if inputString.len() > 0:
-            if cursorPosition > 0:
-              var runes = toRunes(s = $inputString)
-              runes.delete(i = cursorPosition - 1)
-              cursorPosition.dec()
-              try:
-                stdout.cursorBackward()
-              except ValueError, IOError:
-                discard
-              try:
-                inputString.setString(text = $runes)
-              except CapacityError:
-                discard
-              highlightOutput(promptLength = promptLength,
-                  inputString = inputString, commands = commands,
-                  aliases = aliases, oneTimeCommand = oneTimeCommand,
-                  commandName = $commandName, returnCode = returnCode, db = db,
-                  cursorPosition = cursorPosition)
+          if cursorPosition == 0:
+            continue
+          var runes = toRunes(s = $inputString)
+          runes.delete(i = cursorPosition - 1)
+          cursorPosition.dec()
+          try:
+            stdout.cursorBackward()
+          except ValueError, IOError:
+            discard
+          try:
+            inputString.setString(text = $runes)
+          except CapacityError:
+            discard
+          highlightOutput(promptLength = promptLength,
+              inputString = inputString, commands = commands, aliases = aliases,
+              oneTimeCommand = oneTimeCommand, commandName = $commandName,
+              returnCode = returnCode, db = db, cursorPosition = cursorPosition)
         # Tab key pressed, do autocompletion if possible
         elif inputChar.ord() == 9:
           let
