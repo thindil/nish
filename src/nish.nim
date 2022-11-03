@@ -303,6 +303,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       # Read the user input until not meet new line character or the input
       # reach the maximum length
       while inputChar.ord() != 13 and inputString.len() < maxInputLength:
+        # Get the character from the user's input
+        try:
+          inputChar = getch()
+        except IOError:
+          discard
         # Backspace pressed, delete the character before cursor from the user
         # input
         if inputChar.ord() == 127:
@@ -443,10 +448,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           keyWasArrow = false
           if inputLen < runeLen(s = $inputString):
             cursorPosition.inc()
-        try:
-          inputChar = getch()
-        except IOError:
-          discard
       try:
         stdout.writeLine(x = "")
       except IOError:
