@@ -437,7 +437,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             except CapacityError:
               discard
           elif insertMode:
-            inputString[cursorPosition] = inputChar
+            inputString[runeOffset(s = $inputString,
+                pos = cursorPosition)] = inputChar
           else:
             try:
               inputString.insert(item = $inputChar, i = runeOffset(
