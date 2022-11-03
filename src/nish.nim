@@ -308,33 +308,23 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         if inputChar.ord() == 127:
           keyWasArrow = false
           if inputString.len() > 0:
-            try:
-              if cursorPosition == runeLen(s = $inputString):
-                inputString.setString(text = runeSubStr(s = $inputString,
-                    pos = 0, len = -1))
-                try:
-                  stdout.cursorBackward()
-                  stdout.write(s = " ")
-                  stdout.cursorBackward()
-                except ValueError, IOError:
-                  discard
-                cursorPosition = runeLen(s = $inputString)
-              elif cursorPosition > 0:
-                inputString.setString(text = runeSubStr(s = $inputString,
-                    pos = 0, len = cursorPosition - 1) & runeSubStr(
-                    s = $inputString, pos = cursorPosition))
-                highlightOutput(promptLength = promptLength,
-                    inputString = inputString, commands = commands,
-                    aliases = aliases, oneTimeCommand = oneTimeCommand,
-                    commandName = $commandName, returnCode = returnCode,
-                    db = db, cursorPosition = cursorPosition)
-                try:
-                  stdout.cursorBackward()
-                except ValueError, IOError:
-                  discard
-                cursorPosition.dec()
-            except CapacityError:
-              discard
+            if cursorPosition > 0:
+              var runes = toRunes(s = $inputString)
+              runes.delete(i = cursorPosition - 1)
+              cursorPosition.dec()
+              try:
+                stdout.cursorBackward()
+              except ValueError, IOError:
+                discard
+              try:
+                inputString.setString(text = $runes)
+              except CapacityError:
+                discard
+              highlightOutput(promptLength = promptLength,
+                  inputString = inputString, commands = commands,
+                  aliases = aliases, oneTimeCommand = oneTimeCommand,
+                  commandName = $commandName, returnCode = returnCode, db = db,
+                  cursorPosition = cursorPosition)
         # Tab key pressed, do autocompletion if possible
         elif inputChar.ord() == 9:
           let
