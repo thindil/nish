@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[parseopt, strutils, terminal]
+import std/[parseopt, strutils, terminal, unicode]
 # External modules imports
 import contracts
 # Internal imports
@@ -76,7 +76,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
       if inputChar.ord() == 127:
         if resultString.len() > 0:
           try:
-            resultString.setString(text = $resultString[0..^2])
+            resultString.setString(text = runeSubStr(s = $resultString, pos = 0, len = -1))
             stdout.cursorBackward()
             stdout.write(s = " ")
             stdout.cursorBackward()
@@ -171,6 +171,6 @@ func getArguments*(userInput: var OptParser;
     except CapacityError:
       break
   try:
-    result.setString(text = strip(s = $result))
+    result.setString(text = strutils.strip(s = $result))
   except CapacityError:
     return
