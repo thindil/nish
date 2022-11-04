@@ -152,6 +152,18 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           showError(message = "Can't set promptValue. Reason: ",
               e = getCurrentException())
           return nil
+      titleName: OptionName = try:
+          initLimitedString(capacity = 8, text = "setTitle")
+        except CapacityError:
+          showError(message = "Can't set setTitle. Reason: ",
+              e = getCurrentException())
+          return nil
+      titleValue: OptionValue = try:
+          initLimitedString(capacity = 4, text = "true")
+        except CapacityError:
+          showError(message = "Can't set titleValue. Reason: ",
+              e = getCurrentException())
+          return nil
     # Create a new database if not exists
     if not dbExists:
       if createAliasesDb(db = result) == QuitFailure:
@@ -175,6 +187,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             description = initLimitedString(capacity = 61,
             text = "The command which output will be used as the prompt of shell."),
             valueType = ValueType.command, db = result, readOnly = 0)
+        setOption(optionName = titleName, value = titleValue,
+            description = initLimitedString(capacity = 50,
+            text = "Set a terminal title to currently running command."),
+            valueType = ValueType.boolean, db = result, readOnly = 0)
       except CapacityError:
         showError(message = "Can't set database schema. Reason: ",
             e = getCurrentException())
@@ -206,6 +222,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if updatePluginsDb(db = result) == QuitFailure:
           return nil
         setOption(optionName = versionName, value = versionValue, db = result)
+        setOption(optionName = titleName, value = titleValue,
+            description = initLimitedString(capacity = 50,
+            text = "Set a terminal title to currently running command."),
+            valueType = ValueType.boolean, db = result, readOnly = 0)
       of 3:
         discard
       else:
