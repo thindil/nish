@@ -332,23 +332,21 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             prefix: string = (if spaceIndex ==
                 -1: $inputString else: $inputString[spaceIndex + 1..^1])
             completion: string = getCompletion(prefix = prefix)
-          if completion.len() > 0:
-            try:
-              stdout.cursorBackward(count = inputString.len() - spaceIndex - 1)
-              stdout.write(s = completion)
-              try:
-                inputString.setString(text = inputString[0..spaceIndex] & completion)
-              except CapacityError:
-                discard
-              cursorPosition = runeLen(s = $inputString)
-            except ValueError, IOError:
-              discard
+          if completion.len() == 0:
+            continue
+          try:
+            stdout.cursorBackward(count = runeLen(s = $inputString) - spaceIndex - 1)
+            stdout.write(s = completion)
+            inputString.setString(text = inputString[0..spaceIndex] & completion)
+            cursorPosition = runeLen(s = $inputString)
+          except CapacityError, ValueError, IOError:
+            discard
         # Special keys pressed
         elif inputChar.ord() == 27:
           try:
             if getch() in ['[', 'O']:
-              # Arrow up key pressed
               inputChar = getch()
+              # Arrow up key pressed
               if inputChar == 'A' and historyIndex > 0:
                 try:
                   inputString.setString(text = getHistory(
