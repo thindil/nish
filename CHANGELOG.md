@@ -10,6 +10,7 @@ of the shell.
 - Directory separator to tab completion if the completion's result is a
   directory
 - Tab completion now works also with commands not only with their arguments
+- Support for Unicode in the user's input
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
