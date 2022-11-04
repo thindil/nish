@@ -30,7 +30,7 @@ import contracts
 # Internal imports
 import aliases, commands, commandslist, completion, constants, directorypath,
     help, highlight, history, input, lstring, options, output, plugins, prompt,
-    resultcode, variables
+    resultcode, title, variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =
@@ -503,6 +503,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       inputString.setString(text = join(a = userInput.remainingArgs(), sep = " "))
     except CapacityError:
       discard
+    # Set a terminal title to current command
+    setTitle(title = commandName, db = db)
     # Execute plugins with precommand hook
     try:
       for plugin in db.fastRows(query = sql(
@@ -517,6 +519,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     # Quit from shell
     of "exit":
       historyIndex = updateHistory(commandToAdd = "exit", db = db)
+      try:
+        setTitle(title = getCurrentDir(), db = db)
+      except OSError:
+        setTitle(title = "nish", db = db)
       quitShell(returnCode = returnCode, db = db)
     # Change current directory
     of "cd":
@@ -573,6 +579,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     except DbError:
       showError(message = "Can't execute postCommand hook for plugins. Reason: ",
           e = getCurrentException())
+    # Set a terminal title to the current directory
+    try:
+      setTitle(title = getCurrentDir(), db = db)
+    except OSError:
+      setTitle(title = "nish", db = db)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
