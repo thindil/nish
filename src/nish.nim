@@ -335,7 +335,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           if completion.len() == 0:
             continue
           try:
-            stdout.cursorBackward(count = runeLen(s = $inputString) - spaceIndex - 1)
+            stdout.cursorBackward(count = runeLen(s = $inputString) -
+                spaceIndex - 1)
             stdout.write(s = completion)
             inputString.setString(text = inputString[0..spaceIndex] & completion)
             cursorPosition = runeLen(s = $inputString)
@@ -417,20 +418,35 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           break
         # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
-          let inputLen = runeLen(s = $inputString)
-          stdout.write(c = inputChar)
-          if cursorPosition == inputLen:
-            try:
-              inputString.add(y = inputChar)
-            except CapacityError:
-              discard
-          elif insertMode:
-            inputString[runeOffset(s = $inputString,
-                pos = cursorPosition)] = inputChar
+          var inputRune: string = ""
+          inputRune.add(y = inputChar)
+          try:
+            if inputChar.ord() > 192:
+              inputRune.add(y = getch())
+            if inputChar.ord() > 223:
+              inputRune.add(y = getch())
+            if inputChar.ord() > 239:
+              inputRune.add(y = getch())
+          except IOError:
+            discard
+          if cursorPosition < runeLen(s = $inputString):
+            if insertMode:
+              var runes = toRunes(s = $inputString)
+              runes[cursorPosition] = inputRune.toRunes()[0]
+              try:
+                inputString.setString(text = $runes)
+              except CapacityError:
+                discard
+            else:
+              try:
+                inputString.insert(item = $inputRune, i = runeOffset(
+                    s = $inputString, pos = cursorPosition))
+              except CapacityError:
+                discard
           else:
             try:
-              inputString.insert(item = $inputChar, i = runeOffset(
-                  s = $inputString, pos = cursorPosition))
+              inputString.add(y = inputRune)
+              cursorPosition.inc()
             except CapacityError:
               discard
           highlightOutput(promptLength = promptLength,
@@ -439,8 +455,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               commandName = $commandName, returnCode = returnCode,
               db = db, cursorPosition = cursorPosition)
           keyWasArrow = false
-          if inputLen < runeLen(s = $inputString):
-            cursorPosition.inc()
       try:
         stdout.writeLine(x = "")
       except IOError:
