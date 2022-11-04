@@ -147,7 +147,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         showOutput(message = $commandArguments[startPosition..^1],
             newLine = false, fgColor = color)
       if cursorPosition < runeLen(s = $input) - 1:
-        stdout.cursorBackward(count = runeLen(s = $input) - cursorPosition - 1)
+        stdout.cursorBackward(count = runeLen(s = $input) - cursorPosition)
       inputString = input
     except ValueError, IOError:
       discard
