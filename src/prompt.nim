@@ -30,7 +30,8 @@ import contracts
 # Internal imports
 import constants, directorypath, lstring, options, output, resultcode
 
-proc getFormattedDir*(): DirectoryPath {.contractual.} =
+proc getFormattedDir*(): DirectoryPath {.gcsafe, sideEffect, raises: [], tags: [
+    ReadIOEffect], contractual.} =
   body:
     result = try:
       getCurrentDir().DirectoryPath
