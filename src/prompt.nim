@@ -30,6 +30,21 @@ import contracts
 # Internal imports
 import constants, directorypath, lstring, options, output, resultcode
 
+proc getFormattedDir*(): DirectoryPath {.contractual.} =
+  body:
+    result = try:
+      getCurrentDir().DirectoryPath
+    except OSError:
+      "[unknown dir]".DirectoryPath
+    let homeDirectory: DirectoryPath = getHomeDir().DirectoryPath
+    if endsWith(s = result & "/", suffix = $homeDirectory):
+      return "~".DirectoryPath
+    else:
+      let homeIndex: ExtendedNatural = result.find(sub = homeDirectory)
+      if homeIndex > -1:
+        return DirectoryPath("~/" & result.string[homeIndex +
+                homeDirectory.len()..^1])
+
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode; db: DbConn): Natural {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect, RootEffect],
@@ -74,44 +89,15 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       showError(message = "Can't get command for prompt. Reason: ",
           e = getCurrentException())
       return
-    let
-      currentDirectory: DirectoryPath = try:
-        getCurrentDir().DirectoryPath
-      except OSError:
-        "[unknown dir]".DirectoryPath
-      homeDirectory: DirectoryPath = getHomeDir().DirectoryPath
-    if endsWith(s = currentDirectory & "/", suffix = $homeDirectory):
+    let currentDirectory: DirectoryPath = getFormattedDir()
+    try:
+      stdout.styledWrite(fgBlue, $currentDirectory)
+    except ValueError, IOError:
       try:
-        stdout.styledWrite(fgBlue, "~")
-      except ValueError, IOError:
-        try:
-          stdout.write(s = "~")
-        except IOError:
-          discard
-      result = 1
-    else:
-      let
-        homeIndex: ExtendedNatural = currentDirectory.find(sub = homeDirectory)
-        promptPath: string = (if homeIndex > -1: currentDirectory.string[homeIndex +
-                homeDirectory.len()..^1] else: $currentDirectory)
-      if homeIndex > -1:
-        try:
-          stdout.styledWrite(fgBlue, "~/" & promptPath)
-        except ValueError, IOError:
-          try:
-            stdout.write(s = "~/" & promptPath)
-          except IOError:
-            discard
-        result = promptPath.len() + 2
-      else:
-        try:
-          stdout.styledWrite(fgBlue, $currentDirectory)
-        except ValueError, IOError:
-          try:
-            stdout.write(s = $currentDirectory)
-          except IOError:
-            discard
-        result = currentDirectory.len()
+        stdout.write(s = $currentDirectory)
+      except IOError:
+        discard
+    result = currentDirectory.len()
     if previousCommand != "" and resultCode != QuitSuccess:
       let resultString = $resultCode
       try:
