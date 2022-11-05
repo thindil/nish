@@ -32,6 +32,14 @@ import constants, directorypath, lstring, options, output, resultcode
 
 proc getFormattedDir*(): DirectoryPath {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Get the formatted current directory path, replace home directory with
+  ## tilde, etc.
+  ##
+  ## RETURNS
+  ##
+  ## The formatted path to the current directory
   body:
     result = try:
       getCurrentDir().DirectoryPath
