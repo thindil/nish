@@ -572,7 +572,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       ) > 0: " " & arguments else: ""), db = db, returnCode = returnCode)
     # Restore the terminal title
     try:
-      setTitle(title = getCurrentDir(), db = db)
+      setTitle(title = $getFormattedDir(), db = db)
     except OSError:
       setTitle(title = "nish", db = db)
     # Execute plugins with postcommand hook
