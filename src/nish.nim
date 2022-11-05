@@ -570,6 +570,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     # Update the shell's history with info about the executed command
     historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len(
       ) > 0: " " & arguments else: ""), db = db, returnCode = returnCode)
+    # Restore the terminal title
+    try:
+      setTitle(title = getCurrentDir(), db = db)
+    except OSError:
+      setTitle(title = "nish", db = db)
     # Execute plugins with postcommand hook
     try:
       for plugin in db.fastRows(query = sql(
@@ -579,11 +584,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     except DbError:
       showError(message = "Can't execute postCommand hook for plugins. Reason: ",
           e = getCurrentException())
-    # Set a terminal title to the current directory
-    try:
-      setTitle(title = getCurrentDir(), db = db)
-    except OSError:
-      setTitle(title = "nish", db = db)
     # If there is more commands to execute check if the next commands should
     # be executed. if the last command wasn't success and commands conjuncted
     # with && or the last command was success and command disjuncted, reset
