@@ -33,6 +33,14 @@ import lstring, options
 proc setTitle*(title: string; db: DbConn) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect], locks: 0,
     contractual.} =
+  ## FUNCTION
+  ##
+  ## Set the title of the terminal if the proper shell's option is enabled
+  ##
+  ## PARAMETERS
+  ##
+  ## * title - the new title for the terminal
+  ## * db    - the connection to the shell's database
   require:
     db != nil
   body:
