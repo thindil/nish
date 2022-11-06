@@ -322,6 +322,7 @@ following scheme:
 * Coloring the user entered command on green when it is valid or red when it is
   invalid, separated colors for environment variables and commands' arguments
   which contains quotes or double quotes
+* Setting the terminal title, can be enabled or disabled in the shell's options.
 
 ### How to install
 
