@@ -571,10 +571,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     historyIndex = updateHistory(commandToAdd = commandName & (if arguments.len(
       ) > 0: " " & arguments else: ""), db = db, returnCode = returnCode)
     # Restore the terminal title
-    try:
-      setTitle(title = $getFormattedDir(), db = db)
-    except OSError:
-      setTitle(title = "nish", db = db)
+    setTitle(title = $getFormattedDir(), db = db)
     # Execute plugins with postcommand hook
     try:
       for plugin in db.fastRows(query = sql(
