@@ -309,6 +309,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   # Initialize the shell's plugins system
   initPlugins(db = db, commands = commands)
 
+  # Set the title of the terminal to current directory
+  setTitle(title = $getFormattedDir(), db = db)
+
   # Start the shell
   while true:
     # Write the shell's prompt and get the input from the user, only when the
