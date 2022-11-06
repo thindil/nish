@@ -11,6 +11,8 @@ of the shell.
   directory
 - Tab completion now works also with commands not only with their arguments
 - Support for Unicode in the user's input
+- Ability to set the terminal's title. Can be enabled or disabled in the
+  shell's options.
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
