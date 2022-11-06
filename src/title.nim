@@ -24,13 +24,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite]
+import std/[db_sqlite, os]
 # External modules imports
 import contracts
 # Internal imports
 import lstring, options
 
-proc setTitle*(title: string; db: DbConn) {.raises: [], contractual.} =
+proc setTitle*(title: string; db: DbConn) {.gcsafe, sideEffect, raises: [],
+    tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect], locks: 0,
+    contractual.} =
   require:
     db != nil
   body:
