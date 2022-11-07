@@ -199,7 +199,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             valueType = ValueType.boolean, db = result, readOnly = 0)
         setOption(optionName = syntaxName, value = trueValue,
             description = initLimitedString(capacity = 69,
-            text = "Color the user's input with info about invalid commands, quotes, etc."),
+            text = "Color the user input with info about invalid commands, quotes, etc."),
             valueType = ValueType.boolean, db = result, readOnly = 0)
       except CapacityError:
         showError(message = "Can't set database schema. Reason: ",
