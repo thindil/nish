@@ -28,7 +28,7 @@ import std/[db_sqlite, os, strutils, tables, terminal, unicode]
 # External modules imports
 import contracts
 # Internal imports
-import commandslist, constants, input, lstring, output, prompt, resultcode
+import commandslist, constants, input, lstring, options, output, prompt, resultcode
 
 proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     commands: ref Table[string, CommandData]; aliases: ref AliasesList;
@@ -77,6 +77,16 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       if promptLength > 0 and promptLength + runeLen(s = $input) <= terminalWidth():
         showPrompt(promptEnabled = not oneTimeCommand,
             previousCommand = $commandName, resultCode = returnCode, db = db)
+      # If syntax highlightning is disabled, show the user's input and quit
+      try:
+        if getOption(optionName = initLimitedString(capacity = 11,
+            text = "colorSyntax"), db = db, defaultValue = initLimitedString(
+            capacity = 4, text = "true")) == "false":
+          inputString = input
+          showOutput(message = $inputString, newLine = false)
+          return
+      except CapacityError:
+        return
       # If command contains equal sign it must be an environment variable,
       # print the variable and get the next word
       while '=' in $command:
