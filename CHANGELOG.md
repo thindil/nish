@@ -30,6 +30,7 @@ of the shell.
 - Don't mark environment variable as invalid command
 - Better handling arguments in the test plugin
 - Special keys not working with some terminal emulators
+- Typos in CHANGELOG.md and README.md
 
 ## [0.4.0] - 2022-10-14
 
