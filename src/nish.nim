@@ -158,10 +158,16 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           showError(message = "Can't set setTitle. Reason: ",
               e = getCurrentException())
           return nil
-      titleValue: OptionValue = try:
+      trueValue: OptionValue = try:
           initLimitedString(capacity = 4, text = "true")
         except CapacityError:
-          showError(message = "Can't set titleValue. Reason: ",
+          showError(message = "Can't set trueValue. Reason: ",
+              e = getCurrentException())
+          return nil
+      syntaxName: OptionName = try:
+          initLimitedString(capacity = 11, text = "colorSyntax")
+        except CapacityError:
+          showError(message = "Can't set colorSyntax. Reason: ",
               e = getCurrentException())
           return nil
     # Create a new database if not exists
@@ -187,9 +193,13 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             description = initLimitedString(capacity = 61,
             text = "The command which output will be used as the prompt of shell."),
             valueType = ValueType.command, db = result, readOnly = 0)
-        setOption(optionName = titleName, value = titleValue,
+        setOption(optionName = titleName, value = trueValue,
             description = initLimitedString(capacity = 50,
             text = "Set a terminal title to currently running command."),
+            valueType = ValueType.boolean, db = result, readOnly = 0)
+        setOption(optionName = syntaxName, value = trueValue,
+            description = initLimitedString(capacity = 69,
+            text = "Color the user's input with info about invalid commands, quotes, etc."),
             valueType = ValueType.boolean, db = result, readOnly = 0)
       except CapacityError:
         showError(message = "Can't set database schema. Reason: ",
@@ -222,9 +232,13 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if updatePluginsDb(db = result) == QuitFailure:
           return nil
         setOption(optionName = versionName, value = versionValue, db = result)
-        setOption(optionName = titleName, value = titleValue,
+        setOption(optionName = titleName, value = trueValue,
             description = initLimitedString(capacity = 50,
             text = "Set a terminal title to currently running command."),
+            valueType = ValueType.boolean, db = result, readOnly = 0)
+        setOption(optionName = syntaxName, value = trueValue,
+            description = initLimitedString(capacity = 69,
+            text = "Color the user's input with info about invalid commands, quotes, etc."),
             valueType = ValueType.boolean, db = result, readOnly = 0)
       of 3:
         discard
