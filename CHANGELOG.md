@@ -39,7 +39,7 @@ of the shell.
 - Information about used API calls by plugin to `plugin show` command
 - Deleting a character with Backspace key in the middle of the user's input
 - Canceling entering the command with Ctrl-c
-- Showing error message when a plugin send unknown request or response to the
+- Showing error message when a plugin sends unknown request or response to the
   shell
 - Ability to add, remove or replace the shell's commands with the shell's
   plugins
@@ -66,7 +66,7 @@ of the shell.
   last time and prioritize the local commands
 - Support for shell's read-only options
 - Ability to select how the shell's history should be sorted
-- Ability to revese direction of the shell's history last commands list
+- Ability to reverse direction of the shell's history last commands list
 - Ability to set the amount, order and direction of order of the last commands
   to show for `history list` command
 - Ability to redirect output of aliases to standard error or the selected file
