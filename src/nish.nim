@@ -287,7 +287,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         oneTimeCommand = true
         options.next()
         try:
-          inputString.setString(text = options.key)
+          inputString.text = options.key
         except CapacityError:
           quit showError(message = "The entered command is too long.").int
       of "h", "help":
@@ -355,7 +355,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           cursorPosition.dec()
           runes.delete(i = cursorPosition)
           try:
-            inputString.setString(text = $runes)
+            inputString.text = $runes
           except CapacityError:
             discard
           highlightOutput(promptLength = promptLength,
@@ -375,7 +375,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             stdout.cursorBackward(count = runeLen(s = $inputString) -
                 spaceIndex - 1)
             stdout.write(s = completion)
-            inputString.setString(text = inputString[0..spaceIndex] & completion)
+            inputString.text = inputString[0..spaceIndex] & completion
             cursorPosition = runeLen(s = $inputString)
           except CapacityError, ValueError, IOError:
             discard
@@ -387,10 +387,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               # Arrow up key pressed
               if inputChar == 'A' and historyIndex > 0:
                 try:
-                  inputString.setString(text = getHistory(
+                  inputString.text = getHistory(
                       historyIndex = historyIndex, db = db,
                       searchFor = initLimitedString(capacity = maxInputLength,
-                          text = (if keyWasArrow: "" else: $inputString))))
+                          text = (if keyWasArrow: "" else: $inputString)))
                 except CapacityError:
                   discard
                 cursorPosition = runeLen(s = $inputString)
@@ -409,10 +409,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 if historyIndex > currentHistoryLength:
                   historyIndex = currentHistoryLength
                 try:
-                  inputString.setString(text = getHistory(
+                  inputString.text = getHistory(
                       historyIndex = historyIndex, db = db,
                       searchFor = initLimitedString(capacity = maxInputLength,
-                          text = (if keyWasArrow: "" else: $inputString))))
+                          text = (if keyWasArrow: "" else: $inputString)))
                 except CapacityError:
                   discard
                 cursorPosition = runeLen(s = $inputString)
@@ -471,7 +471,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               var runes = toRunes(s = $inputString)
               runes[cursorPosition] = inputRune.toRunes()[0]
               try:
-                inputString.setString(text = $runes)
+                inputString.text = $runes
               except CapacityError:
                 discard
             else:
@@ -517,7 +517,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       except CapacityError:
         emptyLimitedString(capacity = maxInputLength)
     try:
-      inputString.setString(text = join(a = userInput.remainingArgs(), sep = " "))
+      inputString.text = join(a = userInput.remainingArgs(), sep = " ")
     except CapacityError:
       discard
     # Set a terminal title to current command

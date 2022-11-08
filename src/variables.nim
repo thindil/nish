@@ -361,7 +361,7 @@ proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         showError(message = "Please enter a name for the variable.")
       elif not validIdentifier(s = $name):
         try:
-          name.setString(text = "")
+          name.text = ""
           showError(message = "Please enter a valid name for the variable.")
         except CapacityError:
           showError(message = "Can't set empty name for variable.")
@@ -500,7 +500,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Editing the variable cancelled.")
     elif name == "":
       try:
-        name.setString(text = row[0])
+        name.text = row[0]
       except CapacityError:
         return showError("Editing the variable cancelled. Reason: can't set name for the variable.")
     # Set the description for the variable
@@ -512,7 +512,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Editing the variable cancelled.")
     elif description == "":
       try:
-        description.setString(text = row[3])
+        description.text = row[3]
       except CapacityError:
         return showError("Editing the variable cancelled. Reason: can't set description for the variable.")
     # Set the working directory for the variable
@@ -559,7 +559,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Editing the variable cancelled.")
     elif value == "":
       try:
-        value.setString(text = row[2])
+        value.text = row[2]
       except CapacityError:
         return showError("Editing the variable cancelled. Reason: can't set value for the variable.")
     # Save the variable to the database

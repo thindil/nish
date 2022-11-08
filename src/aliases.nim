@@ -305,7 +305,7 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
         showError(message = "Please enter a name for the alias.")
       elif not validIdentifier(s = $name):
         try:
-          name.setString("")
+          name.text = ""
           showError(message = "Please enter a valid name for the alias.")
         except CapacityError:
           showError(message = "Can't set empty name for alias.")
@@ -372,7 +372,7 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Adding a new alias cancelled.")
     elif output == "":
       try:
-        output.setString(text = "stdout")
+        output.text = "stdout"
       except CapacityError:
         return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
     # Check if alias with the same parameters exists in the database
@@ -449,7 +449,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Editing the alias cancelled.")
     elif name == "":
       try:
-        name.setString(text = row[0])
+        name.text = row[0]
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
     # Set the description for the alias
@@ -464,7 +464,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Editing the alias cancelled.")
     elif description == "":
       try:
-        description.setString(text = row[3])
+        description.text = row[3]
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
     # Set the working directory for the alias
@@ -508,7 +508,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Editing the alias cancelled.")
     elif commands == "":
       try:
-        commands.setString(text = row[2])
+        commands.text = row[2]
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
     # Set the destination for the alias' output
@@ -523,7 +523,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Editing the alias cancelled.")
     elif output == "":
       try:
-        output.setString(text = row[4])
+        output.text = row[4]
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
     # Save the alias to the database

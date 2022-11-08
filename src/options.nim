@@ -212,7 +212,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
           return showError(message = "Value for option '" & optionName & "' should be float type.")
       of "boolean":
         try:
-          value.setString(text = toLowerAscii(s = $value))
+          value.text = toLowerAscii(s = $value)
         except CapacityError:
           return showError(message = "Can't set a new value for option '" &
               optionName & "'. Reason: ", e = getCurrentException())
@@ -220,7 +220,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
           return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
       of "historysort":
         try:
-          value.setString(text = toLowerAscii(s = $value))
+          value.text = toLowerAscii(s = $value)
         except CapacityError:
           return showError(message = "Can't set a new value for option '" &
               optionName & "'. Reason: ", e = getCurrentException())

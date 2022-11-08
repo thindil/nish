@@ -76,7 +76,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
       if inputChar.ord() == 127:
         if resultString.len() > 0:
           try:
-            resultString.setString(text = runeSubStr(s = $resultString, pos = 0, len = -1))
+            resultString.text = runeSubStr(s = $resultString, pos = 0, len = -1)
             stdout.cursorBackward()
             stdout.write(s = " ")
             stdout.cursorBackward()
@@ -171,6 +171,6 @@ func getArguments*(userInput: var OptParser;
     except CapacityError:
       break
   try:
-    result.setString(text = strutils.strip(s = $result))
+    result.text = strutils.strip(s = $result)
   except CapacityError:
     return
