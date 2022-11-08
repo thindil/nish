@@ -80,19 +80,6 @@ block:
   assert $testString == "tesa"
 
 block:
-  var testString: LimitedString = initLimitedString(capacity = 4, text = "")
-  assert $testString == ""
-  try:
-    testString.setString(text = "test")
-    assert $testString == "test"
-  except CapacityError:
-    discard
-  try:
-    testString.setString(text = "testdfwerwerwerwewr")
-  except CapacityError:
-    assert $testString == "test"
-
-block:
   let testString: LimitedString = initLimitedString(capacity = 14, text = "test")
   assert $testString[1..2] == "es"
 
