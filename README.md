@@ -321,7 +321,8 @@ following scheme:
   relative to the current directory
 * Coloring the user entered command on green when it is valid or red when it is
   invalid, separated colors for environment variables and commands' arguments
-  which contains quotes or double quotes
+  which contains quotes or double quotes. Can be enabled or disabled in the
+  shell's options.
 * Setting the terminal title, can be enabled or disabled in the shell's options.
 
 ### How to install
