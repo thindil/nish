@@ -167,26 +167,6 @@ func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [], locks
   ## The maximum allowed capacity of the selected LimitedString
   return s.capacity
 
-func setString*(s: var LimitedString; text: string) {.gcsafe, raises: [
-    CapacityError], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
-  ## Set the new value for the selected LimitedString. Raised RangeDefect if
-  ## the new text is longer than the maximum capacity of the LimitedString
-  ##
-  ## PARAMETERS
-  ##
-  ## * s    - The LimitedString which content will be replaced
-  ## * text - The new value of the LimitedString content
-  ##
-  ## RETURNS
-  ##
-  ## The updated LimitedString
-  if text.len() > s.capacity:
-    raise newException(exceptn = CapacityError,
-        message = "New value for string will exceed its capacity.")
-  s.text = text
-
 func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
     U]): LimitedString {.gcsafe, raises: [], tags: [], locks: 0.} =
   ## FUNCTION
