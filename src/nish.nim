@@ -475,9 +475,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               except CapacityError:
                 discard
             else:
+              var runes = toRunes(s = $inputString)
+              runes.insert(item = inputRune.toRunes()[0], i = cursorPosition)
               try:
-                inputString.insert(item = $inputRune, i = runeOffset(
-                    s = $inputString, pos = cursorPosition))
+                inputString.text = $runes
+                cursorPosition.inc()
               except CapacityError:
                 discard
           else:
