@@ -13,6 +13,7 @@ of the shell.
 - Support for Unicode in the user's input
 - Ability to set the terminal's title. Can be enabled or disabled in the
   shell's options.
+- Ability to enable or disable syntax highlighting for the user's input
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
