@@ -296,7 +296,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         showProgramVersion()
       of "db":
         dbPath = options.val.DirectoryPath
-    else: discard
+    else:
+      discard
 
   # Connect to the shell database
   let db: DbConn = startDb(dbPath = dbPath)
