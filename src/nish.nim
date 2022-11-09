@@ -379,7 +379,12 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             stdout.write(s = completion)
             inputString.text = inputString[0..spaceIndex] & completion
             cursorPosition = runeLen(s = $inputString)
-          except CapacityError, ValueError, IOError:
+          except IOError:
+            discard
+          except ValueError:
+            showError(message = "Invalid value for character position.",
+                e = getCurrentException())
+          except CapacityError:
             discard
         # Special keys pressed
         elif inputChar.ord() == 27:
@@ -446,8 +451,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 stdout.cursorForward(count = runeLen(s = $inputString) - cursorPosition)
                 cursorPosition = runeLen(s = $inputString)
               keyWasArrow = true
-          except ValueError, IOError:
+          except IOError:
             discard
+          except ValueError:
+            showError(message = "Invalid value for moving cursor.",
+                e = getCurrentException())
         # Ctrl-c pressed, cancel current command and return 130 result code
         elif inputChar.ord() == 3:
           inputString = emptyLimitedString(capacity = maxInputLength)
