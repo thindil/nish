@@ -100,9 +100,25 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
       # Visible character, add it to the user input string and show it in the
       # console
       elif inputChar.ord() > 31:
-        stdout.write(c = inputChar)
+        var inputRune: string = ""
+        inputRune.add(y = inputChar)
         try:
-          resultString.add(y = inputChar)
+          if inputChar.ord() > 192:
+            inputRune.add(y = getch())
+          if inputChar.ord() > 223:
+            inputRune.add(y = getch())
+          if inputChar.ord() > 239:
+            inputRune.add(y = getch())
+        except IOError:
+          showError(message = "Can't get the entered Unicode character. Reason: ",
+              e = getCurrentException())
+        try:
+          stdout.write(s = inputRune)
+        except IOError:
+          showError(message = "Can't print entered character. Reason: ",
+              e = getCurrentException())
+        try:
+          resultString.add(y = inputRune)
         except CapacityError:
           return resultString
       try:
