@@ -160,4 +160,4 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         stdout.cursorBackward(count = runeLen(s = $input) - cursorPosition)
       inputString = input
     except ValueError, IOError:
-      discard
+      showError(message = "Can't highlight input. Reason: ", e = getCurrentException())
