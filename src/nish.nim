@@ -359,7 +359,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           try:
             inputString.text = $runes
           except CapacityError:
-            discard
+            showError(message = "Entered input is too long.",
+                e = getCurrentException())
           highlightOutput(promptLength = promptLength,
               inputString = inputString, commands = commands, aliases = aliases,
               oneTimeCommand = oneTimeCommand, commandName = $commandName,
@@ -385,7 +386,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             showError(message = "Invalid value for character position.",
                 e = getCurrentException())
           except CapacityError:
-            discard
+            showError(message = "Entered input is too long.",
+                e = getCurrentException())
         # Special keys pressed
         elif inputChar.ord() == 27:
           try:
@@ -399,7 +401,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                       searchFor = initLimitedString(capacity = maxInputLength,
                           text = (if keyWasArrow: "" else: $inputString)))
                 except CapacityError:
-                  discard
+                  showError(message = "Entered input is too long.",
+                      e = getCurrentException())
                 cursorPosition = runeLen(s = $inputString)
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
@@ -421,7 +424,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                       searchFor = initLimitedString(capacity = maxInputLength,
                           text = (if keyWasArrow: "" else: $inputString)))
                 except CapacityError:
-                  discard
+                  showError(message = "Entered input is too long.",
+                      e = getCurrentException())
                 cursorPosition = runeLen(s = $inputString)
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
@@ -484,7 +488,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               try:
                 inputString.text = $runes
               except CapacityError:
-                discard
+                showError(message = "Entered input is too long.",
+                    e = getCurrentException())
             else:
               var runes = toRunes(s = $inputString)
               runes.insert(item = inputRune.toRunes()[0], i = cursorPosition)
@@ -492,13 +497,15 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 inputString.text = $runes
                 cursorPosition.inc()
               except CapacityError:
-                discard
+                showError(message = "Entered input is too long.",
+                    e = getCurrentException())
           else:
             try:
               inputString.add(y = inputRune)
               cursorPosition.inc()
             except CapacityError:
-              discard
+              showError(message = "Entered input is too long.",
+                  e = getCurrentException())
           highlightOutput(promptLength = promptLength,
               inputString = inputString, commands = commands,
               aliases = aliases, oneTimeCommand = oneTimeCommand,
@@ -532,7 +539,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     try:
       inputString.text = join(a = userInput.remainingArgs(), sep = " ")
     except CapacityError:
-      discard
+      showError(message = "Entered input is too long.", e = getCurrentException())
     # Set a terminal title to current command
     setTitle(title = commandName, db = db)
     # Execute plugins with precommand hook
