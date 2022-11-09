@@ -345,7 +345,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         try:
           inputChar = getch()
         except IOError:
-          discard
+          showError(message = "Can't get the entered character. Reason: ",
+              e = getCurrentException())
         # Backspace pressed, delete the character before cursor from the user
         # input
         if inputChar.ord() == 127:
@@ -466,7 +467,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             if inputChar.ord() > 239:
               inputRune.add(y = getch())
           except IOError:
-            discard
+            showError(message = "Can't get the entered Unicode character. Reason: ",
+                e = getCurrentException())
           if cursorPosition < runeLen(s = $inputString):
             if insertMode:
               var runes = toRunes(s = $inputString)
