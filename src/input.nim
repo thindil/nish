@@ -148,11 +148,26 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         except IOError:
           showError(message = "Can't print entered character. Reason: ",
               e = getCurrentException())
-        try:
-          resultString.add(y = inputRune)
-          cursorPosition.inc()
-        except CapacityError:
-          return resultString
+        if cursorPosition < runeLen(s = $resultString):
+          var runes = toRunes(s = $resultString)
+          runes.insert(item = inputRune.toRunes()[0], i = cursorPosition)
+          try:
+            resultString.text = $runes
+            cursorPosition.inc()
+          except CapacityError:
+            return resultString
+          try:
+            stdout.write(s = $runes[cursorPosition..^1])
+            stdout.cursorBackward(count = runes.len - cursorPosition)
+          except IOError, ValueError:
+            showError(message = "Can't print entered character. Reason: ",
+                e = getCurrentException())
+        else:
+          try:
+            resultString.add(y = inputRune)
+            cursorPosition.inc()
+          except CapacityError:
+            return resultString
       try:
         inputChar = getch()
       except IOError:
