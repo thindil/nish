@@ -73,6 +73,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
     # Read the user input until not meet new line character or the input
     # reach the maximum length
     while inputChar.ord() != 13 and resultString.len() < maxLength:
+      # Get the next character from the user's input
       try:
         inputChar = getch()
       except IOError:
@@ -81,6 +82,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         return exitString
       # Backspace pressed, delete the last character from the user input
       if inputChar.ord() == 127:
+        # Input is empty or cursor is at first position, do nothing
         if cursorPosition == 0 or resultString.len() == 0:
           continue
         try:
@@ -104,6 +106,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         # Escape key pressed, return "exit" as input value
         if inputChar.ord() == 27:
           return exitString
+        # Cursor movement keys pressed
         elif inputChar in ['[', 'O']:
           try:
             inputChar = getch()
@@ -156,6 +159,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         except IOError:
           showError(message = "Can't print entered character. Reason: ",
               e = getCurrentException())
+        # Insert the character into input
         if cursorPosition < runeLen(s = $resultString):
           var runes = toRunes(s = $resultString)
           runes.insert(item = inputRune.toRunes()[0], i = cursorPosition)
@@ -170,6 +174,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
           except IOError, ValueError:
             showError(message = "Can't print entered character. Reason: ",
                 e = getCurrentException())
+        # Add the character at the end of the input
         else:
           try:
             resultString.add(y = inputRune)
