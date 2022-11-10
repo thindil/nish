@@ -83,7 +83,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
       # Backspace pressed, delete the last character from the user input
       if inputChar.ord() == 127:
         # Input is empty or cursor is at first position, do nothing
-        if cursorPosition == 0 or resultString.len() == 0:
+        if cursorPosition == 0:
           continue
         try:
           resultString.text = runeSubStr(s = $resultString, pos = 0, len = -1)
@@ -116,13 +116,11 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
             return exitString
           try:
             # Arrow left key pressed
-            if inputChar == 'D' and resultString.len() > 0 and
-                cursorPosition > 0:
+            if inputChar == 'D' and cursorPosition > 0:
               stdout.cursorBackward()
               cursorPosition.dec()
             # Arrow right key pressed
-            elif inputChar == 'C' and resultString.len() > 0 and
-                cursorPosition < runeLen(s = $resultString):
+            elif inputChar == 'C' and cursorPosition < runeLen(s = $resultString):
               stdout.cursorForward()
               cursorPosition.inc()
             # Home key pressed

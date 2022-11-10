@@ -433,13 +433,12 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     commandName = $commandName, returnCode = returnCode,
                     db = db, cursorPosition = cursorPosition)
               # Arrow left key pressed
-              elif inputChar == 'D' and inputString.len() > 0 and
-                  cursorPosition > 0:
+              elif inputChar == 'D' and cursorPosition > 0:
                 stdout.cursorBackward()
                 cursorPosition.dec()
               # Arrow right key pressed
-              elif inputChar == 'C' and inputString.len() > 0 and
-                  cursorPosition < runeLen(s = $inputString):
+              elif inputChar == 'C' and cursorPosition < runeLen(
+                  s = $inputString):
                 stdout.cursorForward()
                 cursorPosition.inc()
               # Insert key pressed
