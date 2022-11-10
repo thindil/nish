@@ -73,14 +73,23 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
     # Read the user input until not meet new line character or the input
     # reach the maximum length
     while inputChar.ord() != 13 and resultString.len() < maxLength:
+      try:
+        inputChar = getch()
+      except IOError:
+        showError(message = "Can't get the next character. Reason: ",
+            e = getCurrentException())
+        return exitString
       # Backspace pressed, delete the last character from the user input
       if inputChar.ord() == 127:
+        if cursorPosition == 0:
+          continue
         if resultString.len() > 0:
           try:
             resultString.text = runeSubStr(s = $resultString, pos = 0, len = -1)
             stdout.cursorBackward()
             stdout.write(s = " ")
             stdout.cursorBackward()
+            cursorPosition.dec()
           except IOError, ValueError, CapacityError:
             showError(message = "Can't delete character. Reason: ",
                 e = getCurrentException())
@@ -168,12 +177,6 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
             cursorPosition.inc()
           except CapacityError:
             return resultString
-      try:
-        inputChar = getch()
-      except IOError:
-        showError(message = "Can't get the next character. Reason: ",
-            e = getCurrentException())
-        return exitString
     try:
       stdout.writeLine(x = "")
     except IOError:
