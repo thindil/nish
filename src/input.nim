@@ -81,19 +81,18 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         return exitString
       # Backspace pressed, delete the last character from the user input
       if inputChar.ord() == 127:
-        if cursorPosition == 0:
+        if cursorPosition == 0 or resultString.len() == 0:
           continue
-        if resultString.len() > 0:
-          try:
-            resultString.text = runeSubStr(s = $resultString, pos = 0, len = -1)
-            stdout.cursorBackward()
-            stdout.write(s = " ")
-            stdout.cursorBackward()
-            cursorPosition.dec()
-          except IOError, ValueError, CapacityError:
-            showError(message = "Can't delete character. Reason: ",
-                e = getCurrentException())
-            return exitString
+        try:
+          resultString.text = runeSubStr(s = $resultString, pos = 0, len = -1)
+          stdout.cursorBackward()
+          stdout.write(s = " ")
+          stdout.cursorBackward()
+          cursorPosition.dec()
+        except IOError, ValueError, CapacityError:
+          showError(message = "Can't delete character. Reason: ",
+              e = getCurrentException())
+          return exitString
       # Special key pressed (all starts like Escape key), check which one
       elif inputChar.ord() == 27:
         try:
