@@ -21,6 +21,8 @@ of the shell.
   now
 - Updated README.md
 - Better syntax highlighting in the user's commands
+- Better handling the user's input in various forms, like adding variables,
+  aliases, etc.
 
 ### Fixed
 - Clearing the plugin's table after failed adding the new plugin to the
