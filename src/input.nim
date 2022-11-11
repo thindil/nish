@@ -42,6 +42,17 @@ type MaxInputLength* = range[1..maxInputLength]
 
 proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Read the Unicode character from the user's input
+  ##
+  ## PARAMETERS
+  ##
+  ## * inputChar - the last printable character entered by the user
+  ##
+  ## RETURNS
+  ##
+  ## The string with full Unicode character entered by the user
   require:
     inputChar.ord > 31
   ensure:
