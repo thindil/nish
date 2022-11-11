@@ -40,18 +40,24 @@ type MaxInputLength* = range[1..maxInputLength]
   ##
   ## Used to store maximum allowed length of the user input
 
-proc readChar*(inputChar: char): string =
-  result = $inputChar
-  try:
-    if inputChar.ord() > 192:
-      result.add(y = getch())
-    if inputChar.ord() > 223:
-      result.add(y = getch())
-    if inputChar.ord() > 239:
-      result.add(y = getch())
-  except IOError:
-    showError(message = "Can't get the entered Unicode character. Reason: ",
-        e = getCurrentException())
+proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect], contractual.} =
+  require:
+    inputChar.ord > 31
+  ensure:
+    result.len > 0
+  body:
+    result = $inputChar
+    try:
+      if inputChar.ord() > 192:
+        result.add(y = getch())
+      if inputChar.ord() > 223:
+        result.add(y = getch())
+      if inputChar.ord() > 239:
+        result.add(y = getch())
+    except IOError:
+      showError(message = "Can't get the entered Unicode character. Reason: ",
+          e = getCurrentException())
 
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect],
@@ -133,7 +139,8 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
               stdout.cursorBackward()
               cursorPosition.dec()
             # Arrow right key pressed
-            elif inputChar == 'C' and cursorPosition < runeLen(s = $resultString):
+            elif inputChar == 'C' and cursorPosition < runeLen(
+                s = $resultString):
               stdout.cursorForward()
               cursorPosition.inc()
             # Home key pressed
