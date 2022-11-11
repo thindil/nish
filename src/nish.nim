@@ -353,14 +353,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           keyWasArrow = false
           if cursorPosition == 0:
             continue
-          var runes = toRunes(s = $inputString)
-          cursorPosition.dec()
-          runes.delete(i = cursorPosition)
-          try:
-            inputString.text = $runes
-          except CapacityError:
-            showError(message = "Entered input is too long.",
-                e = getCurrentException())
+          deleteChar(inputString = inputString, cursorPosition = cursorPosition)
           highlightOutput(promptLength = promptLength,
               inputString = inputString, commands = commands, aliases = aliases,
               oneTimeCommand = oneTimeCommand, commandName = $commandName,

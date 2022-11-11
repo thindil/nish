@@ -70,6 +70,17 @@ proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
       showError(message = "Can't get the entered Unicode character. Reason: ",
           e = getCurrentException())
 
+proc deleteChar*(inputString: var UserInput;
+    cursorPosition: var Natural) {.contractual.} =
+  body:
+    var runes = toRunes(s = $inputString)
+    cursorPosition.dec()
+    runes.delete(i = cursorPosition)
+    try:
+      inputString.text = $runes
+    except CapacityError:
+      showError(message = "Entered input is too long.", e = getCurrentException())
+
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect],
     contractual.} =
@@ -116,12 +127,12 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         if cursorPosition == 0:
           continue
         try:
-          resultString.text = runeSubStr(s = $resultString, pos = 0, len = -1)
+          deleteChar(inputString = resultString,
+              cursorPosition = cursorPosition)
           stdout.cursorBackward()
           stdout.write(s = " ")
           stdout.cursorBackward()
-          cursorPosition.dec()
-        except IOError, ValueError, CapacityError:
+        except IOError, ValueError:
           showError(message = "Can't delete character. Reason: ",
               e = getCurrentException())
           return exitString
