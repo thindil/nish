@@ -14,3 +14,6 @@ assert arguments == initLimitedString(capacity = maxInputLength,
     text = "ls -a -b --foo --bar=20 file.txt")
 
 assert readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
+
+assert readChar('c') == "c"
+assert readChar('H') == "H"
