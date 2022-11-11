@@ -40,6 +40,19 @@ type MaxInputLength* = range[1..maxInputLength]
   ##
   ## Used to store maximum allowed length of the user input
 
+proc readChar*(inputChar: char): string =
+  result = $inputChar
+  try:
+    if inputChar.ord() > 192:
+      result.add(y = getch())
+    if inputChar.ord() > 223:
+      result.add(y = getch())
+    if inputChar.ord() > 239:
+      result.add(y = getch())
+  except IOError:
+    showError(message = "Can't get the entered Unicode character. Reason: ",
+        e = getCurrentException())
+
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect],
     contractual.} =
@@ -140,18 +153,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
       # Visible character, add it to the user input string and show it in the
       # console
       elif inputChar.ord() > 31:
-        var inputRune: string = ""
-        inputRune.add(y = inputChar)
-        try:
-          if inputChar.ord() > 192:
-            inputRune.add(y = getch())
-          if inputChar.ord() > 223:
-            inputRune.add(y = getch())
-          if inputChar.ord() > 239:
-            inputRune.add(y = getch())
-        except IOError:
-          showError(message = "Can't get the entered Unicode character. Reason: ",
-              e = getCurrentException())
+        let inputRune: string = readChar(inputChar = inputChar)
         try:
           stdout.write(s = inputRune)
         except IOError:

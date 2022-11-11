@@ -468,18 +468,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           break
         # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
-          var inputRune: string = ""
-          inputRune.add(y = inputChar)
-          try:
-            if inputChar.ord() > 192:
-              inputRune.add(y = getch())
-            if inputChar.ord() > 223:
-              inputRune.add(y = getch())
-            if inputChar.ord() > 239:
-              inputRune.add(y = getch())
-          except IOError:
-            showError(message = "Can't get the entered Unicode character. Reason: ",
-                e = getCurrentException())
+          let inputRune: string = readChar(inputChar = inputChar)
           if cursorPosition < runeLen(s = $inputString):
             if insertMode:
               var runes = toRunes(s = $inputString)
