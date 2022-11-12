@@ -73,6 +73,18 @@ proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
 proc deleteChar*(inputString: var UserInput;
     cursorPosition: var Natural) {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Delete the Unicode character at the selected position from the user's input
+  ##
+  ## PARAMETERS
+  ##
+  ## * inputString    - the string of characters entered by the user
+  ## * cursorPosition - the position of the cursor in the string
+  ##
+  ## RETURNS
+  ##
+  ## Modified inputString and the new cursor position as cursorPosition
   body:
     var runes = toRunes(s = $inputString)
     cursorPosition.dec()
