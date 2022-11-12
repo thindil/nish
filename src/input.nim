@@ -141,10 +141,13 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
           continue
         try:
           stdout.cursorBackward(count = cursorPosition)
+          stdout.write(s = repeat(c = ' ', runeLen(s = $resultString)))
+          stdout.cursorBackward(count = runeLen(s = $resultString))
           deleteChar(inputString = resultString,
               cursorPosition = cursorPosition)
-          stdout.write(s = $resultString & " ")
-          stdout.cursorBackward(count = runeLen(s = $resultString) - cursorPosition)
+          stdout.write(s = $resultString)
+          if cursorPosition < runeLen(s = $resultString):
+            stdout.cursorBackward(count = runeLen(s = $resultString) - cursorPosition)
         except IOError, ValueError:
           showError(message = "Can't delete character. Reason: ",
               e = getCurrentException())
