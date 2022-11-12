@@ -71,7 +71,8 @@ proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
 
 proc deleteChar*(inputString: var UserInput;
-    cursorPosition: var Natural) {.contractual.} =
+    cursorPosition: var Natural) {.gcsafe, sideEffect, raises: [], tags: [
+    WriteIOEffect], contractual.} =
   body:
     var runes = toRunes(s = $inputString)
     cursorPosition.dec()
