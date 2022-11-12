@@ -17,3 +17,11 @@ assert readInput() == initLimitedString(capacity = maxInputLength, text = "exit"
 
 assert readChar('c') == "c"
 assert readChar('H') == "H"
+
+block:
+  var
+    inputString = initLimitedString(capacity = maxInputLength, text = "my text")
+    cursorPosition: Natural = 1
+  deleteChar(inputString, cursorPosition)
+  assert inputString == "y text"
+  assert cursorPosition == 0
