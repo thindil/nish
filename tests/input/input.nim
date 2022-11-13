@@ -25,3 +25,9 @@ block:
   deleteChar(inputString, cursorPosition)
   assert inputString == "y text"
   assert cursorPosition == 0
+
+block:
+  let inputString = initLimitedString(capacity = maxInputLength, text = "my text")
+  var cursorPosition: Natural = 1
+  moveCursor('D', cursorPosition, inputString)
+  assert cursorPosition == 0
