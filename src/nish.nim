@@ -425,27 +425,13 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     aliases = aliases, oneTimeCommand = oneTimeCommand,
                     commandName = $commandName, returnCode = returnCode,
                     db = db, cursorPosition = cursorPosition)
-              # Arrow left key pressed
-              elif inputChar == 'D' and cursorPosition > 0:
-                stdout.cursorBackward()
-                cursorPosition.dec()
-              # Arrow right key pressed
-              elif inputChar == 'C' and cursorPosition < runeLen(
-                  s = $inputString):
-                stdout.cursorForward()
-                cursorPosition.inc()
               # Insert key pressed
               elif inputChar == '2' and getch() == '~':
                 insertMode = not insertMode
-              # Home key pressed
-              elif inputChar == 'H' and cursorPosition > 0:
-                stdout.cursorBackward(count = cursorPosition)
-                cursorPosition = 0
-              # End key pressed
-              elif inputChar == 'F' and cursorPosition < runeLen(
-                  s = $inputString):
-                stdout.cursorForward(count = runeLen(s = $inputString) - cursorPosition)
-                cursorPosition = runeLen(s = $inputString)
+              # Move cursor if the proper key was pressed (arrows, home, end)
+              else:
+                moveCursor(inputChar = inputChar,
+                    cursorPosition = cursorPosition, inputString = inputString)
               keyWasArrow = true
           except IOError:
             discard

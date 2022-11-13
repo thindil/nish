@@ -94,6 +94,30 @@ proc deleteChar*(inputString: var UserInput;
     except CapacityError:
       showError(message = "Entered input is too long.", e = getCurrentException())
 
+proc moveCursor*(inputChar: char; cursorPosition: var Natural;
+    inputString: UserInput) {.contractual.} =
+  body:
+    try:
+      # Arrow left key pressed
+      if inputChar == 'D' and cursorPosition > 0:
+        stdout.cursorBackward()
+        cursorPosition.dec()
+      # Arrow right key pressed
+      elif inputChar == 'C' and cursorPosition < runeLen(s = $inputString):
+        stdout.cursorForward()
+        cursorPosition.inc()
+      # Home key pressed
+      elif inputChar == 'H' and cursorPosition > 0:
+        stdout.cursorBackward(count = cursorPosition)
+        cursorPosition = 0
+      # End key pressed
+      elif inputChar == 'F' and cursorPosition < runeLen(s = $inputString):
+        stdout.cursorForward(count = runeLen(s = $inputString) - cursorPosition)
+        cursorPosition = runeLen(s = $inputString)
+    except IOError, ValueError:
+      showError(message = "Can't move the cursor. Reason: ",
+          e = getCurrentException())
+
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect],
     contractual.} =
@@ -171,28 +195,8 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
             showError(message = "Can't get the next character after Escape. Reason: ",
                 e = getCurrentException())
             return exitString
-          try:
-            # Arrow left key pressed
-            if inputChar == 'D' and cursorPosition > 0:
-              stdout.cursorBackward()
-              cursorPosition.dec()
-            # Arrow right key pressed
-            elif inputChar == 'C' and cursorPosition < runeLen(
-                s = $resultString):
-              stdout.cursorForward()
-              cursorPosition.inc()
-            # Home key pressed
-            elif inputChar == 'H' and cursorPosition > 0:
-              stdout.cursorBackward(count = cursorPosition)
-              cursorPosition = 0
-            # End key pressed
-            elif inputChar == 'F' and cursorPosition < runeLen(
-                s = $resultString):
-              stdout.cursorForward(count = runeLen(s = $resultString) - cursorPosition)
-              cursorPosition = runeLen(s = $resultString)
-          except IOError, ValueError:
-            showError(message = "Can't move the cursor. Reason: ",
-                e = getCurrentException())
+          moveCursor(inputChar = inputChar, cursorPosition = cursorPosition,
+              inputString = resultString)
         else:
           continue
       # Visible character, add it to the user input string and show it in the
