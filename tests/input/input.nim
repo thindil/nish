@@ -31,3 +31,11 @@ block:
   var cursorPosition: Natural = 1
   moveCursor('D', cursorPosition, inputString)
   assert cursorPosition == 0
+
+block:
+  var
+    inputString = initLimitedString(capacity = maxInputLength, text = "my text")
+    cursorPosition: Natural = 7
+  updateInput(cursorPosition, inputString, false, "a")
+  assert inputString == "my texta"
+  assert cursorPosition == 8
