@@ -135,6 +135,21 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
 proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
     insertMode: bool; inputRune: string) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Update the user's input with the new Unicode character
+  ##
+  ## PARAMETERS
+  ##
+  ## * cursorPosition - the current position of cursor in the user's input
+  ## * inputString    - the user's input's content
+  ## * insertMode     - if true, the input is in the insert (replace) mode
+  ## * inputRune      - the Unicode character to enter to the user's input
+  ##
+  ## RETURNS
+  ##
+  ## The new cursor position as modified cursorPosition and the modified user's
+  ## input's content as inputString
   if cursorPosition < runeLen(s = $inputString):
     if insertMode:
       var runes = toRunes(s = $inputString)
