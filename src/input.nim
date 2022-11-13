@@ -97,6 +97,19 @@ proc deleteChar*(inputString: var UserInput;
 proc moveCursor*(inputChar: char; cursorPosition: var Natural;
     inputString: UserInput) {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Move the cursor inside the user's input
+  ##
+  ## PARAMETERS
+  ##
+  ## * inputChar      - the last ASCII character entered by the user
+  ## * cursorPosition - the current position of cursor in the user's input
+  ## * inputString    - the user's input's content
+  ##
+  ## RETURNS
+  ##
+  ## The new position of the cursor as modified cursorPosition argument
   body:
     try:
       # Arrow left key pressed
