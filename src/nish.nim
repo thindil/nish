@@ -448,31 +448,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
           let inputRune: string = readChar(inputChar = inputChar)
-          if cursorPosition < runeLen(s = $inputString):
-            if insertMode:
-              var runes = toRunes(s = $inputString)
-              runes[cursorPosition] = inputRune.toRunes()[0]
-              try:
-                inputString.text = $runes
-              except CapacityError:
-                showError(message = "Entered input is too long.",
-                    e = getCurrentException())
-            else:
-              var runes = toRunes(s = $inputString)
-              runes.insert(item = inputRune.toRunes()[0], i = cursorPosition)
-              try:
-                inputString.text = $runes
-                cursorPosition.inc()
-              except CapacityError:
-                showError(message = "Entered input is too long.",
-                    e = getCurrentException())
-          else:
-            try:
-              inputString.add(y = inputRune)
-              cursorPosition.inc()
-            except CapacityError:
-              showError(message = "Entered input is too long.",
-                  e = getCurrentException())
+          addChar(cursorPosition = cursorPosition, inputString = inputString,
+              insertMode = insertMode, inputRune = inputRune)
           highlightOutput(promptLength = promptLength,
               inputString = inputString, commands = commands,
               aliases = aliases, oneTimeCommand = oneTimeCommand,

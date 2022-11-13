@@ -132,6 +132,33 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
       showError(message = "Can't move the cursor. Reason: ",
           e = getCurrentException())
 
+proc addChar*(cursorPosition: var Natural; inputString: var UserInput;
+    insertMode: bool; inputRune: string) {.contractual.} =
+  if cursorPosition < runeLen(s = $inputString):
+    if insertMode:
+      var runes = toRunes(s = $inputString)
+      runes[cursorPosition] = inputRune.toRunes()[0]
+      try:
+        inputString.text = $runes
+      except CapacityError:
+        showError(message = "Entered input is too long.",
+            e = getCurrentException())
+    else:
+      var runes = toRunes(s = $inputString)
+      runes.insert(item = inputRune.toRunes()[0], i = cursorPosition)
+      try:
+        inputString.text = $runes
+        cursorPosition.inc()
+      except CapacityError:
+        showError(message = "Entered input is too long.",
+            e = getCurrentException())
+  else:
+    try:
+      inputString.add(y = inputRune)
+      cursorPosition.inc()
+    except CapacityError:
+      showError(message = "Entered input is too long.", e = getCurrentException())
+
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect],
     contractual.} =
@@ -222,28 +249,8 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         except IOError:
           showError(message = "Can't print entered character. Reason: ",
               e = getCurrentException())
-        # Insert the character into input
-        if cursorPosition < runeLen(s = $resultString):
-          var runes = toRunes(s = $resultString)
-          runes.insert(item = inputRune.toRunes()[0], i = cursorPosition)
-          try:
-            resultString.text = $runes
-            cursorPosition.inc()
-          except CapacityError:
-            return resultString
-          try:
-            stdout.write(s = $runes[cursorPosition..^1])
-            stdout.cursorBackward(count = runes.len - cursorPosition)
-          except IOError, ValueError:
-            showError(message = "Can't print entered character. Reason: ",
-                e = getCurrentException())
-        # Add the character at the end of the input
-        else:
-          try:
-            resultString.add(y = inputRune)
-            cursorPosition.inc()
-          except CapacityError:
-            return resultString
+        addChar(cursorPosition = cursorPosition, inputString = resultString,
+            insertMode = false, inputRune = inputRune)
     try:
       stdout.writeLine(x = "")
     except IOError:
