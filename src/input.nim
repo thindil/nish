@@ -95,7 +95,8 @@ proc deleteChar*(inputString: var UserInput;
       showError(message = "Entered input is too long.", e = getCurrentException())
 
 proc moveCursor*(inputChar: char; cursorPosition: var Natural;
-    inputString: UserInput) {.contractual.} =
+    inputString: UserInput) {.gcsafe, sideEffect, raises: [], tags: [
+    WriteIOEffect], contractual.} =
   body:
     try:
       # Arrow left key pressed
