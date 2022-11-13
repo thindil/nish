@@ -448,7 +448,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
           let inputRune: string = readChar(inputChar = inputChar)
-          addChar(cursorPosition = cursorPosition, inputString = inputString,
+          updateInput(cursorPosition = cursorPosition, inputString = inputString,
               insertMode = insertMode, inputRune = inputRune)
           highlightOutput(promptLength = promptLength,
               inputString = inputString, commands = commands,

@@ -132,8 +132,9 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
       showError(message = "Can't move the cursor. Reason: ",
           e = getCurrentException())
 
-proc addChar*(cursorPosition: var Natural; inputString: var UserInput;
-    insertMode: bool; inputRune: string) {.contractual.} =
+proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
+    insertMode: bool; inputRune: string) {.gcsafe, sideEffect, raises: [],
+    tags: [WriteIOEffect], contractual.} =
   if cursorPosition < runeLen(s = $inputString):
     if insertMode:
       var runes = toRunes(s = $inputString)
@@ -249,7 +250,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
         except IOError:
           showError(message = "Can't print entered character. Reason: ",
               e = getCurrentException())
-        addChar(cursorPosition = cursorPosition, inputString = resultString,
+        updateInput(cursorPosition = cursorPosition, inputString = resultString,
             insertMode = false, inputRune = inputRune)
     try:
       stdout.writeLine(x = "")
