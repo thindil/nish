@@ -6,7 +6,7 @@ import std/[db_sqlite, strutils, tables]
 import ../../src/[commands, directorypath, lstring, nish, resultcode]
 
 let db = startDb("test.db".DirectoryPath)
-assert db != nil
+assert db != nil, "Failed to initialize database."
 if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
   if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description) VALUES (?, ?, ?, ?, ?)",
       "tests", "/", 1, "ls -a", "Test alias.") == -1:
@@ -16,10 +16,11 @@ if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
     quit("Can't add test2 alias.", QuitFailure)
 var myaliases = newOrderedTable[LimitedString, int]()
 
-assert cdCommand("/".DirectoryPath, myaliases, db) == QuitSuccess
-assert cdCommand("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure
+assert cdCommand("/".DirectoryPath, myaliases, db) == QuitSuccess, "Failed to enter an existing directory."
+assert cdCommand("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure, "Failed to not enter a non-existing directory."
 
-assert changeDirectory("..".DirectoryPath, myaliases, db) == QuitSuccess
-assert changeDirectory("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure
+assert changeDirectory("..".DirectoryPath, myaliases, db) == QuitSuccess, "Failed to change the working directory."
+assert changeDirectory("/adfwerewtr".DirectoryPath, myaliases, db) ==
+    QuitFailure, "Failed to not change the working directory."
 
 quitShell(ResultCode(QuitSuccess), db)
