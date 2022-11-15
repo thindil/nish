@@ -6,7 +6,7 @@ import std/[db_sqlite, tables]
 import ../../src/[commandslist, directorypath, history, nish, resultcode]
 
 let db = startDb("test.db".DirectoryPath)
-assert db != nil
+assert db != nil, "Failed to initialize the database."
 var commands = newTable[string, CommandData]()
 var amount = initHistory(db, commands)
 if amount == 0:
@@ -14,16 +14,16 @@ if amount == 0:
       "alias delete") == -1:
     quit QuitFailure
 
-assert getHistory(1, db) == "alias delete"
+assert getHistory(1, db) == "alias delete", "Failed to get the history entry."
 
 amount = historyLength(db)
-assert updateHistory("test comm", db) == amount + 1
+assert updateHistory("test comm", db) == amount + 1, "Failed to update the history."
 
 assert historyLength(db) > 0
 
-assert showHistory(db) == QuitSuccess
+assert showHistory(db) == QuitSuccess, "Failed to show the history."
 
-assert clearHistory(db) == 0
-assert historyLength(db) == 0
+assert clearHistory(db) == 0, "Failed to clear the history"
+assert historyLength(db) == 0, "Failed to get the histry length"
 
 quitShell(ResultCode(QuitSuccess), db)
