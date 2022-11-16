@@ -338,7 +338,7 @@ it from the source.
 You will need:
 
 * [Nim compiler](https://nim-lang.org/install.html)
-* [Contracts package](https://github.com/thindil/NimContracts)
+* [Contracts package](https://github.com/Udiknedormin/NimContracts)
 * [Nimassets package](https://github.com/xmonader/nimassets)
 
 You can install them manually or by using [Nimble](https://github.com/nim-lang/nimble).
