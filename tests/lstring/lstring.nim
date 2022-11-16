@@ -45,14 +45,12 @@ block:
   assert testString.find('a') == -1, "Failed to not find a character in LimitedString"
 
 block:
-  let testString: LimitedString = initLimitedString(capacity = 4, text = "test")
-  assert $testString == "test"
   try:
-    let testString2: LimitedString = initLimitedString(capacity = 4,
+    let testString: LimitedString = initLimitedString(capacity = 4,
         text = "too long text")
-    assert $testString2 == "too long text"
+    assert $testString == "too long text", "Failed to assing too long text to LimitedString"
   except CapacityError:
-    quit 0
+    discard
 
 block:
   var testString: LimitedString = initLimitedString(capacity = 15, text = "test")
@@ -101,5 +99,4 @@ block:
   try:
     testString.text = "very long text which should not go"
   except CapacityError:
-    discard
-  assert testString == "new text"
+    assert testString == "new text"
