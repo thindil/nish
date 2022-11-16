@@ -10,7 +10,7 @@ showCommandLineHelp()
 showProgramVersion()
 
 let db = startDb("test.db".DirectoryPath)
-assert db != nil
+assert db != nil, "Failed to initialize the database."
 var
     historyIndex: int
     commands = newTable[string, CommandData]()
