@@ -41,62 +41,62 @@ block:
 
 block:
   let testString: LimitedString = initLimitedString(capacity = 4, text = "test")
-  assert testString.find('e') == 1, "Failed to find a character in LimitedString"
-  assert testString.find('a') == -1, "Failed to not find a character in LimitedString"
+  assert testString.find('e') == 1, "Failed to find a character in LimitedString."
+  assert testString.find('a') == -1, "Failed to not find a character in LimitedString."
 
 block:
   try:
     let testString: LimitedString = initLimitedString(capacity = 4,
         text = "too long text")
-    assert $testString == "too long text", "Failed to assing too long text to LimitedString"
+    assert $testString == "too long text", "Failed to assing too long text to LimitedString."
   except CapacityError:
     discard
 
 block:
   var testString: LimitedString = initLimitedString(capacity = 15, text = "test")
   testString.insert("start and ")
-  assert $testString == "start and test"
+  assert $testString == "start and test", "Failed to prepend a string to LimitedString."
   testString.insert("2", 2)
-  assert $testString == "st2art and test"
+  assert $testString == "st2art and test",  "Failed to insert a string into LimitedString."
   try:
     testString.insert("very long text outside of max allowed lenght")
   except CapacityError:
-    assert $testString == "st2art and test"
+    assert $testString == "st2art and test", "Failed to not insert a too long string to LimitedString."
 
 block:
   let testString: LimitedString = initLimitedString(capacity = 14, text = "test")
-  assert testString.len() == 4
-  assert testString.capacity == 14
+  assert testString.len() == 4, "Failed to get length of LimitedString."
+  assert testString.capacity == 14, "Failed to get capacity of LimitedString"
 
 block:
   let testString: LimitedString = initLimitedString(capacity = 4, text = "test")
-  assert testString.rfind('e') == 1
-  assert testString.rfind('a') == -1
+  assert testString.rfind('e') == 1, "Failed to reverse find a character in LimitedString."
+  assert testString.rfind('a') == -1, "Failed to not reverse find a non-existing character in LimitedString."
 
 block:
   var testString: LimitedString = initLimitedString(capacity = 14, text = "test")
   testString[3] = 'a'
-  assert $testString == "tesa"
+  assert $testString == "tesa", "Failed to insert a character into LimitedString."
 
 block:
   let testString: LimitedString = initLimitedString(capacity = 14, text = "test")
-  assert $testString[1..2] == "es"
+  assert $testString[1..2] == "es", "Failed to get slice from LimitedString."
 
 block:
   let testString: LimitedString = initLimitedString(capacity = 4, text = "test")
-  assert testString[1] == 'e'
+  assert testString[1] == 'e', "Failed to get a character from LimitedString."
 
 block:
   let testString: LimitedString = initLimitedString(capacity = 4, text = "test")
-  assert testString.startsWith("te")
-  assert not testString.startsWith("as")
+  assert testString.startsWith("te"), "Failed to check if LimitedString starts with a string."
+  assert not testString.startsWith("as"), "Failed to check if LimitedString not starts with a string."
 
 block:
   var testString: LimitedString = initLimitedString(capacity = 10,
       text = "old text")
   testString.text = "new text"
-  assert testString == "new text"
+  assert testString == "new text", "Failed to set string as LimitedString."
   try:
     testString.text = "very long text which should not go"
   except CapacityError:
-    assert testString == "new text"
+    assert testString == "new text", "Failed to not set too long string as LimitedString."
