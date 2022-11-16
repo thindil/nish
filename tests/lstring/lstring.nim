@@ -57,7 +57,7 @@ block:
   testString.insert("start and ")
   assert $testString == "start and test", "Failed to prepend a string to LimitedString."
   testString.insert("2", 2)
-  assert $testString == "st2art and test",  "Failed to insert a string into LimitedString."
+  assert $testString == "st2art and test", "Failed to insert a string into LimitedString."
   try:
     testString.insert("very long text outside of max allowed lenght")
   except CapacityError:
