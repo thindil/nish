@@ -5,6 +5,6 @@ discard """
 import ../../src/[directorypath, nish, title]
 
 let db = startDb("test.db".DirectoryPath)
-assert db != nil
+assert db != nil, "Failed to initialize the database."
 
 setTitle("test title", db)
