@@ -4,7 +4,7 @@ discard """
 
 import ../../src/[output, resultcode]
 
-assert showError("test error") == QuitFailure
+assert showError("test error") == QuitFailure, "Failed to show error message."
 
 showFormHeader("test header")
 
