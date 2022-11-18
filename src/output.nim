@@ -96,7 +96,7 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
     if e != nil:
       stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
       when defined(debug):
-        stderr.styledWrite(fgRed, getStackTrace())
+        stderr.styledWrite(fgRed, getStackTrace(e = e))
     else:
       stderr.writeLine(x = "")
   except IOError, ValueError:
