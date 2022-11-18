@@ -293,7 +293,7 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
   require:
     db != nil
   body:
-    showOutput(message = "You can cancel adding a new alias at any time by double press Escape key.")
+    showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word 'exit' as an answer.")
     # Set the name for the alias
     showFormHeader(message = "(1/6) Name")
     showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
@@ -433,7 +433,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
           db.getRow(query = sql(query = "SELECT name, path, commands, description, output FROM aliases WHERE id=?"), id)
       except DbError:
         return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
-    showOutput(message = "You can cancel editing the alias at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
+    showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
     # Set the name for the alias
     showFormHeader(message = "(1/6) Name")
     showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",

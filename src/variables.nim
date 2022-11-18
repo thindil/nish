@@ -349,7 +349,7 @@ proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
-    showOutput(message = "You can cancel adding a new variable at any time by double press Escape key.")
+    showOutput(message = "You can cancel adding a new variable at any time by double press Escape key or enter word 'exit' as an answer.")
     # Set the name for the variable
     showFormHeader(message = "(1/5) Name")
     showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
@@ -480,7 +480,7 @@ proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
           db.getRow(query = sql(query = "SELECT name, path, value, description FROM variables WHERE id=?"), varId)
         except DbError:
           return showError(message = "The variable with the ID: " & $varId & " doesn't exists.")
-    showOutput(message = "You can cancel editing the variable at any time by double press Escape key. You can also reuse a current value by pressing Enter.")
+    showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by pressing Enter.")
     # Set the name for the variable
     showFormHeader(message = "(1/5) Name")
     showOutput(message = "The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
