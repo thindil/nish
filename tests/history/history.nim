@@ -3,7 +3,7 @@ discard """
 """
 
 import std/[db_sqlite, tables]
-import ../../src/[commandslist, directorypath, history, nish, resultcode]
+import ../../src/[commandslist, directorypath, history, lstring, nish, resultcode]
 
 let db = startDb("test.db".DirectoryPath)
 assert db != nil, "Failed to initialize the database."
@@ -21,7 +21,8 @@ assert updateHistory("test comm", db) == amount + 1, "Failed to update the histo
 
 assert historyLength(db) > 0
 
-assert showHistory(db) == QuitSuccess, "Failed to show the history."
+assert showHistory(db, initLimitedString(capacity = 4, text = "list")) ==
+    QuitSuccess, "Failed to show the history."
 
 assert clearHistory(db) == 0, "Failed to clear the history"
 assert historyLength(db) == 0, "Failed to get the histry length"
