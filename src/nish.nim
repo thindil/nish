@@ -327,14 +327,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   # Set the title of the terminal to current directory
   setTitle(title = $getFormattedDir(), db = db)
 
-  # Clear the screen if the shell started in interactive mode (not for one
-  # command)
-  try:
-    stdout.eraseScreen()
-  except IOError:
-    showError(message = "Can't clear the screen. Reason: ",
-        e = getCurrentException())
-
   # Start the shell
   while true:
     # Write the shell's prompt and get the input from the user, only when the
@@ -513,11 +505,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         setTitle(title = getCurrentDir(), db = db)
       except OSError:
         setTitle(title = "nish", db = db)
-      try:
-        stdout.eraseScreen()
-      except IOError:
-        showError(message = "Can't clear the screen. Reason: ",
-            e = getCurrentException())
       quitShell(returnCode = returnCode, db = db)
     # Change current directory
     of "cd":
