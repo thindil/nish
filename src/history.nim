@@ -208,9 +208,8 @@ proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc showHistory*(db; arguments: UserInput = emptyLimitedString(
-    capacity = maxInputLength)): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
+proc showHistory*(db; arguments: UserInput): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -221,13 +220,13 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
   ##
   ## * db        - the connection to the shell's database
   ## * arguments - the string with arguments entered by the user for the command.
-  ##               Can be empty. Default value is empty.
   ##
   ## RETURNS
   ##
   ## QuitSucces if the history was properly shown otherwise QuitFailure.
   require:
     db != nil
+    arguments.len > 0
   body:
     let
       argumentsList: seq[string] = split(s = $arguments)
