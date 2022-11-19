@@ -14,7 +14,6 @@ of the shell.
 - Ability to set the terminal's title. Can be enabled or disabled in the
   shell's options.
 - Ability to enable or disable syntax highlighting for the user's input
-- Clear the screen at entering and quitting the shell
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
@@ -35,6 +34,7 @@ of the shell.
 - Better handling arguments in the test plugin
 - Special keys not working with some terminal emulators
 - Typos in CHANGELOG.md and README.md
+- Getting stact trace for the shell's exception when build in debug mode
 
 ## [0.4.0] - 2022-10-14
 
