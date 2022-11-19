@@ -277,6 +277,13 @@ proc showHistory*(db; arguments: UserInput = emptyLimitedString(
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
+proc findInHistory*(db; arguments: UserInput): ResultCode {.contractual.} =
+  require:
+    db != nil
+    arguments.len > 0
+  body:
+    discard
+
 proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
     locks: 0, contractual.} =
@@ -387,9 +394,21 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.gcsafe,
         # Clear the shell's commands' history
         elif arguments == "clear":
           return clearHistory(db = db)
-        # Show the last executed shell's commands
-        elif arguments.len() > 3 and arguments[0 .. 3] == "list":
-          return showHistory(db = db, arguments = arguments)
+        elif arguments.len() > 3:
+          # Show the last executed shell's commands
+          if arguments[0..3] == "list":
+            return showHistory(db = db, arguments = arguments)
+          # Find the string in the shell's commands' history
+          elif arguments[0..3] == "find":
+            return findInHistory(db = db, arguments = arguments)
+          else:
+            try:
+              return showUnknownHelp(subCommand = arguments,
+                  command = initLimitedString(capacity = 7, text = "history"),
+                      helpType = initLimitedString(capacity = 7,
+                          text = "history"))
+            except CapacityError:
+              return QuitFailure.ResultCode
         else:
           try:
             return showUnknownHelp(subCommand = arguments,
