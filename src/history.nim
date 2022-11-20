@@ -42,6 +42,7 @@ type HistoryRange* = ExtendedNatural
 
 using
   db: DbConn # Connection to the shell's database
+  arguments: UserInput # The arguments for a command entered by the user
 
 proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0,
@@ -208,8 +209,8 @@ proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc showHistory*(db; arguments: UserInput): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
+proc showHistory*(db; arguments): ResultCode {.gcsafe, sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -276,7 +277,7 @@ proc showHistory*(db; arguments: UserInput): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
-proc findInHistory*(db; arguments: UserInput): ResultCode {.contractual.} =
+proc findInHistory*(db; arguments): ResultCode {.contractual.} =
   require:
     db != nil
     arguments.len > 0
@@ -369,8 +370,8 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.gcsafe,
     db != nil
   body:
     # Add commands related to the shell's history system
-    proc historyCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+    proc historyCommand(arguments; db; list: CommandLists): ResultCode {.gcsafe,
+        raises: [], contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "history" and its subcommands
