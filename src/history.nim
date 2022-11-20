@@ -277,7 +277,8 @@ proc showHistory*(db; arguments): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
-proc findInHistory*(db; arguments): ResultCode {.contractual.} =
+proc findInHistory*(db; arguments): ResultCode {.gcsafe, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, ReadDbEffect], contractual.} =
   require:
     db != nil
     arguments.len > 0
