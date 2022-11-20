@@ -14,6 +14,7 @@ of the shell.
 - Ability to set the terminal's title. Can be enabled or disabled in the
   shell's options.
 - Ability to enable or disable syntax highlighting for the user's input
+- Ability to look for a command in the shell's commands' history
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
