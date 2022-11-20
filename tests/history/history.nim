@@ -24,6 +24,11 @@ assert historyLength(db) > 0
 assert showHistory(db, initLimitedString(capacity = 4, text = "list")) ==
     QuitSuccess, "Failed to show the history."
 
+assert findInHistory(db, initLimitedString(capacity = 7, text = "find te")) ==
+    QuitSuccess, "Failed to find a term in the history."
+assert findInHistory(db, initLimitedString(capacity = 8, text = "find asd")) ==
+    QuitFailure, "Failed to not find a term in the history."
+
 assert clearHistory(db) == 0, "Failed to clear the history"
 assert historyLength(db) == 0, "Failed to get the histry length"
 
