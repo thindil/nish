@@ -401,22 +401,12 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.gcsafe,
           # Find the string in the shell's commands' history
           elif arguments[0..3] == "find":
             return findInHistory(db = db, arguments = arguments)
-          else:
-            try:
-              return showUnknownHelp(subCommand = arguments,
-                  command = initLimitedString(capacity = 7, text = "history"),
-                      helpType = initLimitedString(capacity = 7,
-                          text = "history"))
-            except CapacityError:
-              return QuitFailure.ResultCode
-        else:
-          try:
-            return showUnknownHelp(subCommand = arguments,
-                command = initLimitedString(capacity = 7, text = "history"),
-                    helpType = initLimitedString(capacity = 7,
-                        text = "history"))
-          except CapacityError:
-            return QuitFailure.ResultCode
+        try:
+          return showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 7, text = "history"),
+              helpType = initLimitedString(capacity = 7, text = "history"))
+        except CapacityError:
+          return QuitFailure.ResultCode
     try:
       addCommand(name = initLimitedString(capacity = 8, text = "history"),
           command = historyCommand, commands = commands)
