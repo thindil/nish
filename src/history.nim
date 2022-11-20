@@ -279,6 +279,19 @@ proc showHistory*(db; arguments): ResultCode {.gcsafe, sideEffect, raises: [],
 
 proc findInHistory*(db; arguments): ResultCode {.gcsafe, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Find the selected term in the shell's commands' history
+  ##
+  ## PARAMETERS
+  ##
+  ## * db        - the connection to the shell's database
+  ## * arguments - the string with arguments entered by the user for the command.
+  ##
+  ## RETURNS
+  ##
+  ## QuitSucces if the term found in the shell's comamnds' history, otherwise
+  ## QuitFailure.
   require:
     db != nil
     arguments.len > 0
