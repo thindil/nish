@@ -30,7 +30,7 @@ import contracts
 # Internal imports
 import columnamount, commandslist, constants, help, input, lstring, output, resultcode
 
-const historyCommands* = ["clear", "list"]
+const historyCommands* = ["clear", "list", "find"]
   ## FUNCTION
   ##
   ## The list of available subcommands for command history
@@ -282,7 +282,24 @@ proc findInHistory*(db; arguments): ResultCode {.contractual.} =
     db != nil
     arguments.len > 0
   body:
-    discard
+    var searchFor: string = strip(s = $arguments)
+    if searchFor.len < 5:
+      return showError(message = "You have to enter a search term for which you want to look in the history.")
+    searchFor = replace(s = searchFor, sub = '*', by = '%')
+    try:
+      result = QuitFailure.ResultCode
+      for row in db.fastRows(query = sql(
+          query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
+          "%" & searchFor[5..^1] & "%"):
+        showOutput(message = indent(s = row[0], count = 5))
+        result = QuitSuccess.ResultCode
+      if result == QuitFailure:
+        showOutput(message = "No commands found in the history for '" &
+            arguments[5..^1] & "'")
+      return
+    except DbError:
+      return showError(message = "Can't get the last commands from the shell's history. Reason: ",
+          e = getCurrentException())
 
 proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
