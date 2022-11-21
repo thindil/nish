@@ -154,6 +154,9 @@ most frequently used. Additionally, the command allows selecting the amount of
 commands to show, their sorting order and criteria. These settings cam be set
 as permanent in the shell's options or ad hoc for the one time.
 
+It is also possible to search for a command in the history with the separated
+shell command.
+
 #### Advanced shell's configuration
 
 All shell's options can be previewed from the shell. Additionally, it is
