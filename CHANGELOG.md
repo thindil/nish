@@ -15,6 +15,7 @@ of the shell.
   shell's options.
 - Ability to enable or disable syntax highlighting for the user's input
 - Ability to look for a command in the shell's commands' history
+- Info about the amount of the last commands to `history list` command
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
