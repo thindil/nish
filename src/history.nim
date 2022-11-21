@@ -263,7 +263,7 @@ proc showHistory*(db; arguments): ResultCode {.gcsafe, sideEffect, raises: [],
         of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
         else:
           return showError(message = "Unknown type of history sort order")
-    showFormHeader(message = "The last commands from the shell's history")
+    showFormHeader(message = "The last " & $amount & " commands from the shell's history")
     showOutput(message = indent(s = "Last used                Times      Command",
         count = spacesAmount.int), fgColor = fgMagenta)
     try:
