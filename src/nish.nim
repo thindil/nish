@@ -364,23 +364,26 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             prefix: string = (if spaceIndex ==
                 -1: $inputString else: $inputString[spaceIndex + 1..^1])
-            completion: string = getCompletion(prefix = prefix)
+            completion: seq[string] = getCompletion(prefix = prefix)
           if completion.len() == 0:
             continue
-          try:
-            stdout.cursorBackward(count = runeLen(s = $inputString) -
-                spaceIndex - 1)
-            stdout.write(s = completion)
-            inputString.text = inputString[0..spaceIndex] & completion
-            cursorPosition = runeLen(s = $inputString)
-          except IOError:
-            discard
-          except ValueError:
-            showError(message = "Invalid value for character position.",
-                e = getCurrentException())
-          except CapacityError:
-            showError(message = "Entered input is too long.",
-                e = getCurrentException())
+          elif completion.len == 1:
+            try:
+              stdout.cursorBackward(count = runeLen(s = $inputString) -
+                  spaceIndex - 1)
+              stdout.write(s = completion[0])
+              inputString.text = inputString[0..spaceIndex] & completion[0]
+              cursorPosition = runeLen(s = $inputString)
+            except IOError:
+              discard
+            except ValueError:
+              showError(message = "Invalid value for character position.",
+                  e = getCurrentException())
+            except CapacityError:
+              showError(message = "Entered input is too long.",
+                  e = getCurrentException())
+          else:
+            continue
         # Special keys pressed
         elif inputChar.ord() == 27:
           try:

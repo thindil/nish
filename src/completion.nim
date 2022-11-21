@@ -30,7 +30,7 @@ import contracts
 # Internal imports
 import output
 
-proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
+proc getCompletion*(prefix: string): seq[string] {.gcsafe, sideEffect, raises: [],
     tags: [ReadDirEffect, WriteIOEffect], contractual.} =
   ## FUNCTION
   ##
@@ -43,9 +43,9 @@ proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
   ##
   ## RETURNS
   ##
-  ## The relative path to the first file or directory which match the parameter
-  ## prefix. If prefix is empty, or there is no matching file or directory,
-  ## returns empty string.
+  ## The list of relative paths to the files or directories which match the
+  ## parameter prefix. If prefix is empty, or there is no matching file or
+  ## directory, returns empty sequence.
   body:
     if prefix.len() == 0:
       return
@@ -58,9 +58,10 @@ proc getCompletion*(prefix: string): string {.gcsafe, sideEffect, raises: [],
             path = prefix) else: prefix)
       for item in walkDir(dir = dirToCheck, relative = true):
         if item.path.startsWith(prefix = newPrefix):
-          result = (if parent != ".": parent & DirSep else: "") & item.path
-          if dirExists(dir = result):
-            result = result & DirSep
+          var completion = (if parent != ".": parent & DirSep else: "") & item.path
+          if dirExists(dir = completion):
+            completion = completion & DirSep
+          result.add(y = completion)
     except OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
