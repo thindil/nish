@@ -307,17 +307,16 @@ func getArguments*(userInput: var OptParser;
       key = userInput.key
     try:
       case userInput.kind
-      of cmdLongOption:
+      of cmdLongOption, cmdShortOption:
+        if userInput.kind == cmdLongOption:
+          result.add(y = "-")
+        result.add(y = "-" & key)
         if userInput.val.len() > 0:
-          result.add(y = "--" & key & "=")
+          result.add(y = "=")
           if userInput.val.contains(sub = " "):
             result.add(y = "\"" & userInput.val & "\"")
           else:
             result.add(userInput.val)
-        else:
-          result.add(y = "--" & key)
-      of cmdShortOption:
-        result.add(y = "-" & key)
       of cmdArgument:
         result.add(y = key)
       of cmdEnd:
