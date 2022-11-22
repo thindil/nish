@@ -302,12 +302,13 @@ proc findInHistory*(db; arguments): ResultCode {.gcsafe, raises: [], tags: [
     let searchTerm = searchFor[5..^1]
     showFormHeader(message = "The search results for '" & searchTerm & "' in the history:")
     searchFor = replace(s = searchTerm, sub = '*', by = '%')
+    let spacesAmount: int = ((try: terminalWidth() except ValueError: 80) / 12).int
     try:
       result = QuitFailure.ResultCode
       for row in db.fastRows(query = sql(
           query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
           "%" & searchFor & "%"):
-        showOutput(message = indent(s = row[0], count = 5))
+        showOutput(message = indent(s = row[0], count = spacesAmount))
         result = QuitSuccess.ResultCode
       if result == QuitFailure:
         showOutput(message = "No commands found in the history for '" &
