@@ -364,15 +364,15 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             prefix: string = (if spaceIndex ==
                 -1: $inputString else: $inputString[spaceIndex + 1..^1])
-            completion: seq[string] = getCompletion(prefix = prefix)
-          if completion.len() == 0:
+            completions: seq[string] = getCompletion(prefix = prefix)
+          if completions.len() == 0:
             continue
-          elif completion.len == 1:
+          elif completions.len == 1:
             try:
               stdout.cursorBackward(count = runeLen(s = $inputString) -
                   spaceIndex - 1)
-              stdout.write(s = completion[0])
-              inputString.text = inputString[0..spaceIndex] & completion[0]
+              stdout.write(s = completions[0])
+              inputString.text = inputString[0..spaceIndex] & completions[0]
               cursorPosition = runeLen(s = $inputString)
             except IOError:
               discard
@@ -383,7 +383,17 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               showError(message = "Entered input is too long.",
                   e = getCurrentException())
           else:
-            continue
+            try:
+              stdout.writeLine("")
+              var amount: Natural = 0
+              for completion in completions:
+                stdout.write(s = completion & "   ")
+                amount.inc
+                if amount == 3:
+                  stdout.writeLine("")
+                  amount = 0
+            except IOError:
+              discard
         # Special keys pressed
         elif inputChar.ord() == 27:
           try:
