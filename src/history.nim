@@ -299,6 +299,7 @@ proc findInHistory*(db; arguments): ResultCode {.gcsafe, raises: [], tags: [
     var searchFor: string = strip(s = $arguments)
     if searchFor.len < 5:
       return showError(message = "You have to enter a search term for which you want to look in the history.")
+    showFormHeader(message = "The search results for '" & searchFor[5..^1] & "' in the history:")
     searchFor = replace(s = searchFor, sub = '*', by = '%')
     try:
       result = QuitFailure.ResultCode
