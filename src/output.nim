@@ -25,6 +25,8 @@
 
 # Standard library imports
 import std/[strutils, terminal]
+# External modules imports
+import contracts
 # Internal imports
 import columnamount, resultcode
 
@@ -37,7 +39,7 @@ using message: OutputMessage # The message to show to the user
 
 proc showOutput*(message; newLine: bool = true;
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the selected message to the user. If newLine is true, add a new line
@@ -49,28 +51,29 @@ proc showOutput*(message; newLine: bool = true;
   ## * newLine         - if true, add a new line after the message
   ## * fgColor         - the color of the text (foreground)
   ## * centered        - if true, center the message on the screen
-  if message != "":
-    var newMessage: OutputMessage
-    if centered:
-      try:
-        newMessage = center(s = message, width = terminalWidth())
-      except ValueError:
+  body:
+    if message != "":
+      var newMessage: OutputMessage
+      if centered:
+        try:
+          newMessage = center(s = message, width = terminalWidth())
+        except ValueError:
+          newMessage = message
+      else:
         newMessage = message
-    else:
-      newMessage = message
-    try:
-      stdout.styledWrite(fgColor, newMessage)
-    except IOError, ValueError:
       try:
-        stdout.write(s = newMessage)
-      except IOError:
-        discard
-    if newLine:
-      try:
-        stdout.writeLine(x = "")
-      except IOError:
-        discard
-  stdout.flushFile()
+        stdout.styledWrite(fgColor, newMessage)
+      except IOError, ValueError:
+        try:
+          stdout.write(s = newMessage)
+        except IOError:
+          discard
+      if newLine:
+        try:
+          stdout.writeLine(x = "")
+        except IOError:
+          discard
+    stdout.flushFile()
 
 proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect], discardable.} =
