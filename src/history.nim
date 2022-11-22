@@ -299,18 +299,19 @@ proc findInHistory*(db; arguments): ResultCode {.gcsafe, raises: [], tags: [
     var searchFor: string = strip(s = $arguments)
     if searchFor.len < 5:
       return showError(message = "You have to enter a search term for which you want to look in the history.")
-    showFormHeader(message = "The search results for '" & searchFor[5..^1] & "' in the history:")
-    searchFor = replace(s = searchFor, sub = '*', by = '%')
+    let searchTerm = searchFor[5..^1]
+    showFormHeader(message = "The search results for '" & searchTerm & "' in the history:")
+    searchFor = replace(s = searchTerm, sub = '*', by = '%')
     try:
       result = QuitFailure.ResultCode
       for row in db.fastRows(query = sql(
           query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
-          "%" & searchFor[5..^1] & "%"):
+          "%" & searchFor & "%"):
         showOutput(message = indent(s = row[0], count = 5))
         result = QuitSuccess.ResultCode
       if result == QuitFailure:
         showOutput(message = "No commands found in the history for '" &
-            arguments[5..^1] & "'")
+            searchTerm & "'")
       return
     except DbError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
