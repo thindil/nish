@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[strutils, terminal]
+import std/[os, strutils, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -114,6 +114,13 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
         discard
     return QuitFailure.ResultCode
 
+proc getIndent*(spaces: ColumnAmount = 0.ColumnAmount): ColumnAmount {.gcsafe,
+    sideEffect, raises: [], tags: [ReadEnvEffect], contractual.} =
+  body:
+    if spaces.int > 0:
+      return spaces
+    return ((try: terminalWidth() except ValueError: 80) / 12).ColumnAmount
+
 proc showFormHeader*(message; spaces: ColumnAmount = 0.ColumnAmount) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect], contractual.} =
   ## FUNCTION
@@ -130,7 +137,7 @@ proc showFormHeader*(message; spaces: ColumnAmount = 0.ColumnAmount) {.gcsafe,
   body:
     let
       length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
-      spacesAmount: ColumnAmount = if spaces == 0: length / 12 else: spaces
+      spacesAmount: ColumnAmount = getIndent(spaces = spaces)
     showOutput(message = indent(s = repeat(c = '=', count = length - (
         spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
     showOutput(message = center(s = message, width = length.int),
