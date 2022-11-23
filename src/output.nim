@@ -76,7 +76,7 @@ proc showOutput*(message; newLine: bool = true;
     stdout.flushFile()
 
 proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect], discardable.} =
+    sideEffect, raises: [], tags: [WriteIOEffect], discardable, contractual.} =
   ## FUNCTION
   ##
   ## Print the message to standard error and set the shell return
@@ -92,22 +92,27 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
   ## RETURNS
   ##
   ## Always QuitFailure
-  try:
-    if e != nil:
-      stderr.writeLine(x = "")
-    stderr.styledWrite(fgRed, message)
-    if e != nil:
-      stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
-      when defined(debug):
-        stderr.styledWrite(fgRed, getStackTrace(e = e))
-    else:
-      stderr.writeLine(x = "")
-  except IOError, ValueError:
+  require:
+    message.len > 0
+  ensure:
+    result == QuitFailure
+  body:
     try:
-      stderr.writeLine(x = message)
-    except IOError:
-      discard
-  return QuitFailure.ResultCode
+      if e != nil:
+        stderr.writeLine(x = "")
+      stderr.styledWrite(fgRed, message)
+      if e != nil:
+        stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+        when defined(debug):
+          stderr.styledWrite(fgRed, getStackTrace(e = e))
+      else:
+        stderr.writeLine(x = "")
+    except IOError, ValueError:
+      try:
+        stderr.writeLine(x = message)
+      except IOError:
+        discard
+    return QuitFailure.ResultCode
 
 proc showFormHeader*(message; spaces: ColumnAmount = 0.ColumnAmount) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
