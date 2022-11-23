@@ -2,9 +2,11 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[output, resultcode]
+import ../../src/[columnamount, output, resultcode]
 
 assert showError("test error") == QuitFailure, "Failed to show error message."
+
+assert getIndent(1.ColumnAmount) == 1
 
 showFormHeader("test header")
 
