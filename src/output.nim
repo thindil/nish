@@ -116,6 +116,18 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
 
 proc getIndent*(spaces: ColumnAmount = 0.ColumnAmount): ColumnAmount {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Get the current indentation for the shell's messages
+  ##
+  ## PARAMETERS
+  ##
+  ## * spaces - the amount of spaces used as indent. If set to 0, use amount
+  ##            based on termminal width. Default value is 0.
+  ##
+  ## RETURNS
+  ##
+  ## The amount of spaces used as indentation for the shell's messages
   body:
     if spaces.int > 0:
       return spaces
