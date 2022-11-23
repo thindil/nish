@@ -129,9 +129,10 @@ proc getIndent*(spaces: ColumnAmount = 0.ColumnAmount): ColumnAmount {.gcsafe,
   ##
   ## The amount of spaces used as indentation for the shell's messages
   body:
-    if spaces.int > 0:
+    let length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
+    if spaces.int > 0 and spaces.int < (length.int / 2).int:
       return spaces
-    return ((try: terminalWidth() except ValueError: 80) / 12).ColumnAmount
+    return length / 12
 
 proc showFormHeader*(message; spaces: ColumnAmount = 0.ColumnAmount) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect], contractual.} =
