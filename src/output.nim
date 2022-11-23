@@ -115,7 +115,7 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
     return QuitFailure.ResultCode
 
 proc showFormHeader*(message; spaces: ColumnAmount = 0.ColumnAmount) {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect].} =
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show form's header with the selected message
@@ -125,12 +125,15 @@ proc showFormHeader*(message; spaces: ColumnAmount = 0.ColumnAmount) {.gcsafe,
   ## * message - the text which will be shown in the header
   ## * spaces  - the amount of spaces used as margin. If set to 0, use amount
   ##             based on termminal width. Default value is 0.
-  let
-    length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
-    spacesAmount: ColumnAmount = if spaces == 0: length / 12 else: spaces
-  showOutput(message = indent(s = repeat(c = '=', count = length - (
-      spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
-  showOutput(message = center(s = message, width = length.int),
-      fgColor = fgYellow)
-  showOutput(message = indent(s = repeat(c = '=', count = length - (
-      spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
+  require:
+    message.len > 0
+  body:
+    let
+      length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
+      spacesAmount: ColumnAmount = if spaces == 0: length / 12 else: spaces
+    showOutput(message = indent(s = repeat(c = '=', count = length - (
+        spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
+    showOutput(message = center(s = message, width = length.int),
+        fgColor = fgYellow)
+    showOutput(message = indent(s = repeat(c = '=', count = length - (
+        spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
