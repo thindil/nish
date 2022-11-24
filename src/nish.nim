@@ -403,6 +403,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 currentCompletion = 0
                 stdout.cursorBackward(count = terminalWidth())
                 continue
+              # Select the next completion from the list
+              currentCompletion.inc
               # Return to the first completion if reached the end of the list
               if currentCompletion == completions.len:
                 let line = (if completions.len > 3: (completions.len /
@@ -412,8 +414,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 stdout.cursorBackward(count = terminalWidth())
                 currentCompletion = 0
                 continue
-              # Select the next completion from the list
-              currentCompletion.inc
               # Go to the next line if the last completion in the line reached
               if currentCompletion mod 3 == 0:
                 stdout.cursorDown()
