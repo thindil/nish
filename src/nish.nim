@@ -491,6 +491,32 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           cursorPosition = 0
           commandName = "ctrl-c"
           break
+        # Enter the currently selected completion into the user's input
+        elif inputChar.ord() == 13 and completionMode:
+          let
+            spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
+            prefix: string = (if spaceIndex ==
+                -1: $inputString else: $inputString[spaceIndex + 1..^1])
+            completions: seq[string] = getCompletion(prefix = prefix)
+          try:
+            inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
+            cursorPosition = runeLen(s = $inputString)
+            highlightOutput(promptLength = promptLength,
+                inputString = inputString, commands = commands,
+                aliases = aliases, oneTimeCommand = oneTimeCommand,
+                commandName = $commandName, returnCode = returnCode,
+                db = db, cursorPosition = cursorPosition)
+            completionMode = false
+            keyWasArrow = false
+            inputChar = '\0'
+          except IOError:
+            discard
+          except ValueError:
+            showError(message = "Invalid value for character position.",
+                e = getCurrentException())
+          except CapacityError:
+            showError(message = "Entered input is too long.",
+                e = getCurrentException())
         # Any graphical character pressed, show it in the input field
         elif inputChar.ord() > 31:
           let inputRune: string = readChar(inputChar = inputChar)
