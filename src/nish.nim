@@ -472,9 +472,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               elif inputChar == '2' and getch() == '~':
                 insertMode = not insertMode
               # Move cursor if the proper key was pressed (arrows, home, end)
+              # if not in completion mode
               else:
-                moveCursor(inputChar = inputChar,
-                    cursorPosition = cursorPosition, inputString = inputString)
+                if not completionMode:
+                  moveCursor(inputChar = inputChar,
+                      cursorPosition = cursorPosition, inputString = inputString)
               keyWasArrow = true
           except IOError:
             discard
