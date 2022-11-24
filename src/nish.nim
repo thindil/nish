@@ -263,12 +263,12 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: HistoryRange
-    oneTimeCommand, conjCommands, keyWasArrow, insertMode: bool = false
+    oneTimeCommand, conjCommands, keyWasArrow, insertMode, completionMode: bool = false
     returnCode: ResultCode = QuitSuccess.ResultCode
     aliases = newOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
         DirSep & "nish.db")
-    cursorPosition: Natural = 0
+    cursorPosition, currentCompletion: Natural = 0
     commands = newTable[string, CommandData]()
 
   # Check the command line parameters entered by the user. Available options
@@ -384,15 +384,35 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                   e = getCurrentException())
           else:
             try:
-              stdout.writeLine("")
-              var amount: Natural = 0
-              for completion in completions:
-                stdout.write(s = completion & "   ")
-                amount.inc
-                if amount == 3:
-                  stdout.writeLine("")
-                  amount = 0
-            except IOError:
+              # If Tab pressed the first time, show the list of completion
+              if not completionMode:
+                stdout.writeLine("")
+                var
+                  amount, line: Natural = 0
+                for completion in completions:
+                  stdout.write(s = completion & "   ")
+                  amount.inc
+                  if amount == 3 and amount * (line + 1) < completions.len:
+                    stdout.writeLine("")
+                    amount = 0
+                    line.inc
+                if line > 0:
+                  stdout.cursorUp(count = line)
+                completionMode = true
+                currentCompletion = 0
+                stdout.cursorBackward(count = terminalWidth())
+                continue
+              # Select the next completion from the list
+              currentCompletion.inc
+              if currentCompletion > completions.len:
+                continue
+              if currentCompletion mod 3 == 0:
+                stdout.cursorDown()
+                stdout.cursorBackward(count = terminalWidth())
+              else:
+                stdout.cursorForward(count = completions[currentCompletion -
+                    1].runeLen + 3)
+            except IOError, ValueError:
               discard
         # Special keys pressed
         elif inputChar.ord() == 27:
@@ -453,6 +473,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 e = getCurrentException())
         # Ctrl-c pressed, cancel current command and return 130 result code
         elif inputChar.ord() == 3:
+          completionMode = false
           inputString = emptyLimitedString(capacity = maxInputLength)
           returnCode = 130.ResultCode
           cursorPosition = 0
@@ -470,6 +491,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               commandName = $commandName, returnCode = returnCode,
               db = db, cursorPosition = cursorPosition)
           keyWasArrow = false
+          completionMode = false
       try:
         stdout.writeLine(x = "")
       except IOError:
