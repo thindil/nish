@@ -263,7 +263,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
         "help", "version"])
     historyIndex: HistoryRange
-    oneTimeCommand, conjCommands, keyWasArrow, insertMode, completionMode: bool = false
+    oneTimeCommand, conjCommands, keyWasArrow, insertMode,
+      completionMode: bool = false
     returnCode: ResultCode = QuitSuccess.ResultCode
     aliases = newOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
@@ -402,16 +403,25 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 currentCompletion = 0
                 stdout.cursorBackward(count = terminalWidth())
                 continue
+              # Return to the first completion if reached the end of the list
+              if currentCompletion == completions.len:
+                let line = (if completions.len > 3: (completions.len /
+                    3).int else: 0)
+                if line > 0:
+                  stdout.cursorUp(count = line)
+                stdout.cursorBackward(count = terminalWidth())
+                currentCompletion = 0
+                continue
               # Select the next completion from the list
               currentCompletion.inc
-              if currentCompletion > completions.len:
-                continue
+              # Go to the next line if the last completion in the line reached
               if currentCompletion mod 3 == 0:
                 stdout.cursorDown()
                 stdout.cursorBackward(count = terminalWidth())
-              else:
-                stdout.cursorForward(count = completions[currentCompletion -
-                    1].runeLen + 3)
+                continue
+              # Move cursor to the next completion
+              stdout.cursorForward(count = completions[currentCompletion -
+                  1].runeLen + 3)
             except IOError, ValueError:
               discard
         # Special keys pressed
