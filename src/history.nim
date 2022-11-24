@@ -237,10 +237,7 @@ proc showHistory*(db; arguments): ResultCode {.gcsafe, sideEffect, raises: [],
                   query = "SELECT value FROM options WHERE option='historyAmount'"))))
         except ValueError, DbError:
           return showError(message = "Can't get setting for the amount of history commands to show.")
-      spacesAmount: ColumnAmount = try:
-            (terminalWidth() / 12).ColumnAmount
-        except ValueError:
-          6.ColumnAmount
+      spacesAmount: ColumnAmount = getIndent()
       historyDirection: string = try:
           if argumentsList.len() > 3: (if argumentsList[3] ==
               "true": "ASC" else: "DESC") else:
@@ -302,7 +299,7 @@ proc findInHistory*(db; arguments): ResultCode {.gcsafe, raises: [], tags: [
     let searchTerm = searchFor[5..^1]
     showFormHeader(message = "The search results for '" & searchTerm & "' in the history:")
     searchFor = replace(s = searchTerm, sub = '*', by = '%')
-    let spacesAmount: int = ((try: terminalWidth() except ValueError: 80) / 12).int
+    let spacesAmount: int = getIndent().int
     try:
       result = QuitFailure.ResultCode
       for row in db.fastRows(query = sql(

@@ -249,10 +249,7 @@ proc showAlias*(arguments; aliases; db): ResultCode {.gcsafe,
     if row[0] == "":
       return showError(message = "The alias with the ID: " & $id &
         " doesn't exists.")
-    let spacesAmount: ColumnAmount = try:
-        terminalWidth().ColumnAmount / 12
-      except ValueError:
-        6.ColumnAmount
+    let spacesAmount: ColumnAmount = getIndent()
     showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
         count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
     showOutput(message = $id)

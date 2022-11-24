@@ -239,10 +239,7 @@ proc listVariables*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
           db.getValue(query = sql(query = "SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1")).len().ColumnAmount
       except DbError:
         return showError(message = "Can't get the maximum length of the variables values from database.")
-      spacesAmount: ColumnAmount = try:
-          terminalWidth().ColumnAmount / 12
-        except ValueError:
-          6.ColumnAmount
+      spacesAmount: ColumnAmount = getIndent()
     if arguments == "list":
       showFormHeader(message = "Declared environent variables are:")
       try:
