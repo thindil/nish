@@ -365,7 +365,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             prefix: string = (if spaceIndex ==
                 -1: $inputString else: $inputString[spaceIndex + 1..^1])
-            completions: seq[string] = getCompletion(prefix = prefix)
+            completions: seq[string] = getDirCompletion(prefix = prefix)
           if completions.len() == 0:
             continue
           elif completions.len == 1:
@@ -497,7 +497,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             prefix: string = (if spaceIndex ==
                 -1: $inputString else: $inputString[spaceIndex + 1..^1])
-            completions: seq[string] = getCompletion(prefix = prefix)
+            completions: seq[string] = getDirCompletion(prefix = prefix)
           try:
             inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
             cursorPosition = runeLen(s = $inputString)

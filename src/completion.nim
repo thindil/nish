@@ -30,7 +30,7 @@ import contracts
 # Internal imports
 import output
 
-proc getCompletion*(prefix: string): seq[string] {.gcsafe, sideEffect, raises: [],
+proc getDirCompletion*(prefix: string): seq[string] {.gcsafe, sideEffect, raises: [],
     tags: [ReadDirEffect, WriteIOEffect], contractual.} =
   ## FUNCTION
   ##
