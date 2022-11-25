@@ -6,5 +6,5 @@ import os
 import ../../src/completion
 
 open("sometest.txt", fmWrite).close()
-assert getCompletion("somete") == @["sometest.txt"], "Failed to get Tab completion."
+assert getDirCompletion("somete") == @["sometest.txt"], "Failed to get Tab completion."
 removeFile("sometest.txt")
