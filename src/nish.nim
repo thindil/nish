@@ -271,6 +271,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         DirSep & "nish.db")
     cursorPosition, currentCompletion: Natural = 0
     commands = newTable[string, CommandData]()
+    completions: seq[string]
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -365,7 +366,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             prefix: string = (if spaceIndex ==
                 -1: $inputString else: $inputString[spaceIndex + 1..^1])
-            completions: seq[string] = getDirCompletion(prefix = prefix)
+          completions = @[]
+          getDirCompletion(prefix = prefix, completions = completions)
           if completions.len() == 0:
             continue
           elif completions.len == 1:
@@ -493,12 +495,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           break
         # Enter the currently selected completion into the user's input
         elif inputChar.ord() == 13 and completionMode:
-          let
-            spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-            prefix: string = (if spaceIndex ==
-                -1: $inputString else: $inputString[spaceIndex + 1..^1])
-            completions: seq[string] = getDirCompletion(prefix = prefix)
           try:
+            let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
             cursorPosition = runeLen(s = $inputString)
             highlightOutput(promptLength = promptLength,
