@@ -59,12 +59,16 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
             parent else: "")
         newPrefix: string = (if dirToCheck != getCurrentDir(): lastPathPart(
             path = prefix) else: prefix)
+      var amount = 1
       for item in walkDir(dir = dirToCheck, relative = true):
         if item.path.startsWith(prefix = newPrefix):
           var completion = (if parent != ".": parent & DirSep else: "") & item.path
           if dirExists(dir = completion):
             completion = completion & DirSep
           completions.add(y = completion)
+          amount.inc
+          if amount > 30:
+            break
     except OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
