@@ -68,12 +68,21 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
           completions.add(y = completion)
           amount.inc
           if amount > 30:
-            break
+            return
     except OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
 
-proc getCommandCompletion*(prefix: string; completions: var seq[string]) {.contractual.} =
+proc getCommandCompletion*(prefix: string; completions: var seq[
+    string]) {.contractual.} =
   body:
     if prefix.len() == 0:
       return
+    var amount = 1
+    for path in getEnv(key = "PATH").split(sep = PathSep):
+      for file in walkFiles(pattern = path & DirSep & prefix & "*"):
+        completions.add(y = file.extractFilename)
+        amount.inc
+        if amount > 30:
+          return
+
