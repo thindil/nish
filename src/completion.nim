@@ -68,3 +68,8 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
     except OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
+
+proc getCommandCompletion*(prefix: string; completions: var seq[string]) {.contractual.} =
+  body:
+    if prefix.len() == 0:
+      return

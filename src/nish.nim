@@ -367,6 +367,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             prefix: string = (if spaceIndex ==
                 -1: $inputString else: $inputString[spaceIndex + 1..^1])
           completions = @[]
+          if inputString.startsWith(prefix = prefix):
+            getCommandCompletion(prefix = prefix, completions = completions)
           getDirCompletion(prefix = prefix, completions = completions)
           if completions.len() == 0:
             continue
