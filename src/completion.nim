@@ -30,8 +30,9 @@ import contracts
 # Internal imports
 import output
 
-proc getDirCompletion*(prefix: string): seq[string] {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDirEffect, WriteIOEffect], contractual.} =
+proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
+    sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Get the relative path of file or directory, based on the selected prefix
@@ -39,13 +40,15 @@ proc getDirCompletion*(prefix: string): seq[string] {.gcsafe, sideEffect, raises
   ##
   ## PARAMETERS
   ##
-  ## * prefix - the prefix which will be looking for in the current directory
+  ## * prefix      - the prefix which will be looking for in the current directory
+  ## * completions - the list of completions for the current prefix
   ##
   ## RETURNS
   ##
-  ## The list of relative paths to the files or directories which match the
-  ## parameter prefix. If prefix is empty, or there is no matching file or
-  ## directory, returns empty sequence.
+  ## The updated completions parameter with additional entries of relative
+  ## paths to the files or directories which match the parameter prefix. If
+  ## prefix is empty, or there is no matching file or directory, returns the
+  ## same completion parameter.
   body:
     if prefix.len() == 0:
       return
@@ -61,7 +64,7 @@ proc getDirCompletion*(prefix: string): seq[string] {.gcsafe, sideEffect, raises
           var completion = (if parent != ".": parent & DirSep else: "") & item.path
           if dirExists(dir = completion):
             completion = completion & DirSep
-          result.add(y = completion)
+          completions.add(y = completion)
     except OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
