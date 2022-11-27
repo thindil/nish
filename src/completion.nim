@@ -76,6 +76,20 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
 proc getCommandCompletion*(prefix: string; completions: var seq[
     string]) {.gcsafe, sideEffect, raises: [], tags: [ReadEnvEffect,
     ReadDirEffect], contractual.} =
+  ## FUNCTION
+  ##
+  ## Get the list of available commands which starts with the selected prefix
+  ##
+  ## PARAMETERS
+  ##
+  ## * prefix      - the prefix which will be looking for in commands
+  ## * completions - the list of completions for the current prefix
+  ##
+  ## RETURNS
+  ##
+  ## The updated completions parameter with additional entries of commands
+  ## which match the parameter prefix. If prefix is empty, or there is no
+  ## matching file or directory, returns unchanged completion parameter.
   body:
     if prefix.len() == 0:
       return
