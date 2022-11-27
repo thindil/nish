@@ -28,7 +28,7 @@ import std/[os, strutils]
 # External modules imports
 import contracts
 # Internal imports
-import output
+import constants, output
 
 proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
     sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect],
@@ -94,6 +94,10 @@ proc getCommandCompletion*(prefix: string; completions: var seq[
     if prefix.len() == 0:
       return
     var amount = 1
+    for command in builtinCommands:
+      if command.startsWith(prefix = prefix):
+        completions.add(y = command)
+        amount.inc
     for path in getEnv(key = "PATH").split(sep = PathSep):
       for file in walkFiles(pattern = path & DirSep & prefix & "*"):
         completions.add(y = file.extractFilename)
