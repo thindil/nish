@@ -367,7 +367,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             prefix: string = (if spaceIndex ==
                 -1: $inputString else: $inputString[spaceIndex + 1..^1])
           completions = @[]
-          if inputString.startsWith(prefix = prefix):
+          if inputString.startsWith(prefix = prefix) and (spaceIndex == -1 or
+              spaceIndex >= cursorPosition):
             getCommandCompletion(prefix = prefix, completions = completions)
           getDirCompletion(prefix = prefix, completions = completions)
           if completions.len() == 0:
@@ -480,7 +481,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               else:
                 if not completionMode:
                   moveCursor(inputChar = inputChar,
-                      cursorPosition = cursorPosition, inputString = inputString)
+                      cursorPosition = cursorPosition,
+                      inputString = inputString)
               keyWasArrow = true
           except IOError:
             discard
