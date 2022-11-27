@@ -38,6 +38,10 @@ const
     ## FUNCTION
     ##
     ## The maximum length of the shell's alias namev
+  builtinCommands*: array[0..3, string] = ["cd", "exit", "set", "unset"]
+    ## FUNCTION
+    ##
+    ## The list of the shell's built-in commands
 
 type
   HelpEntry* = object
