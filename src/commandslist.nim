@@ -94,7 +94,7 @@ proc addCommand*(name: UserInput; command: CommandProc;
     if $name in commands:
       raise newException(exceptn = CommandsListError,
           message = "Command with name '" & $name & "' exists.")
-    if $name in ["cd", "exit", "set", "unset"]:
+    if $name in builtinCommands:
       raise newException(exceptn = CommandsListError,
           message = "Can't replace built-in commands.")
     commands[$name] = CommandData(command: command, plugin: plugin)
