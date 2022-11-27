@@ -30,6 +30,18 @@ import contracts
 # Internal imports
 import constants, lstring, output
 
+proc addCompletion*(list: var seq[string]; item: string;
+    amount: var Positive): bool {.contractual.} =
+  require:
+    item.len > 0
+  body:
+    if item notin list:
+      list.add(y = item)
+      amount.inc
+    if amount > 30:
+      return true
+    return false
+
 proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
     sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect],
     contractual.} =
@@ -59,15 +71,14 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
             parent else: "")
         newPrefix: string = (if dirToCheck != getCurrentDir(): lastPathPart(
             path = prefix) else: prefix)
-      var amount = 1
+      var amount: Positive = 1
       for item in walkDir(dir = dirToCheck, relative = true):
         if item.path.startsWith(prefix = newPrefix):
           var completion = (if parent != ".": parent & DirSep else: "") & item.path
           if dirExists(dir = completion):
             completion = completion & DirSep
-          completions.add(y = completion)
-          amount.inc
-          if amount > 30:
+          if addCompletion(list = completions, item = completion,
+              amount = amount):
             return
     except OSError:
       showError(message = "Can't get completion. Reason: ",
@@ -94,23 +105,20 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
   body:
     if prefix.len() == 0:
       return
-    var amount = 1
+    var amount: Positive = 1
     # Check built-in commands
     for command in builtinCommands:
       if command.startsWith(prefix = prefix):
-        completions.add(y = command)
-        amount.inc
+        if addCompletion(list = completions, item = command, amount = amount):
+          return
     # Check the shell's aliases
     for alias in aliases.keys:
       if alias.startsWith(prefix = prefix):
-        completions.add(y = $alias)
-        amount.inc
-        if amount > 30:
+        if addCompletion(list = completions, item = $alias, amount = amount):
           return
     for path in getEnv(key = "PATH").split(sep = PathSep):
       for file in walkFiles(pattern = path & DirSep & prefix & "*"):
-        completions.add(y = file.extractFilename)
-        amount.inc
-        if amount > 30:
+        if addCompletion(list = completions, item = file.extractFilename,
+            amount = amount):
           return
 
