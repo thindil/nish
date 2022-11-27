@@ -24,11 +24,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[os, strutils]
+import std/[os, strutils, tables]
 # External modules imports
 import contracts
 # Internal imports
-import constants, output
+import constants, lstring, output
 
 proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
     sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect],
@@ -73,9 +73,9 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
 
-proc getCommandCompletion*(prefix: string; completions: var seq[
-    string]) {.gcsafe, sideEffect, raises: [], tags: [ReadEnvEffect,
-    ReadDirEffect], contractual.} =
+proc getCommandCompletion*(prefix: string; completions: var seq[string];
+    aliases: ref AliasesList) {.gcsafe, sideEffect, raises: [], tags: [
+    ReadEnvEffect, ReadDirEffect], contractual.} =
   ## FUNCTION
   ##
   ## Get the list of available commands which starts with the selected prefix
@@ -84,6 +84,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[
   ##
   ## * prefix      - the prefix which will be looking for in commands
   ## * completions - the list of completions for the current prefix
+  ## * aliases     - the list of available shell's aliases
   ##
   ## RETURNS
   ##
@@ -94,10 +95,18 @@ proc getCommandCompletion*(prefix: string; completions: var seq[
     if prefix.len() == 0:
       return
     var amount = 1
+    # Check built-in commands
     for command in builtinCommands:
       if command.startsWith(prefix = prefix):
         completions.add(y = command)
         amount.inc
+    # Check the shell's aliases
+    for alias in aliases.keys:
+      if alias.startsWith(prefix = prefix):
+        completions.add(y = $alias)
+        amount.inc
+        if amount > 30:
+          return
     for path in getEnv(key = "PATH").split(sep = PathSep):
       for file in walkFiles(pattern = path & DirSep & prefix & "*"):
         completions.add(y = file.extractFilename)
