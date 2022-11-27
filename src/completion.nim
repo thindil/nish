@@ -74,7 +74,8 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
           e = getCurrentException())
 
 proc getCommandCompletion*(prefix: string; completions: var seq[
-    string]) {.contractual.} =
+    string]) {.gcsafe, sideEffect, raises: [], tags: [ReadEnvEffect,
+    ReadDirEffect], contractual.} =
   body:
     if prefix.len() == 0:
       return
