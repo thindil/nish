@@ -31,7 +31,8 @@ import contracts
 import constants, lstring, output
 
 proc addCompletion*(list: var seq[string]; item: string;
-    amount: var Positive): bool {.contractual.} =
+    amount: var Positive): bool {.gcsafe, sideEffect, raises: [], tags: [],
+    contractual.} =
   require:
     item.len > 0
   body:
