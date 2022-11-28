@@ -40,6 +40,7 @@ of the shell.
 - Typos in CHANGELOG.md and README.md
 - Getting stact trace for the shell's exception when build in debug mode
 - Adding values of short options in entered commands
+- Aliases don't return proper exit codes
 
 ## [0.4.0] - 2022-10-14
 
