@@ -652,8 +652,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             outputFile.write(resultOutput)
           else:
             showError(message = resultOutput)
-        if returnCode != QuitSuccess and conjCommands:
-          result = QuitFailure.ResultCode
+        result = returnCode.ResultCode
+        if result != QuitSuccess and conjCommands:
           break
       except OSError, IOError, Exception:
         showError(message = "Can't execute the command of the alias. Reason: ",
