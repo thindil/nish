@@ -33,6 +33,23 @@ import constants, lstring, output
 proc addCompletion*(list: var seq[string]; item: string;
     amount: var Positive): bool {.gcsafe, sideEffect, raises: [], tags: [],
     contractual.} =
+  ## FUNCTION
+  ##
+  ## Add the selected item to the completions list if there is no that item
+  ## in the list.
+  ##
+  ## PARAMETERS
+  ##
+  ## * list   - the list of completions to which the item will be added
+  ## * item   - the item to add to the list
+  ## * amount - the overall amount of added items to the list
+  ##
+  ## RETURNS
+  ##
+  ## True if the overall amount of added items reached limit, otherwise false.
+  ## Also, if item was added, it returns the modified parameters list and
+  ## amount. If item was not added, it returns not modified parameters list
+  ## and amount.
   require:
     item.len > 0
   body:
