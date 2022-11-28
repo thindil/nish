@@ -5,8 +5,9 @@ discard """
 import os
 import ../../src/completion
 
-open("sometest.txt", fmWrite).close()
 var completions: seq[string]
+
+open("sometest.txt", fmWrite).close()
 getDirCompletion("somete", completions)
-assert completions == @["sometest.txt"], "Failed to get Tab completion."
 removeFile("sometest.txt")
+assert completions == @["sometest.txt"], "Failed to get Tab completion."
