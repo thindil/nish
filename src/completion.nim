@@ -28,7 +28,7 @@ import std/[os, strutils, tables]
 # External modules imports
 import contracts
 # Internal imports
-import constants, lstring, output
+import commandslist, constants, lstring, output
 
 proc addCompletion*(list: var seq[string]; item: string;
     amount: var Positive): bool {.gcsafe, sideEffect, raises: [], tags: [],
@@ -94,8 +94,8 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]) {.gcsafe,
           e = getCurrentException())
 
 proc getCommandCompletion*(prefix: string; completions: var seq[string];
-    aliases: ref AliasesList) {.gcsafe, sideEffect, raises: [], tags: [
-    ReadEnvEffect, ReadDirEffect], contractual.} =
+    aliases: ref AliasesList; commands: ref CommandsList) {.gcsafe, sideEffect,
+    raises: [], tags: [ReadEnvEffect, ReadDirEffect], contractual.} =
   ## FUNCTION
   ##
   ## Get the list of available commands which starts with the selected prefix
@@ -105,6 +105,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
   ## * prefix      - the prefix which will be looking for in commands
   ## * completions - the list of completions for the current prefix
   ## * aliases     - the list of available shell's aliases
+  ## * commands    - the list of the shell's commands
   ##
   ## RETURNS
   ##
@@ -117,6 +118,11 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
     var amount: Positive = 1
     # Check built-in commands
     for command in builtinCommands:
+      if command.startsWith(prefix = prefix):
+        if addCompletion(list = completions, item = command, amount = amount):
+          return
+    # Check for all shell's commands
+    for command in commands.keys:
       if command.startsWith(prefix = prefix):
         if addCompletion(list = completions, item = command, amount = amount):
           return

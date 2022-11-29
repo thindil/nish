@@ -370,7 +370,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           if inputString.startsWith(prefix = prefix) and (spaceIndex == -1 or
               spaceIndex >= cursorPosition):
             getCommandCompletion(prefix = prefix, completions = completions,
-                aliases = aliases)
+                aliases = aliases, commands = commands)
           getDirCompletion(prefix = prefix, completions = completions)
           if completions.len() == 0:
             continue
