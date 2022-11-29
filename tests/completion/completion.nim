@@ -26,7 +26,7 @@ getDirCompletion("somete", completions)
 removeFile("sometest.txt")
 assert completions == @["sometest.txt"], "Failed to get Tab completion for a file."
 
-getCommandCompletion("exi", completions, myaliases)
+getCommandCompletion("exi", completions, myaliases, commands)
 assert completions[1] == "exit", "Failed to get Tab completion for a command."
 
 block:
