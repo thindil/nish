@@ -1,9 +1,12 @@
 ### General information
 
-Nish is an experimental (read: full of bugs and lack of a documentation)
-multiplatform command-line shell. If you read this file on GitHub:
-**please don't send pull requests here**. All will be automatically closed.
-Any code propositions should go to the
+Nish is a non-POSIX, multiplatform command-line shell currently in a beta
+stage. It offers some features common for commands' shells, like Tab
+completion, syntax highlighting, variables, aliases. But it doesn't provide,
+for example own scripting language, instead it depends on the system's default
+shell to execute them. More information about available features, you can find
+below. If you read this file on GitHub: **please don't send pull requests here**.
+All will be automatically closed. Any code propositions should go to the
 [Fossil](https://www.laeran.pl/repositories/nish) repository.
 
 **IMPORTANT:** If you read the file in the project code repository: This
@@ -21,9 +24,8 @@ At this moment the project has two goals:
 
 The second goal can be expanded to:
 
-* User defined global but also a directory related commands.
-* Interactive mode for the shell's commands.
-* Ability to edit, add, delete, enable or disable commands via shell.
+* User defined global but also a directory related commands and variables.
+* Ability to edit, add, delete, enable or disable commands via shell's plugins.
 * And probably many more which will be added during the development of the
   project.
 
@@ -31,7 +33,7 @@ The second goal can be expanded to:
 
 #### Use database for store all data related to the shell
 
-This may look like overkill, but the shell uses sqlite for store all its data.
+This may look like overkill, but the shell uses SQLite for store all its data.
 For now, it is only the shell's aliases, but with time there will be more. At
 this moment it is very experimental feature. If it doesn't work, it will be
 replaced.
