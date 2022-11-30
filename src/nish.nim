@@ -170,6 +170,18 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           showError(message = "Can't set colorSyntax. Reason: ",
               e = getCurrentException())
           return nil
+      completionName: OptionName = try:
+          initLimitedString(capacity = 16, text = "completionAmount")
+        except CapacityError:
+          showError(message = "Can't set completionAmount. Reason: ",
+              e = getCurrentException())
+          return nil
+      completionValue: OptionValue = try:
+          initLimitedString(capacity = 2, text = "30")
+        except CapacityError:
+          showError(message = "Can't set completionValue. Reason: ",
+              e = getCurrentException())
+          return nil
     # Create a new database if not exists
     if not dbExists:
       if createAliasesDb(db = result) == QuitFailure:
@@ -201,6 +213,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             description = initLimitedString(capacity = 69,
             text = "Color the user input with info about invalid commands, quotes, etc."),
             valueType = ValueType.boolean, db = result, readOnly = 0)
+        setOption(optionName = completionName, value = completionValue,
+            description = initLimitedString(capacity = 73,
+            text = "The amount of Tab completions to show (separated for commands and files)."),
+            valueType = ValueType.natural, db = result, readOnly = 0)
       except CapacityError:
         showError(message = "Can't set database schema. Reason: ",
             e = getCurrentException())
@@ -240,6 +256,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             description = initLimitedString(capacity = 69,
             text = "Color the user's input with info about invalid commands, quotes, etc."),
             valueType = ValueType.boolean, db = result, readOnly = 0)
+        setOption(optionName = completionName, value = completionValue,
+            description = initLimitedString(capacity = 73,
+            text = "The amount of Tab completions to show (separated for commands and files)."),
+            valueType = ValueType.natural, db = result, readOnly = 0)
       of 3:
         discard
       else:
