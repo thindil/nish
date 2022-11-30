@@ -16,6 +16,8 @@ of the shell.
 - Ability to enable or disable syntax highlighting for the user's input
 - Ability to look for a command in the shell's commands' history
 - Info about the amount of the last commands to `history list` command
+- Tab completion: support for select a completion from the list of completions
+- Tab completion: completion for available commands and shell's aliases
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
@@ -25,8 +27,6 @@ of the shell.
 - Better syntax highlighting in the user's commands
 - Better handling the user's input in various forms, like adding variables,
   aliases, etc.
-- Better Tab completion: support for select a completion from the list
-  of completions
 
 ### Fixed
 - Clearing the plugin's table after failed adding the new plugin to the
