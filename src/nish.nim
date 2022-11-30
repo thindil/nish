@@ -504,6 +504,13 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
             cursorPosition = runeLen(s = $inputString)
+            let line = (if completions.len > 3: (completions.len /
+                3).int else: 0)
+            for i in 1..line:
+              stdout.cursorDown()
+              stdout.eraseLine
+            if line > 0:
+              stdout.cursorUp(count = line)
             highlightOutput(promptLength = promptLength,
                 inputString = inputString, commands = commands,
                 aliases = aliases, oneTimeCommand = oneTimeCommand,
