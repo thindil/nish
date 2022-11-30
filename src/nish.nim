@@ -504,8 +504,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
             inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
             cursorPosition = runeLen(s = $inputString)
-            let line = (if completions.len > 3: (completions.len /
-                3).int else: 0)
+            let line = (if completions.len > 3: (completions.len / 3).int + 1 else: 1)
+            stdout.cursorUp(count = (currentCompletion / 3).int)
             for i in 1..line:
               stdout.cursorDown()
               stdout.eraseLine
