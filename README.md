@@ -325,7 +325,8 @@ following scheme:
 * Tab completion for the user's entered commands with names of files and
   directories relative to the current directory and with available commands.
   It also allows selecting a completion from the list if there is more than
-  one completion available.
+  one completion available. It is also possible to set the amount of the
+  completions displayed on the list.
 * Coloring the user entered command on green when it is valid or red when it is
   invalid, separated colors for environment variables and commands' arguments
   which contains quotes or double quotes. Can be enabled or disabled in the
