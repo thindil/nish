@@ -93,9 +93,9 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
       showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
 
-proc listAliases*(arguments; aliases; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## List available aliases in the current directory, if entered command was
@@ -121,24 +121,22 @@ proc listAliases*(arguments; aliases; db): ResultCode {.gcsafe,
         except DbError: 10.ColumnAmount
       spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
           12 except ValueError: 6.ColumnAmount
+    var table: TerminalTable
     # Show all available aliases declared in the shell
     if arguments == "list all":
       showFormHeader(message = "All available aliases are:")
-      try:
-        showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
-            s = "Name", count = columnLength.int)], count = spacesAmount.int),
-                fgColor = fgMagenta)
-      except ValueError:
-        showOutput(message = indent(s = "ID   Name Description",
-            count = spacesAmount.int), fgColor = fgMagenta)
+      table.add("\t" & magenta("ID"), magenta("Name"), magenta("Description"))
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, name, description FROM aliases")):
-          showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-              alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
-                  count = spacesAmount.int))
+          table.add("\t" & row[0], row[1], row[2])
       except DbError:
         return showError(message = "Can't read info about alias from database. Reason:",
+            e = getCurrentException())
+      try:
+        table.echoTable()
+      except IOError, Exception:
+        return showError(message = "Can't show alias. Reason: ",
             e = getCurrentException())
     # Show only aliases available in the current directory
     elif arguments[0 .. 3] == "list":
