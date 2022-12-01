@@ -26,7 +26,7 @@
 # Standard library imports
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 # External modules imports
-import contracts
+import contracts, nancy, termstyle
 # Internal imports
 import columnamount, commandslist, constants, databaseid, directorypath, help,
     input, lstring, output, resultcode, variables
@@ -211,9 +211,9 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
     showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc showAlias*(arguments; aliases; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show details about the selected alias, its ID, name, description and
@@ -249,25 +249,20 @@ proc showAlias*(arguments; aliases; db): ResultCode {.gcsafe,
     if row[0] == "":
       return showError(message = "The alias with the ID: " & $id &
         " doesn't exists.")
-    let spacesAmount: ColumnAmount = getIndent()
-    showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = $id)
-    showOutput(message = indent(s = alignLeft(s = "Name:", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = row[0])
-    showOutput(message = indent(s = "Description: ", count = spacesAmount.int),
-        newLine = false, fgColor = fgMagenta)
-    showOutput(message = (if row[2].len > 0: row[2] else: "(none)"))
-    showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = row[3] & (if row[4] == "1": " (recursive)" else: ""))
-    showOutput(message = indent(s = alignLeft(s = "Command(s):", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = row[1])
-    showOutput(message = indent(s = alignLeft(s = "Output to:", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = row[5])
+    var table: TerminalTable
+    table.add("\t" & magenta("Id:"), $id)
+    table.add("\t" & magenta("Name:"), row[0])
+    table.add("\t" & magenta("Description:"), (if row[2].len > 0: row[
+        2] else: "(none)"))
+    table.add("\t" & magenta("Path:"), row[3] & (if row[4] ==
+        "1": " (recursive)" else: ""))
+    table.add("\t" & magenta("Command(s):"), row[1])
+    table.add("\t" & magenta("Output to:"), row[5])
+    try:
+      table.echoTable()
+    except IOError, Exception:
+      return showError(message = "Can't show alias. Reason: ",
+          e = getCurrentException())
     return QuitSuccess.ResultCode
 
 proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
@@ -676,7 +671,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     return result
 
 proc initAliases*(db; aliases: ref AliasesList;
-    commands: ref CommandsList) {.gcsafe, sideEffect, raises: [], tags: [
+    commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect,
     ReadIOEffect, RootEffect], contractual.} =
   ## FUNCTION
@@ -701,7 +696,7 @@ proc initAliases*(db; aliases: ref AliasesList;
   body:
     # Add commands related to the shell's aliases
     proc aliasCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "alias" and its subcommands
