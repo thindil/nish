@@ -16,6 +16,8 @@ binDir = "bin"
 requires "nim >= 1.6.6"
 requires "contracts >= 0.2.2"
 requires "nimassets >= 0.2.4"
+requires "nancy >= 0.1.1"
+requires "termstyle >= 0.1.0"
 
 # Tasks
 
