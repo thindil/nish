@@ -26,7 +26,7 @@
 # Standard library imports
 import std/[os, strutils, terminal]
 # External modules imports
-import contracts
+import contracts, nancy, termstyle
 # Internal imports
 import columnamount, resultcode
 
@@ -134,8 +134,8 @@ proc getIndent*(spaces: ColumnAmount = 0.ColumnAmount): ColumnAmount {.gcsafe,
       return spaces
     return length / 12
 
-proc showFormHeader*(message; spaces: ColumnAmount = 0.ColumnAmount) {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect], contractual.} =
+proc showFormHeader*(message; width: ColumnAmount = 0.ColumnAmount) {.sideEffect,
+    raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show form's header with the selected message
@@ -148,12 +148,11 @@ proc showFormHeader*(message; spaces: ColumnAmount = 0.ColumnAmount) {.gcsafe,
   require:
     message.len > 0
   body:
-    let
-      length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
-      spacesAmount: ColumnAmount = getIndent(spaces = spaces)
-    showOutput(message = indent(s = repeat(c = '=', count = length - (
-        spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
-    showOutput(message = center(s = message, width = length.int),
-        fgColor = fgYellow)
-    showOutput(message = indent(s = repeat(c = '=', count = length - (
-        spacesAmount * 2)), count = spacesAmount.int), fgColor = fgYellow)
+    let length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
+    var table: TerminalTable
+    table.add(yellow(message))
+    try:
+      table.echoTableSeps(maxSize = (if width.int > 0: width else: length).int)
+    except IOError, Exception:
+      showError(message = "Can't show form header. Reason: ",
+          e = getCurrentException())
