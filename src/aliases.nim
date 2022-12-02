@@ -232,14 +232,14 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "The alias with the ID: " & $id &
         " doesn't exists.")
     var table: TerminalTable
-    table.add("\t" & magenta("Id:"), $id)
-    table.add("\t" & magenta("Name:"), row[0])
-    table.add("\t" & magenta("Description:"), (if row[2].len > 0: row[
+    table.add(magenta("Id:"), $id)
+    table.add(magenta("Name:"), row[0])
+    table.add(magenta("Description:"), (if row[2].len > 0: row[
         2] else: "(none)"))
-    table.add("\t" & magenta("Path:"), row[3] & (if row[4] ==
+    table.add(magenta("Path:"), row[3] & (if row[4] ==
         "1": " (recursive)" else: ""))
-    table.add("\t" & magenta("Command(s):"), row[1])
-    table.add("\t" & magenta("Output to:"), row[5])
+    table.add(magenta("Command(s):"), row[1])
+    table.add(magenta("Output to:"), row[5])
     try:
       table.echoTable()
     except IOError, Exception:
