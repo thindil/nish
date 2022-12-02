@@ -28,8 +28,8 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
-import columnamount, commandslist, constants, databaseid, directorypath, help,
-    input, lstring, output, resultcode, variables
+import commandslist, constants, databaseid, directorypath, help, input, lstring,
+    output, resultcode, variables
 
 const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
   ## FUNCTION
@@ -115,53 +115,37 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     arguments.startsWith("list")
     db != nil
   body:
-    let
-      columnLength: ColumnAmount = try: db.getValue(query =
-          sql(query = "SELECT name FROM aliases ORDER BY LENGTH(name) DESC LIMIT 1")).len().ColumnAmount
-        except DbError: 10.ColumnAmount
-      spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
-          12 except ValueError: 6.ColumnAmount
     var table: TerminalTable
+    table.add(magenta("ID"), magenta("Name"), magenta("Description"))
     # Show all available aliases declared in the shell
     if arguments == "list all":
       showFormHeader(message = "All available aliases are:")
-      table.add("\t" & magenta("ID"), magenta("Name"), magenta("Description"))
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, name, description FROM aliases")):
-          table.add("\t" & row[0], row[1], row[2])
+          table.add(row[0], row[1], row[2])
       except DbError:
         return showError(message = "Can't read info about alias from database. Reason:",
-            e = getCurrentException())
-      try:
-        table.echoTable()
-      except IOError, Exception:
-        return showError(message = "Can't show alias. Reason: ",
             e = getCurrentException())
     # Show only aliases available in the current directory
     elif arguments[0 .. 3] == "list":
       showFormHeader(message = "Available aliases are:")
-      try:
-        showOutput(message = indent(s = "ID   $1 Description" % [alignLeft(
-          s = "Name",
-          count = columnLength.int)], count = spacesAmount.int),
-              fgColor = fgMagenta)
-      except ValueError:
-        showOutput(message = indent(s = "ID   Name Description",
-            count = spacesAmount.int), fgColor = fgMagenta)
       for alias in aliases.values:
         try:
           let row: Row = db.getRow(query = sql(
               query = "SELECT id, name, description FROM aliases WHERE id=?"),
             args = alias)
-          showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-              alignLeft(s = row[1], count = columnLength.int) & " " & row[2],
-                  count = spacesAmount.int))
+          table.add(row[0], row[1], row[2])
         except DbError:
           return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
     else:
       return showError(message = "Invalid command entered for listing the aliases.")
+    try:
+      table.echoTable()
+    except IOError, Exception:
+      return showError(message = "Can't show the list of aliases. Reason: ",
+          e = getCurrentException())
     return QuitSuccess.ResultCode
 
 proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
