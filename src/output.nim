@@ -134,7 +134,7 @@ proc getIndent*(spaces: ColumnAmount = 0.ColumnAmount): ColumnAmount {.gcsafe,
       return spaces
     return length / 12
 
-proc showFormHeader*(message; width: ColumnAmount = 0.ColumnAmount) {.sideEffect,
+proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount)) {.sideEffect,
     raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
@@ -143,16 +143,15 @@ proc showFormHeader*(message; width: ColumnAmount = 0.ColumnAmount) {.sideEffect
   ## PARAMETERS
   ##
   ## * message - the text which will be shown in the header
-  ## * spaces  - the amount of spaces used as margin. If set to 0, use amount
-  ##             based on termminal width. Default value is 0.
+  ## * width   - the width of the header. Default value is the current width
+  ##             of the terminal
   require:
     message.len > 0
   body:
-    let length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
     var table: TerminalTable
-    table.add(yellow(message))
+    table.add(yellow(message.center(width = width.int - 4)))
     try:
-      table.echoTableSeps(maxSize = (if width.int > 0: width else: length).int)
+      table.echoTableSeps()
     except IOError, Exception:
       showError(message = "Can't show form header. Reason: ",
           e = getCurrentException())
