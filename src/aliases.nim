@@ -247,9 +247,9 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
+proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Add a new alias to the shell. Ask the user a few questions and fill the
@@ -375,9 +375,9 @@ proc addAlias*(aliases; db): ResultCode {.gcsafe, sideEffect, raises: [],
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc editAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
+proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Edit the selected alias

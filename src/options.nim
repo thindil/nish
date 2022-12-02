@@ -133,9 +133,9 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
       showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException())
 
-proc showOptions*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
-    TimeEffect], contractual.} =
+    TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the shell's options
@@ -147,7 +147,7 @@ proc showOptions*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     let spacesAmount: ColumnAmount = 2.ColumnAmount
-    showFormHeader(message = "Available options are:", spaces = spacesAmount)
+    showFormHeader(message = "Available options are:")
     showOutput(message = indent(s = "Name               Value        Default      Type        Description",
         count = spacesAmount.int), fgColor = fgMagenta)
     try:
@@ -398,7 +398,7 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initOptions*(commands: ref CommandsList) {.gcsafe, sideEffect, locks: 0,
+proc initOptions*(commands: ref CommandsList) {.sideEffect, locks: 0,
     raises: [], tags: [WriteDbEffect, WriteIOEffect, ReadDbEffect, ReadIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
@@ -412,7 +412,7 @@ proc initOptions*(commands: ref CommandsList) {.gcsafe, sideEffect, locks: 0,
   body:
     # Add commands related to the shell's options
     proc optionsCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "options" and its subcommands

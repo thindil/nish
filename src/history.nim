@@ -209,9 +209,9 @@ proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc showHistory*(db; arguments): ResultCode {.gcsafe, sideEffect, raises: [],
+proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the last X entries to the shell's history. X can be set in the shell's
@@ -274,8 +274,8 @@ proc showHistory*(db; arguments): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
-proc findInHistory*(db; arguments): ResultCode {.gcsafe, raises: [], tags: [
-    ReadIOEffect, WriteIOEffect, ReadDbEffect], contractual.} =
+proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, ReadDbEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Find the selected term in the shell's commands' history
@@ -382,7 +382,7 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initHistory*(db; commands: ref CommandsList): HistoryRange {.gcsafe,
+proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
@@ -401,8 +401,8 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.gcsafe,
     db != nil
   body:
     # Add commands related to the shell's history system
-    proc historyCommand(arguments; db; list: CommandLists): ResultCode {.gcsafe,
-        raises: [], contractual.} =
+    proc historyCommand(arguments; db; list: CommandLists): ResultCode {.raises: [],
+        contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "history" and its subcommands

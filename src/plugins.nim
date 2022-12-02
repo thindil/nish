@@ -724,9 +724,9 @@ proc togglePlugin*(db; arguments; disable: bool = true;
         " the plugin '" & $pluginPath & "'", fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc listPlugins*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
+proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## List enabled plugins, if entered command was "plugin list all" list all
@@ -864,7 +864,7 @@ proc showPlugin*(arguments; db; commands): ResultCode {.gcsafe,
       showOutput(message = "0.1")
     return QuitSuccess.ResultCode
 
-proc initPlugins*(db; commands) {.gcsafe, sideEffect, raises: [], tags: [
+proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
     ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect,
     WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
   ## FUNCTION
@@ -887,7 +887,7 @@ proc initPlugins*(db; commands) {.gcsafe, sideEffect, raises: [], tags: [
   body:
     # Add commands related to the shell's aliases
     proc pluginCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "plugin" and its subcommands

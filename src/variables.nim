@@ -210,9 +210,9 @@ proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Can't unset the environment variable '" &
           arguments & "'. Reason:", e = getCurrentException())
 
-proc listVariables*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## List available variables, if entered command was "variables list all" list all
@@ -327,9 +327,9 @@ proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
-    TimeEffect], contractual.} =
+proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
+    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
+    RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Add a new variable to the shell. Ask the user a few questions and fill the
@@ -445,9 +445,9 @@ proc addVariable*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc editVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Edit the selected variable.  Ask the user a few questions and fill the
@@ -614,7 +614,7 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initVariables*(db; commands: ref CommandsList) {.gcsafe, sideEffect,
+proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, WriteDbEffect, RootEffect], contractual.} =
   ## FUNCTION
@@ -639,7 +639,7 @@ proc initVariables*(db; commands: ref CommandsList) {.gcsafe, sideEffect,
     # Add commands related to the variables, except commands set and unset,
     # they are build-in commands, thus cannot be replaced
     proc variableCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "variable" and its subcommands
