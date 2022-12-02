@@ -22,14 +22,14 @@ if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 1:
 initAliases(db, myaliases, commands)
 
 open("sometest.txt", fmWrite).close()
-getDirCompletion("somete", completions)
+getDirCompletion("somete", completions, db)
 removeFile("sometest.txt")
 assert completions == @["sometest.txt"], "Failed to get Tab completion for a file."
 
-getCommandCompletion("exi", completions, myaliases, commands)
+getCommandCompletion("exi", completions, myaliases, commands, db)
 assert completions[1] == "exit", "Failed to get Tab completion for a command."
 
 block:
   var amount: Positive = 1
-  assert not addCompletion(completions, "newcompletion", amount)
+  assert not addCompletion(completions, "newcompletion", amount, db)
   assert completions.len == 3 and amount == 2 and completions[2] == "newcompletion"
