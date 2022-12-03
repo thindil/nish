@@ -151,7 +151,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().Column
     var table: TerminalTable
     table.add(yellow(message.center(width = width.int - 4)))
     try:
-      table.echoTableSeps()
+      table.echoTableSeps(seps = boxSeps)
     except IOError, Exception:
       showError(message = "Can't show form header. Reason: ",
           e = getCurrentException())
