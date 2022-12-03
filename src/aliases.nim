@@ -28,8 +28,8 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
-import commandslist, constants, databaseid, directorypath, help, input, lstring,
-    output, resultcode, variables
+import columnamount, commandslist, constants, databaseid, directorypath, help,
+    input, lstring, output, resultcode, variables
 
 const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
   ## FUNCTION
@@ -119,7 +119,6 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     table.add(magenta("ID"), magenta("Name"), magenta("Description"))
     # Show all available aliases declared in the shell
     if arguments == "list all":
-      showFormHeader(message = "All available aliases are:")
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, name, description FROM aliases")):
@@ -127,9 +126,10 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       except DbError:
         return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
+      showFormHeader(message = "All available aliases are:",
+          width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount)
     # Show only aliases available in the current directory
     elif arguments[0 .. 3] == "list":
-      showFormHeader(message = "Available aliases are:")
       for alias in aliases.values:
         try:
           let row: Row = db.getRow(query = sql(
@@ -139,6 +139,8 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         except DbError:
           return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
+      showFormHeader(message = "Available aliases are:",
+          width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount)
     else:
       return showError(message = "Invalid command entered for listing the aliases.")
     try:
