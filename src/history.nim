@@ -304,20 +304,27 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
     if searchFor.len < 5:
       return showError(message = "You have to enter a search term for which you want to look in the history.")
     let searchTerm = searchFor[5..^1]
-    showFormHeader(message = "The search results for '" & searchTerm & "' in the history:")
     searchFor = replace(s = searchTerm, sub = '*', by = '%')
-    let spacesAmount: int = getIndent().int
+    var table: TerminalTable
     try:
       result = QuitFailure.ResultCode
       for row in db.fastRows(query = sql(
           query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
           "%" & searchFor & "%"):
-        showOutput(message = indent(s = row[0], count = spacesAmount))
+        table.add(row[0])
         result = QuitSuccess.ResultCode
       if result == QuitFailure:
-        showOutput(message = "No commands found in the history for '" &
+        showOutput(message = "No commands found in the shell's history for '" &
             searchTerm & "'")
-      return
+        return
+      try:
+        showFormHeader(message = "The search results for '" & searchTerm &
+            "' in the history:", width = table.getColumnSizes(
+            maxSize = int.high)[0].ColumnAmount)
+        table.echoTable()
+      except IOError, Exception:
+        return showError(message = "Can't show the list of search results from history. Reason: ",
+            e = getCurrentException())
     except DbError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
