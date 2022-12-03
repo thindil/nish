@@ -26,7 +26,7 @@
 # Standard library imports
 import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
-import contracts
+import contracts, nancy, termstyle
 # Internal imports
 import columnamount, commandslist, constants, help, input, lstring, output, resultcode
 
@@ -237,7 +237,6 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
                   query = "SELECT value FROM options WHERE option='historyAmount'"))))
         except ValueError, DbError:
           return showError(message = "Can't get setting for the amount of history commands to show.")
-      spacesAmount: ColumnAmount = getIndent()
       historyDirection: string = try:
           if argumentsList.len() > 3: (if argumentsList[3] ==
               "true": "ASC" else: "DESC") else:
@@ -260,19 +259,27 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
         of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
         else:
           return showError(message = "Unknown type of history sort order")
-    showFormHeader(message = "The last " & $amount & " commands from the shell's history")
-    showOutput(message = indent(s = "Last used                Times      Command",
-        count = spacesAmount.int), fgColor = fgMagenta)
+    var table: TerminalTable
+    table.add(magenta("Last used"), magenta("Times"), magenta("Command"))
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT command, lastused, amount FROM history ORDER BY " &
           historyOrder & " LIMIT 0, ?"), amount):
-        showOutput(message = indent(s = row[1] & "      " & center(s = row[2],
-            width = 5) & "      " & row[0], count = spacesAmount.int))
-      return QuitSuccess.ResultCode
+        table.add(row[1], row[2], row[0])
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size
+      showFormHeader(message = "The last " & $amount &
+          " commands from the shell's history", width = width.ColumnAmount)
     except DbError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
+    try:
+      table.echoTable()
+    except IOError, Exception:
+      return showError(message = "Can't show the list of last commands from the shell's history. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
 proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, RootEffect], contractual.} =
@@ -401,8 +408,8 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
     db != nil
   body:
     # Add commands related to the shell's history system
-    proc historyCommand(arguments; db; list: CommandLists): ResultCode {.raises: [],
-        contractual.} =
+    proc historyCommand(arguments; db; list: CommandLists): ResultCode {.raises: [
+        ], contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "history" and its subcommands
