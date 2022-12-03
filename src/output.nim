@@ -149,7 +149,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().Column
     message.len > 0
   body:
     var table: TerminalTable
-    table.add(yellow(message.center(width = width.int - 4)))
+    table.add(yellow(message.center(width = width.int)))
     try:
       table.echoTableSeps(seps = boxSeps)
     except IOError, Exception:
