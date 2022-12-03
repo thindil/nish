@@ -26,9 +26,9 @@
 # Standard library imports
 import std/[db_sqlite, os, osproc, strutils, terminal]
 # External modules imports
-import contracts
+import contracts, nancy, termstyle
 # Internal imports
-import columnamount, commandslist, constants, help, input, lstring, output, resultcode
+import commandslist, constants, help, input, lstring, output, resultcode
 
 const optionsCommands* = ["list", "set", "reset"]
   ## FUNCTION
@@ -146,19 +146,21 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
-    let spacesAmount: ColumnAmount = 2.ColumnAmount
+    var table: TerminalTable
+    table.add(magenta("Name"), magenta("Value"), magenta("Default"), magenta(
+        "Type"), magenta("Description"))
     showFormHeader(message = "Available options are:")
-    showOutput(message = indent(s = "Name               Value        Default      Type        Description",
-        count = spacesAmount.int), fgColor = fgMagenta)
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
-        showOutput(message = indent(s = alignLeft(s = row[0], count = 18) &
-            " " & alignLeft(s = row[1], count = 12) & " " & alignLeft(s = row[
-                2], count = 12) & " " & alignLeft(s = row[3], count = 11) &
-                    " " & row[4], count = spacesAmount.int))
+        table.add(row)
     except DbError:
       return showError(message = "Can't show the shell's options. Reason: ",
+          e = getCurrentException())
+    try:
+      table.echoTable()
+    except IOError, Exception:
+      return showError(message = "Can't show the list of shell's options. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
