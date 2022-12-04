@@ -783,10 +783,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc showPlugin*(arguments; db; commands): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect,
-        WriteDbEffect,
-    ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect], contractual.} =
+proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show details about the selected plugin, its ID, path and status
@@ -821,39 +818,29 @@ proc showPlugin*(arguments; db; commands): ResultCode {.gcsafe,
     if row[0] == "":
       return showError(message = "The plugin with the ID: " & $id &
         " doesn't exists.")
-    let spacesAmount: ColumnAmount = getIndent()
-    showOutput(message = indent(s = alignLeft(s = "Id:", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = $id)
-    showOutput(message = indent(s = alignLeft(s = "Path:", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = row[0])
-    showOutput(message = indent(s = alignLeft(s = "Enabled: ", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-    showOutput(message = (if row[1] == "1": "Yes" else: "No"))
-    showOutput(message = indent(s = alignLeft(s = "API version: ", count = 13),
-        count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
+    var table: TerminalTable
+    table.add(magenta("Id:"), $id)
+    table.add(magenta("Path"), row[0])
+    table.add(magenta("Enabled:"), (if row[1] == "1": "Yes" else: "No"))
     let pluginData = execPlugin(pluginPath = row[0], arguments = ["info"],
         db = db, commands = commands)
     # If plugin contains any aditional information, show them
     if pluginData.code == QuitSuccess:
       let pluginInfo = split($pluginData.answer, ";")
-      if pluginInfo.len() > 2:
-        showOutput(message = pluginInfo[2])
-      else:
-        showOutput(message = "0.1")
-      showOutput(message = indent(s = alignLeft(s = "API used: ", count = 13),
-          count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-      showOutput(message = pluginInfo[3])
-      showOutput(message = indent(s = alignLeft(s = "Name: ", count = 13),
-          count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-      showOutput(message = pluginInfo[0])
-      if pluginInfo.len() > 1:
-        showOutput(message = indent(s = "Description: ",
-            count = spacesAmount.int), newLine = false, fgColor = fgMagenta)
-        showOutput(message = pluginInfo[1])
+      table.add(magenta("API version:"), (if pluginInfo.len > 2: pluginInfo[
+          2] else: "0.1"))
+      if pluginInfo.len > 2:
+        table.add(magenta("API used:"), pluginInfo[3])
+      table.add(magenta("Name:"), pluginInfo[0])
+      if pluginInfo.len > 1:
+        table.add(magenta("Descrition:"), pluginInfo[1])
     else:
-      showOutput(message = "0.1")
+      table.add(magenta("API version:"), "0.1")
+    try:
+      table.echoTable()
+    except IOError, Exception:
+      return showError(message = "Can't show plugin info. Reason: ",
+          e = getCurrentException())
     return QuitSuccess.ResultCode
 
 proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
