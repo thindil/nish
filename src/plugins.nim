@@ -26,7 +26,7 @@
 # Standard library imports
 import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
 # External modules imports
-import contracts
+import contracts, nancy, termstyle
 # Internal imports
 import columnamount, commandslist, constants, databaseid, help, input, lstring,
     options, output, resultcode
@@ -743,52 +743,44 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
   ## QuitFailure.
   require:
     arguments.len() > 3
+    db != nil
   body:
-    let
-      columnLength: ColumnAmount = try: db.getValue(query =
-          sql(query = "SELECT location FROM plugins ORDER BY LENGTH(location) DESC LIMIT 1")).len().ColumnAmount
-        except DbError: 10.ColumnAmount
-      spacesAmount: ColumnAmount = try: terminalWidth().ColumnAmount /
-          12 except ValueError: 6.ColumnAmount
+    var table: TerminalTable
     # Show the list of enabled plugins
     if arguments == "list":
-      showFormHeader(message = "Enabled plugins are:")
-      try:
-        showOutput(message = indent(s = "ID   $1" % [alignLeft(
-          s = "Path",
-          count = columnLength.int)], count = spacesAmount.int),
-              fgColor = fgMagenta)
-      except ValueError:
-        showOutput(message = indent(s = "ID   Path",
-            count = spacesAmount.int), fgColor = fgMagenta)
+      table.add(magenta("ID"), magenta("Path"))
       try:
         for plugin in db.fastRows(query = sql(
             query = "SELECT id, location FROM plugins WHERE enabled=1")):
-          showOutput(message = indent(s = alignLeft(plugin[0], count = 4) &
-              " " & alignLeft(s = plugin[1], count = columnLength.int),
-                  count = spacesAmount.int))
+          table.add(plugin)
       except DbError:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
             e = getCurrentException())
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size
+      showFormHeader(message = "Enabled plugins are:",
+          width = width.ColumnAmount)
     # Show the list of all installed plugins with information about their state
     elif arguments == "list all":
-      showFormHeader(message = "All available plugins are:")
-      try:
-        showOutput(message = indent(s = "ID   $1 Enabled" % [alignLeft(
-            s = "Path", count = columnLength.int)], count = spacesAmount.int),
-                fgColor = fgMagenta)
-      except ValueError:
-        showOutput(message = indent(s = "ID   Path Enabled",
-            count = spacesAmount.int), fgColor = fgMagenta)
+      table.add(magenta("ID"), magenta("Path"), magenta("Enabled"))
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, location, enabled FROM plugins")):
-          showOutput(message = indent(s = alignLeft(row[0], count = 4) & " " &
-              alignLeft(s = row[1], count = columnLength.int) & " " & (if row[
-                  2] == "1": "Yes" else: "No"), count = spacesAmount.int))
+          table.add(row[0], row[1], (if row[2] == "1": "Yes" else: "No"))
       except DbError:
         return showError(message = "Can't read info about plugin from database. Reason:",
             e = getCurrentException())
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size
+      showFormHeader(message = "All available plugins are:",
+          width = width.ColumnAmount)
+    try:
+      table.echoTable()
+    except IOError, Exception:
+      return showError(message = "Can't show the list of plugins. Reason: ",
+          e = getCurrentException())
     return QuitSuccess.ResultCode
 
 proc showPlugin*(arguments; db; commands): ResultCode {.gcsafe,
