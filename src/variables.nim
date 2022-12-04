@@ -26,7 +26,7 @@
 # Standard library imports
 import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
-import contracts
+import contracts, nancy, termstyle
 # Internal imports
 import columnamount, commandslist, constants, databaseid, directorypath, help,
     input, lstring, output, resultcode
@@ -230,57 +230,40 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.len() > 0
     db != nil
   body:
-    let
-      nameLength: ColumnAmount = try:
-          db.getValue(query = sql(query = "SELECT name FROM variables ORDER BY LENGTH(name) DESC LIMIT 1")).len().ColumnAmount
-      except DbError:
-        return showError(message = "Can't get the maximum length of the variables names from database.")
-      valueLength: ColumnAmount = try:
-          db.getValue(query = sql(query = "SELECT value FROM variables ORDER BY LENGTH(value) DESC LIMIT 1")).len().ColumnAmount
-      except DbError:
-        return showError(message = "Can't get the maximum length of the variables values from database.")
-      spacesAmount: ColumnAmount = getIndent()
+    var table: TerminalTable
+    table.add(magenta("ID"), magenta("Name"), magenta("Value"), magenta("Description"))
     if arguments == "list":
-      showFormHeader(message = "Declared environent variables are:")
-      try:
-        showOutput(message = indent(s = "ID   $1 $2 Description" % [alignLeft(
-            s = "Name", count = nameLength.int), alignLeft(s = "Value",
-                count = valueLength.int)], count = spacesAmount.int),
-                fgColor = fgMagenta)
-      except ValueError:
-        return showError(message = "Can't draw header for variables. Reason: ",
-            e = getCurrentException())
       try:
         for row in db.fastRows(query = sql(query = buildQuery(
             directory = getCurrentDir().DirectoryPath,
                 fields = "id, name, value, description"))):
-          showOutput(message = indent(s = alignLeft(s = row[0], count = 4) &
-              " " & alignLeft(s = row[1], count = nameLength.int) & " " &
-                  alignLeft(s = row[2], count = valueLength.int) & " " & row[3],
-                      count = spacesAmount.int))
+          table.add(row)
       except DbError, OSError:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException())
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size
+      showFormHeader(message = "Declared environent variables are:",
+          width = width.ColumnAmount)
     elif arguments == "list all":
-      showFormHeader(message = "All declared environent variables are:")
-      try:
-        showOutput(message = indent(s = "ID   $1 $2 Description" % [alignLeft(
-            s = "Name", count = nameLength.int), alignLeft(s = "Value",
-                count = valueLength.int)], count = spacesAmount.int),
-                fgColor = fgMagenta)
-      except ValueError:
-        return showError(message = "Can't draw header for variables. Reason: ",
-            e = getCurrentException())
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, name, value, description FROM variables")):
-          showOutput(message = indent(s = alignLeft(s = row[0], count = 4) &
-              " " & alignLeft(s = row[1], count = nameLength.int) & " " &
-                  alignLeft(s = row[2], count = valueLength.int) & " " & row[3],
-                      count = spacesAmount.int))
+          table.add(row)
       except DbError:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException())
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size
+      showFormHeader(message = "All declared environent variables are:",
+          width = width.ColumnAmount)
+    try:
+      table.echoTable()
+    except IOError, Exception:
+      return showError(message = "Can't show the list of declared shell's environment variables. Reason: ",
+          e = getCurrentException())
     return QuitSuccess.ResultCode
 
 proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
