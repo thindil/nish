@@ -26,7 +26,7 @@
 # Standard library imports
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal, unicode]
 # External modules imports
-import contracts
+import contracts, nancy
 # Internal imports
 import aliases, commands, commandslist, completion, constants, directorypath,
     help, highlight, history, input, lstring, options, output, plugins, prompt,
@@ -289,7 +289,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     aliases = newOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
         DirSep & "nish.db")
-    cursorPosition, currentCompletion: Natural = 0
+    cursorPosition, currentCompletion, completionWidth: Natural = 0
     commands = newTable[string, CommandData]()
     completions: seq[string]
 
@@ -415,16 +415,24 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               if not completionMode:
                 stdout.writeLine("")
                 var
+                  table: TerminalTable
+                  row: array[0..2, string]
                   amount, line: Natural = 0
                 for completion in completions:
-                  stdout.write(s = completion & "   ")
+                  row[amount] = completion
                   amount.inc
                   if amount == 3 and amount * (line + 1) < completions.len:
-                    stdout.writeLine("")
+                    table.add(row)
+                    row = ["", "", ""]
                     amount = 0
                     line.inc
-                if line > 0:
-                  stdout.cursorUp(count = line)
+                completionWidth = table.getColumnSizes(maxSize = terminalWidth())[0] + 4
+                try:
+                  table.echoTable(padding = 4)
+                except IOError, Exception:
+                  showError(message = "Can't show Tab completion. Reason: ",
+                      e = getCurrentException())
+                stdout.cursorUp(count = line)
                 completionMode = true
                 currentCompletion = 0
                 stdout.cursorBackward(count = terminalWidth())
@@ -446,8 +454,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 stdout.cursorBackward(count = terminalWidth())
                 continue
               # Move cursor to the next completion
-              stdout.cursorForward(count = completions[currentCompletion -
-                  1].runeLen + 3)
+              stdout.cursorForward(count = completionWidth)
             except IOError, ValueError:
               discard
         # Special keys pressed
