@@ -24,7 +24,7 @@ requires "termstyle >= 0.1.0"
 task debug, "builds the shell in debug mode":
   exec "nimble install -d -y"
   exec "nimassets -d=help -o=src/helpcontent.nim"
-  exec "nim c -d:debug --styleCheck:hint --spellSuggest:auto --verbosity:2 --errorMax:0 --outdir:" &
+  exec "nim c -d:debug --styleCheck:hint --spellSuggest:auto --errorMax:0 --outdir:" &
       binDir & " " & srcDir & DirSep & "nish.nim"
 
 task release, "builds the project in release mode":
