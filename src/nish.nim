@@ -421,11 +421,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 for completion in completions:
                   row[amount] = completion
                   amount.inc
-                  if amount == 3 and amount * (line + 1) < completions.len:
+                  if amount == 3:
                     table.add(row)
                     row = ["", "", ""]
                     amount = 0
                     line.inc
+                if amount < 3:
+                  table.add(row)
+                  line.inc
                 completionWidth = table.getColumnSizes(maxSize = terminalWidth())[0] + 4
                 try:
                   table.echoTable(padding = 4)
@@ -441,8 +444,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               currentCompletion.inc
               # Return to the first completion if reached the end of the list
               if currentCompletion == completions.len:
-                let line = (if completions.len > 3: (completions.len /
-                    3).int else: 0)
+                let line = completions.len div 3
                 if line > 0:
                   stdout.cursorUp(count = line)
                 stdout.cursorBackward(count = terminalWidth())
