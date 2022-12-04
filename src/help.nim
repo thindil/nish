@@ -26,7 +26,7 @@
 # Standard library imports
 import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, terminal]
 # External modules imports
-import contracts
+import contracts, nancy
 # Internal imports
 import columnamount, commandslist, helpcontent, constants, input, lstring,
     output, resultcode
@@ -96,9 +96,9 @@ proc showUnknownHelp*(subCommand, command,
                 "` for `" & command & "`. To see all available " & helpType &
                 " commands, type `" & command & "`.")
 
-proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
+proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show the selected help section. If the user entered non-existing name of
@@ -117,9 +117,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
   require:
     db != nil
   body:
-    proc showHelpEntry(helpEntry: HelpEntry;
-        usageHeader: string = "Usage") {.gcsafe, sideEffect, raises: [], tags: [
-        WriteIOEffect, ReadEnvEffect, ReadIOEffect].} =
+    proc showHelpEntry(helpEntry: HelpEntry) {.sideEffect, raises: [], tags: [
+        WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect].} =
       ## FUNCTION
       ##
       ## Show the selected help entry
@@ -127,28 +126,13 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
       ## PARAMETERS
       ##
       ## * helpEntry   - the help entry to show to the user
-      ## * usageHeader - the sentence used as the first in the help entry's usage
-      ##                 header. Default value is "Usage"
-      showOutput(message = "    " & usageHeader & ": ", newLine = false,
-          fgColor = fgYellow)
+      showOutput(message = "Usage: ", fgColor = fgYellow,
+          newLine = false)
       showOutput(message = helpEntry.usage & "\n")
-      var
-        content: string = "    "
-        index: Positive = 4
-      let maxLength: ColumnAmount = try:
-          (terminalWidth() - 8).ColumnAmount
-        except ValueError:
-            72.ColumnAmount;
-      for ch in helpEntry.content:
-        content.add(y = ch)
-        index.inc()
-        if index == maxLength.int:
-          content.add(y = "\n    ")
-          index = 4
-      showOutput(message = content)
+      showOutput(message = helpEntry.content)
 
-    proc showHelpList(keys: seq[string]) {.gcsafe, sideEffect, raises: [],
-        tags: [WriteIOEffect, ReadEnvEffect, ReadIOEffect].} =
+    proc showHelpList(keys: seq[string]) {.sideEffect, raises: [],
+        tags: [WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect].} =
       ## FUNCTION
       ##
       ## Show the list of help topics
@@ -158,18 +142,27 @@ proc showHelp*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect, raises: [
       ## * keys - The list of help topics to show
       var
         i: Positive = 1
-        listHelp = HelpEntry(usage: "", content: "")
-      listHelp.usage.add(y = "\n    ")
+        table: TerminalTable
+        row: string = ""
       for key in keys:
-        listHelp.usage.add(y = alignLeft(s = key, count = 20))
+        row = row & key & "\t"
         i.inc()
         if i == 4:
-          listHelp.usage.add(y = "\n    ")
+          table.tabbed(row)
+          row = ""
           i = 1
-      listHelp.usage.removeSuffix(suffix = ", ")
-      listHelp.content.add(y = "To see more information about the selected topic, type help [topic], for example: help " &
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size + 2
+      showFormHeader(message = "Available help topics",
+          width = width.ColumnAmount)
+      try:
+        table.echoTable(padding = 4)
+      except IOError, Exception:
+        showError(message = "Can't show the help entries list. Reason: ",
+            e = getCurrentException())
+      showOutput(message = "\n\nTo see more information about the selected topic, type help [topic], for example: help " &
           keys[0] & ".")
-      showHelpEntry(helpEntry = listHelp, usageHeader = "Available help topics")
 
     # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
@@ -467,7 +460,7 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     db != nil
   body:
     proc helpCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "help"
