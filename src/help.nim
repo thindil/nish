@@ -270,14 +270,13 @@ proc showHelpList*(command: string; subcommands: openArray[
   ##
   ## This procedure always return QuitSuccess
   body:
-    showOutput(message = indent(s = "Available subcommands for '" & command &
-        "' are': ", count = 4), fgColor = fgYellow)
-    showOutput(message = indent(s = subcommands.join(sep = ", "), count = 6))
+    showOutput(message = "Available subcommands for '" & command & "' are': ",
+        fgColor = fgYellow)
+    showOutput(message = subcommands.join(sep = ", "))
     showOutput(message = " ")
-    showOutput(message = indent(s = "To see more information about the subcommands, type 'help " &
-        command & " [subcommand]',", count = 4))
-    showOutput(message = indent(s = "for example: 'help " & command & " " &
-        subcommands[0] & "'.", count = 4))
+    showOutput(message = "To see more information about the subcommands, type 'help " &
+        command & " [subcommand]', for example: 'help " & command & " " &
+        subcommands[0] & "'.")
     return QuitSuccess.ResultCode
 
 proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
