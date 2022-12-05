@@ -48,7 +48,7 @@ type
     ## FUNCTION
     ##
     ## Used to set the type of option's value
-    integer, float, boolean, none, historysort, natural, text, command
+    integer, float, boolean, none, historysort, natural, text, command, header
 
 using
   db: DbConn # Connection to the shell's database
@@ -246,6 +246,14 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         except:
           return showError(message = "Can't check the existence of command '" &
               value & "'. Reason: ", e = getCurrentException())
+      of "header":
+        try:
+          value.text = toLowerAscii(s = $value)
+        except CapacityError:
+          return showError(message = "Can't set a new value for option '" &
+              optionName & "'. Reason: ", e = getCurrentException())
+        if $value notin ["unicode", "ascii", "none", "hidden"]:
+          return showError(message = "Value for option '" & optionName & "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)")
       of "":
         return showError(message = "Shell's option with name '" & optionName &
           "' doesn't exists. Please use command 'options list' to see all available shell's options.")
