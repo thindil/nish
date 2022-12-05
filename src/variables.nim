@@ -232,7 +232,22 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     var table: TerminalTable
     table.add(magenta("ID"), magenta("Name"), magenta("Value"), magenta("Description"))
-    if arguments == "list":
+    # Show the list of all declared environment variables in the shell
+    if arguments == "list all":
+      try:
+        for row in db.fastRows(query = sql(
+            query = "SELECT id, name, value, description FROM variables")):
+          table.add(row)
+      except DbError:
+        return showError(message = "Can't read data about variables from database. Reason: ",
+            e = getCurrentException())
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size
+      showFormHeader(message = "All declared environent variables are:",
+          width = width.ColumnAmount)
+    # Show the list of environment variables available in current directory
+    elif arguments[0..3] == "list":
       try:
         for row in db.fastRows(query = sql(query = buildQuery(
             directory = getCurrentDir().DirectoryPath,
@@ -245,19 +260,6 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       for size in table.getColumnSizes(maxSize = int.high):
         width = width + size
       showFormHeader(message = "Declared environent variables are:",
-          width = width.ColumnAmount)
-    elif arguments == "list all":
-      try:
-        for row in db.fastRows(query = sql(
-            query = "SELECT id, name, value, description FROM variables")):
-          table.add(row)
-      except DbError:
-        return showError(message = "Can't read data about variables from database. Reason: ",
-            e = getCurrentException())
-      var width: int = 0
-      for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size
-      showFormHeader(message = "All declared environent variables are:",
           width = width.ColumnAmount)
     try:
       table.echoTable()
