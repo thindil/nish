@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[os, strutils, terminal]
+import std/[strutils, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
@@ -113,26 +113,6 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
       except IOError:
         discard
     return QuitFailure.ResultCode
-
-proc getIndent*(spaces: ColumnAmount = 0.ColumnAmount): ColumnAmount {.gcsafe,
-    sideEffect, raises: [], tags: [ReadEnvEffect], contractual.} =
-  ## FUNCTION
-  ##
-  ## Get the current indentation for the shell's messages
-  ##
-  ## PARAMETERS
-  ##
-  ## * spaces - the amount of spaces used as indent. If set to 0, use amount
-  ##            based on termminal width. Default value is 0.
-  ##
-  ## RETURNS
-  ##
-  ## The amount of spaces used as indentation for the shell's messages
-  body:
-    let length: ColumnAmount = try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount
-    if spaces.int > 0 and spaces.int < (length.int / 2).int:
-      return spaces
-    return length / 12
 
 proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount)) {.sideEffect,
     raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
