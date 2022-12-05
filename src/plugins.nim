@@ -746,23 +746,8 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     db != nil
   body:
     var table: TerminalTable
-    # Show the list of enabled plugins
-    if arguments == "list":
-      table.add(magenta("ID"), magenta("Path"))
-      try:
-        for plugin in db.fastRows(query = sql(
-            query = "SELECT id, location FROM plugins WHERE enabled=1")):
-          table.add(plugin)
-      except DbError:
-        return showError(message = "Can't show the list of enabled plugins. Reason: ",
-            e = getCurrentException())
-      var width: int = 0
-      for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size
-      showFormHeader(message = "Enabled plugins are:",
-          width = width.ColumnAmount)
     # Show the list of all installed plugins with information about their state
-    elif arguments == "list all":
+    if arguments == "list all":
       table.add(magenta("ID"), magenta("Path"), magenta("Enabled"))
       try:
         for row in db.fastRows(query = sql(
@@ -775,6 +760,21 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
       for size in table.getColumnSizes(maxSize = int.high):
         width = width + size
       showFormHeader(message = "All available plugins are:",
+          width = width.ColumnAmount)
+    # Show the list of enabled plugins
+    elif arguments[0..3] == "list":
+      table.add(magenta("ID"), magenta("Path"))
+      try:
+        for plugin in db.fastRows(query = sql(
+            query = "SELECT id, location FROM plugins WHERE enabled=1")):
+          table.add(plugin)
+      except DbError:
+        return showError(message = "Can't show the list of enabled plugins. Reason: ",
+            e = getCurrentException())
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size
+      showFormHeader(message = "Enabled plugins are:",
           width = width.ColumnAmount)
     try:
       table.echoTable()
