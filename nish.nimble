@@ -4,7 +4,7 @@ import os
 
 version = "0.4.0"
 author = "Bartek thindil Jasicki"
-description = "An experimental command line shell"
+description = "A non-POSIX, multiplatform command line shell"
 license = "BSD-3-Clause"
 srcDir = "src"
 bin = @["nish"]
