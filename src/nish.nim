@@ -127,6 +127,27 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException())
       return nil
+    type Option = object
+      name: string
+      value: string
+      description: string
+      optionType: ValueType
+      readOnly: bool
+    const options: array[0..4, Option] = [Option(name: "dbVersion", value: "3",
+        description: "Version of the database schema (read only).",
+        optionType: ValueType.natural, readOnly: true), Option(
+        name: "promptCommand", value: "built-in",
+        description: "The command which output will be used as the prompt of shell.",
+        optionType: ValueType.command, readOnly: false), Option(
+        name: "setTitle", value: "true",
+        description: "Set a terminal title to currently running command.",
+        optionType: ValueType.boolean, readOnly: false), Option(
+        name: "colorSyntax", value: "true",
+        description: "Color the user input with info about invalid commands, quotes, etc.",
+        optionType: ValueType.boolean, readOnly: false), Option(
+        name: "completionAmount", value: "30",
+        description: "The amount of Tab completions to show (separated for commands and files).",
+        optionType: ValueType.natural, readOnly: false)]
     let
       versionName: OptionName = try:
           initLimitedString(capacity = 9, text = "dbVersion")
@@ -429,7 +450,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 if amount < 3:
                   table.add(row)
                   line.inc
-                completionWidth = table.getColumnSizes(maxSize = terminalWidth())[0] + 4
+                completionWidth = table.getColumnSizes(maxSize = terminalWidth(
+                  ))[0] + 4
                 try:
                   table.echoTable(padding = 4)
                 except IOError, Exception:
