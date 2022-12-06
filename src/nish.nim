@@ -133,7 +133,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       description: string
       optionType: ValueType
       readOnly: bool
-    const options: array[0..4, Option] = [Option(name: "dbVersion", value: "3",
+    const options: array[5, Option] = [Option(name: "dbVersion", value: "3",
         description: "Version of the database schema (read only).",
         optionType: ValueType.natural, readOnly: true), Option(
         name: "promptCommand", value: "built-in",
@@ -148,61 +148,6 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         name: "completionAmount", value: "30",
         description: "The amount of Tab completions to show (separated for commands and files).",
         optionType: ValueType.natural, readOnly: false)]
-    let
-      versionName: OptionName = try:
-          initLimitedString(capacity = 9, text = "dbVersion")
-        except CapacityError:
-          showError(message = "Can't set versionName. Reason: ",
-              e = getCurrentException())
-          return nil
-      versionValue: OptionValue = try:
-          initLimitedString(capacity = 1, text = "3")
-        except CapacityError:
-          showError(message = "Can't set versionValue. Reason: ",
-              e = getCurrentException())
-          return nil
-      promptName: OptionName = try:
-          initLimitedString(capacity = 13, text = "promptCommand")
-        except CapacityError:
-          showError(message = "Can't set promptName. Reason: ",
-              e = getCurrentException())
-          return nil
-      promptValue: OptionValue = try:
-          initLimitedString(capacity = 8, text = "built-in")
-        except CapacityError:
-          showError(message = "Can't set promptValue. Reason: ",
-              e = getCurrentException())
-          return nil
-      titleName: OptionName = try:
-          initLimitedString(capacity = 8, text = "setTitle")
-        except CapacityError:
-          showError(message = "Can't set setTitle. Reason: ",
-              e = getCurrentException())
-          return nil
-      trueValue: OptionValue = try:
-          initLimitedString(capacity = 4, text = "true")
-        except CapacityError:
-          showError(message = "Can't set trueValue. Reason: ",
-              e = getCurrentException())
-          return nil
-      syntaxName: OptionName = try:
-          initLimitedString(capacity = 11, text = "colorSyntax")
-        except CapacityError:
-          showError(message = "Can't set colorSyntax. Reason: ",
-              e = getCurrentException())
-          return nil
-      completionName: OptionName = try:
-          initLimitedString(capacity = 16, text = "completionAmount")
-        except CapacityError:
-          showError(message = "Can't set completionAmount. Reason: ",
-              e = getCurrentException())
-          return nil
-      completionValue: OptionValue = try:
-          initLimitedString(capacity = 2, text = "30")
-        except CapacityError:
-          showError(message = "Can't set completionValue. Reason: ",
-              e = getCurrentException())
-          return nil
     # Create a new database if not exists
     if not dbExists:
       if createAliasesDb(db = result) == QuitFailure:
@@ -218,34 +163,22 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       if createHelpDb(db = result) == QuitFailure:
         return nil
       try:
-        setOption(optionName = versionName, value = versionValue,
-            description = initLimitedString(capacity = 43,
-            text = "Version of the database schema (read only)."),
-            valueType = ValueType.natural, db = result, readOnly = 1)
-        setOption(optionName = promptName, value = promptValue,
-            description = initLimitedString(capacity = 61,
-            text = "The command which output will be used as the prompt of shell."),
-            valueType = ValueType.command, db = result, readOnly = 0)
-        setOption(optionName = titleName, value = trueValue,
-            description = initLimitedString(capacity = 50,
-            text = "Set a terminal title to currently running command."),
-            valueType = ValueType.boolean, db = result, readOnly = 0)
-        setOption(optionName = syntaxName, value = trueValue,
-            description = initLimitedString(capacity = 69,
-            text = "Color the user input with info about invalid commands, quotes, etc."),
-            valueType = ValueType.boolean, db = result, readOnly = 0)
-        setOption(optionName = completionName, value = completionValue,
-            description = initLimitedString(capacity = 73,
-            text = "The amount of Tab completions to show (separated for commands and files)."),
-            valueType = ValueType.natural, db = result, readOnly = 0)
+        for option in options:
+          setOption(optionName = initLimitedString(capacity = 40,
+              text = option.name), value = initLimitedString(capacity = 40,
+              text = option.value), description = initLimitedString(
+              capacity = 256, text = option.description),
+              valueType = option.optionType, db = result, readOnly = (
+              if option.readOnly: 1 else: 0))
       except CapacityError:
         showError(message = "Can't set database schema. Reason: ",
             e = getCurrentException())
         return nil
     # If database version is different than the newest, update database
     try:
-      case parseInt(s = $getOption(optionName = versionName, db = result,
-          defaultValue = initLimitedString(capacity = 1, text = "0")))
+      case parseInt(s = $getOption(optionName = initLimitedString(capacity = 9,
+          text = "dbVersion"), db = result, defaultValue = initLimitedString(
+          capacity = 1, text = "0")))
       of 0 .. 1:
         if updateOptionsDb(db = result) == QuitFailure:
           return nil
@@ -257,30 +190,23 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if createHelpDb(db = result) == QuitFailure:
           return nil
-        setOption(optionName = versionName, value = versionValue,
-            description = initLimitedString(capacity = 43,
-            text = "Version of the database schema (read only)."),
-            valueType = ValueType.natural, db = result)
-        setOption(optionName = promptName, value = promptValue,
-            description = initLimitedString(capacity = 60,
-            text = "The command which output will be used as the shell's prompt."),
-            valueType = ValueType.command, db = result, readOnly = 0)
+        for option in options:
+          setOption(optionName = initLimitedString(capacity = 40,
+              text = option.name), value = initLimitedString(capacity = 40,
+              text = option.value), description = initLimitedString(
+              capacity = 256, text = option.description),
+              valueType = option.optionType, db = result, readOnly = (
+              if option.readOnly: 1 else: 0))
       of 2:
         if updatePluginsDb(db = result) == QuitFailure:
           return nil
-        setOption(optionName = versionName, value = versionValue, db = result)
-        setOption(optionName = titleName, value = trueValue,
-            description = initLimitedString(capacity = 50,
-            text = "Set a terminal title to currently running command."),
-            valueType = ValueType.boolean, db = result, readOnly = 0)
-        setOption(optionName = syntaxName, value = trueValue,
-            description = initLimitedString(capacity = 69,
-            text = "Color the user's input with info about invalid commands, quotes, etc."),
-            valueType = ValueType.boolean, db = result, readOnly = 0)
-        setOption(optionName = completionName, value = completionValue,
-            description = initLimitedString(capacity = 73,
-            text = "The amount of Tab completions to show (separated for commands and files)."),
-            valueType = ValueType.natural, db = result, readOnly = 0)
+        for i in [0, 2, 3, 4]:
+          setOption(optionName = initLimitedString(capacity = 40,
+              text = options[i].name), value = initLimitedString(capacity = 40,
+              text = options[i].value), description = initLimitedString(
+              capacity = 256, text = options[i].description),
+              valueType = options[i].optionType, db = result, readOnly = (
+              if options[i].readOnly: 1 else: 0))
       of 3:
         discard
       else:
