@@ -133,7 +133,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       description: string
       optionType: ValueType
       readOnly: bool
-    const options: array[5, Option] = [Option(name: "dbVersion", value: "3",
+    const options: array[6, Option] = [Option(name: "dbVersion", value: "3",
         description: "Version of the database schema (read only).",
         optionType: ValueType.natural, readOnly: true), Option(
         name: "promptCommand", value: "built-in",
@@ -147,7 +147,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         optionType: ValueType.boolean, readOnly: false), Option(
         name: "completionAmount", value: "30",
         description: "The amount of Tab completions to show (separated for commands and files).",
-        optionType: ValueType.natural, readOnly: false)]
+        optionType: ValueType.natural, readOnly: false), Option(
+        name: "outputHeaders", value: "unicode",
+        description: "How to present the headers of commands.",
+        optionType: ValueType.header, readOnly: false)]
     # Create a new database if not exists
     if not dbExists:
       if createAliasesDb(db = result) == QuitFailure:
@@ -200,7 +203,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       of 2:
         if updatePluginsDb(db = result) == QuitFailure:
           return nil
-        for i in [0, 2, 3, 4]:
+        for i in [0, 2, 3, 4, 5]:
           setOption(optionName = initLimitedString(capacity = 40,
               text = options[i].name), value = initLimitedString(capacity = 40,
               text = options[i].value), description = initLimitedString(
