@@ -141,8 +141,6 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
               e = getCurrentException())
       showFormHeader(message = "Available aliases are:",
           width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount)
-    else:
-      return showError(message = "Invalid command entered for listing the aliases.")
     try:
       table.echoTable()
     except IOError, Exception:
