@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[strutils, terminal]
+import std/[db_sqlite, strutils, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
@@ -114,8 +114,10 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
         discard
     return QuitFailure.ResultCode
 
-proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount)) {.sideEffect,
-    raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
+proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
+    ).ColumnAmount except ValueError: 80.ColumnAmount);
+    db: DbConn) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
+        RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show form's header with the selected message
@@ -125,13 +127,27 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().Column
   ## * message - the text which will be shown in the header
   ## * width   - the width of the header. Default value is the current width
   ##             of the terminal
+  ## * db      - the connection to the shell's database
   require:
     message.len > 0
+    db != nil
   body:
-    var table: TerminalTable
-    table.add(yellow(message.center(width = width.int)))
     try:
-      table.echoTableSeps(seps = boxSeps)
-    except IOError, Exception:
+      let headerType = db.getValue(query = sql(
+          query = "SELECT value FROM options WHERE option='outputHeaders'"))
+      if headerType == "hidden":
+        return
+      var table: TerminalTable
+      table.add(yellow(message.center(width = width.int)))
+      case headerType
+      of "unicode":
+        table.echoTableSeps(seps = boxSeps)
+      of "ascii":
+        table.echoTableSeps()
+      of "none":
+        table.echoTable()
+      else:
+        discard
+    except DbError, IOError, Exception:
       showError(message = "Can't show form header. Reason: ",
           e = getCurrentException())
