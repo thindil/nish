@@ -32,7 +32,7 @@ assert listPlugins(initLimitedString(capacity = 4, text = "list"), db) ==
     QuitSuccess, "Failed to show list of enabled plugins."
 assert listPlugins(initLimitedString(capacity = 8, text = "list all"), db) ==
     QuitSuccess, "Failed to show list of all plugins."
-assert listPlugins(initLimitedString(capacity = 8, text = "werwerew"), db) ==
+assert listPlugins(initLimitedString(capacity = 13, text = "list werwerew"), db) ==
     QuitSuccess, "Failed to show list of enabled plugings."
 
 assert togglePlugin(db, initLimitedString(capacity = 9, "disable 1"), true,
