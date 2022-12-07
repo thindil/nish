@@ -348,6 +348,8 @@ You will need:
 * [Nim compiler](https://nim-lang.org/install.html)
 * [Contracts package](https://github.com/Udiknedormin/NimContracts)
 * [Nimassets package](https://github.com/xmonader/nimassets)
+* [Nancy](https://github.com/PMunch/nancy)
+* [TermStyle](https://github.com/PMunch/termstyle)
 
 You can install them manually or by using [Nimble](https://github.com/nim-lang/nimble).
 In that second option, type `nimble install https://github.com/thindil/nish` to
