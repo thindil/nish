@@ -19,6 +19,8 @@ of the shell.
 - Tab completion: support for select a completion from the list of completions
 - Tab completion: completion for available commands and shell's aliases
 - Ability to set the amount of displayed Tab completions on the list
+- Option to set style of the output headers, like sections in forms to set
+  aliases and variables, listing commands, etc.
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
