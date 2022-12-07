@@ -760,7 +760,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
       for size in table.getColumnSizes(maxSize = int.high):
         width = width + size
       showFormHeader(message = "All available plugins are:",
-          width = width.ColumnAmount)
+          width = width.ColumnAmount, db = db)
     # Show the list of enabled plugins
     elif arguments[0..3] == "list":
       table.add(magenta("ID"), magenta("Path"))
@@ -775,7 +775,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
       for size in table.getColumnSizes(maxSize = int.high):
         width = width + size
       showFormHeader(message = "Enabled plugins are:",
-          width = width.ColumnAmount)
+          width = width.ColumnAmount, db = db)
     try:
       table.echoTable()
     except IOError, Exception:

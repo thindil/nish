@@ -270,7 +270,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       for size in table.getColumnSizes(maxSize = int.high):
         width = width + size
       showFormHeader(message = "The last " & $amount &
-          " commands from the shell's history", width = width.ColumnAmount)
+          " commands from the shell's history", width = width.ColumnAmount, db = db)
     except DbError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
@@ -320,7 +320,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       try:
         showFormHeader(message = "The search results for '" & searchTerm &
             "' in the history:", width = table.getColumnSizes(
-            maxSize = int.high)[0].ColumnAmount)
+            maxSize = int.high)[0].ColumnAmount, db = db)
         table.echoTable()
       except IOError, Exception:
         return showError(message = "Can't show the list of search results from history. Reason: ",

@@ -155,7 +155,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       for size in table.getColumnSizes(maxSize = int.high):
         width = width + size + 2
       showFormHeader(message = "Available help topics",
-          width = width.ColumnAmount)
+          width = width.ColumnAmount, db = db)
       try:
         table.echoTable(padding = 4)
       except IOError, Exception:

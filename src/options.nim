@@ -149,7 +149,7 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     var table: TerminalTable
     table.add(magenta("Name"), magenta("Value"), magenta("Default"), magenta(
         "Type"), magenta("Description"))
-    showFormHeader(message = "Available options are:")
+    showFormHeader(message = "Available options are:", db = db)
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):

@@ -127,7 +127,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
       showFormHeader(message = "All available aliases are:",
-          width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount)
+          width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount, db = db)
     # Show only aliases available in the current directory
     elif arguments[0 .. 3] == "list":
       for alias in aliases.values:
@@ -140,7 +140,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
       showFormHeader(message = "Available aliases are:",
-          width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount)
+          width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount, db = db)
     try:
       table.echoTable()
     except IOError, Exception:
@@ -269,7 +269,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
   body:
     showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word 'exit' as an answer.")
     # Set the name for the alias
-    showFormHeader(message = "(1/6) Name")
+    showFormHeader(message = "(1/6) Name", db = db)
     showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
     showOutput(message = "Name: ", newLine = false)
     var name: AliasName = emptyLimitedString(capacity = aliasNameLength)
@@ -288,14 +288,14 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     if name == "exit":
       return showError(message = "Adding a new alias cancelled.")
     # Set the description for the alias
-    showFormHeader(message = "(2/6) Description")
+    showFormHeader(message = "(2/6) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
     showOutput(message = "Description: ", newLine = false)
     let description: UserInput = readInput()
     if description == "exit":
       return showError(message = "Adding a new alias cancelled.")
     # Set the working directory for the alias
-    showFormHeader(message = "(3/6) Working directory")
+    showFormHeader(message = "(3/6) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "".DirectoryPath
@@ -311,7 +311,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     if path == "exit":
       return showError(message = "Adding a new alias cancelled.")
     # Set the recursiveness for the alias
-    showFormHeader(message = "(4/6) Recursiveness")
+    showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
     showOutput(message = "Recursive(y/n): ", newLine = false)
     var inputChar: char = try:
@@ -326,7 +326,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = $inputChar)
     let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
     # Set the commands to execute for the alias
-    showFormHeader(message = "(5/6) Commands")
+    showFormHeader(message = "(5/6) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
     showOutput(message = "Command(s): ", newLine = false)
     var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
@@ -338,7 +338,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     if commands == "exit":
       return showError(message = "Adding a new alias cancelled.")
     # Set the destination for the alias' output
-    showFormHeader(message = "(6/6) Output")
+    showFormHeader(message = "(6/6) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.:")
     showOutput(message = "Output to: ", newLine = false)
     var output: UserInput = readInput()
@@ -409,7 +409,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
         return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
     showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
     # Set the name for the alias
-    showFormHeader(message = "(1/6) Name")
+    showFormHeader(message = "(1/6) Name", db = db)
     showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
         newLine = false)
     showOutput(message = row[0], newLine = false, fgColor = fgMagenta)
@@ -427,7 +427,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
     # Set the description for the alias
-    showFormHeader(message = "(2/6) Description")
+    showFormHeader(message = "(2/6) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
         newLine = false)
     showOutput(message = row[3], newLine = false, fgColor = fgMagenta)
@@ -442,7 +442,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
     # Set the working directory for the alias
-    showFormHeader(message = "(3/6) Working directory")
+    showFormHeader(message = "(3/6) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
         newLine = false)
     showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
@@ -456,7 +456,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
     elif path == "":
       path = row[1].DirectoryPath
     # Set the recursiveness for the alias
-    showFormHeader(message = "(4/6) Recursiveness")
+    showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
     showOutput(message = "Recursive(y/n): ", newLine = false)
     var inputChar: char = try:
@@ -471,7 +471,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
     let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
     showOutput(message = "")
     # Set the commands to execute for the alias
-    showFormHeader(message = "(5/6) Commands")
+    showFormHeader(message = "(5/6) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
         newLine = false)
     showOutput(message = row[2], newLine = false, fgColor = fgMagenta)
@@ -486,7 +486,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
     # Set the destination for the alias' output
-    showFormHeader(message = "(6/6) Output")
+    showFormHeader(message = "(6/6) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
         newLine = false)
     showOutput(message = row[4], newLine = false, fgColor = fgMagenta)
