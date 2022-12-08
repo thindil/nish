@@ -54,7 +54,7 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
   ## QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   require:
-    newDirectory.len() > 0
+    newDirectory.len > 0
     db != nil
   body:
     try:
@@ -94,7 +94,7 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
   require:
     db != nil
   body:
-    if newDirectory.len() == 0:
+    if newDirectory.len == 0:
       result = changeDirectory(newDirectory = "~".DirectoryPath,
           aliases = aliases, db = db)
     else:
