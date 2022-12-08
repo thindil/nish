@@ -48,7 +48,7 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     --db [path]   - Set the shell database to the selected file
     -h, --help    - Show this help and quit
     -v, --version - Show the shell version info""")
-    stdout.flushFile()
+    stdout.flushFile
   except IOError:
     quit QuitFailure
   quit QuitSuccess
@@ -69,7 +69,7 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
 
     Copyright: 2021-2022 Bartek Jasicki <thindil@laeran.pl>
     License: 3-Clause BSD""")
-    stdout.flushFile()
+    stdout.flushFile
   except IOError:
     quit QuitFailure
   quit QuitSuccess
@@ -89,7 +89,7 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     db != nil
   body:
     try:
-      db.close()
+      db.close
     except DbError:
       quit showError(message = "Can't close properly the shell database. Reason:",
           e = getCurrentException()).int
@@ -249,7 +249,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   # the shell's version info and "-db [path]" to set path to the shell's
   # database
   while true:
-    options.next()
+    options.next
     case options.kind
     of cmdEnd:
       break
@@ -257,7 +257,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       case options.key
       of "c":
         oneTimeCommand = true
-        options.next()
+        options.next
         try:
           inputString.text = options.key
         except CapacityError:
@@ -305,7 +305,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       # Write the shell's prompt and get the input from the user, only when the
       # shell's didn't start in one command mode and there is no remaining the
       # user input to parse
-      if not oneTimeCommand and inputString.len() == 0:
+      if not oneTimeCommand and inputString.len == 0:
         # Write prompt
         let promptLength: Natural = showPrompt(
             promptEnabled = not oneTimeCommand, previousCommand = commandName,
@@ -314,7 +314,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         var inputChar: char = '\0'
         # Read the user input until not meet new line character or the input
         # reach the maximum length
-        while inputChar.ord() != 13 and inputString.len() < maxInputLength:
+        while inputChar.ord != 13 and inputString.len < maxInputLength:
           # Get the character from the user's input
           try:
             inputChar = getch()
@@ -323,7 +323,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 e = getCurrentException())
           # Backspace pressed, delete the character before cursor from the user
           # input
-          if inputChar.ord() == 127:
+          if inputChar.ord == 127:
             keyWasArrow = false
             if cursorPosition == 0:
               continue
@@ -336,7 +336,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 returnCode = returnCode, db = db,
                 cursorPosition = cursorPosition)
           # Tab key pressed, do autocompletion if possible
-          elif inputChar.ord() == 9:
+          elif inputChar.ord == 9:
             let
               spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
               prefix: string = (if spaceIndex ==
@@ -347,7 +347,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               getCommandCompletion(prefix = prefix, completions = completions,
                   aliases = aliases, commands = commands, db = db)
             getDirCompletion(prefix = prefix, completions = completions, db = db)
-            if completions.len() == 0:
+            if completions.len == 0:
               continue
             elif completions.len == 1:
               try:
@@ -417,7 +417,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               except IOError, ValueError:
                 discard
           # Special keys pressed
-          elif inputChar.ord() == 27:
+          elif inputChar.ord == 27:
             try:
               if getch() in ['[', 'O']:
                 inputChar = getch()
@@ -437,12 +437,12 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                       aliases = aliases, oneTimeCommand = oneTimeCommand,
                       commandName = $commandName, returnCode = returnCode,
                       db = db, cursorPosition = cursorPosition)
-                  historyIndex.dec()
+                  historyIndex.dec
                   if historyIndex < 1:
                     historyIndex = 1;
                 # Arrow down key pressed
                 elif inputChar == 'B' and historyIndex > 0:
-                  historyIndex.inc()
+                  historyIndex.inc
                   let currentHistoryLength: HistoryRange = historyLength(db = db)
                   if historyIndex > currentHistoryLength:
                     historyIndex = currentHistoryLength
@@ -477,7 +477,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               showError(message = "Invalid value for moving cursor.",
                   e = getCurrentException())
           # Ctrl-c pressed, cancel current command and return 130 result code
-          elif inputChar.ord() == 3:
+          elif inputChar.ord == 3:
             completionMode = false
             inputString = emptyLimitedString(capacity = maxInputLength)
             returnCode = 130.ResultCode
@@ -485,7 +485,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             commandName = "ctrl-c"
             break
           # Enter the currently selected completion into the user's input
-          elif inputChar.ord() == 13 and completionMode:
+          elif inputChar.ord == 13 and completionMode:
             try:
               let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
               inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
@@ -514,7 +514,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               showError(message = "Entered input is too long.",
                   e = getCurrentException())
           # Any graphical character pressed, show it in the input field
-          elif inputChar.ord() > 31:
+          elif inputChar.ord > 31:
             let inputRune: string = readChar(inputChar = inputChar)
             updateInput(cursorPosition = cursorPosition,
                 inputString = inputString, insertMode = insertMode,
@@ -532,7 +532,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           discard
       # User just press Enter key, reset return code (if user doesn't pressed
       # ctrl-c) and back to beginning
-      if inputString.len() == 0:
+      if inputString.len == 0:
         if returnCode != 130:
           returnCode = QuitSuccess.ResultCode
         continue
@@ -540,7 +540,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       # Reset the return code of the program
       returnCode = QuitSuccess.ResultCode
       # Go to the first token
-      userInput.next()
+      userInput.next
       # If it looks like an argument, it must be command name
       if userInput.kind == cmdArgument:
         commandName = userInput.key
@@ -551,7 +551,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         except CapacityError:
           emptyLimitedString(capacity = maxInputLength)
       try:
-        inputString.text = join(a = userInput.remainingArgs(), sep = " ")
+        inputString.text = join(a = userInput.remainingArgs, sep = " ")
       except CapacityError:
         showError(message = "Entered input is too long.",
             e = getCurrentException())
@@ -606,7 +606,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             showError(message = "Can't execute command '" & commandName &
                 "'. Reason: ", e = getCurrentException())
         else:
-          let commandToExecute: string = commandName & (if arguments.len() >
+          let commandToExecute: string = commandName & (if arguments.len >
               0: " " & arguments else: "")
           try:
             # Check if command is an alias, if yes, execute it
@@ -639,11 +639,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       # be executed. if the last command wasn't success and commands conjuncted
       # with && or the last command was success and command disjuncted, reset
       # the input, don't execute more commands.
-      if inputString.len() > 0 and ((returnCode != QuitSuccess and
+      if inputString.len > 0 and ((returnCode != QuitSuccess and
           conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
         inputString = emptyLimitedString(capacity = maxInputLength)
       # Run only one command, quit from the shell
-      if oneTimeCommand and inputString.len() == 0:
+      if oneTimeCommand and inputString.len == 0:
         quitShell(returnCode = returnCode, db = db)
       cursorPosition = runeLen(s = $inputString)
     except:
