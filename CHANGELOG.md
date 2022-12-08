@@ -21,6 +21,7 @@ of the shell.
 - Ability to set the amount of displayed Tab completions on the list
 - Option to set style of the output headers, like sections in forms to set
   aliases and variables, listing commands, etc.
+- Prevention from crash shell during work
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
