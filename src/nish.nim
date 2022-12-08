@@ -93,7 +93,7 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     except DbError:
       quit showError(message = "Can't close properly the shell database. Reason:",
           e = getCurrentException()).int
-    quit int(returnCode)
+    quit returnCode.int
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
@@ -112,7 +112,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
   ## Pointer to the database connection. If connection cannot be established,
   ## returns nil.
   require:
-    dbPath.len() > 0
+    dbPath.len > 0
   body:
     try:
       discard existsOrCreateDir(dir = parentDir(path = $dbPath))
@@ -153,17 +153,17 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         optionType: ValueType.header, readOnly: false)]
     # Create a new database if not exists
     if not dbExists:
-      if createAliasesDb(db = result) == QuitFailure:
+      if result.createAliasesDb == QuitFailure:
         return nil
-      if createOptionsDb(db = result) == QuitFailure:
+      if result.createOptionsDb == QuitFailure:
         return nil
-      if createHistoryDb(db = result) == QuitFailure:
+      if result.createHistoryDb == QuitFailure:
         return nil
-      if createVariablesDb(db = result) == QuitFailure:
+      if result.createVariablesDb == QuitFailure:
         return nil
-      if createPluginsDb(db = result) == QuitFailure:
+      if result.createPluginsDb == QuitFailure:
         return nil
-      if createHelpDb(db = result) == QuitFailure:
+      if result.createHelpDb == QuitFailure:
         return nil
       try:
         for option in options:
@@ -183,15 +183,15 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           text = "dbVersion"), db = result, defaultValue = initLimitedString(
           capacity = 1, text = "0")))
       of 0 .. 1:
-        if updateOptionsDb(db = result) == QuitFailure:
+        if result.updateOptionsDb == QuitFailure:
           return nil
-        if updateHistoryDb(db = result) == QuitFailure:
+        if result.updateHistoryDb == QuitFailure:
           return nil
-        if updateAliasesDb(db = result) == QuitFailure:
+        if result.updateAliasesDb == QuitFailure:
           return nil
-        if createPluginsDb(db = result) == QuitFailure:
+        if result.createPluginsDb == QuitFailure:
           return nil
-        if createHelpDb(db = result) == QuitFailure:
+        if result.createHelpDb == QuitFailure:
           return nil
         for option in options:
           setOption(optionName = initLimitedString(capacity = 40,
@@ -201,7 +201,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               valueType = option.optionType, db = result, readOnly = (
               if option.readOnly: 1 else: 0))
       of 2:
-        if updatePluginsDb(db = result) == QuitFailure:
+        if result.updatePluginsDb == QuitFailure:
           return nil
         for i in [0, 2, 3, 4, 5]:
           setOption(optionName = initLimitedString(capacity = 40,
