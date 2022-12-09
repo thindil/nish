@@ -52,15 +52,15 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
   ## QuitSuccess if the help entry was successfully updated in the database,
   ## otherwise QuitFailure and show message what wrong
   require:
-    topic.len() > 0
-    usage.len() > 0
-    content.len() > 0
-    plugin.len() > 0
+    topic.len > 0
+    usage.len > 0
+    content.len > 0
+    plugin.len > 0
     db != nil
   body:
     try:
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          topic).len() == 0:
+          topic).len == 0:
         return showError(message = "Can't update the help entry for topic '" &
             topic & "' because there is no that topic.")
       db.exec(query = sql(query = "UPDATE help SET usage=?, content=?, plugin=?, template=? WHERE topic=?"),
@@ -88,9 +88,9 @@ proc showUnknownHelp*(subCommand, command,
   ## RETURNS
   ## Always QuitFailure.
   require:
-    subCommand.len() > 0
-    command.len() > 0
-    helpType.len() > 0
+    subCommand.len > 0
+    command.len > 0
+    helpType.len > 0
   body:
     return showError(message = "Unknown subcommand `" & subCommand &
                 "` for `" & command & "`. To see all available " & helpType &
@@ -146,7 +146,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         row: string = ""
       for key in keys:
         row = row & key & "\t"
-        i.inc()
+        i.inc
         if i == 4:
           table.tabbed(row)
           row = ""
@@ -188,7 +188,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           initLimitedString(capacity = maxInputLength, text = tokens[0])
         except CapacityError:
           return showError(message = "Can't set command for help")
-      key: string = (command & (if args.len() > 0: " " &
+      key: string = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
       dbHelp = try:
           db.getAllRows(query = sql(query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), key)
@@ -196,9 +196,9 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           return showError(message = "Can't read help content from database. Reason: ",
               e = getCurrentException())
     # It there are topic or topics which the user is looking for, show them
-    if dbHelp.len() > 0:
+    if dbHelp.len > 0:
       # There is exactly one topic which the user is looking for, show it
-      if dbHelp.len() == 1:
+      if dbHelp.len == 1:
         var content = dbHelp[0][1]
         # The help content for the selected topic is template, convert some
         # variables in it to the proper values. At this moment only history list
@@ -241,7 +241,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       showHelpList(keys = keys)
       return QuitSuccess.ResultCode
     # The user selected uknown topic, show the uknown command help entry
-    if args.len() > 0:
+    if args.len > 0:
       try:
         result = showUnknownHelp(subCommand = args, command = command,
             helpType = initLimitedString(capacity = maxInputLength, text = (
@@ -298,15 +298,15 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
   ## QuitSuccess if the help entry was successfully added to the database,
   ## otherwise QuitFailure and show message what wrong
   require:
-    topic.len() > 0
-    usage.len() > 0
-    content.len() > 0
-    plugin.len() > 0
+    topic.len > 0
+    usage.len > 0
+    content.len > 0
+    plugin.len > 0
     db != nil
   body:
     try:
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          topic).len() > 0:
+          topic).len > 0:
         return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
       db.exec(query = sql(query = "INSERT INTO help (topic, usage, content, plugin, template) VALUES (?, ?, ?, ?, ?)"),
           topic, usage, content, plugin, (if isTemplate: 1 else: 0))
@@ -361,8 +361,8 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       ## QuitSuccess if the help entry was properly added, otherwise
       ## QuitFailure with information what goes wrong.
       body:
-        if topic.len() > 0 and usage.len() > 0 and content.len() > 0 and
-            plugin.len() > 0:
+        if topic.len > 0 and usage.len > 0 and content.len > 0 and
+            plugin.len > 0:
           try:
             result = addHelpEntry(topic = initLimitedString(
                 capacity = maxInputLength, text = topic),
@@ -381,10 +381,10 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     # Read the help configuration file
     while true:
       try:
-        let entry = parser.next()
+        let entry = parser.next
         case entry.kind
         of cfgSectionStart:
-          if plugin.len() == 0:
+          if plugin.len == 0:
             plugin = entry.section
             continue
           result = addEntry()
@@ -557,12 +557,12 @@ proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
   ## QuitSuccess if the help entry was successfully deleted from the database,
   ## otherwise QuitFailure and show message what wrong
   require:
-    topic.len() > 0
+    topic.len > 0
     db != nil
   body:
     try:
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          topic).len() == 0:
+          topic).len == 0:
         return showError(message = "Can't delete the help entry for topic '" &
             topic & "' because there is no that topic.")
       db.exec(query = sql(query = "DELETE FROM help WHERE topic=?"), topic)
