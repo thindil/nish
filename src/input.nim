@@ -60,11 +60,11 @@ proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
   body:
     result = $inputChar
     try:
-      if inputChar.ord() > 192:
+      if inputChar.ord > 192:
         result.add(y = getch())
-      if inputChar.ord() > 223:
+      if inputChar.ord > 223:
         result.add(y = getch())
-      if inputChar.ord() > 239:
+      if inputChar.ord > 239:
         result.add(y = getch())
     except IOError:
       showError(message = "Can't get the entered Unicode character. Reason: ",
@@ -87,7 +87,7 @@ proc deleteChar*(inputString: var UserInput;
   ## Modified inputString and the new cursor position as cursorPosition
   body:
     var runes = toRunes(s = $inputString)
-    cursorPosition.dec()
+    cursorPosition.dec
     runes.delete(i = cursorPosition)
     try:
       inputString.text = $runes
@@ -114,12 +114,12 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
     try:
       # Arrow left key pressed
       if inputChar == 'D' and cursorPosition > 0:
-        stdout.cursorBackward()
-        cursorPosition.dec()
+        stdout.cursorBackward
+        cursorPosition.dec
       # Arrow right key pressed
       elif inputChar == 'C' and cursorPosition < runeLen(s = $inputString):
-        stdout.cursorForward()
-        cursorPosition.inc()
+        stdout.cursorForward
+        cursorPosition.inc
       # Home key pressed
       elif inputChar == 'H' and cursorPosition > 0:
         stdout.cursorBackward(count = cursorPosition)
@@ -153,7 +153,7 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
   if cursorPosition < runeLen(s = $inputString):
     if insertMode:
       var runes = toRunes(s = $inputString)
-      runes[cursorPosition] = inputRune.toRunes()[0]
+      runes[cursorPosition] = inputRune.toRunes[0]
       try:
         inputString.text = $runes
       except CapacityError:
@@ -161,17 +161,17 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
             e = getCurrentException())
     else:
       var runes = toRunes(s = $inputString)
-      runes.insert(item = inputRune.toRunes()[0], i = cursorPosition)
+      runes.insert(item = inputRune.toRunes[0], i = cursorPosition)
       try:
         inputString.text = $runes
-        cursorPosition.inc()
+        cursorPosition.inc
       except CapacityError:
         showError(message = "Entered input is too long.",
             e = getCurrentException())
   else:
     try:
       inputString.add(y = inputRune)
-      cursorPosition.inc()
+      cursorPosition.inc
     except CapacityError:
       showError(message = "Entered input is too long.", e = getCurrentException())
 
@@ -207,7 +207,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
       cursorPosition: Natural = 0
     # Read the user input until not meet new line character or the input
     # reach the maximum length
-    while inputChar.ord() != 13 and resultString.len() < maxLength:
+    while inputChar.ord != 13 and resultString.len < maxLength:
       # Get the next character from the user's input
       try:
         inputChar = getch()
@@ -216,7 +216,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
             e = getCurrentException())
         return exitString
       # Backspace pressed, delete the last character from the user input
-      if inputChar.ord() == 127:
+      if inputChar.ord == 127:
         # Input is empty or cursor is at first position, do nothing
         if cursorPosition == 0:
           continue
@@ -234,7 +234,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
               e = getCurrentException())
           return exitString
       # Special key pressed (all starts like Escape key), check which one
-      elif inputChar.ord() == 27:
+      elif inputChar.ord == 27:
         try:
           inputChar = getch()
         except IOError:
@@ -242,7 +242,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
               e = getCurrentException())
           return exitString
         # Escape key pressed, return "exit" as input value
-        if inputChar.ord() == 27:
+        if inputChar.ord == 27:
           return exitString
         # Cursor movement keys pressed
         elif inputChar in ['[', 'O']:
@@ -258,7 +258,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
           continue
       # Visible character, add it to the user input string and show it in the
       # console
-      elif inputChar.ord() > 31:
+      elif inputChar.ord > 31:
         let inputRune: string = readChar(inputChar = inputChar)
         try:
           stdout.write(s = inputRune)
@@ -292,7 +292,7 @@ func getArguments*(userInput: var OptParser;
   ##
   ## Properly converted user input and parameter conjCommands
   result = emptyLimitedString(capacity = maxInputLength)
-  userInput.next()
+  userInput.next
   conjCommands = false
   var key: string
   while userInput.kind != cmdEnd:
@@ -311,7 +311,7 @@ func getArguments*(userInput: var OptParser;
         if userInput.kind == cmdLongOption:
           result.add(y = "-")
         result.add(y = "-" & key)
-        if userInput.val.len() > 0:
+        if userInput.val.len > 0:
           result.add(y = "=")
           if userInput.val.contains(sub = " "):
             result.add(y = "\"" & userInput.val & "\"")
@@ -322,7 +322,7 @@ func getArguments*(userInput: var OptParser;
       of cmdEnd:
         discard
       result.add(y = " ")
-      userInput.next()
+      userInput.next
     except CapacityError:
       break
   try:
