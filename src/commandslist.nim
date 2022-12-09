@@ -88,8 +88,8 @@ proc addCommand*(name: UserInput; command: CommandProc;
   ##
   ## The updated parameter commands with the list of available shell's commands
   require:
-    name.len() > 0
-    command != nil or plugin.len() > 0
+    name.len > 0
+    command != nil or plugin.len > 0
   body:
     if $name in commands:
       raise newException(exceptn = CommandsListError,
@@ -114,8 +114,8 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.gcsafe,
   ##
   ## The updated parameter commands with the list of available shell's commands
   require:
-    name.len() > 0
-    commands.len() > 0
+    name.len > 0
+    commands.len > 0
   body:
     if $name notin commands:
       raise newException(exceptn = CommandsListError,
@@ -145,9 +145,9 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
   ##
   ## The updated parameter commands with the list of available shell's commands
   require:
-    name.len() > 0
-    commands.len() > 0
-    command != nil or plugin.len() > 0
+    name.len > 0
+    commands.len > 0
+    command != nil or plugin.len > 0
   body:
     if $name notin commands:
       raise newException(exceptn = CommandsListError,
