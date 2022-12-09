@@ -89,7 +89,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
   ## prefix is empty, or there is no matching file or directory, returns the
   ## same completion parameter.
   body:
-    if prefix.len() == 0:
+    if prefix.len == 0:
       return
     try:
       var amount: Positive = 1
@@ -122,7 +122,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
   ## which match the parameter prefix. If prefix is empty, or there is no
   ## matching file or directory, returns unchanged completion parameter.
   body:
-    if prefix.len() == 0:
+    if prefix.len == 0:
       return
     var amount: Positive = 1
     # Check built-in commands
