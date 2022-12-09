@@ -59,7 +59,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     db != nil
   body:
     try:
-      stdout.eraseLine()
+      stdout.eraseLine
       let
         input: UserInput = try:
             initLimitedString(capacity = maxInputLength, text = strutils.strip(
@@ -97,7 +97,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           inputString = input
           return
         showOutput(message = " ", newLine = false)
-        startIndex.inc()
+        startIndex.inc
         spaceIndex = input.find(sub = ' ', start = startIndex)
         command = try:
             initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
@@ -105,14 +105,14 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
         if spaceIndex == -1:
-          spaceIndex = input.len()
+          spaceIndex = input.len
       let commandArguments: UserInput = try:
             initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
                 1: "" else: $input[spaceIndex..^1]))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
       var color: ForegroundColor = try:
-          if findExe(exe = $command).len() > 0:
+          if findExe(exe = $command).len > 0:
             fgGreen
           else:
             fgRed
