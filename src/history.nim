@@ -68,7 +68,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
     except DbError, ValueError:
       showError(message = "Can't get the length of the shell's commands history. Reason: ",
           e = getCurrentException())
-      return HistoryRange.low()
+      return HistoryRange.low
 
 proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
@@ -92,7 +92,7 @@ proc updateHistory*(commandToAdd: string; db;
   ## The new length of the shell's commands' history.
   require:
     db != nil
-    commandToAdd.len() > 0
+    commandToAdd.len > 0
   body:
     result = historyLength(db = db)
     try:
@@ -107,7 +107,7 @@ proc updateHistory*(commandToAdd: string; db;
       if result == parseInt(s = db.getValue(query = sql(query =
         "SELECT value FROM options where option='historyLength'"))):
         db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
-        result.dec()
+        result.dec
     except DbError, ValueError:
       showError(message = "Can't get value of option historyLength. Reason: ",
           e = getCurrentException())
@@ -125,7 +125,7 @@ proc updateHistory*(commandToAdd: string; db;
           # If command isn't in the history, add it
           db.exec(query = sql(query = "INSERT INTO history (command, amount, lastused, path) VALUES (?, 1, datetime('now'), ?)"),
               commandToAdd, currentDir)
-          result.inc()
+          result.inc
     except DbError, OSError:
       showError(message = "Can't update the shell's history. Reason: ",
           e = getCurrentException())
@@ -156,11 +156,11 @@ proc getHistory*(historyIndex: HistoryRange; db;
   body:
     try:
       # Get the command based on the historyIndex parameter
-      if searchFor.len() == 0:
+      if searchFor.len == 0:
         let value = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
             getCurrentDir(), $(historyLength(db = db) - historyIndex))
-        if value.len() == 0:
+        if value.len == 0:
           result = db.getValue(query = sql(
               query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
               $(historyLength(db = db) - historyIndex))
@@ -171,13 +171,13 @@ proc getHistory*(historyIndex: HistoryRange; db;
         let value = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
             searchFor & "%", getCurrentDir())
-        if value.len() == 0:
+        if value.len == 0:
           result = db.getValue(query = sql(
               query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
               searchFor & "%")
         else:
           result = value
-        if result.len() == 0:
+        if result.len == 0:
           result = $searchFor
     except DbError, OSError:
       showError("Can't get the selected command from the shell's history. Reason: ",
@@ -232,20 +232,20 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
     let
       argumentsList: seq[string] = split(s = $arguments)
       amount: HistoryRange = try:
-          parseInt(s = (if argumentsList.len() > 1: argumentsList[
+          parseInt(s = (if argumentsList.len > 1: argumentsList[
               1] else: db.getValue(query = sql(
                   query = "SELECT value FROM options WHERE option='historyAmount'"))))
         except ValueError, DbError:
           return showError(message = "Can't get setting for the amount of history commands to show.")
       historyDirection: string = try:
-          if argumentsList.len() > 3: (if argumentsList[3] ==
+          if argumentsList.len > 3: (if argumentsList[3] ==
               "true": "ASC" else: "DESC") else:
             if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
                 "true": "ASC" else: "DESC"
         except DbError:
           return showError(message = "Can't get setting for the reverse order of history commands to show.")
       orderText: string = try:
-          if argumentsList.len() > 2: argumentsList[2] else: db.getValue(
+          if argumentsList.len > 2: argumentsList[2] else: db.getValue(
               query = sql(
               query = "SELECT value FROM options WHERE option='historySort'"))
         except DbError:
@@ -275,7 +275,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
     try:
-      table.echoTable()
+      table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show the list of last commands from the shell's history. Reason: ",
           e = getCurrentException())
@@ -321,7 +321,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
         showFormHeader(message = "The search results for '" & searchTerm &
             "' in the history:", width = table.getColumnSizes(
             maxSize = int.high)[0].ColumnAmount, db = db)
-        table.echoTable()
+        table.echoTable
       except IOError, Exception:
         return showError(message = "Can't show the list of search results from history. Reason: ",
             e = getCurrentException())
@@ -433,13 +433,13 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
-        if arguments.len() == 0:
+        if arguments.len == 0:
           return showHelpList(command = "history",
               subcommands = historyCommands)
         # Clear the shell's commands' history
         elif arguments == "clear":
           return clearHistory(db = db)
-        elif arguments.len() > 3:
+        elif arguments.len > 3:
           # Show the last executed shell's commands
           if arguments[0..3] == "list":
             return showHistory(db = db, arguments = arguments)
