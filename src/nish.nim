@@ -409,7 +409,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                   continue
                 # Go to the next line if the last completion in the line reached
                 if currentCompletion mod 3 == 0:
-                  stdout.cursorDown()
+                  stdout.cursorDown
                   stdout.cursorBackward(count = terminalWidth())
                   continue
                 # Move cursor to the next completion
@@ -493,7 +493,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               let line = (if completions.len > 3: (completions.len / 3).int + 1 else: 1)
               stdout.cursorUp(count = (currentCompletion / 3).int)
               for i in 1..line:
-                stdout.cursorDown()
+                stdout.cursorDown
                 stdout.eraseLine
               if line > 0:
                 stdout.cursorUp(count = line)
