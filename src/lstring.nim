@@ -55,7 +55,7 @@ func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
   ## RETURNS
   ##
   ## Updated LimitedString with the new value of the text field.
-  if value.len() > s.capacity:
+  if value.len > s.capacity:
     raise newException(exceptn = CapacityError,
         message = "New value for string is longer than its capacity.")
   s.text = value
@@ -86,7 +86,7 @@ func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [], locks: 0.} 
   ## RETURNS
   ##
   ## The length of the LimitedString, the length of its field text
-  result = s.text.len()
+  result = s.text.len
 
 func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
     tags: [], locks: 0.} =
@@ -105,7 +105,7 @@ func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
   ## RETURNS
   ##
   ## Updated parameter s
-  if y.len() + s.text.len() > s.capacity:
+  if y.len + s.text.len > s.capacity:
     raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
   s.text = s.text & y
@@ -127,7 +127,7 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
   ## RETURNS
   ##
   ## Updated parameter s
-  if s.text.len() == s.capacity:
+  if s.text.len == s.capacity:
     raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
   s.text = s.text & y
@@ -148,7 +148,7 @@ func initLimitedString*(capacity: Positive;
   ## RETURNS
   ##
   ## The new LimitedString with the selected capacity and content
-  if text.len() > capacity:
+  if text.len > capacity:
     raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
   return LimitedString(capacity: capacity, text: text)
@@ -183,7 +183,7 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
   ## The new LimitedString with the slice with the selected range
   let
     newValue: string = s.text[x]
-    length: Positive = (if newValue.len() == 0: 1 else: newValue.len())
+    length: Positive = (if newValue.len == 0: 1 else: newValue.len)
   return LimitedString(capacity: length, text: newValue)
 
 func `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
@@ -338,7 +338,7 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
   ## The updated paramater x
   let oldValue: string = x.text
   x.text.insert(item = item, i = i)
-  if x.text.len() > x.capacity:
+  if x.text.len > x.capacity:
     x.text = oldValue
     raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
