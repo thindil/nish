@@ -52,7 +52,7 @@ proc getFormattedDir*(): DirectoryPath {.gcsafe, sideEffect, raises: [], tags: [
       let homeIndex: ExtendedNatural = result.find(sub = homeDirectory)
       if homeIndex > -1:
         return DirectoryPath("~/" & result.string[homeIndex +
-                homeDirectory.len()..^1])
+                homeDirectory.len..^1])
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode; db: DbConn): Natural {.gcsafe, sideEffect, raises: [],
@@ -89,11 +89,11 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
           showError(message = "Can't execute external command as the shell's prompt.")
           return
         if output.endsWith(suffix = '\n'):
-          output.stripLineEnd()
+          output.stripLineEnd
           stdout.writeLine(output)
           return
         stdout.write(output)
-        return output.len()
+        return output.len
     except CapacityError, Exception:
       showError(message = "Can't get command for prompt. Reason: ",
           e = getCurrentException())
@@ -106,7 +106,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         stdout.write(s = $currentDirectory)
       except IOError:
         discard
-    result = currentDirectory.len()
+    result = currentDirectory.len
     if previousCommand != "" and resultCode != QuitSuccess:
       let resultString = $resultCode
       try:
@@ -116,7 +116,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
           stdout.write(s = "[" & resultString & "]")
         except IOError:
           discard
-      result = result + 2 + resultString.len()
+      result = result + 2 + resultString.len
     try:
       stdout.styledWrite(fgBlue, "# ")
     except ValueError, IOError:
