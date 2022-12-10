@@ -76,14 +76,14 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
   ## The value of the selected option or empty string if there is no that
   ## option in the database.
   require:
-    optionName.len() > 0
+    optionName.len > 0
     db != nil
   body:
     try:
       let value = db.getValue(query = sql(
           query = "SELECT value FROM options WHERE option=?"), optionName)
-      result = initLimitedString(capacity = (if value.len() ==
-          0: 1 else: value.len()), text = value)
+      result = initLimitedString(capacity = (if value.len ==
+          0: 1 else: value.len), text = value)
     except DbError, CapacityError:
       showError(message = "Can't get value for option '" & optionName &
           "' from database. Reason: ", e = getCurrentException())
@@ -110,18 +110,18 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
   ## * valuetype   - the type of the option to set
   ## * db          - the connection to the shell's database
   require:
-    optionName.len() > 0
+    optionName.len > 0
     db != nil
   body:
     var sqlQuery: string = "UPDATE options SET "
     if value != "":
       sqlQuery.add(y = "value='" & value & "'")
     if description != "":
-      if sqlQuery.len() > 21:
+      if sqlQuery.len > 21:
         sqlQuery.add(y = ", ")
       sqlQuery.add(y = "description='" & description & "'")
     if valueType != none:
-      if sqlQuery.len() > 21:
+      if sqlQuery.len > 21:
         sqlQuery.add(y = ", ")
       sqlQuery.add(y = "valuetype='" & $valueType & "'")
     sqlQuery.add(y = " WHERE option='" & optionName & "'")
@@ -158,7 +158,7 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
     try:
-      table.echoTable()
+      table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show the list of shell's options. Reason: ",
           e = getCurrentException())
@@ -181,10 +181,10 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ##
   ## QuitSuccess if the variable was correctly set, otherwise QuitFailure.
   require:
-    arguments.len() > 0
+    arguments.len > 0
     db != nil
   body:
-    if arguments.len() < 5:
+    if arguments.len < 5:
       return showError(message = "Please enter name of the option and its new value.")
     let separatorIndex: ExtendedNatural = arguments.find(sub = ' ', start = 4)
     if separatorIndex == -1:
@@ -284,10 +284,10 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ##
   ## QuitSuccess if the variable(s) correctly reseted, otherwise QuitFailure.
   require:
-    arguments.len() > 0
+    arguments.len > 0
     db != nil
   body:
-    if arguments.len() < 7:
+    if arguments.len < 7:
       return showError("Please enter name of the option to reset or 'all' to reset all options.")
     let optionName: OptionName = arguments[6 .. ^1]
     # Reset all options
@@ -396,7 +396,7 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitSuccess if deletion was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
-    optionName.len() > 0
+    optionName.len > 0
     db != nil
   body:
     try:
@@ -439,7 +439,7 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect, locks: 0,
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
-        if arguments.len() == 0:
+        if arguments.len == 0:
           return showHelpList(command = "options",
               subcommands = optionsCommands)
         # Show the list of available options
