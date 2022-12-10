@@ -111,8 +111,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
   ## executed, otherwise QuitFailure and LimitedString with the plugin's
   ## answer.
   require:
-    pluginPath.len() > 0
-    arguments.len() > 0
+    pluginPath.len > 0
+    arguments.len > 0
     db != nil
   body:
     let
@@ -140,7 +140,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## This procedure always returns true
       body:
         let color = try:
-            if options.len() == 1:
+            if options.len == 1:
               fgDefault
             else:
               parseEnum[ForegroundColor](options[1])
@@ -187,7 +187,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the option was properly added or updated, otherwise false
       ## with information what happened
       body:
-        if options.len() < 4:
+        if options.len < 4:
           showError(message = "Insufficient arguments for setOption.")
           return false
         try:
@@ -218,7 +218,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the option was properly removed, otherwise false with
       ## information what happened
       body:
-        if options.len() == 0:
+        if options.len == 0:
           showError(message = "Insufficient arguments for removeOption.")
           return false
         try:
@@ -248,13 +248,13 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the value of the option was properly sent to the plugin,
       ## otherwise false with information what happened
       body:
-        if options.len() == 0:
+        if options.len == 0:
           showError(message = "Insufficient arguments for getOption.")
           return false
         try:
           plugin.inputStream.write($getOption(optionName = initLimitedString(
               capacity = maxNameLength, text = options[0]), db = db) & "\n")
-          plugin.inputStream.flush()
+          plugin.inputStream.flush
         except CapacityError, IOError, OSError:
           showError(message = "Can't get the value of the selected option. Reason: ",
               e = getCurrentException())
@@ -276,7 +276,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the command was properly added, otherwise false with
       ## information what happened
       body:
-        if options.len() == 0:
+        if options.len == 0:
           showError(message = "Insufficient arguments for addCommand.")
           return false
         try:
@@ -305,7 +305,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the command was properly deleted, otherwise false with
       ## information what happened
       body:
-        if options.len() == 0:
+        if options.len == 0:
           showError(message = "Insufficient arguments for deleteCommand.")
           return false
         try:
@@ -333,7 +333,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the command was properly replaced, otherwise false with
       ## information what happened
       body:
-        if options.len() == 0:
+        if options.len == 0:
           showError(message = "Insufficient arguments for replaceCommand.")
           return false
         try:
@@ -363,7 +363,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the help entry was properly added, otherwise false with
       ## information what happened
       body:
-        if options.len() < 3:
+        if options.len < 3:
           showError(message = "Insufficient arguments for addHelp.")
           return false
         try:
@@ -395,7 +395,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the help entry was properly deleted, otherwise false with
       ## information what happened
       body:
-        if options.len() == 0:
+        if options.len == 0:
           showError(message = "Insufficient arguments for deleteHelp.")
           return false
         try:
@@ -424,7 +424,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## True if the help entry was properly updated, otherwise false with
       ## information what happened
       body:
-        if options.len() < 3:
+        if options.len < 3:
           showError(message = "Insufficient arguments for updateHelp.")
           return false
         try:
@@ -457,18 +457,18 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     try:
       # Read the plugin response and act accordingly to it
       for line in plugin.lines:
-        var options = initOptParser(cmdline = line.strip())
+        var options = initOptParser(cmdline = line.strip)
         while true:
-          options.next()
+          options.next
           # If the plugin sent a valid request, execute it
           if apiCalls.hasKey(key = options.key):
-            if not apiCalls[options.key](options = options.remainingArgs()):
+            if not apiCalls[options.key](options = options.remainingArgs):
               break
           # Set the answer from the plugin. The argument is the plugin's answer
           # with semicolon limited values
           elif options.key == "answer":
-            let remainingOptions = options.remainingArgs()
-            if remainingOptions.len() == 0:
+            let remainingOptions = options.remainingArgs
+            if remainingOptions.len == 0:
               showError(message = "Insufficient arguments for answer.")
               break
             result.answer = initLimitedString(capacity = remainingOptions[
@@ -481,12 +481,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     except OSError, IOError, Exception:
       return (showError(message = "Can't get the plugin '" & pluginPath &
           "' output. Reason: ", e = getCurrentException()), emptyAnswer)
-    if plugin.peekExitCode().ResultCode == 2:
+    if plugin.peekExitCode.ResultCode == 2:
       return (showError(message = "Plugin '" & pluginPath &
           "' doesn't support API command '" & arguments[0] & "'"), emptyAnswer)
-    result.code = plugin.peekExitCode().ResultCode
+    result.code = plugin.peekExitCode.ResultCode
     try:
-      plugin.close()
+      plugin.close
     except OSError, IOError, Exception:
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
@@ -511,7 +511,7 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.gcsafe,
   ## PluginData object with information about the selected plugin or an empty
   ## object if the plugin isn't compatible with the shell's API
   require:
-    pluginPath.len() > 0
+    pluginPath.len > 0
     db != nil
   body:
     let pluginData = execPlugin(pluginPath = pluginPath, arguments = ["info"],
@@ -519,7 +519,7 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.gcsafe,
     if pluginData.code == QuitFailure:
       return
     let pluginInfo = split(s = $pluginData.answer, sep = ";")
-    if pluginInfo.len() < 4:
+    if pluginInfo.len < 4:
       return
     try:
       if parseFloat(s = pluginInfo[2]) < minApiVersion:
@@ -548,10 +548,10 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
   ## QuitFailure. Also, updated parameter pluginsList
   require:
     db != nil
-    arguments.len() > 0
+    arguments.len > 0
   body:
     # Check if the user entered path to the plugin
-    if arguments.len() < 5:
+    if arguments.len < 5:
       return showError(message = "Please enter the path to the plugin which will be added to the shell.")
     let pluginPath: string = try:
         normalizedPath(path = getCurrentDir() & DirSep & $arguments[4..^1])
@@ -568,7 +568,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
       # Check if the plugin can be added
       let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
-      if newPlugin.path.len() == 0:
+      if newPlugin.path.len == 0:
         return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.")
       # Add the plugin to the shell database
       db.exec(query = sql(query = "INSERT INTO plugins (location, enabled, precommand, postcommand) VALUES (?, 1, ?, ?)"),
@@ -612,10 +612,10 @@ proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
   ## QuitFailure. Also, updated parameter pluginsList
   require:
     db != nil
-    arguments.len() > 0
+    arguments.len > 0
   body:
     # Check if the user entered proper amount of arguments to the command
-    if arguments.len() < 8:
+    if arguments.len < 8:
       return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
     let
       pluginId: DatabaseId = try:
@@ -628,7 +628,7 @@ proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
           return showError(message = "Can't get plugin's Id from database. Reason: ",
             e = getCurrentException())
     try:
-      if pluginPath.len() == 0:
+      if pluginPath.len == 0:
         return showError(message = "The plugin with the Id: " & $pluginId &
           " doesn't exist.")
       # Execute the disabling code of the plugin first
@@ -670,13 +670,13 @@ proc togglePlugin*(db; arguments; disable: bool = true;
   ## otherwise QuitFailure. Also, updated parameter pluginsList
   require:
     db != nil
-    arguments.len() > 0
+    arguments.len > 0
   body:
     let
       idStart: int = (if disable: 8 else: 7)
       actionName: string = (if disable: "disable" else: "enable")
     # Check if the user entered proper amount of arguments
-    if arguments.len() < (idStart + 1):
+    if arguments.len < (idStart + 1):
       return showError(message = "Please enter the Id to the plugin which will be " &
           actionName & ".")
     let
@@ -692,12 +692,12 @@ proc togglePlugin*(db; arguments; disable: bool = true;
             e = getCurrentException())
     try:
       # Check if plugin exists
-      if pluginPath.len() == 0:
+      if pluginPath.len == 0:
         return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
       # Check if plugin can be enabled due to version of API
       let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
-      if newPlugin.path.len() == 0 and not disable:
+      if newPlugin.path.len == 0 and not disable:
         return showError(message = "Can't enable plugin with Id: " & $pluginId & " because its API version is incompatible with the shell's version.")
       # Execute the enabling or disabling code of the plugin
       if actionName in newPlugin.api:
@@ -715,7 +715,7 @@ proc togglePlugin*(db; arguments; disable: bool = true;
       else:
         let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
             commands = commands)
-        if newPlugin.path.len() == 0:
+        if newPlugin.path.len == 0:
           return QuitFailure.ResultCode
     except DbError:
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
@@ -742,7 +742,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
   ## QuitSuccess if the list of plugins was properly show, otherwise
   ## QuitFailure.
   require:
-    arguments.len() > 3
+    arguments.len > 3
     db != nil
   body:
     var table: TerminalTable
@@ -777,7 +777,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
       showFormHeader(message = "Enabled plugins are:",
           width = width.ColumnAmount, db = db)
     try:
-      table.echoTable()
+      table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show the list of plugins. Reason: ",
           e = getCurrentException())
@@ -801,10 +801,10 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [], 
   ## QuitSuccess if the selected plugin was properly show, otherwise
   ## QuitFailure.
   require:
-    arguments.len() > 0
+    arguments.len > 0
     db != nil
   body:
-    if arguments.len() < 6:
+    if arguments.len < 6:
       return showError(message = "Enter the ID of the plugin to show.")
     let id: DatabaseId = try:
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
@@ -837,7 +837,7 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [], 
     else:
       table.add(magenta("API version:"), "0.1")
     try:
-      table.echoTable()
+      table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show plugin info. Reason: ",
           e = getCurrentException())
@@ -882,7 +882,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
-        if arguments.len() == 0:
+        if arguments.len == 0:
           return showHelpList(command = "plugin", subcommands = pluginsCommands)
         # Add a new plugin
         elif arguments.startsWith(prefix = "add"):
@@ -927,7 +927,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
         if dbResult[2] == "1":
           let newPlugin = checkPlugin(pluginPath = dbResult[1], db = db,
               commands = commands)
-          if newPlugin.path.len() == 0:
+          if newPlugin.path.len == 0:
             db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
                 dbResult[0])
             showError(message = "Plugin '" & dbResult[1] & "' isn't compatible with the current version of shell's API and will be disabled.")
