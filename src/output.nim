@@ -73,7 +73,7 @@ proc showOutput*(message; newLine: bool = true;
           stdout.writeLine(x = "")
         except IOError:
           discard
-    stdout.flushFile()
+    stdout.flushFile
 
 proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect], discardable, contractual.} =
@@ -143,9 +143,9 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
       of "unicode":
         table.echoTableSeps(seps = boxSeps)
       of "ascii":
-        table.echoTableSeps()
+        table.echoTableSeps
       of "none":
-        table.echoTable()
+        table.echoTable
       else:
         discard
     except DbError, IOError, Exception:
