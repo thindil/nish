@@ -68,8 +68,8 @@ proc buildQuery*(directory: DirectoryPath; fields: string;
   ##
   ## The string with database's query for the selected directory and fields
   require:
-    directory.len() > 0
-    fields.len() > 0
+    directory.len > 0
+    fields.len > 0
   body:
     result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
     var remainingDirectory: DirectoryPath = parentDir(
@@ -82,7 +82,7 @@ proc buildQuery*(directory: DirectoryPath; fields: string;
       remainingDirectory = parentDir($remainingDirectory).DirectoryPath
 
     # If optional arguments entered, add them to the query
-    if where.len() > 0:
+    if where.len > 0:
       result.add(y = " " & where)
 
     result.add(y = " ORDER BY id ASC")
@@ -104,20 +104,20 @@ proc setVariables*(newDirectory: DirectoryPath; db;
   ## * oldDirectory - the old directory in which environment variables will be
   ##                  removed. Can be empty. Default value is empty
   require:
-    newDirectory.len() > 0
+    newDirectory.len > 0
     db != nil
   body:
     var skipped: seq[string]
 
     # Remove the old environment variables if needed
-    if oldDirectory.len() > 0:
+    if oldDirectory.len > 0:
       try:
         for dbResult in db.fastRows(query = sql(query = buildQuery(
             directory = oldDirectory, fields = "name, value"))):
           let existingVariable: Row = db.getRow(query = sql(query = buildQuery(
               directory = newDirectory, fields = "id", where = "AND name='" &
                   dbResult[0] & "' AND value='" & dbResult[1] & "'")))
-          if existingVariable.len() == 0:
+          if existingVariable.len == 0:
             delEnv(key = dbResult[0])
           else:
             skipped.add(existingVariable[0])
@@ -134,17 +134,17 @@ proc setVariables*(newDirectory: DirectoryPath; db;
           value: string = dbResult[1]
           variableIndex: ExtendedNatural = value.find(sub = '$')
         # Convert all environment variables inside the variable to their values
-        while variableIndex in 0..(value.len() - 1):
+        while variableIndex in 0..(value.len - 1):
           var variableEnd: ExtendedNatural = variableIndex + 1
           # Variables names can start only with letters
           if not isAlphaAscii(value[variableEnd]):
             variableIndex = value.find(sub = '$', start = variableEnd)
             continue
           # Variables names can contain only letters and numbers
-          while variableEnd < value.len() and value[variableEnd].isAlphaNumeric():
-            variableEnd.inc()
-          if variableEnd > value.len():
-            variableEnd = value.len()
+          while variableEnd < value.len and value[variableEnd].isAlphaNumeric:
+            variableEnd.inc
+          if variableEnd > value.len:
+            variableEnd = value.len
           let variableName: string = value[variableIndex + 1..variableEnd - 1]
           value[variableIndex..variableEnd - 1] = getEnv(variableName)
           variableIndex = value.find(sub = '$', start = variableEnd)
@@ -169,10 +169,10 @@ proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitSuccess if the environment variable was successfully set, otherwise
   ## QuitFailure
   body:
-    if arguments.len() == 0:
+    if arguments.len == 0:
       return showError(message = "You have to enter the name of the variable and its value.")
     let varValues: seq[string] = split(s = $arguments, sep = '=')
-    if varValues.len() < 2:
+    if varValues.len < 2:
       return showError(message = "You have to enter the name of the variable and its value.")
     try:
       putEnv(key = varValues[0], val = varValues[1])
@@ -199,7 +199,7 @@ proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
   ## QuitSuccess if the environment variable was successfully unset, otherwise
   ## QuitFailure
   body:
-    if arguments.len() == 0:
+    if arguments.len == 0:
       return showError(message = "You have to enter the name of the variable to unset.")
     try:
       delEnv(key = $arguments)
@@ -227,7 +227,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   ##
   ## QuitSucces if variables are properly listed, otherwise QuitFailure
   require:
-    arguments.len() > 0
+    arguments.len > 0
     db != nil
   body:
     var table: TerminalTable
@@ -262,7 +262,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       showFormHeader(message = "Declared environent variables are:",
           width = width.ColumnAmount, db = db)
     try:
-      table.echoTable()
+      table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show the list of declared shell's environment variables. Reason: ",
           e = getCurrentException())
@@ -285,10 +285,10 @@ proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
   ## QuitSuccess if the environment variable was successfully deleted, otherwise
   ## QuitFailure.
   require:
-    arguments.len() > 0
+    arguments.len > 0
     db != nil
   body:
-    if arguments.len() < 8:
+    if arguments.len < 8:
       return showError(message = "Enter the Id of the variable to delete.")
     let varId: DatabaseId = try:
         parseInt($arguments[7 .. ^1]).DatabaseId
@@ -337,9 +337,9 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
     var name: VariableName = emptyLimitedString(capacity = variableNameLength)
     showOutput(message = "Name: ", newLine = false)
-    while name.len() == 0:
+    while name.len == 0:
       name = readInput(maxLength = variableNameLength)
-      if name.len() == 0:
+      if name.len == 0:
         showError(message = "Please enter a name for the variable.")
       elif not validIdentifier(s = $name):
         try:
@@ -347,7 +347,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
           showError(message = "Please enter a valid name for the variable.")
         except CapacityError:
           showError(message = "Can't set empty name for variable.")
-      if name.len() == 0:
+      if name.len == 0:
         showOutput(message = "Name: ", newLine = false)
     if name == "exit":
       return showError(message = "Adding a new variable cancelled.")
@@ -363,14 +363,14 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "".DirectoryPath
-    while path.len() == 0:
+    while path.len == 0:
       path = DirectoryPath($readInput())
-      if path.len() == 0:
+      if path.len == 0:
         showError(message = "Please enter a path for the alias.")
       elif not dirExists(dir = $path) and path != "exit":
         path = "".DirectoryPath
         showError(message = "Please enter a path to the existing directory")
-      if path.len() == 0:
+      if path.len == 0:
         showOutput(message = "Path: ", newLine = false)
     if path == "exit":
       return showError(message = "Adding a new variable cancelled.")
@@ -397,9 +397,9 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
     showOutput(message = "Value: ", newLine = false)
     var value: UserInput = emptyLimitedString(capacity = maxInputLength)
-    while value.len() == 0:
+    while value.len == 0:
       value = readInput()
-      if value.len() == 0:
+      if value.len == 0:
         showError(message = "Please enter value for the variable.")
         showOutput(message = "Value: ", newLine = false)
     if value == "exit":
@@ -407,7 +407,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Check if variable with the same parameters exists in the database
     try:
       if db.getValue(query = sql(query = "SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?"),
-          name, path, recursive, value).len() > 0:
+          name, path, recursive, value).len > 0:
         return showError(message = "There is a variable with the same name, path and value in the database.")
     except DbError:
       return showError(message = "Can't check if the same variable exists in the database. Reason: ",
@@ -448,10 +448,10 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   ## QuitSuccess if the environment variable was successfully updated, otherwise
   ## QuitFailure.
   require:
-    arguments.len() > 0
+    arguments.len > 0
     db != nil
   body:
-    if arguments.len() < 6:
+    if arguments.len < 6:
       return showError(message = "Enter the ID of the variable to edit.")
     let varId: DatabaseId = try:
         parseInt($arguments[7 .. ^1]).DatabaseId
@@ -471,9 +471,9 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       except CapacityError:
         return showError(message = "Can't set name of the variable")
     showOutput(message = "Name: ", newLine = false)
-    while name.len() > 0:
+    while name.len > 0:
       name = readInput(maxLength = variableNameLength)
-      if name.len() > 0 and not validIdentifier(s = $name):
+      if name.len > 0 and not validIdentifier(s = $name):
         showError(message = "Please enter a valid name for the variable.")
         showOutput(message = "Name: ", newLine = false)
       else:
@@ -503,9 +503,9 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         row[1] & "'. Must be a path to the existing directory.:")
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "exit".DirectoryPath
-    while path.len() > 0:
+    while path.len > 0:
       path = DirectoryPath($readInput())
-      if path.len() > 0 and not dirExists(dir = $path) and path != "exit":
+      if path.len > 0 and not dirExists(dir = $path) and path != "exit":
         showError(message = "Please enter a path to the existing directory")
         showOutput(message = "Path: ", newLine = false)
       else:
@@ -641,7 +641,7 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
-        if arguments.len() == 0:
+        if arguments.len == 0:
           return showHelpList(command = "variable",
               subcommands = variablesCommands)
         # Show the list of declared environment variables
