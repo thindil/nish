@@ -21,7 +21,7 @@ if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 1:
     quit("Can't add the second test alias.")
 initAliases(db, myaliases, commands)
 
-open("sometest.txt", fmWrite).close()
+open("sometest.txt", fmWrite).close
 getDirCompletion("somete", completions, db)
 removeFile("sometest.txt")
 assert completions == @["sometest.txt"], "Failed to get Tab completion for a file."
