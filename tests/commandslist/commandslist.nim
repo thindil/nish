@@ -26,21 +26,21 @@ proc testCommand*(arguments: UserInput; db: DbConn;
 # Add a command
 addCommand(name = initLimitedString(capacity = 4, text = "test"),
     command = testCommand, commands = commands)
-assert commands.len() == 1, "Failed to add a new command."
+assert commands.len == 1, "Failed to add a new command."
 # Try to add again the same command
 try:
   addCommand(name = initLimitedString(capacity = 4, text = "test"),
       command = testCommand, commands = commands)
 except CommandsListError:
   discard
-assert commands.len() == 1, "Failed to not add an existing command."
+assert commands.len == 1, "Failed to not add an existing command."
 # Try to replace built-in command
 try:
   addCommand(name = initLimitedString(capacity = 4, text = "exit"),
       command = testCommand, commands = commands)
 except CommandsListError:
   discard
-assert commands.len() == 1, "Failed to not replace a built-in command."
+assert commands.len == 1, "Failed to not replace a built-in command."
 
 proc testCommand2(arguments: UserInput; db: DbConn;
     list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
@@ -60,16 +60,16 @@ except CommandsListError:
 # Delete the command
 deleteCommand(name = initLimitedString(capacity = 4, text = "test"),
     commands = commands)
-assert commands.len() == 0, "Failed to delete a command."
+assert commands.len == 0, "Failed to delete a command."
 # Try to delete non-existing command
 addCommand(name = initLimitedString(capacity = 5, text = "test2"),
     command = testCommand, commands = commands)
-assert commands.len() == 1, "Failed to not delete a non-existing command"
+assert commands.len == 1, "Failed to not delete a non-existing command"
 try:
   deleteCommand(name = initLimitedString(capacity = 4, text = "test"),
       commands = commands)
 except CommandsListError:
   discard
-assert commands.len() == 1, "Failed to not delete a previously delete command"
+assert commands.len == 1, "Failed to not delete a previously delete command"
 
 quitShell(ResultCode(QuitSuccess), db)
