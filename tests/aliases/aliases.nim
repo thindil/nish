@@ -22,7 +22,7 @@ if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 1:
     quit("Can't add the second test alias.")
 
 initAliases(db, myaliases, commands)
-assert myaliases.len() == 1, "Failed to set aliases for current directory."
+assert myaliases.len == 1, "Failed to set aliases for current directory."
 
 
 assert deleteAlias(initLimitedString(capacity = 8, text = "delete 2"),
