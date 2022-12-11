@@ -15,6 +15,6 @@ assert "/new" & path == "/new/test/path", "Failed to prepend a string to a path.
 assert path.find("e".DirectoryPath) == 2, "Failed to find a substring in a path."
 assert path.find("z".DirectoryPath) == -1, "Failed to not find a substring in a path."
 
-assert path.len() == 10, "Failed to get the length of a path."
+assert path.len == 10, "Failed to get the length of a path."
 
 assert $path == "/test/path", "Failed to convert a path to a string."
