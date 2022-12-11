@@ -9,7 +9,7 @@ assert db != nil, "Failed to initialize the database."
 var commands = newTable[string, CommandData]()
 
 initHelp(db, commands)
-assert commands.len() == 2, "Failed to initialize the help system."
+assert commands.len == 2, "Failed to initialize the help system."
 
 discard deleteHelpEntry(initLimitedString(capacity = 4, text = "test"), db)
 assert addHelpEntry(initLimitedString(capacity = 4, text = "test"),
