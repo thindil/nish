@@ -232,7 +232,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         try:
           if parseInt(s = $value) < 0:
             return showError(message = "Value for option '" & optionName &
-                "' should be integer type and greater than zero.")
+                "' should be a natural integer, zero or more.")
         except:
           return showError(message = "Value for option '" & optionName &
               "' should be integer type.")
