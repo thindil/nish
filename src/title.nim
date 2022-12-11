@@ -53,6 +53,6 @@ proc setTitle*(title: string; db: DbConn) {.gcsafe, sideEffect, raises: [],
       return
     try:
       stdout.write(s = "\e]2;" & title & "\a")
-      stdout.flushFile()
+      stdout.flushFile
     except IOError:
       discard
