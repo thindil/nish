@@ -11,18 +11,18 @@ var commands = newTable[string, CommandData]()
 discard initHistory(db, commands)
 
 initOptions(commands)
-assert commands.len() > 0
+assert commands.len > 0
 
 assert getOption(initLimitedString(capacity = 13, text = "historyLength"),
-    db).len() > 0, "Failed to get value of an option."
-assert getOption(initLimitedString(capacity = 10, text = "werweewfwe"), db).len() ==
+    db).len > 0, "Failed to get value of an option."
+assert getOption(initLimitedString(capacity = 10, text = "werweewfwe"), db).len ==
     0, "Failed to not get a value of a non-existing option."
 
 let optionName = initLimitedString(capacity = 10, text = "testOption")
 setOption(optionName = optionName, value = initLimitedString(capacity = 3,
     text = "200"), db = db)
 assert deleteOption(optionName, db) == QuitSuccess, "Failed to delete an option."
-assert getOption(optionName, db).len() == 0, "Failed to not get a deleted option."
+assert getOption(optionName, db).len == 0, "Failed to not get a deleted option."
 
 setOption(optionName = initLimitedString(capacity = 13, text = "historyLength"),
     value = initLimitedString(capacity = 3, text = "100"), db = db)
