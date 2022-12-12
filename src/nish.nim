@@ -133,7 +133,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       description: string
       optionType: ValueType
       readOnly: bool
-    const options: array[6, Option] = [Option(name: "dbVersion", value: "3",
+    const options: array[7, Option] = [Option(name: "dbVersion", value: "3",
         description: "Version of the database schema (read only).",
         optionType: ValueType.natural, readOnly: true), Option(
         name: "promptCommand", value: "built-in",
@@ -150,7 +150,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         optionType: ValueType.natural, readOnly: false), Option(
         name: "outputHeaders", value: "unicode",
         description: "How to present the headers of commands.",
-        optionType: ValueType.header, readOnly: false)]
+        optionType: ValueType.header, readOnly: false), Option(
+        name: "helpColumns", value: "3",
+        description: "The amount of columns for help list command.",
+        optionType: ValueType.positive, readOnly: false)]
     # Create a new database if not exists
     if not dbExists:
       if result.createAliasesDb == QuitFailure:
@@ -203,7 +206,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       of 2:
         if result.updatePluginsDb == QuitFailure:
           return nil
-        for i in [0, 2, 3, 4, 5]:
+        for i in options.low..options.high:
+          if i == 1:
+            continue
           setOption(optionName = initLimitedString(capacity = 40,
               text = options[i].name), value = initLimitedString(capacity = 40,
               text = options[i].value), description = initLimitedString(
@@ -647,7 +652,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         quitShell(returnCode = returnCode, db = db)
       cursorPosition = runeLen(s = $inputString)
     except:
-      showError(message = "Internal shell error. Additional details: ", e = getCurrentException())
+      showError(message = "Internal shell error. Additional details: ",
+          e = getCurrentException())
 
 when isMainModule:
   main()
