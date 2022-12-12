@@ -21,11 +21,11 @@ assert addPlugin(db, initLimitedString(capacity = 26,
 
 assert checkPlugin("tools/testplugin.sh", db, commands).path ==
     "tools/testplugin.sh", "Failed to check a plugin."
-assert checkPlugin("sdfsdfds.df", db, commands).path.len() == 0, "Failed to not check a non-existing plugin."
+assert checkPlugin("sdfsdfds.df", db, commands).path.len == 0, "Failed to not check a non-existing plugin."
 
 assert execPlugin("tools/testplugin.sh", ["init"], db, commands).code ==
     QuitSuccess, "Failed to execute initialization of a plugin."
-assert execPlugin("tools/testplugin.sh", ["info"], db, commands).answer.len() >
+assert execPlugin("tools/testplugin.sh", ["info"], db, commands).answer.len >
     0, "Failed to get info about a plugin."
 
 assert listPlugins(initLimitedString(capacity = 4, text = "list"), db) ==
