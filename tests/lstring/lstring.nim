@@ -17,7 +17,7 @@ block:
 
 block:
   let testString: LimitedString = initLimitedString(capacity = 14, text = "test")
-  assert testString.len() == 4, "Failed to get the length of LimitedString."
+  assert testString.len == 4, "Failed to get the length of LimitedString."
   assert testString.capacity == 14, "Failed to get the capacity of LimitedString."
 
 block:
@@ -65,7 +65,7 @@ block:
 
 block:
   let testString: LimitedString = initLimitedString(capacity = 14, text = "test")
-  assert testString.len() == 4, "Failed to get length of LimitedString."
+  assert testString.len == 4, "Failed to get length of LimitedString."
   assert testString.capacity == 14, "Failed to get capacity of LimitedString"
 
 block:
