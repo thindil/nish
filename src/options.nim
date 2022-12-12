@@ -48,7 +48,7 @@ type
     ## FUNCTION
     ##
     ## Used to set the type of option's value
-    integer, float, boolean, none, historysort, natural, text, command, header
+    integer, float, boolean, none, historysort, natural, text, command, header, positive
 
 using
   db: DbConn # Connection to the shell's database
@@ -254,6 +254,14 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
               optionName & "'. Reason: ", e = getCurrentException())
         if $value notin ["unicode", "ascii", "none", "hidden"]:
           return showError(message = "Value for option '" & optionName & "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)")
+      of "positive":
+        try:
+          if parseInt(s = $value) < 1:
+            return showError(message = "Value for option '" & optionName &
+                "' should be a positive integer, one or more.")
+        except:
+          return showError(message = "Value for option '" & optionName &
+              "' should be integer type.")
       of "":
         return showError(message = "Shell's option with name '" & optionName &
           "' doesn't exists. Please use command 'options list' to see all available shell's options.")
