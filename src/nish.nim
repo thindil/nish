@@ -151,7 +151,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         name: "outputHeaders", value: "unicode",
         description: "How to present the headers of commands.",
         optionType: ValueType.header, readOnly: false), Option(
-        name: "helpColumns", value: "3",
+        name: "helpColumns", value: "5",
         description: "The amount of columns for help list command.",
         optionType: ValueType.positive, readOnly: false)]
     # Create a new database if not exists
