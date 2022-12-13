@@ -270,7 +270,7 @@ proc showHelpList*(command: string; subcommands: openArray[
   ##
   ## This procedure always return QuitSuccess
   body:
-    showOutput(message = "Available subcommands for '" & command & "' are': ",
+    showOutput(message = "Available subcommands for '" & command & "' are: ",
         fgColor = fgYellow)
     showOutput(message = subcommands.join(sep = ", "))
     showOutput(message = " ")
