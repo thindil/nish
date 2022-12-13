@@ -133,7 +133,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       description: string
       optionType: ValueType
       readOnly: bool
-    const options: array[7, Option] = [Option(name: "dbVersion", value: "3",
+    const options: array[8, Option] = [Option(name: "dbVersion", value: "3",
         description: "Version of the database schema (read only).",
         optionType: ValueType.natural, readOnly: true), Option(
         name: "promptCommand", value: "built-in",
@@ -153,6 +153,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         optionType: ValueType.header, readOnly: false), Option(
         name: "helpColumns", value: "5",
         description: "The amount of columns for help list command.",
+        optionType: ValueType.positive, readOnly: false), Option(
+        name: "completionColumns", value: "5",
+        description: "The amount of columns for Tab completion list.",
         optionType: ValueType.positive, readOnly: false)]
     # Create a new database if not exists
     if not dbExists:
