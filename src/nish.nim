@@ -374,22 +374,28 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     e = getCurrentException())
             else:
               try:
+                let columnsAmount = try:
+                    parseInt(s = $getOption(optionName = initLimitedString(
+                        capacity = 17, text = "completionColumns"), db = db,
+                        defaultValue = initLimitedString(capacity = 2, text = "5")))
+                  except CapacityError, ValueError:
+                    5
                 # If Tab pressed the first time, show the list of completion
                 if not completionMode:
                   stdout.writeLine("")
                   var
                     table: TerminalTable
-                    row: array[0..2, string]
+                    row: seq[string]
                     amount, line: Natural = 0
                   for completion in completions:
-                    row[amount] = completion
+                    row.add(y = completion)
                     amount.inc
-                    if amount == 3:
+                    if amount == columnsAmount:
                       table.add(row)
-                      row = ["", "", ""]
+                      row = @[]
                       amount = 0
                       line.inc
-                  if amount < 3:
+                  if amount < columnsAmount:
                     table.add(row)
                     line.inc
                   completionWidth = table.getColumnSizes(
@@ -409,14 +415,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 currentCompletion.inc
                 # Return to the first completion if reached the end of the list
                 if currentCompletion == completions.len:
-                  let line = completions.len div 3
+                  let line = completions.len div columnsAmount
                   if line > 0:
                     stdout.cursorUp(count = line)
                   stdout.cursorBackward(count = terminalWidth())
                   currentCompletion = 0
                   continue
                 # Go to the next line if the last completion in the line reached
-                if currentCompletion mod 3 == 0:
+                if currentCompletion mod columnsAmount == 0:
                   stdout.cursorDown
                   stdout.cursorBackward(count = terminalWidth())
                   continue
