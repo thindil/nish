@@ -144,10 +144,14 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         i: Positive = 1
         table: TerminalTable
         row: string = ""
+      let columnAmount = try:
+          db.getValue(query = sql(query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
+        except ValueError, DbError:
+          4
       for key in keys:
         row = row & key & "\t"
         i.inc
-        if i == 4:
+        if i == columnAmount:
           table.tabbed(row)
           row = ""
           i = 1
