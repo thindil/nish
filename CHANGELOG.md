@@ -22,6 +22,7 @@ of the shell.
 - Option to set style of the output headers, like sections in forms to set
   aliases and variables, listing commands, etc.
 - Prevention from crash shell during work
+- Option to set amount of columns in the help list
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
