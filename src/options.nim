@@ -152,7 +152,7 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     showFormHeader(message = "Available options are:", db = db)
     try:
       for row in db.fastRows(query = sql(
-          query = "SELECT option, value, defaultvalue, valuetype, description FROM options")):
+          query = "SELECT option, value, defaultvalue, valuetype, description FROM options ORDER BY option ASC")):
         table.add(row)
     except DbError:
       return showError(message = "Can't show the shell's options. Reason: ",
