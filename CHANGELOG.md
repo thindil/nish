@@ -45,7 +45,7 @@ of the shell.
 - Better handling arguments in the test plugin
 - Special keys not working with some terminal emulators
 - Typos in CHANGELOG.md and README.md
-- Getting stact trace for the shell's exception when build in debug mode
+- Getting stack trace for the shell's exception when build in debug mode
 - Adding values of short options in entered commands
 - Aliases don't return proper exit codes
 
