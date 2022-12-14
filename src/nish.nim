@@ -247,9 +247,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     aliases = newOrderedTable[AliasName, int]()
     dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
         DirSep & "nish.db")
-    cursorPosition, currentCompletion, completionWidth: Natural = 0
+    cursorPosition, currentCompletion: Natural = 0
     commands = newTable[string, CommandData]()
     completions: seq[string]
+    completionWidth: seq[Natural]
 
   # Check the command line parameters entered by the user. Available options
   # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -398,9 +399,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                   if amount < columnsAmount:
                     table.add(row)
                     line.inc
-                  completionWidth = table.getColumnSizes(
-                      maxSize = terminalWidth(
-                    ))[0] + 4
+                  completionWidth = @[]
+                  for column in table.getColumnSizes(maxSize = terminalWidth()):
+                    completionWidth.add(y = column + 4)
                   try:
                     table.echoTable(padding = 4)
                   except IOError, Exception:
@@ -427,7 +428,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                   stdout.cursorBackward(count = terminalWidth())
                   continue
                 # Move cursor to the next completion
-                stdout.cursorForward(count = completionWidth)
+                stdout.cursorForward(count = completionWidth[(
+                    currentCompletion - 1) mod columnsAmount])
               except IOError, ValueError:
                 discard
           # Special keys pressed
