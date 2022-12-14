@@ -23,6 +23,7 @@ of the shell.
   aliases and variables, listing commands, etc.
 - Prevention from crash shell during work
 - Options to set amount of columns in the help list and the completion list
+- Sort alphabetically the list of shell's options
 
 ## Changed
 - **BREAKING**: Updated plugins' system. May require to add the installed
