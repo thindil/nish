@@ -95,6 +95,13 @@ proc updateHistory*(commandToAdd: string; db;
     commandToAdd.len > 0
   body:
     result = historyLength(db = db)
+    let historyAmount = try:
+        parseInt(s = db.getValue(query = sql(
+            query = "SELECT value FROM options WHERE option='historyLength'")))
+      except DbError, ValueError:
+        500
+    if historyAmount == 0:
+      return
     try:
       if returnCode != QuitSuccess and db.getValue(query = sql(query =
         "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
@@ -103,15 +110,14 @@ proc updateHistory*(commandToAdd: string; db;
       showError(message = "Can't get value of option historySaveInvalid. Reason: ",
           e = getCurrentException())
       return
-    try:
-      if result == parseInt(s = db.getValue(query = sql(query =
-        "SELECT value FROM options where option='historyLength'"))):
-        db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"));
+    if result == historyAmount:
+      try:
+        db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"))
         result.dec
-    except DbError, ValueError:
-      showError(message = "Can't get value of option historyLength. Reason: ",
-          e = getCurrentException())
-      return
+      except DbError, ValueError:
+        showError(message = "Can't delete exceeded entries from the shell's history. Reason: ",
+            e = getCurrentException())
+        return
     try:
       # Update history if there is the command in the history in the same directory
       let currentDir = getCurrentDir()
