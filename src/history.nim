@@ -112,7 +112,7 @@ proc updateHistory*(commandToAdd: string; db;
       return
     if result == historyAmount:
       try:
-        db.exec(query = sql(query = "DELETE FROM history ORDER BY lastused, amount ASC LIMIT 1"))
+        db.exec(query = sql(query = "DELETE FROM history WHERE rowid IN (SELECT rowid FROM history ORDER BY lastused, amount ASC LIMIT 1)"))
         result.dec
       except DbError, ValueError:
         showError(message = "Can't delete exceeded entries from the shell's history. Reason: ",
