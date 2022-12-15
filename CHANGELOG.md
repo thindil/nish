@@ -49,6 +49,8 @@ of the shell.
 - Adding values of short options in entered commands
 - Aliases don't return proper exit codes
 - Deleting exceeded commands from the shell's history
+- Delete more commands from the shell's history if its size changed in the
+  shell's options
 
 ## [0.4.0] - 2022-10-14
 
