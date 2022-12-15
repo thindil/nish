@@ -110,10 +110,11 @@ proc updateHistory*(commandToAdd: string; db;
       showError(message = "Can't get value of option historySaveInvalid. Reason: ",
           e = getCurrentException())
       return
-    if result == historyAmount:
+    if result >= historyAmount:
       try:
-        db.exec(query = sql(query = "DELETE FROM history WHERE rowid IN (SELECT rowid FROM history ORDER BY lastused, amount ASC LIMIT 1)"))
-        result.dec
+        db.exec(query = sql(query = "DELETE FROM history WHERE rowid IN (SELECT rowid FROM history ORDER BY lastused, amount ASC LIMIT ?)"),
+            (if result == historyAmount: 1 else: result - historyAmount))
+        result = historyLength(db = db)
       except DbError, ValueError:
         showError(message = "Can't delete exceeded entries from the shell's history. Reason: ",
             e = getCurrentException())
