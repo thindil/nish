@@ -90,11 +90,11 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
       except ValueError, CapacityError:
         30
     try:
-      var amount: Positive = 1
       for item in walkPattern(pattern = prefix & "*"):
         let completion = (if dirExists(dir = item): item & DirSep else: item)
-        if addCompletion(list = completions, item = completion, amount = amount,
-            maxAmount = completionAmount):
+        if completion notin completions:
+          completions.add(y = completion)
+        if completions.len > completionAmount:
           return
     except OSError:
       showError(message = "Can't get completion. Reason: ",
@@ -129,28 +129,31 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
           defaultValue = initLimitedString(capacity = 2, text = "30")))
       except ValueError, CapacityError:
         30
-    var amount: Positive = 1
     # Check built-in commands
     for command in builtinCommands:
       if command.startsWith(prefix = prefix):
-        if addCompletion(list = completions, item = command, amount = amount,
-            maxAmount = completionAmount):
+        if command notin completions:
+          completions.add(y = command)
+        if completions.len > completionAmount:
           return
     # Check for all shell's commands
     for command in commands.keys:
       if command.startsWith(prefix = prefix):
-        if addCompletion(list = completions, item = command, amount = amount,
-            maxAmount = completionAmount):
+        if command notin completions:
+          completions.add(y = command)
+        if completions.len > completionAmount:
           return
     # Check the shell's aliases
     for alias in aliases.keys:
-      if alias.startsWith(prefix = prefix):
-        if addCompletion(list = completions, item = $alias, amount = amount,
-            maxAmount = completionAmount):
+        if $alias notin completions:
+          completions.add(y = $alias)
+        if completions.len > completionAmount:
           return
     for path in getEnv(key = "PATH").split(sep = PathSep):
       for file in walkFiles(pattern = path & DirSep & prefix & "*"):
-        if addCompletion(list = completions, item = file.extractFilename,
-            amount = amount, maxAmount = completionAmount):
+        let fileName = file.extractFilename
+        if fileName notin completions:
+          completions.add(y = fileName)
+        if completions.len > completionAmount:
           return
 
