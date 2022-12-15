@@ -48,6 +48,7 @@ of the shell.
 - Getting stack trace for the shell's exception when build in debug mode
 - Adding values of short options in entered commands
 - Aliases don't return proper exit codes
+- Deleting exceeded commands from the shell's history
 
 ## [0.4.0] - 2022-10-14
 
