@@ -33,7 +33,7 @@ import commandslist, constants, lstring, options, output
 using db: DbConn # Connection to the shell's database
 
 proc addCompletion*(list: var seq[string]; item: string; amount: var Positive;
-    db): bool {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+    maxAmount: Natural): bool {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
   ## FUNCTION
   ##
@@ -42,9 +42,10 @@ proc addCompletion*(list: var seq[string]; item: string; amount: var Positive;
   ##
   ## PARAMETERS
   ##
-  ## * list   - the list of completions to which the item will be added
-  ## * item   - the item to add to the list
-  ## * amount - the overall amount of added items to the list
+  ## * list      - the list of completions to which the item will be added
+  ## * item      - the item to add to the list
+  ## * amount    - the overall amount of added items to the list
+  ## * maxAmount - the max amount of completion allowed by the shell's configuration
   ##
   ## RETURNS
   ##
@@ -58,16 +59,7 @@ proc addCompletion*(list: var seq[string]; item: string; amount: var Positive;
     if item notin list:
       list.add(y = item)
       amount.inc
-    try:
-      if amount > parseInt(s = $getOption(optionName = initLimitedString(
-          capacity = 16, text = "completionAmount"), db = db,
-          defaultValue = initLimitedString(capacity = 2, text = "30"))):
-        return true
-    except ValueError, CapacityError:
-      showError(message = "Can't get the amount of completions to show. Reason: ",
-          e = getCurrentException())
-      return true
-    return false
+    return amount > maxAmount
 
 proc getDirCompletion*(prefix: string; completions: var seq[string];
     db) {.gcsafe, sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect,
@@ -91,11 +83,18 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
   body:
     if prefix.len == 0:
       return
+    let completionAmount = try:
+        parseInt(s = $getOption(optionName = initLimitedString(
+          capacity = 16, text = "completionAmount"), db = db,
+          defaultValue = initLimitedString(capacity = 2, text = "30")))
+      except ValueError, CapacityError:
+        30
     try:
       var amount: Positive = 1
       for item in walkPattern(pattern = prefix & "*"):
         let completion = (if dirExists(dir = item): item & DirSep else: item)
-        if addCompletion(list = completions, item = completion, amount = amount, db = db):
+        if addCompletion(list = completions, item = completion, amount = amount,
+            maxAmount = completionAmount):
           return
     except OSError:
       showError(message = "Can't get completion. Reason: ",
@@ -124,25 +123,34 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
   body:
     if prefix.len == 0:
       return
+    let completionAmount = try:
+        parseInt(s = $getOption(optionName = initLimitedString(
+          capacity = 16, text = "completionAmount"), db = db,
+          defaultValue = initLimitedString(capacity = 2, text = "30")))
+      except ValueError, CapacityError:
+        30
     var amount: Positive = 1
     # Check built-in commands
     for command in builtinCommands:
       if command.startsWith(prefix = prefix):
-        if addCompletion(list = completions, item = command, amount = amount, db = db):
+        if addCompletion(list = completions, item = command, amount = amount,
+            maxAmount = completionAmount):
           return
     # Check for all shell's commands
     for command in commands.keys:
       if command.startsWith(prefix = prefix):
-        if addCompletion(list = completions, item = command, amount = amount, db = db):
+        if addCompletion(list = completions, item = command, amount = amount,
+            maxAmount = completionAmount):
           return
     # Check the shell's aliases
     for alias in aliases.keys:
       if alias.startsWith(prefix = prefix):
-        if addCompletion(list = completions, item = $alias, amount = amount, db = db):
+        if addCompletion(list = completions, item = $alias, amount = amount,
+            maxAmount = completionAmount):
           return
     for path in getEnv(key = "PATH").split(sep = PathSep):
       for file in walkFiles(pattern = path & DirSep & prefix & "*"):
         if addCompletion(list = completions, item = file.extractFilename,
-            amount = amount, db = db):
+            amount = amount, maxAmount = completionAmount):
           return
 
