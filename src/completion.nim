@@ -65,11 +65,11 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
       return
     try:
       for item in walkPattern(pattern = prefix & "*"):
+        if completions.len >= completionAmount:
+          return
         let completion = (if dirExists(dir = item): item & DirSep else: item)
         if completion notin completions:
           completions.add(y = completion)
-        if completions.len > completionAmount:
-          return
     except OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
@@ -108,30 +108,27 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
       return
     # Check built-in commands
     for command in builtinCommands:
-      if command.startsWith(prefix = prefix):
-        if command notin completions:
-          completions.add(y = command)
-        if completions.len > completionAmount:
-          return
+      if completions.len >= completionAmount:
+        return
+      if command.startsWith(prefix = prefix) and command notin completions:
+        completions.add(y = command)
     # Check for all shell's commands
     for command in commands.keys:
-      if command.startsWith(prefix = prefix):
-        if command notin completions:
-          completions.add(y = command)
-        if completions.len > completionAmount:
-          return
+      if completions.len >= completionAmount:
+        return
+      if command.startsWith(prefix = prefix) and command notin completions:
+        completions.add(y = command)
     # Check the shell's aliases
     for alias in aliases.keys:
-      if alias.startsWith(prefix = prefix):
-        if $alias notin completions:
-          completions.add(y = $alias)
-        if completions.len > completionAmount:
-          return
+      if completions.len >= completionAmount:
+        return
+      if alias.startsWith(prefix = prefix) and $alias notin completions:
+        completions.add(y = $alias)
     for path in getEnv(key = "PATH").split(sep = PathSep):
       for file in walkFiles(pattern = path & DirSep & prefix & "*"):
+        if completions.len >= completionAmount:
+          return
         let fileName = file.extractFilename
         if fileName notin completions:
           completions.add(y = fileName)
-        if completions.len > completionAmount:
-          return
 
