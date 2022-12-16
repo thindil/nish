@@ -28,8 +28,3 @@ assert completions == @["sometest.txt"], "Failed to get Tab completion for a fil
 
 getCommandCompletion("exi", completions, myaliases, commands, db)
 assert completions[1] == "exit", "Failed to get Tab completion for a command."
-
-block:
-  var amount: Positive = 1
-  assert not addCompletion(completions, "newcompletion", amount, db)
-  assert completions.len == 3 and amount == 2 and completions[2] == "newcompletion"
