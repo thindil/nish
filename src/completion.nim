@@ -116,6 +116,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
           return
     # Check the shell's aliases
     for alias in aliases.keys:
+      if alias.startsWith(prefix = prefix):
         if $alias notin completions:
           completions.add(y = $alias)
         if completions.len > completionAmount:
