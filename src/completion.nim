@@ -60,6 +60,9 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
           defaultValue = initLimitedString(capacity = 2, text = "30")))
       except ValueError, CapacityError:
         30
+    # Completion disabled
+    if completionAmount == 0:
+      return
     try:
       for item in walkPattern(pattern = prefix & "*"):
         let completion = (if dirExists(dir = item): item & DirSep else: item)
@@ -100,6 +103,9 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
           defaultValue = initLimitedString(capacity = 2, text = "30")))
       except ValueError, CapacityError:
         30
+    # Completion disabled
+    if completionAmount == 0:
+      return
     # Check built-in commands
     for command in builtinCommands:
       if command.startsWith(prefix = prefix):
