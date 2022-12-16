@@ -145,8 +145,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         name: "colorSyntax", value: "true",
         description: "Color the user input with info about invalid commands, quotes, etc.",
         optionType: ValueType.boolean, readOnly: false), Option(
-        name: "completionAmount", value: "30",
-        description: "The amount of Tab completions to show (separated for commands and files).",
+        name: "completionAmount", value: "100",
+        description: "The amount of Tab completions to show.",
         optionType: ValueType.natural, readOnly: false), Option(
         name: "outputHeaders", value: "unicode",
         description: "How to present the headers of commands.",
