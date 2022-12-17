@@ -315,11 +315,17 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
     var table: TerminalTable
     try:
       result = QuitFailure.ResultCode
+      let maxRows = db.getValue(query = sql(
+          query = "SELECT value FROM options WHERE option='historySearchAmount'")).parseInt
+      var currentRow: int = 0
       for row in db.fastRows(query = sql(
           query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
           "%" & searchFor & "%"):
         table.add(row[0])
         result = QuitSuccess.ResultCode
+        currentRow.inc
+        if currentRow == maxRows:
+          break
       if result == QuitFailure:
         showOutput(message = "No commands found in the shell's history for '" &
             searchTerm & "'")
@@ -332,7 +338,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       except IOError, Exception:
         return showError(message = "Can't show the list of search results from history. Reason: ",
             e = getCurrentException())
-    except DbError:
+    except DbError, ValueError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
