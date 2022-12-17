@@ -336,7 +336,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
-proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
     locks: 0, contractual.} =
   ## FUNCTION
@@ -345,7 +345,8 @@ proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
   ##
   ## PARAMETERS
   ##
-  ## * db - the connection to the shell's database
+  ## * db        - the connection to the shell's database
+  ## * dbVersion - the version of the database schema from which upgrade is make
   ##
   ## RETURNS
   ##
@@ -355,12 +356,15 @@ proc updateHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
-          $maxInputLength & """)"""))
-      db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyLength'"))
-      db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyAmount'"))
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
+      if dbVersion in 0..1:
+        db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
+            $maxInputLength & """)"""))
+        db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyLength'"))
+        db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyAmount'"))
+        db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
+        db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
+      elif dbVersion == 2:
+        db.exec(query = sql(query = "UPDATE options SET valuetype='positive' WHERE option='historyAmount'"))
     except DbError, CapacityError:
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException())

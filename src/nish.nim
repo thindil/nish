@@ -185,13 +185,14 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
     # If database version is different than the newest, update database
     try:
-      case parseInt(s = $getOption(optionName = initLimitedString(capacity = 9,
+      let dbVersion = parseInt(s = $getOption(optionName = initLimitedString(capacity = 9,
           text = "dbVersion"), db = result, defaultValue = initLimitedString(
           capacity = 1, text = "0")))
+      case dbVersion
       of 0 .. 1:
         if result.updateOptionsDb == QuitFailure:
           return nil
-        if result.updateHistoryDb == QuitFailure:
+        if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
           return nil
         if result.updateAliasesDb == QuitFailure:
           return nil
@@ -208,6 +209,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               if option.readOnly: 1 else: 0))
       of 2:
         if result.updatePluginsDb == QuitFailure:
+          return nil
+        if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
           return nil
         for i in options.low..options.high:
           if i == 1:
