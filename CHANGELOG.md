@@ -34,6 +34,7 @@ of the shell.
 - Better handling the user's input in various forms, like adding variables,
   aliases, etc.
 - Better look of some commands output, like headers, word wrapping, etc
+- **BREAKING**: Type of `historyAmount` option from natural to positive
 
 ### Fixed
 - Clearing the plugin's table after failed adding the new plugin to the
