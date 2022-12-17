@@ -336,9 +336,9 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
-proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
-    locks: 0, contractual.} =
+proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Update the table history to the new version if needed
@@ -356,15 +356,15 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, 
     db != nil
   body:
     try:
-      if dbVersion in 0..1:
+      if dbVersion < 2:
         db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
             $maxInputLength & """)"""))
         db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyLength'"))
-        db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyAmount'"))
         db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
         db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
-      elif dbVersion == 2:
+      if dbVersion < 3:
         db.exec(query = sql(query = "UPDATE options SET valuetype='positive' WHERE option='historyAmount'"))
+        db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
     except DbError, CapacityError:
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException())
