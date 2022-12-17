@@ -185,9 +185,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
     # If database version is different than the newest, update database
     try:
-      let dbVersion = parseInt(s = $getOption(optionName = initLimitedString(capacity = 9,
-          text = "dbVersion"), db = result, defaultValue = initLimitedString(
-          capacity = 1, text = "0")))
+      let dbVersion = parseInt(s = $getOption(optionName = initLimitedString(
+          capacity = 9, text = "dbVersion"), db = result,
+          defaultValue = initLimitedString(capacity = 1, text = "0")))
       case dbVersion
       of 0 .. 1:
         if result.updateOptionsDb == QuitFailure:
