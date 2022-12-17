@@ -396,7 +396,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                       row = @[]
                       amount = 0
                       line.inc
-                  if amount < columnsAmount:
+                  if amount > 0 and amount < columnsAmount:
                     table.add(row)
                     line.inc
                   completionWidth = @[]
@@ -417,7 +417,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 # Return to the first completion if reached the end of the list
                 if currentCompletion == completions.len:
                   let line = completions.len div columnsAmount
-                  if line > 0:
+                  if line > 0 and completions.len > columnsAmount:
                     stdout.cursorUp(count = line)
                   stdout.cursorBackward(count = terminalWidth())
                   currentCompletion = 0
