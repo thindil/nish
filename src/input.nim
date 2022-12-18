@@ -41,7 +41,7 @@ type MaxInputLength* = range[1..maxInputLength]
   ## Used to store maximum allowed length of the user input
 
 proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, ReadIOEffect], contractual.} =
+    tags: [WriteIOEffect, ReadIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Read the Unicode character from the user's input
@@ -72,7 +72,7 @@ proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
 
 proc deleteChar*(inputString: var UserInput;
     cursorPosition: var Natural) {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect], contractual.} =
+    WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Delete the Unicode character at the selected position from the user's input
@@ -96,7 +96,7 @@ proc deleteChar*(inputString: var UserInput;
 
 proc moveCursor*(inputChar: char; cursorPosition: var Natural;
     inputString: UserInput) {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect], contractual.} =
+    WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Move the cursor inside the user's input
@@ -128,13 +128,13 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
       elif inputChar == 'F' and cursorPosition < runeLen(s = $inputString):
         stdout.cursorForward(count = runeLen(s = $inputString) - cursorPosition)
         cursorPosition = runeLen(s = $inputString)
-    except IOError, ValueError:
+    except IOError, ValueError, OSError:
       showError(message = "Can't move the cursor. Reason: ",
           e = getCurrentException())
 
 proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
     insertMode: bool; inputRune: string) {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect], contractual.} =
+    tags: [WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Update the user's input with the new Unicode character
@@ -176,7 +176,7 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
       showError(message = "Entered input is too long.", e = getCurrentException())
 
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect],
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect, RootEffect],
     contractual.} =
   ## FUNCTION
   ##
@@ -229,7 +229,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
           stdout.write(s = $resultString)
           if cursorPosition < runeLen(s = $resultString):
             stdout.cursorBackward(count = runeLen(s = $resultString) - cursorPosition)
-        except IOError, ValueError:
+        except IOError, ValueError, OSError:
           showError(message = "Can't delete character. Reason: ",
               e = getCurrentException())
           return exitString
