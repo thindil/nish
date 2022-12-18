@@ -35,7 +35,7 @@ using db: DbConn # Connection to the shell's database
 
 proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
     isTemplate: bool): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Update the help entry in the help table in the shell's database
@@ -72,7 +72,7 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
 
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
+    WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Show information about unknown help topic entered by the user
@@ -258,7 +258,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
 
 proc showHelpList*(command: string; subcommands: openArray[
     string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## FUNCTION
   ##
@@ -285,7 +285,7 @@ proc showHelpList*(command: string; subcommands: openArray[
 
 proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
     isTemplate: bool; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Add a new help entry to the help table in the shell's database
@@ -354,7 +354,7 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       topic, usage, content, plugin: string = ""
       isTemplate: bool = false
     proc addEntry(): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-        ReadDbEffect, WriteDbEffect, WriteIOEffect], contractual.} =
+        ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Add the selected help entry to the database and reset values of
@@ -545,7 +545,7 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     return readHelpFromFile(db = db)
 
 proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect], locks: 0,
+    raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
   ## FUNCTION
   ##
