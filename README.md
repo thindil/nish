@@ -14,29 +14,13 @@ version of the file is related to the future version of the shell. It may
 contain information not present in released versions of the program. For
 that information, please refer to the README.md file included into the release.
 
-### The project's goals
-
-At this moment the project has two goals:
-
-* Allow me to learn Nim language. ;)
-* Test a few features and solutions to various issues related to my daily
-  work with different shells.
-
-The second goal can be expanded to:
-
-* User defined global but also a directory related commands and variables.
-* Ability to edit, add, delete, enable or disable commands via shell's plugins.
-* And probably many more which will be added during the development of the
-  project.
-
 ### Features
 
 #### Use database for store all data related to the shell
 
-This may look like overkill, but the shell uses SQLite for store all its data.
-For now, it is only the shell's aliases, but with time there will be more. At
-this moment it is very experimental feature. If it doesn't work, it will be
-replaced.
+All the shell's data, configuration, history, variables and aliases are stored
+in SQLite database. It allows adding some interesting features to the shell,
+like searching through its history.
 
 #### Global and local aliases
 
