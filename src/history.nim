@@ -408,6 +408,7 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySaveInvalid', 'false', 'Save in shell command history also invalid commands.', 'boolean', 'false', '0')"))
       db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
       db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
+      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
     except DbError, CapacityError:
       return showError(message = "Can't create 'history' table. Reason: ",
           e = getCurrentException())
