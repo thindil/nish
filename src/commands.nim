@@ -37,7 +37,7 @@ using
 
 proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect], contractual.} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Change the current directory for the shell
@@ -75,7 +75,7 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
 
 proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
-    WriteDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+    WriteDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Build-in command to enter the selected by the user directory

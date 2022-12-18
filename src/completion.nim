@@ -34,7 +34,7 @@ using db: DbConn # Connection to the shell's database
 
 proc getDirCompletion*(prefix: string; completions: var seq[string];
     db) {.gcsafe, sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect,
-    ReadDbEffect, ReadEnvEffect, TimeEffect], contractual.} =
+    ReadDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Get the relative path of file or directory, based on the selected prefix
@@ -77,7 +77,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
 proc getCommandCompletion*(prefix: string; completions: var seq[string];
     aliases: ref AliasesList; commands: ref CommandsList; db) {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadDirEffect, ReadDbEffect,
-    ReadEnvEffect, TimeEffect, WriteIOEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Get the list of available commands which starts with the selected prefix

@@ -42,7 +42,7 @@ using
   arguments: UserInput # The string with arguments entered by the user for the command
 
 proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## FUNCTION
   ##
@@ -150,7 +150,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
 
 proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Delete the selected alias from the shell's database
@@ -735,7 +735,7 @@ proc initAliases*(db; aliases: ref AliasesList;
           e = getCurrentException())
 
 proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Update the table aliases to the new version if needed
@@ -760,7 +760,7 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Create the table aliases

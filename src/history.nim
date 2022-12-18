@@ -45,7 +45,7 @@ using
   arguments: UserInput # The arguments for a command entered by the user
 
 proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0,
+    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], locks: 0,
         contractual.} =
   ## FUNCTION
   ##
@@ -73,7 +73,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [],
 proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
         sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
+        WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Add the selected command to the shell history and increase the current
@@ -141,7 +141,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
     searchFor: UserInput = emptyLimitedString(
         capacity = maxInputLength)): string {.gcsafe, sideEffect, locks: 0,
         raises: [], tags: [ReadDbEffect, ReadEnvEffect, WriteIOEffect,
-        TimeEffect], contractual.} =
+        TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Get the command with the selected index from the shell history
@@ -191,7 +191,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
           getCurrentException())
 
 proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect],
+    ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect, RootEffect],
     locks: 0, contractual.} =
   ## FUNCTION
   ##
@@ -344,7 +344,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
 
 proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Update the table history to the new version if needed
@@ -377,7 +377,7 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
     return QuitSuccess.ResultCode
 
 proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     locks: 0, contractual.} =
   ## FUNCTION
   ##

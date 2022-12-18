@@ -57,7 +57,7 @@ using
   commands: ref CommandsList # The list of the shell's commands
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Create the table plugins
@@ -124,7 +124,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
     proc showPluginOutput(options: seq[string]): bool {.closure, sideEffect,
-        raises: [], tags: [WriteIOEffect, ReadIOEffect], contractual.} =
+        raises: [], tags: [WriteIOEffect, ReadIOEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system
@@ -150,7 +150,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc showPluginError(options: seq[string]): bool {.closure, sideEffect,
-        raises: [], tags: [WriteIOEffect], contractual.} =
+        raises: [], tags: [WriteIOEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system as an
@@ -170,7 +170,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
 
     proc setPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-        TimeEffect], contractual.} =
+        TimeEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Set the shell's option value, description or type. If the option
@@ -203,7 +203,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [
-        ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect], contractual.} =
+        ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Remove the selected option from the shell
@@ -233,7 +233,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc getPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect].} =
+        tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect, RootEffect].} =
       ## FUNCTION
       ##
       ## Get the value of the selected option and send it to the plugin
@@ -290,7 +290,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc deletePluginCommand(options: seq[string]): bool {.sideEffect, raises: [
-        ], tags: [WriteIOEffect], contractual.} =
+        ], tags: [WriteIOEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Remove the command from the shell
@@ -347,7 +347,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc addPluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect], contractual.} =
+        tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Add a new help entry to the shell's help
@@ -380,7 +380,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return false
 
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect], contractual.} =
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Remove the help entry from the shell's help
@@ -407,7 +407,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return false
 
     proc updatePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect], contractual.} =
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Update the existing help entry with the selected one
@@ -943,7 +943,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           e = getCurrentException())
 
 proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Update the table plugins to the new version if needed

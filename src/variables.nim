@@ -90,7 +90,7 @@ proc buildQuery*(directory: DirectoryPath; fields: string;
 proc setVariables*(newDirectory: DirectoryPath; db;
     oldDirectory: DirectoryPath = "".DirectoryPath) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Set the environment variables in the selected directory and remove the
@@ -155,7 +155,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
 
 proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Build-in command to set the selected environment variable
@@ -185,7 +185,7 @@ proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
 
 proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Build-in command to unset the selected environment variable
@@ -270,7 +270,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
 
 proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
     ], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect], contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Delete the selected variable from the shell's database
@@ -564,7 +564,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0,
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0,
     contractual.} =
   ## FUNCTION
   ##

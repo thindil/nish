@@ -57,7 +57,7 @@ using
 
 proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect], locks: 0,
+    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], locks: 0,
     contractual.} =
   ## FUNCTION
   ##
@@ -95,7 +95,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
     capacity = maxInputLength); valueType: ValueType = none; db;
     readOnly: BooleanInt = 0) {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     locks: 0, contractual.} =
   ## FUNCTIONS
   ##
@@ -276,7 +276,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
 
 proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
-    ReadEnvEffect, TimeEffect], locks: 0, contractual.} =
+    ReadEnvEffect, TimeEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Reset the selected option's value to default value. If name of the option
@@ -329,7 +329,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     return QuitSuccess.ResultCode
 
 proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Update the table options to the new version if needed
@@ -353,7 +353,7 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
   ## FUNCTION
   ##
   ## Create the table options
@@ -388,7 +388,7 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect], locks: 0,
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0,
     contractual.} =
   ## FUNCTION
   ##

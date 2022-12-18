@@ -75,7 +75,7 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
   quit QuitSuccess
 
 proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
-    raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect],
+    raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## FUNCTION
   ##
