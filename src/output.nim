@@ -39,7 +39,8 @@ using message: OutputMessage # The message to show to the user
 
 proc showOutput*(message; newLine: bool = true;
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect], contractual.} =
+    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Show the selected message to the user. If newLine is true, add a new line
@@ -76,7 +77,8 @@ proc showOutput*(message; newLine: bool = true;
     stdout.flushFile
 
 proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect], discardable, contractual.} =
+    sideEffect, raises: [], tags: [WriteIOEffect, RootEffect], discardable,
+    contractual.} =
   ## FUNCTION
   ##
   ## Print the message to standard error and set the shell return
