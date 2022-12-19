@@ -124,11 +124,14 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
         return
       if alias.startsWith(prefix = prefix) and $alias notin completions:
         completions.add(y = $alias)
-    for path in getEnv(key = "PATH").split(sep = PathSep):
-      for file in walkFiles(pattern = path & DirSep & prefix & "*"):
-        if completions.len >= completionAmount:
-          return
-        let fileName = file.extractFilename
-        if fileName notin completions:
-          completions.add(y = fileName)
+    try:
+      for path in getEnv(key = "PATH").split(sep = PathSep):
+        for file in walkFiles(pattern = path & DirSep & prefix & "*"):
+          if completions.len >= completionAmount:
+            return
+          let fileName = file.extractFilename
+          if fileName notin completions:
+            completions.add(y = fileName)
+    except OSError:
+      return
 
