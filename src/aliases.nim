@@ -735,7 +735,7 @@ proc initAliases*(db; aliases: ref AliasesList;
           e = getCurrentException())
 
 proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Update the table aliases to the new version if needed
@@ -760,7 +760,7 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Create the table aliases
