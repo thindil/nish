@@ -564,7 +564,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0,
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
   ## FUNCTION
   ##
