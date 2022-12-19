@@ -57,7 +57,8 @@ using
   commands: ref CommandsList # The list of the shell's commands
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0,
+    contractual.} =
   ## FUNCTION
   ##
   ## Create the table plugins
@@ -124,7 +125,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
     proc showPluginOutput(options: seq[string]): bool {.closure, sideEffect,
-        raises: [], tags: [WriteIOEffect, ReadIOEffect, RootEffect], contractual.} =
+        raises: [], tags: [WriteIOEffect, ReadIOEffect, RootEffect],
+        contractual.} =
       ## FUNCTION
       ##
       ## Show the output from the plugin via shell's output system
@@ -202,8 +204,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return false
         return true
 
-    proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [
-        ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
+    proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [],
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
+        contractual.} =
       ## FUNCTION
       ##
       ## Remove the selected option from the shell
@@ -233,7 +236,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc getPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect, RootEffect].} =
+        tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
+        RootEffect].} =
       ## FUNCTION
       ##
       ## Get the value of the selected option and send it to the plugin
@@ -347,7 +351,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc addPluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
+        tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, RootEffect],
+        contractual.} =
       ## FUNCTION
       ##
       ## Add a new help entry to the shell's help
@@ -380,7 +385,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return false
 
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
+        contractual.} =
       ## FUNCTION
       ##
       ## Remove the help entry from the shell's help
@@ -407,7 +413,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return false
 
     proc updatePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
+        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
+        contractual.} =
       ## FUNCTION
       ##
       ## Update the existing help entry with the selected one
@@ -481,10 +488,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     except OSError, IOError, Exception:
       return (showError(message = "Can't get the plugin '" & pluginPath &
           "' output. Reason: ", e = getCurrentException()), emptyAnswer)
-    if plugin.peekExitCode.ResultCode == 2:
-      return (showError(message = "Plugin '" & pluginPath &
-          "' doesn't support API command '" & arguments[0] & "'"), emptyAnswer)
-    result.code = plugin.peekExitCode.ResultCode
+    try:
+      if plugin.peekExitCode.ResultCode == 2:
+        return (showError(message = "Plugin '" & pluginPath &
+            "' doesn't support API command '" & arguments[0] & "'"), emptyAnswer)
+      result.code = plugin.peekExitCode.ResultCode
+    except OSError:
+      return (showError(message = "Can't get exit code from plugin '" &
+          pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
     try:
       plugin.close
     except OSError, IOError, Exception:
@@ -783,7 +794,10 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect, RootEffect], contractual.} =
+proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect, RootEffect],
+    contractual.} =
   ## FUNCTION
   ##
   ## Show details about the selected plugin, its ID, path and status
@@ -943,7 +957,8 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           e = getCurrentException())
 
 proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0, contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0,
+    contractual.} =
   ## FUNCTION
   ##
   ## Update the table plugins to the new version if needed
