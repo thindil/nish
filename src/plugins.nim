@@ -57,8 +57,7 @@ using
   commands: ref CommandsList # The list of the shell's commands
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0,
-    contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Create the table plugins
@@ -957,8 +956,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           e = getCurrentException())
 
 proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], locks: 0,
-    contractual.} =
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## FUNCTION
   ##
   ## Update the table plugins to the new version if needed
