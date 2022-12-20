@@ -31,7 +31,7 @@ import contracts
 import lstring, options
 
 proc setTitle*(title: string; db: DbConn) {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, RootEffect], locks: 0,
+    tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, RootEffect],
     contractual.} =
   ## FUNCTION
   ##
