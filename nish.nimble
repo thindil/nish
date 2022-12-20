@@ -40,7 +40,7 @@ task tests, "run the project unit tests":
 task releasearm, "builds the project in release mode for Linux on arm":
   exec "nimble install -d -y"
   exec "nimassets -d=help -o=src/helpcontent.nim"
-  exec "nim c --cpu arm -d:release --passc:-flto --passl:-s --outdir:" &
+  exec "nim c --cpu:arm -d:release --passc:-flto --passl:-s --outdir:" &
       binDir & " " & srcDir & DirSep & "nish.nim"
 
 task releasewindows, "builds the project in release mode for Windows 64-bit":
