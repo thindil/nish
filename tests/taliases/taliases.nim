@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: "available aliases are"
 """
 
 import std/[db_sqlite, os, strutils, tables]
