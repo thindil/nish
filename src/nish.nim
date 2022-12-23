@@ -91,9 +91,12 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     try:
       db.close
     except DbError:
-      quit showError(message = "Can't close properly the shell database. Reason:",
-          e = getCurrentException()).int
-    quit returnCode.int
+      showError(message = "Can't close properly the shell database. Reason:",
+          e = getCurrentException())
+      when isMainModule:
+        quit QuitFailure
+    when isMainModule:
+      quit returnCode.int
 
 proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
