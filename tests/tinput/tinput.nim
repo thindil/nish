@@ -5,18 +5,19 @@ discard """
 import std/parseopt
 import ../../src/[constants, input, lstring]
 
-var
-  userCommand: OptParser = initOptParser("ls -ab --foo --bar=20 file.txt")
-  conjCommands: bool = true
-  arguments: UserInput = getArguments(userCommand, conjCommands)
+block:
+  var
+    userCommand: OptParser = initOptParser("ls -ab --foo --bar=20 file.txt")
+    conjCommands: bool = true
+    arguments: UserInput = getArguments(userCommand, conjCommands)
 
-assert arguments == initLimitedString(capacity = maxInputLength,
-    text = "ls -a -b --foo --bar=20 file.txt"), "Failed to set the argumets."
+  assert arguments == initLimitedString(capacity = maxInputLength,
+      text = "ls -a -b --foo --bar=20 file.txt"), "Failed to set the argumets."
 
-assert readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
+  assert readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
 
-assert readChar('c') == "c", "Failed to read a character from the input."
-assert readChar('H') == "H", "Failed to read a upper character from the input."
+  assert readChar('c') == "c", "Failed to read a character from the input."
+  assert readChar('H') == "H", "Failed to read a upper character from the input."
 
 block:
   var
