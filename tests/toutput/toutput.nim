@@ -4,13 +4,14 @@ discard """
 
 import ../../src/[directorypath, nish, output, resultcode]
 
-let db = startDb("test.db".DirectoryPath)
-assert db != nil, "No connection to database."
+block:
+  let db = startDb("test12.db".DirectoryPath)
+  assert db != nil, "No connection to database."
 
-assert showError("test error") == QuitFailure, "Failed to show error message."
+  assert showError("test error") == QuitFailure, "Failed to show error message."
 
-showFormHeader(message = "test header", db = db)
+  showFormHeader(message = "test header", db = db)
 
-showOutput("test output")
+  showOutput("test output")
 
-quitShell(ResultCode(QuitSuccess), db)
+  quitShell(ResultCode(QuitSuccess), db)
