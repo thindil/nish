@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: Available arguments are
 """
 
 import std/tables
