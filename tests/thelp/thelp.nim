@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: delete the help entry for topic
 """
 import std/[db_sqlite, tables]
 import ../../src/[aliases, commandslist, directorypath, help, lstring, nish, resultcode]
