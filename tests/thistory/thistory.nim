@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: commands from the shell
 """
 
 import std/[db_sqlite, tables]
