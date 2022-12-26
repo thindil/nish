@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: get the next character. Reason
 """
 
 import std/parseopt
