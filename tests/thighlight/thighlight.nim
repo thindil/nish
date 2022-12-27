@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: test
 """
 
 import std/tables
