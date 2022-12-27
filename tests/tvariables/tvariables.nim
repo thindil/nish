@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: The variable with the Id
 """
 
 import std/[db_sqlite, os, strutils, tables]
