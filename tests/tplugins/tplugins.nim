@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: The plugin with the Id
 """
 
 import std/tables
