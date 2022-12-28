@@ -38,20 +38,14 @@ using
 proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
         WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Change the current directory for the shell
-  ##
-  ## PARAMETERS
   ##
   ## * newDirectory - the path to the new directory to which the current
   ##                  working directory will be changed
   ## * aliases      - the list of available aliases in the current directory
   ## * db           - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the working directory was properly changed, otherwise
+  ## Returns QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   require:
     newDirectory.len > 0
@@ -76,20 +70,14 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
 proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Build-in command to enter the selected by the user directory
-  ##
-  ## PARAMETERS
   ##
   ## * newDirectory - the path to the new directory to which the current
   ##                  working directory will be changed
   ## * aliases      - the list of available aliases in the current directory
   ## * db           - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the working directory was properly changed, otherwise
+  ## Returns QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   require:
     db != nil
