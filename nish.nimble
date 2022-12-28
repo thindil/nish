@@ -35,7 +35,7 @@ task release, "builds the project in release mode":
 
 task tests, "run the project unit tests":
   exec "nimassets -d=help -o=src/helpcontent.nim"
-  exec "testament pattern \"tests/**/*.nim\""
+  exec "testament all"
 
 task releasearm, "builds the project in release mode for Linux on arm":
   exec "nimble install -d -y"
