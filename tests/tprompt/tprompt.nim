@@ -1,5 +1,6 @@
 discard """
   exitcode: 0
+  outputsub: /
 """
 
 import ../../src/[nish, directorypath, prompt, resultcode]
