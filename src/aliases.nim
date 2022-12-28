@@ -32,8 +32,6 @@ import columnamount, commandslist, constants, databaseid, directorypath, help,
     input, lstring, output, resultcode, variables
 
 const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
-  ## FUNCTION
-  ##
   ## The list of available subcommands for command alias
 
 using
@@ -44,19 +42,13 @@ using
 proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Set the available aliases in the selected directory
-  ##
-  ## PARAMETERS
   ##
   ## * aliases   - the list of aliases available in the selected directory
   ## * directory - the directory in which the aliases will be set
   ## * db        - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## The parameter aliases with the new list of available aliases
+  ## Returns the parameter aliases with the new list of available aliases
   require:
     directory.len > 0
     db != nil
@@ -96,20 +88,14 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
 proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## List available aliases in the current directory, if entered command was
   ## "alias list all" list all declared aliases then.
   ##
-  ## PARAMETERS
+  ## * arguments - the user entered text with arguments for showing aliases
+  ## * aliases   - the list of aliases available in the current directory
+  ## * db        - the connection to the shell's database
   ##
-  ## * arguments    - the user entered text with arguments for showing aliases
-  ## * aliases      - the list of aliases available in the current directory
-  ## * db           - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the list of aliases was shown, otherwise QuitFailure
+  ## Returns QuitSuccess if the list of aliases was shown, otherwise QuitFailure
   require:
     arguments.len > 3
     arguments.startsWith("list")
@@ -151,20 +137,13 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
 proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Delete the selected alias from the shell's database
   ##
-  ## PARAMETERS
+  ## * arguments - the user entered text with arguments for the deleting alias
+  ## * aliases   - the list of aliases available in the current directory
+  ## * db        - the connection to the shell's database
   ##
-  ## * arguments    - the user entered text with arguments for the deleting
-  ##                  alias
-  ## * aliases      - the list of aliases available in the current directory
-  ## * db           - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the selected alias was properly deleted, otherwise
+  ## Returns QuitSuccess if the selected alias was properly deleted, otherwise
   ## QuitFailure. Also, updated paramete aliases
   require:
     arguments.len > 5
@@ -196,21 +175,14 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
 proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Show details about the selected alias, its ID, name, description and
   ## commands which will be executed
   ##
-  ## PARAMETERS
+  ## * arguments - the user entered text with arguments for the showing alias
+  ## * aliases   - the list of aliases available in the current directory
+  ## * db        - the connection to the shell's database
   ##
-  ## * arguments    - the user entered text with arguments for the showing
-  ##                  alias
-  ## * aliases      - the list of aliases available in the current directory
-  ## * db           - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the selected alias was properly show, otherwise
+  ## Returns quitSuccess if the selected alias was properly show, otherwise
   ## QuitFailure.
   require:
     arguments.len > 3
@@ -250,19 +222,13 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
 proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Add a new alias to the shell. Ask the user a few questions and fill the
   ## alias values with answers
   ##
-  ## PARAMETERS
+  ## * aliases - the list of aliases available in the current directory
+  ## * db      - the connection to the shell's database
   ##
-  ## * aliases      - the list of aliases available in the current directory
-  ## * db           - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the new alias was properly set, otherwise QuitFailure.
+  ## Returns QuitSuccess if the new alias was properly set, otherwise QuitFailure.
   ## Also, updated parameter aliases.
   require:
     db != nil
@@ -378,20 +344,13 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
 proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
     raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Edit the selected alias
   ##
-  ## PARAMETERS
+  ## * arguments - the user entered text with arguments for the editing alias
+  ## * aliases   - the list of aliases available in the current directory
+  ## * db        - the connection to the shell's database
   ##
-  ## * arguments    - the user entered text with arguments for the editing
-  ##                  alias
-  ## * aliases      - the list of aliases available in the current directory
-  ## * db           - the connection to the shell's database
-  ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the alias was properly edited, otherwise QuitFailure.
+  ## Returns QuitSuccess if the alias was properly edited, otherwise QuitFailure.
   ## Also, updated parameter aliases.
   require:
     arguments.len > 3
@@ -522,22 +481,15 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
 proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
     WriteIOEffect, ExecIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Execute the selected by the user alias. If it is impossible due to lack
   ## of needed arguments or other errors, print information about it.
   ##
-  ## PARAMETERS
-  ##
-  ## * arguments - the user entered text with arguments for executing the
-  ##               alias
+  ## * arguments - the user entered text with arguments for executing the alias
   ## * aliasId   - the id of the alias which will be executed
   ## * aliases   - the list of aliases available in the current directory
   ## * db        - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the alias was properly executed, otherwise QuitFailure.
+  ## Returns QuitSuccess if the alias was properly executed, otherwise QuitFailure.
   ## Also, updated parameter aliases.
   require:
     aliasId.len > 0
@@ -656,41 +608,30 @@ proc initAliases*(db; aliases: ref AliasesList;
     commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect,
     ReadIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
-  ##
-  ## PARAMETERS
   ##
   ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
   ## * aliases     - the list of aliases available in the current directory
   ## * commands    - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## The updated list of available aliases in the current directory, the updated
-  ## helpContent with the help for the commands related to the shell's
-  ## aliases and the updated list of the shell's commands.
+  ## Returns the updated list of available aliases in the current directory,
+  ## the updated helpContent with the help for the commands related to the
+  ## shell's aliases and the updated list of the shell's commands.
   require:
     db != nil
   body:
     # Add commands related to the shell's aliases
     proc aliasCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.raises: [], contractual.} =
-      ## FUNCTION
-      ##
       ## The code of the shell's command "alias" and its subcommands
-      ##
-      ## PARAMETERS
       ##
       ## * arguments - the arguments entered by the user for the command
       ## * db        - the connection to the shell's database
       ## * list      - the additional data for the command, like id of alias, etc
       ##
-      ## RETURNS
-      ## QuitSuccess if the selected command was successfully executed,
+      ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
@@ -736,17 +677,11 @@ proc initAliases*(db; aliases: ref AliasesList;
 
 proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Update the table aliases to the new version if needed
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if update was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
@@ -761,17 +696,11 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 
 proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Create the table aliases
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
