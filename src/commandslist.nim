@@ -32,50 +32,34 @@ import constants, lstring, output, resultcode
 
 type
   CommandLists* = object
-    ## FUNCTION
-    ##
     ## Store additional data for the shell's command
     aliases*: ref AliasesList ## List of shell's aliases
     commands*: ref Table[string, CommandData] ## List of the shell's commands
   CommandProc* = proc (arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.raises: [], contractual.}
-    ## FUNCTION
-    ##
     ## The shell's command's code
-    ##
-    ## PARAMETERS
     ##
     ## * arguments - the arguments entered by the user for the command
     ## * db        - the connection to the shell's database
     ## * list      - the additional data for the command, like list of help
     ##               entries, etc
     ##
-    ## RETURNS
-    ##
-    ## QuitSuccess if the command was succesfull, otherwise QuitFalse
+    ## Returns QuitSuccess if the command was succesfull, otherwise QuitFalse
   CommandData* = object
     command*: CommandProc
     plugin*: string
   CommandsList* = Table[string, CommandData]
-    ## FUNCTION
-    ##
     ## Used to store the shell's commands
   CommandsListError* = object of CatchableError
-    ## FUNCTION
-    ##
     ## Raised when a problem with a command occurs
 
 proc addCommand*(name: UserInput; command: CommandProc;
     commands: ref CommandsList; plugin: string = "") {.gcsafe,
         sideEffect, raises: [
     CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Add a new command to the shell's commands' list. If command argument is
   ## different than nil, it will be used as the command code, otherwise, the
   ## argument plugin must be supplied.
-  ##
-  ## PARAMETERS
   ##
   ## * name     - the name of the new command to add
   ## * command  - the pointer to the procedure which will be called when the
@@ -84,9 +68,7 @@ proc addCommand*(name: UserInput; command: CommandProc;
   ## * plugin   - the full path to the plugin which contains the code for the
   ##              command
   ##
-  ## RETURNS
-  ##
-  ## The updated parameter commands with the list of available shell's commands
+  ## Returns the updated parameter commands with the list of available shell's commands
   require:
     name.len > 0
     command != nil or plugin.len > 0
@@ -101,18 +83,12 @@ proc addCommand*(name: UserInput; command: CommandProc;
 
 proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.gcsafe,
     sideEffect, raises: [CommandsListError], tags: [], contractual.} =
-  ## FUNCTION
-  ##
   ## Delete the selected command from the shell's commands' list
-  ##
-  ## PARAMETERS
   ##
   ## * name     - the name of the new command to delete
   ## * commands - the list of shell's commands
   ##
-  ## RETURNS
-  ##
-  ## The updated parameter commands with the list of available shell's commands
+  ## Returns the updated parameter commands with the list of available shell's commands
   require:
     name.len > 0
     commands.len > 0
@@ -126,13 +102,9 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
     commands: ref CommandsList; plugin: string = "") {.gcsafe, sideEffect,
         raises: [
     CommandsListError], tags: [RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Replace the code of the selected command with the new procedure. If
   ## command argument is different than nil, it will be used as the command
   ## code, otherwise, the argument plugin must be supplied.
-  ##
-  ## PARAMETERS
   ##
   ## * name     - the name of the new command to delete
   ## * command  - the pointer to the procedure which will replace the existing
@@ -141,9 +113,7 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
   ## * plugin   - the full path to the plugin which contains the code for the
   ##              command
   ##
-  ## RETURNS
-  ##
-  ## The updated parameter commands with the list of available shell's commands
+  ## Returns the updated parameter commands with the list of available shell's commands
   require:
     name.len > 0
     commands.len > 0
