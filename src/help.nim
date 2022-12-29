@@ -36,20 +36,14 @@ using db: DbConn # Connection to the shell's database
 proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
     isTemplate: bool): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Update the help entry in the help table in the shell's database
-  ##
-  ## PARAMETERS
   ##
   ## * topic   - the topic of the help. Used as search entry in help
   ## * usage   - the content of usage section in the help entry
   ## * content - the content of the help entry
   ## * db      - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the help entry was successfully updated in the database,
+  ## Returns QuitSuccess if the help entry was successfully updated in the database,
   ## otherwise QuitFailure and show message what wrong
   require:
     topic.len > 0
@@ -73,11 +67,7 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
 proc showUnknownHelp*(subCommand, command,
     helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Show information about unknown help topic entered by the user
-  ##
-  ## PARAMETERS
   ##
   ## * subCommand - the subcommand for which help was looking for entered by
   ##                the user
@@ -85,8 +75,7 @@ proc showUnknownHelp*(subCommand, command,
   ##                user
   ## * helpType   - the type of help topic
   ##
-  ## RETURNS
-  ## Always QuitFailure.
+  ## Always returns QuitFailure.
   require:
     subCommand.len > 0
     command.len > 0
@@ -99,12 +88,8 @@ proc showUnknownHelp*(subCommand, command,
 proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
-  ##
-  ## PARAMETERS
   ##
   ## * topic       - the help's topic to show. If empty, show index of the
   ##                 shell's help
@@ -112,7 +97,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
   ##
   ## RETURNS
   ##
-  ## QuitSuccess if the selected help's topic was succesully shown, otherwise
+  ## Returns QuitSuccess if the selected help's topic was succesully shown, otherwise
   ## QuitFailure.
   require:
     db != nil
@@ -133,11 +118,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
 
     proc showHelpList(keys: seq[string]) {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect].} =
-      ## FUNCTION
-      ##
       ## Show the list of help topics
-      ##
-      ## PARAMETERS
       ##
       ## * keys - The list of help topics to show
       var
@@ -260,17 +241,11 @@ proc showHelpList*(command: string; subcommands: openArray[
     string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Show short help about available subcommands related to the selected command
-  ##
-  ## PARAMETERS
   ##
   ## * command     - the selected command which subcommands' list will be
   ##                 displayed
   ## * subcommands - the list of subcommands available for the selected command
-  ##
-  ## RETURNS
   ##
   ## This procedure always return QuitSuccess
   body:
@@ -286,20 +261,14 @@ proc showHelpList*(command: string; subcommands: openArray[
 proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
     isTemplate: bool; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Add a new help entry to the help table in the shell's database
-  ##
-  ## PARAMETERS
   ##
   ## * topic   - the topic of the help. Used as search entry in help
   ## * usage   - the content of usage section in the help entry
   ## * content - the content of the help entry
   ## * db      - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the help entry was successfully added to the database,
+  ## Returns QuitSuccess if the help entry was successfully added to the database,
   ## otherwise QuitFailure and show message what wrong
   require:
     topic.len > 0
@@ -321,18 +290,12 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
 
 proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Read the help entries from the configuration file and add them to
   ## the shell's database
   ##
-  ## PARAMETERS
-  ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the help content was successfully added to the database,
+  ## Returns QuitSuccess if the help content was successfully added to the database,
   ## otherwise QuitFailure and show message what wrong
   require:
     db != nil
@@ -355,14 +318,10 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       isTemplate: bool = false
     proc addEntry(): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
         ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
-      ## FUNCTION
-      ##
       ## Add the selected help entry to the database and reset values of
       ## variables used to set it
       ##
-      ## RETURNS
-      ##
-      ## QuitSuccess if the help entry was properly added, otherwise
+      ## Returns QuitSuccess if the help entry was properly added, otherwise
       ## QuitFailure with information what goes wrong.
       body:
         if topic.len > 0 and usage.len > 0 and content.len > 0 and
@@ -421,16 +380,11 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
 
 proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Clear the user help content and replace it with the default values
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ## QuitSuccess if the help content was successfully updated, otherwise
+  ## Returns QuitSuccess if the help content was successfully updated, otherwise
   ## QuitFailure and show message what wrong
   require:
     db != nil
@@ -449,13 +403,9 @@ proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
 proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, ReadIOEffect,
     WriteDbEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Initialize the help system. Update some help entries with current the
   ## shell's settings and add the help related commands to the shell's
   ## commands' list.
-  ##
-  ## PARAMETERS
   ##
   ## * db          - the connection to the shell's database
   ## * commands    - the list of the shell's commands
@@ -464,38 +414,28 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
   body:
     proc helpCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.raises: [], contractual.} =
-      ## FUNCTION
-      ##
       ## The code of the shell's command "help"
-      ##
-      ## PARAMETERS
       ##
       ## * arguments - the arguments entered by the user for the command
       ## * db        - the connection to the shell's database
       ## * list      - the additional data for the command, like list of help
       ##               entries, etc
       ##
-      ## RETURNS
-      ## QuitSuccess if the selected help's topic was succesully shown, otherwise
+      ## Returns QuitSuccess if the selected help's topic was succesully shown, otherwise
       ## QuitFailure.
       body:
         return showHelp(topic = arguments, db = db)
 
     proc updateHelpCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.raises: [], contractual.} =
-      ## FUNCTION
-      ##
       ## The code of the shell's command "updateHelp"
-      ##
-      ## PARAMETERS
       ##
       ## * arguments - the arguments entered by the user for the command
       ## * db        - the connection to the shell's database
       ## * list      - the additional data for the command, like list of help
       ##               entries, etc
       ##
-      ## RETURNS
-      ## QuitSuccess if the help content was succesfully updated, otherwise
+      ## Returns QuitSuccess if the help content was succesfully updated, otherwise
       ## QuitFailure.
       body:
         return updateHelp(db = db)
@@ -512,18 +452,12 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
 proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Create the table help and fill it with help entries from the configuration
   ## file
   ##
-  ## PARAMETERS
-  ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
@@ -547,18 +481,12 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
 proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Delete the help entry from the help table in the shell's database
-  ##
-  ## PARAMETERS
   ##
   ## * topic   - the topic of the help. Used as search entry in help
   ## * db      - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the help entry was successfully deleted from the database,
+  ## Returns QuitSuccess if the help entry was successfully deleted from the database,
   ## otherwise QuitFailure and show message what wrong
   require:
     topic.len > 0
