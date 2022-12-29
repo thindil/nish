@@ -36,12 +36,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     db: DbConn; cursorPosition: Natural) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect,
     RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Refresh the user input, clear the old and show the new. Color the entered
   ## command on green if it is valid or red if invalid
-  ##
-  ## PARAMETERS
   ##
   ## * promptLength   - the length of the last line of the shell's prompt. If
   ##                    equal to 0, don't refresh it
