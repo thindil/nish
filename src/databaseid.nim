@@ -24,20 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type DatabaseId* = distinct Natural
-  ## FUNCTION
-  ##
   ## Used to store ids from or to the shell's database
 
 proc `$`*(x: DatabaseId): string {.borrow.}
-  ## FUNCTION
-  ##
   ## Get string representation of ResultCode. Borrowed from int type.
-  ##
-  ## PARAMETERS
   ##
   ## * x - The DatabaseId value which will be converted to string
   ##
-  ## RESULT
-  ##
-  ## The string representation of x parameter
+  ## Returns the string representation of x parameter
 
