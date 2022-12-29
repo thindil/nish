@@ -30,49 +30,29 @@ import lstring
 
 const
   maxNameLength*: Positive = 50
-    ## FUNCTION
-    ##
     ## Max allowed length of various names (options, variables, etc). Can be
     ## customized separately for each name's type either in the proper modules.
   aliasNameLength*: Positive = maxNameLength
-    ## FUNCTION
-    ##
     ## The maximum length of the shell's alias namev
   builtinCommands*: array[0..3, string] = ["cd", "exit", "set", "unset"]
-    ## FUNCTION
-    ##
     ## The list of the shell's built-in commands
 
 type
   HelpEntry* = object
-    ## FUNCTION
-    ##
     ## Used to store the shell's help entries
     usage*: string ## The shell's command to enter for the selected entry
     content*: string ## The content of the selected entry
   UserInput* = LimitedString
-    ## FUNCTION
-    ##
     ## Used to store text entered by the user
   ExtendedNatural* = range[-1..high(int)]
-    ## FUNCTION
-    ##
     ## Used to store various indexes
   BooleanInt* = range[0..1]
-    ## FUNCTION
-    ##
     ## Used to store boolean values in database
   HistorySort* = enum
-    ## FUNCTION
-    ##
     ## Used to set the sort type for showing the last commands in the shell's
     ## history
     recent, amount, name, recentamount
   AliasName* = LimitedString
-    ## FUNCTION
-    ##
     ## Used to store aliases names in tables and database.
   AliasesList* = OrderedTable[AliasName, int]
-    ## FUNCTION
-    ##
     ## Used to store the available aliases in the selected directory
