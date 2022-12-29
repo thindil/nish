@@ -27,29 +27,17 @@
 import std/strutils
 
 type DirectoryPath* = distinct string
-  ## FUNCTION
-  ##
   ## Used to store paths to directories
 
 proc `$`*(x: DirectoryPath): string {.borrow.}
-  ## FUNCTION
-  ##
   ## Get string representation of DirectoryPath. Borrowed from string type.
-  ##
-  ## PARAMETERS
   ##
   ## * x - The DirectoryPath which will be converted to string
   ##
-  ## RESULT
-  ##
-  ## The string representation of x parameter
+  ## Returns the string representation of x parameter
 
 proc find*(s, sub: DirectoryPath; start: Natural = 0; last = 0): int {.borrow.}
-  ## FUNCTION
-  ##
   ## Find substring position in DirectoryPath. Borrowed from string type.
-  ##
-  ## PARAMETERS
   ##
   ## * s     - The DirectoryPath which will be check for the selected character
   ## * sub   - The character which will be looked for in the DirectoryPath
@@ -58,80 +46,48 @@ proc find*(s, sub: DirectoryPath; start: Natural = 0; last = 0): int {.borrow.}
   ## * last  - The position to which search should go. Can be empty. Default
   ##           value is 0, which means no limit.
   ##
-  ## RETURNS
-  ##
-  ## The position of the character in the DirectoryPath or -1 if character not
+  ## Returns the position of the character in the DirectoryPath or -1 if character not
   ## found
 
 proc len*(s: DirectoryPath): int {.borrow.}
-  ## FUNCTION
-  ##
   ## Get the length of DirectoryPath. Borrowed from int type.
-  ##
-  ## PARAMETERS
   ##
   ## * s - The DirectoryPath which length will be count
   ##
-  ## RETURNS
-  ##
-  ## The length of the selected DirectoryPath
+  ## Returns the length of the selected DirectoryPath
 
 proc `&`*(x: DirectoryPath; y: string): string {.borrow.}
-  ## FUNCTION
-  ##
   ## Concatenates DirectoryPath and string into one string. Borrowed from string
   ## type.
-  ##
-  ## PARAMETERS
   ##
   ## * x - The DirectoryPath which will be concatenated
   ## * y - The string which will be concatenated
   ##
-  ## RETURNS
-  ##
-  ## The merged DirectoryPath and string into one string
+  ## Returns the merged DirectoryPath and string into one string
 
 proc `&`*(x: string; y: DirectoryPath): string {.borrow.}
-  ## FUNCTION
-  ##
   ## Concatenates DirectoryPath and string into one string. Borrowed from string
   ## type.
-  ##
-  ## PARAMETERS
   ##
   ## * x - The string which will be concatenated
   ## * y - The DirectoryPath which will be concatenated
   ##
-  ## RETURNS
-  ##
-  ## The merged string and DirectoryPath into one string
+  ## Returns the merged string and DirectoryPath into one string
 
 func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Compare the DirectoryPath and string
-  ##
-  ## PARAMETERS
   ##
   ## * x - The DirectoryPath to compare
   ## * y - The string to compare
   ##
-  ## RETURNS
-  ##
-  ## False if both DirectoryPath and string are the same, otherwise true
+  ## Returns false if both DirectoryPath and string are the same, otherwise true
   return $x != y
 
 func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Compare the DirectoryPath and string
-  ##
-  ## PARAMETERS
   ##
   ## * x - The DirectoryPath to compare
   ## * y - The string to compare
   ##
-  ## RETURNS
-  ##
-  ## True if both DirectoryPath and string are the same, otherwise false
+  ## Returns true if both DirectoryPath and string are the same, otherwise false
   return $x == y
