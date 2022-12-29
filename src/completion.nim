@@ -35,19 +35,13 @@ using db: DbConn # Connection to the shell's database
 proc getDirCompletion*(prefix: string; completions: var seq[string];
     db) {.gcsafe, sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect,
     ReadDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Get the relative path of file or directory, based on the selected prefix
   ## in the current directory.
-  ##
-  ## PARAMETERS
   ##
   ## * prefix      - the prefix which will be looking for in the current directory
   ## * completions - the list of completions for the current prefix
   ##
-  ## RETURNS
-  ##
-  ## The updated completions parameter with additional entries of relative
+  ## Returns the updated completions parameter with additional entries of relative
   ## paths to the files or directories which match the parameter prefix. If
   ## prefix is empty, or there is no matching file or directory, returns the
   ## same completion parameter.
@@ -78,20 +72,14 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
     aliases: ref AliasesList; commands: ref CommandsList; db) {.gcsafe,
     sideEffect, raises: [], tags: [ReadEnvEffect, ReadDirEffect, ReadDbEffect,
     ReadEnvEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Get the list of available commands which starts with the selected prefix
-  ##
-  ## PARAMETERS
   ##
   ## * prefix      - the prefix which will be looking for in commands
   ## * completions - the list of completions for the current prefix
   ## * aliases     - the list of available shell's aliases
   ## * commands    - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## The updated completions parameter with additional entries of commands
+  ## Returns the updated completions parameter with additional entries of commands
   ## which match the parameter prefix. If prefix is empty, or there is no
   ## matching file or directory, returns unchanged completion parameter.
   body:
