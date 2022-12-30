@@ -34,13 +34,9 @@ import aliases, commands, commandslist, completion, constants, directorypath,
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =
-  ## FUNCTION
-  ##
   ## Show the program arguments help
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess when the program's arguments help was shown, otherwise
+  ## Return QuitSuccess when the program's arguments help was shown, otherwise
   ## QuitFailure.
   try:
     stdout.writeLine("""Available arguments are:
@@ -55,13 +51,9 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
 
 proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     WriteIOEffect].} =
-  ## FUNCTION
-  ##
   ## Show the program version
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess when the program's arguments help was shown, otherwise
+  ## Returns QuitSuccess when the program's arguments help was shown, otherwise
   ## QuitFailure.
   try:
     stdout.writeLine(x = """
@@ -77,11 +69,7 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
 proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Close the shell database and quit from the program with the selected return code
-  ##
-  ## PARAMETERS
   ##
   ## * returnCode - the exit code to return with the end of the program
   ## * db         - the connection to the shell's database
@@ -101,18 +89,12 @@ proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
 proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Open connection to the shell database. Create database if not exists.
   ## Set the historyIndex to the last command
   ##
-  ## PARAMETERS
-  ##
   ## * dbPath - The full path to the database file
   ##
-  ## RETURNS
-  ##
-  ## Pointer to the database connection. If connection cannot be established,
+  ## Returns pointer to the database connection. If connection cannot be established,
   ## returns nil.
   require:
     dbPath.len > 0
@@ -236,8 +218,6 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
 
 proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     ExecIOEffect, RootEffect].} =
-  ## FUNCTION
-  ##
   ## The main procedure of the shell
 
   var
