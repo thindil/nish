@@ -31,13 +31,9 @@ import contracts, nancy, termstyle
 import columnamount, commandslist, constants, help, input, lstring, output, resultcode
 
 const historyCommands* = ["clear", "list", "find"]
-  ## FUNCTION
-  ##
   ## The list of available subcommands for command history
 
 type HistoryRange* = ExtendedNatural
-  ## FUNCTION
-  ##
   ## Used to store the amount of commands in the shell's history
 
 using
@@ -47,17 +43,11 @@ using
 proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Get the current length of the shell's commmands' history
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## The amount of commands in the shell's commands' history or -1 if can't
+  ## Returns the amount of commands in the shell's commands' history or -1 if can't
   ## get the current amount of commands.
   require:
     db != nil
@@ -74,22 +64,16 @@ proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
   ## its amount ond last used timestamp. Remove the oldest entry if there is
   ## maximum allowed amount of history's entries.
   ##
-  ## PARAMETERS
-  ##
   ## * commandToAdd - the command entered by the user which will be added
   ## * db           - the connection to the shell's database
   ## * returnCode   - the return code (success or failure) of the command to add
   ##
-  ## RETURNS
-  ##
-  ## The new length of the shell's commands' history.
+  ## Returns the new length of the shell's commands' history.
   require:
     db != nil
     commandToAdd.len > 0
@@ -142,11 +126,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
     capacity = maxInputLength)): string {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, ReadEnvEffect, WriteIOEffect, TimeEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Get the command with the selected index from the shell history
-  ##
-  ## PARAMETERS
   ##
   ## * historyIndex - the index of command in the shell's commands' history which
   ##                  will be get
@@ -155,9 +135,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
   ##                  commands' history. Can be empty. If set, will be used instead
   ##                  of historyIndex
   ##
-  ## RETURNS
-  ##
-  ## The selected command from the shell's commands' history.
+  ## Returns the selected command from the shell's commands' history.
   require:
     db != nil
   body:
@@ -193,17 +171,11 @@ proc getHistory*(historyIndex: HistoryRange; db;
 proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect,
     RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Clear the shell's history, don't add the command to the history
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the shell's history was cleared otherwise QuitFailure
+  ## Returns QuitSuccess if the shell's history was cleared otherwise QuitFailure
   require:
     db != nil
   body:
@@ -219,19 +191,13 @@ proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Show the last X entries to the shell's history. X can be set in the shell's
   ## options as 'historyAmount' option or as an argument by the user.
-  ##
-  ## PARAMETERS
   ##
   ## * db        - the connection to the shell's database
   ## * arguments - the string with arguments entered by the user for the command.
   ##
-  ## RETURNS
-  ##
-  ## QuitSucces if the history was properly shown otherwise QuitFailure.
+  ## Returns QuitSucces if the history was properly shown otherwise QuitFailure.
   require:
     db != nil
     arguments.len > 0
@@ -290,18 +256,12 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
 
 proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Find the selected term in the shell's commands' history
-  ##
-  ## PARAMETERS
   ##
   ## * db        - the connection to the shell's database
   ## * arguments - the string with arguments entered by the user for the command.
   ##
-  ## RETURNS
-  ##
-  ## QuitSucces if the term found in the shell's comamnds' history, otherwise
+  ## Returns QuitSucces if the term found in the shell's comamnds' history, otherwise
   ## QuitFailure.
   require:
     db != nil
@@ -345,18 +305,12 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
 proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Update the table history to the new version if needed
-  ##
-  ## PARAMETERS
   ##
   ## * db        - the connection to the shell's database
   ## * dbVersion - the version of the database schema from which upgrade is make
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if update was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
@@ -379,17 +333,11 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
 proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Create the table history and set shell's options related to the history
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
@@ -417,18 +365,12 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Initialize shell's commands history and set the history commands
-  ##
-  ## PARAMETERS
   ##
   ## * db          - the connection to the shell's database
   ## * commands    - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## The length of the shell's commands' history
+  ## Returns the length of the shell's commands' history
   require:
     db != nil
   body:
