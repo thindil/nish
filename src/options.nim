@@ -31,22 +31,14 @@ import contracts, nancy, termstyle
 import commandslist, constants, help, input, lstring, output, resultcode
 
 const optionsCommands* = ["list", "set", "reset"]
-  ## FUNCTION
-  ##
   ## The list of available subcommands for command options
 
 type
   OptionName* = LimitedString
-    ## FUNCTION
-    ##
     ## Used to store options names in the database.
   OptionValue* = LimitedString
-    ## FUNCTION
-    ##
     ## Used to set or get the option's values
   ValueType* = enum
-    ## FUNCTION
-    ##
     ## Used to set the type of option's value
     integer, float, boolean, none, historysort, natural, text, command, header, positive
 
@@ -59,21 +51,15 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
     tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
-  ##
-  ## PARAMETERS
   ##
   ## * optionName   - the name of the option which value will be get
   ## * db           - the connection to the shell's database
   ## * defaultValue - the default value for option if the is no that option in
   ##                  the database. Default value is empty string ""
   ##
-  ## RETURNS
-  ##
-  ## The value of the selected option or empty string if there is no that
+  ## Returns the value of the selected option or empty string if there is no that
   ## option in the database.
   require:
     optionName.len > 0
@@ -97,12 +83,8 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     readOnly: BooleanInt = 0) {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
-  ## FUNCTIONS
-  ##
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
-  ##
-  ## PARAMETERS
   ##
   ## * optionName  - the name of the option which will be set
   ## * value       - the value of the option to set
@@ -136,11 +118,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
 proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Show the shell's options
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   require:
@@ -167,19 +145,13 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
 proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Set the selected option's value
-  ##
-  ## PARAMETERS
   ##
   ## * arguments - the user entered text with arguments for the variable, its
   ##               name and a new value
   ## * db        - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the variable was correctly set, otherwise QuitFailure.
+  ## Returns QuitSuccess if the variable was correctly set, otherwise QuitFailure.
   require:
     arguments.len > 0
     db != nil
@@ -277,20 +249,14 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
 proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
-  ##
-  ## PARAMETERS
   ##
   ## * arguments - the user entered text with arguments for the variable, its
   ##               name or all
   ## * db        - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the variable(s) correctly reseted, otherwise QuitFailure.
+  ## Returns QuitSuccess if the variable(s) correctly reseted, otherwise QuitFailure.
   require:
     arguments.len > 0
     db != nil
@@ -330,17 +296,11 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
 
 proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Update the table options to the new version if needed
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if update was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
@@ -354,17 +314,11 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 
 proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Create the table options
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
@@ -390,18 +344,12 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Delete the selected option from the table
-  ##
-  ## PARAMETERS
   ##
   ## * optionName - the name of the option which will be deleted
   ## * db         - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if deletion was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if deletion was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     optionName.len > 0
@@ -419,31 +367,22 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
 proc initOptions*(commands: ref CommandsList) {.sideEffect,
     raises: [], tags: [WriteDbEffect, WriteIOEffect, ReadDbEffect, ReadIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Initialize the shell's options. At this moment only set the shell's commands
   ## related to the shell's options
-  ##
-  ## PARAMETERS
   ##
   ## * commands    - the list of the shell's commands
   body:
     # Add commands related to the shell's options
     proc optionsCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.raises: [], contractual.} =
-      ## FUNCTION
-      ##
       ## The code of the shell's command "options" and its subcommands
-      ##
-      ## PARAMETERS
       ##
       ## * arguments - the arguments entered by the user for the command
       ## * db        - the connection to the shell's database
       ## * list      - the additional data for the command, like list of help
       ##               entries, etc
       ##
-      ## RETURNS
-      ## QuitSuccess if the selected command was successfully executed,
+      ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
