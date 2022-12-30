@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Standard library imports
-import std/[db_sqlite, os]
+import std/[db_sqlite, os, terminal]
 # External modules imports
 import contracts
 # Internal imports
@@ -44,6 +44,9 @@ proc setTitle*(title: string; db: DbConn) {.gcsafe, sideEffect, raises: [],
   require:
     db != nil
   body:
+    # Not a terminal emulator, don't set the title
+    if not stdin.isatty and not stdout.isatty:
+      return
     try:
       if getOption(optionName = initLimitedString(capacity = 8,
           text = "setTitle"), db = db, defaultValue = initLimitedString(
