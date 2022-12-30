@@ -31,28 +31,18 @@ import contracts
 import constants, lstring, output
 
 const maxInputLength*: Positive = 4096
-  ## FUNCTION
-  ##
   ## The maximum length of the user input
 
 type MaxInputLength* = range[1..maxInputLength]
-  ## FUNCTION
-  ##
   ## Used to store maximum allowed length of the user input
 
 proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Read the Unicode character from the user's input
-  ##
-  ## PARAMETERS
   ##
   ## * inputChar - the last printable character entered by the user
   ##
-  ## RETURNS
-  ##
-  ## The string with full Unicode character entered by the user
+  ## Returns the string with full Unicode character entered by the user
   require:
     inputChar.ord > 31
   ensure:
@@ -73,18 +63,12 @@ proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
 proc deleteChar*(inputString: var UserInput;
     cursorPosition: var Natural) {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Delete the Unicode character at the selected position from the user's input
-  ##
-  ## PARAMETERS
   ##
   ## * inputString    - the string of characters entered by the user
   ## * cursorPosition - the position of the cursor in the string
   ##
-  ## RETURNS
-  ##
-  ## Modified inputString and the new cursor position as cursorPosition
+  ## Returns modified inputString and the new cursor position as cursorPosition
   body:
     var runes = toRunes(s = $inputString)
     cursorPosition.dec
@@ -97,19 +81,13 @@ proc deleteChar*(inputString: var UserInput;
 proc moveCursor*(inputChar: char; cursorPosition: var Natural;
     inputString: UserInput) {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Move the cursor inside the user's input
-  ##
-  ## PARAMETERS
   ##
   ## * inputChar      - the last ASCII character entered by the user
   ## * cursorPosition - the current position of cursor in the user's input
   ## * inputString    - the user's input's content
   ##
-  ## RETURNS
-  ##
-  ## The new position of the cursor as modified cursorPosition argument
+  ## Returns the new position of the cursor as modified cursorPosition argument
   body:
     try:
       # Arrow left key pressed
@@ -135,20 +113,14 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
 proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
     insertMode: bool; inputRune: string) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Update the user's input with the new Unicode character
-  ##
-  ## PARAMETERS
   ##
   ## * cursorPosition - the current position of cursor in the user's input
   ## * inputString    - the user's input's content
   ## * insertMode     - if true, the input is in the insert (replace) mode
   ## * inputRune      - the Unicode character to enter to the user's input
   ##
-  ## RETURNS
-  ##
-  ## The new cursor position as modified cursorPosition and the modified user's
+  ## Returns the new cursor position as modified cursorPosition and the modified user's
   ## input's content as inputString
   if cursorPosition < runeLen(s = $inputString):
     if insertMode:
@@ -178,19 +150,13 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
-  ##
-  ## PARAMETERS
   ##
   ## * maxLength - the maximum length of the user input to parse. Default value
   ##               is the constant maxInputLength
   ##
-  ## RETURNS
-  ##
-  ## The user input text or "exit" if there was an error or the user pressed
+  ## Returns the user input text or "exit" if there was an error or the user pressed
   ## Escape key
   ensure:
     result.capacity == maxLength
@@ -277,20 +243,14 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
 
 func getArguments*(userInput: var OptParser;
     conjCommands: var bool): UserInput {.gcsafe, raises: [], tags: [].} =
-  ## FUNCTION
-  ##
   ## Set the command arguments from the user input
-  ##
-  ## PARAMETERS
   ##
   ## * userInput    - the input string entered by the user
   ## * conjCommands - if true, set the commands to run next only if the previous
   ##                  was successful, otherwise run the next command only when
   ##                  previous was failure
   ##
-  ## RETURNS
-  ##
-  ## Properly converted user input and parameter conjCommands
+  ## Returns properly converted user input and parameter conjCommands
   result = emptyLimitedString(capacity = maxInputLength)
   userInput.next
   conjCommands = false
