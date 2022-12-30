@@ -28,83 +28,55 @@ import std/strutils
 
 type
   LimitedString* = object of RootObj
-    ## FUNCTION
-    ##
     ## Store all data related to the string
     text: string ## The text of the LimitedString
     capacity: Positive ## The maximum capacity of the LimitedString
   CapacityError* = object of CatchableError
-    ## FUNCTION
-    ##
     ## Raised when the new value of string will be longer than allowed maximum
 
 func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
     CapacityError], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## The setter for the text of LimitedString. Check if the new value isn't
   ## bigger than the capacity of the string and if not, assing the new value
   ## to it. Raise RangeDefect exception if the new value is longer than allowed
   ## capacity of the LimitedString.
   ##
-  ## PARAMETERS
-  ##
   ## * s     - The LimitedString to which the new value of text will be assigned
   ## * value - The string which will be assigned as the new value of text
   ##
-  ## RETURNS
-  ##
-  ## Updated LimitedString with the new value of the text field.
+  ## Returns updated LimitedString with the new value of the text field.
   if value.len > s.capacity:
     raise newException(exceptn = CapacityError,
         message = "New value for string is longer than its capacity.")
   s.text = value
 
 func `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Convert LimitedString to string
-  ##
-  ## PARAMETERS
   ##
   ## * s - The LimitedString which will be converted
   ##
-  ## RETURNS
-  ##
-  ## The converted LimitedString, its value of field text
+  ## Returns the converted LimitedString, its value of field text
   result = s.text
 
 func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Get the length of the selected LimitedString
-  ##
-  ## PARAMETERS
   ##
   ## * s - the LimitedString which length will be get
   ##
-  ## RETURNS
-  ##
-  ## The length of the LimitedString, the length of its field text
+  ## Returns the length of the LimitedString, the length of its field text
   result = s.text.len
 
 func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
     tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Add a string to the selected LimitedString. Check if the new value isn't
   ## bigger than the capacity of the LimitedString and if not, add the string
   ## to the field text of LimitedString. Raise RangeDefect exception if the
   ## new value of LimitedString will be longer than allowed capacity.
   ##
-  ## PARAMETERS
-  ##
   ## * s - The LimitedString to which the new string will be added
   ## * y - The string to add
   ##
-  ## RETURNS
-  ##
-  ## Updated parameter s
+  ## Returns updated parameter s
   if y.len + s.text.len > s.capacity:
     raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
@@ -112,21 +84,15 @@ func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
 
 func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
     tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Add a character to the selected LimitedString. Check if the new value
   ## isn't bigger than the capacity of the LimitedString and if not, add the
   ## character to the field text of LimitedString. Raise RangeDefect exception
   ## if the new value of LimitedString will be longer than allowed capacity.
   ##
-  ## PARAMETERS
-  ##
   ## * s - The LimitedString to which the new string will be added
   ## * y - The character to add
   ##
-  ## RETURNS
-  ##
-  ## Updated parameter s
+  ## Returns updated parameter s
   if s.text.len == s.capacity:
     raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
@@ -134,53 +100,35 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
 
 func initLimitedString*(capacity: Positive;
     text: string): LimitedString {.gcsafe, raises: [CapacityError], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Initialize the new LimitedString with the selected capacity and content.
   ## Raises RangeDefect if the selected text is longer than the selected
   ## capacity.
   ##
-  ## PARAMETERS
-  ##
   ## * capacity - The maximum length of the newly created LimitedString
   ## * text     - The content of the newly created LimitedString.
   ##
-  ## RETURNS
-  ##
-  ## The new LimitedString with the selected capacity and content
+  ## Returns the new LimitedString with the selected capacity and content
   if text.len > capacity:
     raise newException(exceptn = CapacityError,
         message = "New value for string will exceed its capacity.")
   return LimitedString(capacity: capacity, text: text)
 
 func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Get the maximum allowed capacity of the selected LimitedString
-  ##
-  ## PARAMETERS
   ##
   ## * s - The LimitedString which the capacity will be get
   ##
-  ## RETURNS
-  ##
-  ## The maximum allowed capacity of the selected LimitedString
+  ## Returns the maximum allowed capacity of the selected LimitedString
   return s.capacity
 
 func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
     U]): LimitedString {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Get the slice of the selected LimitedString
-  ##
-  ## PARAMETERS
   ##
   ## * s - The LimitedString which slice of text will be get
   ## * x - The range of the slice of text to get
   ##
-  ## RETURNS
-  ##
-  ## The new LimitedString with the slice with the selected range
+  ## Returns the new LimitedString with the slice with the selected range
   let
     newValue: string = s.text[x]
     length: Positive = (if newValue.len == 0: 1 else: newValue.len)
@@ -188,102 +136,64 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
 
 func `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
     tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Get the nth character of the selected LimitedString.
-  ##
-  ## PARAMETERS
   ##
   ## * s - The LimitedString which slice of text will be get
   ## * i - The index of the character to get. Is as same as in normal string
   ##
-  ## RETURNS
-  ##
-  ## The character at the selected position in the selected LimitedString
+  ## Returns the character at the selected position in the selected LimitedString
   return s.text[i]
 
 func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
     tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Replace the selected character in LimitedString
-  ##
-  ## PARAMETERS
   ##
   ## * s   - The LimitedString in which the character will be replaced
   ## * i   - The index on which the character will be replaced. Starts from 0
   ## * val - The new value for the character
   ##
-  ## RETURNS
-  ##
-  ## The updated parameter s
+  ## Returns the updated parameter s
   s.text[i] = val
 
 func `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Compare the selected LimitedString and string
   ##
-  ## PARAMETERS
   ## * x - The LimitedString to compare
   ## * y - The string to compare
   ##
-  ## RETURNS
-  ##
-  ## False if string and field text of LimitedString are equal, otherwise true
+  ## Returns false if string and field text of LimitedString are equal, otherwise true
   return x.text != y
 
 func `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Compare the selected LimitedString and string
   ##
-  ## PARAMETERS
   ## * x - The LimitedString to compare
   ## * y - The string to compare
   ##
-  ## RETURNS
-  ##
-  ## True if string and field text of LimitedString are equal, otherwise false
+  ## Returns true if string and field text of LimitedString are equal, otherwise false
   return x.text == y
 
 func `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Concatenates string and LimitedString into one string
-  ##
-  ## PARAMETERS
   ##
   ## * x - The string to concatenate
   ## * y - The LimitedString which field text will be concatenate
   ##
-  ## RETURNS
-  ##
-  ## The newly created string with merged both strings
+  ## Returns the newly created string with merged both strings
   return x & y.text
 
 func `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Concatenates LimitedString and string into one string
-  ##
-  ## PARAMETERS
   ##
   ## * x - The LimitedString which field text will be concatenate
   ## * y - The string to concatenate
   ##
-  ## RETURNS
-  ##
-  ## The newly created string with merged both strings
+  ## Returns the newly created string with merged both strings
   return x.text & y
 
 func find*(s: LimitedString; sub: char; start: Natural = 0;
     last = 0): int {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Find the selected character in the selected LimitedString.
-  ##
-  ## PARAMETERS
   ##
   ## * s     - The LimitedString which will be check for the selected character
   ## * sub   - The character which will be looked for in the LimitedString
@@ -292,20 +202,14 @@ func find*(s: LimitedString; sub: char; start: Natural = 0;
   ## * last  - The position to which search should go. Can be empty. Default
   ##           value is 0, which means no limit.
   ##
-  ## RETURNS
-  ##
-  ## The position of the character in the LimitedString or -1 if character not
+  ## Returns the position of the character in the LimitedString or -1 if character not
   ## found
   return s.text.find(sub = sub, start = start, last = last)
 
 func rfind*(s: LimitedString; sub: char; start: Natural = 0;
     last = -1): int {.gcsafe, raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Reverse find the selected character in the selected LimitedString. Start
   ## looking from the end of the LimitedString.
-  ##
-  ## PARAMETERS
   ##
   ## * s     - The LimitedString which will be check for the selected character
   ## * sub   - The character which will be looked for in the LimitedString
@@ -314,28 +218,20 @@ func rfind*(s: LimitedString; sub: char; start: Natural = 0;
   ## * last  - The position to which search should go. Can be empty. Default
   ##           value is 0, which means no limit.
   ##
-  ## RETURNS
-  ##
-  ## The position of the character in the LimitedString or -1 if character not
+  ## Returns the position of the character in the LimitedString or -1 if character not
   ## found
   return s.text.rfind(sub = sub, start = start, last = last)
 
 func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
     raises: [CapacityError], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Insert the selected string into LimitedString at the selected position
-  ##
-  ## PARAMETERS
   ##
   ## * x    - The LimitedString to which the string will be inserted
   ## * item - The string to insert
   ## * i    - The position at which the string will be inserted. Can be empty.
   ##          Default value is 0, at start of the LimitedString
   ##
-  ## RETURNS
-  ##
-  ## The updated paramater x
+  ## Returns the updated paramater x
   let oldValue: string = x.text
   x.text.insert(item = item, i = i)
   if x.text.len > x.capacity:
@@ -345,34 +241,22 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
 
 func startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
     tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Check if the selected LimitedString starts with the selected string
-  ##
-  ## PARAMETERS
   ##
   ## * s      - The LimitedString which will be checked
   ## * prefix - The string which will be looking for at the start of the
   ##            LimitedString
   ##
-  ## RETURNS
-  ##
-  ## True if the LimitedString starts with the prefix, otherwise false
+  ## Returns true if the LimitedString starts with the prefix, otherwise false
   return s.text.startsWith(prefix = prefix)
 
 func emptyLimitedString*(capacity: Positive = 1): LimitedString {.gcsafe,
     raises: [], tags: [], locks: 0.} =
-  ## FUNCTION
-  ##
   ## Create the new empty LimitedString with the the selected capacity.
-  ##
-  ## PARAMETERS
   ##
   ## * capacity - The maximum length of the newly created empty LimitedString.
   ##              Can be empty. Default value is 1
   ##
-  ## RETURNS
-  ##
-  ## The new empty LimitedString with the selected capacity.
+  ## Returns the new empty LimitedString with the selected capacity.
   return LimitedString(capacity: capacity, text: "")
 
