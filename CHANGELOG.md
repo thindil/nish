@@ -52,6 +52,7 @@ of the shell.
 - Deleting exceeded commands from the shell's history
 - Delete more commands from the shell's history if its size changed in the
   shell's options
+- Shell's hangs on problems with input/output
 
 ## [0.4.0] - 2022-10-14
 
