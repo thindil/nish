@@ -314,8 +314,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           try:
             inputChar = getch()
           except IOError:
-            showError(message = "Can't get the entered character. Reason: ",
-                e = getCurrentException())
+            # If there is a problem with input/output, quit the shell or it
+            # will be stuck in endless loop. Later it should be replaced by
+            # more elegant solution.
+            quitShell(returnCode = QuitFailure.ResultCode, db = db)
           # Backspace pressed, delete the character before cursor from the user
           # input
           if inputChar.ord == 127:
