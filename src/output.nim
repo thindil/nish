@@ -31,8 +31,6 @@ import contracts, nancy, termstyle
 import columnamount, resultcode
 
 type OutputMessage* = string
-  ## FUNCTION
-  ##
   ## Used to store message to show to the user
 
 using message: OutputMessage # The message to show to the user
@@ -41,12 +39,8 @@ proc showOutput*(message; newLine: bool = true;
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
     sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Show the selected message to the user. If newLine is true, add a new line
   ## after message.
-  ##
-  ## PARAMETERS
   ##
   ## * message         - the message to show
   ## * newLine         - if true, add a new line after the message
@@ -79,21 +73,15 @@ proc showOutput*(message; newLine: bool = true;
 proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, RootEffect], discardable,
     contractual.} =
-  ## FUNCTION
-  ##
   ## Print the message to standard error and set the shell return
   ## code to error. If parameter e is also supplied, it show stack trace for
   ## the current exception in debug mode.
-  ##
-  ## PARAMETERS
   ##
   ## * message - the error message to show
   ## * e       - the reference to an exception which occured. Can be empty.
   ##             Default value is nil
   ##
-  ## RETURNS
-  ##
-  ## Always QuitFailure
+  ## Always returns QuitFailure
   require:
     message.len > 0
   ensure:
@@ -120,11 +108,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
     ).ColumnAmount except ValueError: 80.ColumnAmount);
     db: DbConn) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Show form's header with the selected message
-  ##
-  ## PARAMETERS
   ##
   ## * message - the text which will be shown in the header
   ## * width   - the width of the header. Default value is the current width
