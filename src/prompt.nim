@@ -32,14 +32,10 @@ import constants, directorypath, lstring, options, output, resultcode
 
 proc getFormattedDir*(): DirectoryPath {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Get the formatted current directory path, replace home directory with
   ## tilde, etc.
   ##
-  ## RETURNS
-  ##
-  ## The formatted path to the current directory
+  ## Returns the formatted path to the current directory
   body:
     result = try:
       getCurrentDir().DirectoryPath
@@ -58,20 +54,14 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode; db: DbConn): Natural {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect, RootEffect],
     discardable, contractual.} =
-  ## FUNCTION
-  ##
   ## Show the shell prompt if the shell wasn't started in one command mode
-  ##
-  ## PARAMETERS
   ##
   ## * promptEnabled   - if true, show the prompt
   ## * previousCommand - the previous command executed by the user
   ## * resultCode      - the result of the previous command executed by the user
   ## * db              - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## The length of the last line of the prompt
+  ## Returns the length of the last line of the prompt
   require:
     db != nil
   body:
