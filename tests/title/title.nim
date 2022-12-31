@@ -1,6 +1,5 @@
 discard """
   exitcode: 0
-  outputsub: test
 """
 
 import ../../src/[directorypath, nish, title]
