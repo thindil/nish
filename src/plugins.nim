@@ -33,20 +33,14 @@ import columnamount, commandslist, constants, databaseid, help, input, lstring,
 
 const
   minApiVersion: float = 0.2
-  ## FUNCTION
-  ##
   ## The minimal version of the shell's plugins' API which plugins must support
   ## in order to work
 
   pluginsCommands* = ["list", "remove", "show", "add", "enable", "disable"]
-  ## FUNCTION
-  ##
   ## The list of available subcommands for command plugin
 
 type
   PluginData = object
-    ## FUNCTION
-    ##
     ## Store information about the shell's plugin
     path*: string ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
@@ -58,17 +52,11 @@ using
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Create the table plugins
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
@@ -92,22 +80,17 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     sideEffect, raises: [], tags: [ExecIOEffect, ReadEnvEffect, ReadIOEffect,
     WriteIOEffect, ReadDbEffect, TimeEffect, WriteDbEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Communicate with the selected plugin via the shell's plugins API. Run the
   ## selected plugin, send a message to it to execute the selected section of
   ## the plugin and show its output to the user.
-  ##
-  ## PARAMETERS
   ##
   ## * pluginPath - the full path to the plugin which will be executed
   ## * arguments  - the arguments which will be passed to the plugin
   ## * db         - the connection to the shell's database
   ## * commands   - the list of the shell's commands
   ##
-  ## RETURNS
   ##
-  ## Tuple with result code: QuitSuccess if the selected plugin was properly
+  ## Returns tuple with result code: QuitSuccess if the selected plugin was properly
   ## executed, otherwise QuitFailure and LimitedString with the plugin's
   ## answer.
   require:
@@ -126,17 +109,11 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     proc showPluginOutput(options: seq[string]): bool {.closure, sideEffect,
         raises: [], tags: [WriteIOEffect, ReadIOEffect, RootEffect],
         contractual.} =
-      ## FUNCTION
-      ##
       ## Show the output from the plugin via shell's output system
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the text to
       ##             show, 1 - the foreground color of the text. If list
       ##             contains only one element, use default color.
-      ##
-      ## RETURNS
       ##
       ## This procedure always returns true
       body:
@@ -152,17 +129,11 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
 
     proc showPluginError(options: seq[string]): bool {.closure, sideEffect,
         raises: [], tags: [WriteIOEffect, RootEffect], contractual.} =
-      ## FUNCTION
-      ##
       ## Show the output from the plugin via shell's output system as an
       ## error message
       ##
-      ## PARAMETERS
-      ##
       ## * options - The list of options from the API call. 0 - the text to
       ##             show
-      ##
-      ## RETURNS
       ##
       ## This procedure always returns true
       body:
@@ -172,20 +143,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     proc setPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
         TimeEffect, RootEffect], contractual.} =
-      ## FUNCTION
-      ##
       ## Set the shell's option value, description or type. If the option
       ## doesn't exist, it is created.
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the option's name,
       ##             1 - the option's value, 2 - the option's description,
       ##             3 - the option's value type
       ##
-      ## RETURNS
-      ##
-      ## True if the option was properly added or updated, otherwise false
+      ## Returns true if the option was properly added or updated, otherwise false
       ## with information what happened
       body:
         if options.len < 4:
@@ -206,18 +171,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
         contractual.} =
-      ## FUNCTION
-      ##
       ## Remove the selected option from the shell
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the name of
       ##             the option to remove
       ##
-      ## RETURNS
-      ##
-      ## True if the option was properly removed, otherwise false with
+      ## Returns true if the option was properly removed, otherwise false with
       ## information what happened
       body:
         if options.len == 0:
@@ -237,18 +196,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     proc getPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
         RootEffect].} =
-      ## FUNCTION
-      ##
       ## Get the value of the selected option and send it to the plugin
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the name of
       ##             the option to get
       ##
-      ## RETURNS
-      ##
-      ## True if the value of the option was properly sent to the plugin,
+      ## Returns true if the value of the option was properly sent to the plugin,
       ## otherwise false with information what happened
       body:
         if options.len == 0:
@@ -265,18 +218,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
 
     proc addPluginCommand(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, RootEffect], contractual.} =
-      ## FUNCTION
-      ##
       ## Add a new command to the shell
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the name of
       ##             the command to add
       ##
-      ## RETURNS
-      ##
-      ## True if the command was properly added, otherwise false with
+      ## Returns true if the command was properly added, otherwise false with
       ## information what happened
       body:
         if options.len == 0:
@@ -294,18 +241,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
 
     proc deletePluginCommand(options: seq[string]): bool {.sideEffect, raises: [
         ], tags: [WriteIOEffect, RootEffect], contractual.} =
-      ## FUNCTION
-      ##
       ## Remove the command from the shell
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the name of
       ##             the command to delete
       ##
-      ## RETURNS
-      ##
-      ## True if the command was properly deleted, otherwise false with
+      ## Returns true if the command was properly deleted, otherwise false with
       ## information what happened
       body:
         if options.len == 0:
@@ -322,18 +263,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
 
     proc replacePluginCommand(options: seq[string]): bool {.sideEffect,
         raises: [], tags: [WriteIOEffect, RootEffect], contractual.} =
-      ## FUNCTION
-      ##
       ## Replace the existing shell's command with the selected one
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the name of
       ##             the command which will be replaced
       ##
-      ## RETURNS
-      ##
-      ## True if the command was properly replaced, otherwise false with
+      ## Returns true if the command was properly replaced, otherwise false with
       ## information what happened
       body:
         if options.len == 0:
@@ -352,19 +287,13 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     proc addPluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, RootEffect],
         contractual.} =
-      ## FUNCTION
-      ##
       ## Add a new help entry to the shell's help
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the topic of
       ##             the help entry to add, 1 - the usage section of the help
       ##             entry, 2 - the content of the help entry
       ##
-      ## RETURNS
-      ##
-      ## True if the help entry was properly added, otherwise false with
+      ## Returns true if the help entry was properly added, otherwise false with
       ## information what happened
       body:
         if options.len < 3:
@@ -386,18 +315,12 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
         contractual.} =
-      ## FUNCTION
-      ##
       ## Remove the help entry from the shell's help
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the name of
       ##             the help entry to delete
       ##
-      ## RETURNS
-      ##
-      ## True if the help entry was properly deleted, otherwise false with
+      ## Returns true if the help entry was properly deleted, otherwise false with
       ## information what happened
       body:
         if options.len == 0:
@@ -414,20 +337,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     proc updatePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
         contractual.} =
-      ## FUNCTION
-      ##
       ## Update the existing help entry with the selected one
-      ##
-      ## PARAMETERS
       ##
       ## * options - The list of options from the API call. 0 - the topic of
       ##             the help entry to replace, 1 - the new content of usage
       ##             section, 2 - the new content of the content of content
       ##             section
       ##
-      ## RETURNS
-      ##
-      ## True if the help entry was properly updated, otherwise false with
+      ## Returns true if the help entry was properly updated, otherwise false with
       ## information what happened
       body:
         if options.len < 3:
@@ -505,20 +422,14 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.gcsafe,
     sideEffect, raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect,
         ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Get information about the selected plugin and check it compatybility with
   ## the shell's API
-  ##
-  ## PARAMETERS
   ##
   ## * pluginPath - the full path to the plugin which will be checked
   ## * db         - the connection to the shell's database
   ## * commands   - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## PluginData object with information about the selected plugin or an empty
+  ## Returns PluginData object with information about the selected plugin or an empty
   ## object if the plugin isn't compatible with the shell's API
   require:
     pluginPath.len > 0
@@ -542,19 +453,13 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, TimeEffect, WriteDbEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Add the plugin from the selected full path to the shell and enable it.
-  ##
-  ## PARAMETERS
   ##
   ## * db          - the connection to the shell's database
   ## * arguments   - the arguments which the user entered to the command
   ## * commands    - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the selected plugin was properly added, otherwise
+  ## Returns QuitSuccess if the selected plugin was properly added, otherwise
   ## QuitFailure. Also, updated parameter pluginsList
   require:
     db != nil
@@ -606,19 +511,13 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
 proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
     ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Disable the plugin and remove it from the shell.
-  ##
-  ## PARAMETERS
   ##
   ## * db        - the connection to the shell's database
   ## * arguments - the arguments which the user entered to the command
   ## * commands  - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the selected plugin was properly added, otherwise
+  ## Returns QuitSuccess if the selected plugin was properly added, otherwise
   ## QuitFailure. Also, updated parameter pluginsList
   require:
     db != nil
@@ -663,20 +562,14 @@ proc togglePlugin*(db; arguments; disable: bool = true;
     commands): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
     ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Enable or disable the selected plugin.
-  ##
-  ## PARAMETERS
   ##
   ## * db        - the connection to the shell's database
   ## * arguments - the arguments which the user entered to the command
   ## * disable   - if true, disable the plugin, otherwise enable it
   ## * commands  - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the selected plugin was properly enabled or disabled,
+  ## Returns QuitSuccess if the selected plugin was properly enabled or disabled,
   ## otherwise QuitFailure. Also, updated parameter pluginsList
   require:
     db != nil
@@ -737,19 +630,13 @@ proc togglePlugin*(db; arguments; disable: bool = true;
 proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## List enabled plugins, if entered command was "plugin list all" list all
   ## installed then.
-  ##
-  ## PARAMETERS
   ##
   ## * arguments - the user entered text with arguments for showing plugins
   ## * db        - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the list of plugins was properly show, otherwise
+  ## Returns QuitSuccess if the list of plugins was properly show, otherwise
   ## QuitFailure.
   require:
     arguments.len > 3
@@ -797,11 +684,7 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Show details about the selected plugin, its ID, path and status
-  ##
-  ## PARAMETERS
   ##
   ## * arguments - the user entered text with arguments for the showing
   ##               plugin
@@ -809,9 +692,7 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
   ## * db        - the connection to the shell's database
   ## * commands  - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the selected plugin was properly show, otherwise
+  ## Returns QuitSuccess if the selected plugin was properly show, otherwise
   ## QuitFailure.
   require:
     arguments.len > 0
@@ -859,20 +740,14 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
 proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
     ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, TimeEffect,
     WriteDbEffect, ReadDbEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Initialize the shell's plugins. Load the enabled plugins, initialize them
   ## and add the shell's commands related to the plugins' system
-  ##
-  ## PARAMETERS
   ##
   ## * db          - the connection to the shell's database
   ## * pluginsList - the list of enabled plugins
   ## * commands    - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## The updated list of enabled plugins and the updated list of the
+  ## Returns The updated list of enabled plugins and the updated list of the
   ## shell's commands.
   require:
     db != nil
@@ -880,18 +755,13 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
     # Add commands related to the shell's aliases
     proc pluginCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.raises: [], contractual.} =
-      ## FUNCTION
-      ##
       ## The code of the shell's command "plugin" and its subcommands
-      ##
-      ## PARAMETERS
       ##
       ## * arguments - the arguments entered by the user for the command
       ## * db        - the connection to the shell's database
       ## * list      - the additional data for the command, like id of plugin, etc
       ##
-      ## RETURNS
-      ## QuitSuccess if the selected command was successfully executed,
+      ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
@@ -957,17 +827,11 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
 
 proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Update the table plugins to the new version if needed
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if update was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
