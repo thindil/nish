@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,33 +24,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 type ResultCode* = distinct Natural
-  ## FUNCTION
-  ##
   ## Used to store result code from commands entered by the user
 
 proc `==`*(x: ResultCode; y: int): bool {.borrow.}
-  ## FUNCTION
-  ##
   ## Used to compare ResultCode with int. Borrowed from int type.
-  ##
-  ## PARAMETERS
   ##
   ## * x - The ResultCode to compare
   ## * y - The int to compare
   ##
-  ## RETURNS
-  ##
-  ## True if both ResultCode and int are the same, otherwise false.
+  ## Returns true if both ResultCode and int are the same, otherwise false.
 
 proc `$`*(x: ResultCode): string {.borrow.}
-  ## FUNCTION
-  ##
   ## Get string representation of ResultCode. Borrowed from int type.
-  ##
-  ## PARAMETERS
   ##
   ## * x - The ResultCode which will be converted to string
   ##
-  ## RETURNS
-  ##
-  ## The string representation of the x parameter
+  ## Returns the string representation of the x parameter
