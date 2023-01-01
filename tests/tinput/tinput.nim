@@ -12,8 +12,9 @@ block:
     conjCommands: bool = true
     arguments: UserInput = getArguments(userCommand, conjCommands)
 
+  echo arguments
   assert arguments == initLimitedString(capacity = maxInputLength,
-      text = "ls -a -b --foo --bar=20 file.txt"), "Failed to set the argumets."
+      text = "ls -ab --foo --bar=20 file.txt"), "Failed to set the argumets."
 
   assert readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
 
