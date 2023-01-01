@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,11 +33,7 @@ import lstring, options
 proc setTitle*(title: string; db: DbConn) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Set the title of the terminal if the proper shell's option is enabled
-  ##
-  ## PARAMETERS
   ##
   ## * title - the new title for the terminal
   ## * db    - the connection to the shell's database
