@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -148,7 +148,8 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
       showError(message = "Entered input is too long.", e = getCurrentException())
 
 proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect, RootEffect],
+    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect,
+        RootEffect],
     contractual.} =
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
@@ -241,8 +242,9 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
       return exitString
     return resultString
 
-func getArguments*(userInput: var OptParser;
-    conjCommands: var bool): UserInput {.gcsafe, raises: [], tags: [].} =
+proc getArguments*(userInput: var OptParser;
+    conjCommands: var bool): UserInput {.gcsafe, sideEffect, raises: [], tags: [
+    ReadIOEffect].} =
   ## Set the command arguments from the user input
   ##
   ## * userInput    - the input string entered by the user
@@ -252,39 +254,28 @@ func getArguments*(userInput: var OptParser;
   ##
   ## Returns properly converted user input and parameter conjCommands
   result = emptyLimitedString(capacity = maxInputLength)
-  userInput.next
   conjCommands = false
-  var key: string
-  while userInput.kind != cmdEnd:
-    if userInput.key == "&&":
+  var
+    arguments = userInput.remainingArgs
+    index = -1
+  for argument in arguments:
+    index.inc
+    if argument == "&&":
       conjCommands = true
       break
-    if userInput.key == "||":
+    if argument == "||":
       break
-    if userInput.key.contains(sub = " "):
-      key = "\"" & userInput.key & "\""
-    else:
-      key = userInput.key
     try:
-      case userInput.kind
-      of cmdLongOption, cmdShortOption:
-        if userInput.kind == cmdLongOption:
-          result.add(y = "-")
-        result.add(y = "-" & key)
-        if userInput.val.len > 0:
-          result.add(y = "=")
-          if userInput.val.contains(sub = " "):
-            result.add(y = "\"" & userInput.val & "\"")
-          else:
-            result.add(userInput.val)
-      of cmdArgument:
-        result.add(y = key)
-      of cmdEnd:
-        discard
-      result.add(y = " ")
-      userInput.next
+      if " " in argument:
+        result.add(y = " \"" & argument & "\"")
+      else:
+        result.add(y = " " & argument)
     except CapacityError:
       break
+  if index < arguments.len - 1:
+    userInput = initOptParser(cmdline = arguments[index + 1..^1])
+  else:
+    userInput = initOptParser(cmdline = @[""])
   try:
     result.text = strutils.strip(s = $result)
   except CapacityError:
