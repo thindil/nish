@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,13 +33,9 @@ import columnamount, commandslist, constants, databaseid, directorypath, help,
 
 const
   variableNameLength*: Positive = maxNameLength
-  ## FUNCTION
-  ##
   ## The maximum length of the shell's environment variable name
 
   variablesCommands* = ["list", "delete", "add", "edit"]
-  ## FUNCTION
-  ##
   ## The list of available subcommands for command variable
 
 type
@@ -52,21 +48,15 @@ using
 proc buildQuery*(directory: DirectoryPath; fields: string;
     where: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Build database query for get environment variables for the selected
   ## directory and its parents
-  ##
-  ## PARAMETERS
   ##
   ## * directory - the directory path for which the database's query will be build
   ## * fields    - the database fields to retrieve by the database's query
   ## * where     - the optional arguments for WHERE statement. Can be empty.
   ##               Default value is empty.
   ##
-  ## RETURNS
-  ##
-  ## The string with database's query for the selected directory and fields
+  ## Returns the string with database's query for the selected directory and fields
   require:
     directory.len > 0
     fields.len > 0
@@ -91,12 +81,8 @@ proc setVariables*(newDirectory: DirectoryPath; db;
     oldDirectory: DirectoryPath = "".DirectoryPath) {.gcsafe, sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Set the environment variables in the selected directory and remove the
   ## old ones
-  ##
-  ## PARAMETERS
   ##
   ## * newDirectory - the new directory in which environment variables will be
   ##                  set
@@ -156,17 +142,11 @@ proc setVariables*(newDirectory: DirectoryPath; db;
 proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Build-in command to set the selected environment variable
-  ##
-  ## PARAMETERS
   ##
   ## * arguments - the user entered text with arguments for set variable
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the environment variable was successfully set, otherwise
+  ## Returns QuitSuccess if the environment variable was successfully set, otherwise
   ## QuitFailure
   body:
     if arguments.len == 0:
@@ -186,17 +166,11 @@ proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
 proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Build-in command to unset the selected environment variable
-  ##
-  ## PARAMETERS
   ##
   ## * arguments - the user entered text with arguments for unset variable
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the environment variable was successfully unset, otherwise
+  ## Returns QuitSuccess if the environment variable was successfully unset, otherwise
   ## QuitFailure
   body:
     if arguments.len == 0:
@@ -213,19 +187,13 @@ proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
 proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## List available variables, if entered command was "variables list all" list all
   ## declared variables then
-  ##
-  ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for list variables
   ## * db           - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSucces if variables are properly listed, otherwise QuitFailure
+  ## Returns QuitSucces if variables are properly listed, otherwise QuitFailure
   require:
     arguments.len > 0
     db != nil
@@ -271,18 +239,12 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
 proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
     ], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Delete the selected variable from the shell's database
-  ##
-  ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for delete the variable
   ## * db           - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the environment variable was successfully deleted, otherwise
+  ## Returns QuitSuccess if the environment variable was successfully deleted, otherwise
   ## QuitFailure.
   require:
     arguments.len > 0
@@ -315,18 +277,12 @@ proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
 proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Add a new variable to the shell. Ask the user a few questions and fill the
   ## variable values with answers
   ##
-  ## PARAMETERS
-  ##
   ## * db           - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the environment variable was successfully added, otherwise
+  ## Returns QuitSuccess if the environment variable was successfully added, otherwise
   ## QuitFailure.
   require:
     db != nil
@@ -433,19 +389,13 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
 proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Edit the selected variable.  Ask the user a few questions and fill the
   ## variable values with answers
-  ##
-  ## PARAMETERS
   ##
   ## * arguments    - the user entered text with arguments for editing the variable
   ## * db           - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if the environment variable was successfully updated, otherwise
+  ## Returns QuitSuccess if the environment variable was successfully updated, otherwise
   ## QuitFailure.
   require:
     arguments.len > 0
@@ -566,17 +516,11 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
 proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
-  ## FUNCTION
-  ##
   ## Create the table variables
-  ##
-  ## PARAMETERS
   ##
   ## * db - the connection to the shell's database
   ##
-  ## RETURNS
-  ##
-  ## QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## Returns QuitSuccess if creation was successfull, otherwise QuitFailure and
   ## show message what wrong
   require:
     db != nil
@@ -602,20 +546,14 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
 proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, WriteDbEffect, RootEffect], contractual.} =
-  ## FUNCTION
-  ##
   ## Initialize enviroment variables. Set help related to the variables and
   ## load the local environment variables.
-  ##
-  ## PARAMETERS
   ##
   ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
   ## * commands    - the list of the shell's commands
   ##
-  ## RETURNS
-  ##
-  ## The list of available environment variables in the current directory and
+  ## Returns the list of available environment variables in the current directory and
   ## the updated helpContent with the help for the commands related to the
   ## variables.
   require:
@@ -625,19 +563,14 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
     # they are build-in commands, thus cannot be replaced
     proc variableCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.raises: [], contractual.} =
-      ## FUNCTION
-      ##
       ## The code of the shell's command "variable" and its subcommands
-      ##
-      ## PARAMETERS
       ##
       ## * arguments - the arguments entered by the user for the command
       ## * db        - the connection to the shell's database
       ## * list      - the additional data for the command, like list of help
       ##               entries, etc
       ##
-      ## RETURNS
-      ## QuitSuccess if the selected command was successfully executed,
+      ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
         # No subcommand entered, show available options
