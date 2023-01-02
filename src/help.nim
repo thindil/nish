@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,7 @@ import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, terminal]
 # External modules imports
 import contracts, nancy
 # Internal imports
-import columnamount, commandslist, helpcontent, constants, input, lstring,
-    output, resultcode
+import commandslist, helpcontent, constants, input, lstring, output, resultcode
 
 using db: DbConn # Connection to the shell's database
 
@@ -239,8 +238,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
 
 proc showHelpList*(command: string; subcommands: openArray[
     string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
-    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
-    contractual.} =
+    WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+    RootEffect], contractual.} =
   ## Show short help about available subcommands related to the selected command
   ##
   ## * command     - the selected command which subcommands' list will be

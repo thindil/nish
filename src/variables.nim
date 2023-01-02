@@ -28,8 +28,8 @@ import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
-import columnamount, commandslist, constants, databaseid, directorypath, help,
-    input, lstring, output, resultcode
+import commandslist, constants, databaseid, directorypath, help, input, lstring,
+    output, resultcode
 
 const
   variableNameLength*: Positive = maxNameLength

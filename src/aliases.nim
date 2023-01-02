@@ -31,8 +31,8 @@ import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
-import columnamount, commandslist, constants, databaseid, directorypath, help,
-    input, lstring, output, resultcode, variables
+import commandslist, constants, databaseid, directorypath, help, input, lstring,
+    output, resultcode, variables
 
 const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
   ## The list of available subcommands for command alias
@@ -43,8 +43,8 @@ using
   arguments: UserInput # The string with arguments entered by the user for the command
 
 proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
-    contractual.} =
+    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+    RootEffect], contractual.} =
   ## Set the available aliases in the selected directory
   ##
   ## * aliases   - the list of aliases available in the selected directory

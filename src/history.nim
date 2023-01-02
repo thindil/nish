@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
-import columnamount, commandslist, constants, help, input, lstring, output, resultcode
+import commandslist, constants, help, input, lstring, output, resultcode
 
 const historyCommands* = ["clear", "list", "find"]
   ## The list of available subcommands for command history

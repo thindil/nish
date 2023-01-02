@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,8 @@ import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
-import columnamount, commandslist, constants, databaseid, help, input, lstring,
-    options, output, resultcode
+import commandslist, constants, databaseid, help, input, lstring, options,
+    output, resultcode
 
 const
   minApiVersion: float = 0.2
@@ -42,7 +42,7 @@ const
 type
   PluginData = object
     ## Store information about the shell's plugin
-    path*: string ## Full path to the selected plugin
+    path*: string    ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
 
 using

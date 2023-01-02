@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ import std/[db_sqlite, strutils, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 # Internal imports
-import columnamount, resultcode
+import constants, resultcode
 
 type OutputMessage* = string
   ## Used to store message to show to the user
