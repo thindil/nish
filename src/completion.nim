@@ -23,6 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module contains code related to the completion with Tab key the user's
+## input, like completing names of files, directories, commands, etc.
+
 # Standard library imports
 import std/[db_sqlite, os, strutils, tables]
 # External modules imports
