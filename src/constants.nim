@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -56,3 +56,5 @@ type
     ## Used to store aliases names in tables and database.
   AliasesList* = OrderedTable[AliasName, int]
     ## Used to store the available aliases in the selected directory
+  ColumnAmount* = distinct Natural
+    ## Used to store length or amount of terminal's characters columns
