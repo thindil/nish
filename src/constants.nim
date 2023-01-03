@@ -23,6 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module contains constants and variables types used by the shell's code
+
 # Standard library imports
 import std/tables
 # Internal imports
