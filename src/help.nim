@@ -23,6 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module contains code related to the shell's help system, like reading
+## the help content from file, searching for or printing it to the user.
+
 # Standard library imports
 import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, terminal]
 # External modules imports
