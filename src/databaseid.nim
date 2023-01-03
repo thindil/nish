@@ -1,4 +1,4 @@
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,6 +22,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## This module contains definition of DatabaseId type and code related to the
+## type.
 
 type DatabaseId* = distinct Natural
   ## Used to store ids from or to the shell's database
