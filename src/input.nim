@@ -23,6 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module provides code to handle the user's input in the shell, like
+## getting the Unicode character, deleting characters or moving cursor around.
+
 # Standard library imports
 import std/[parseopt, strutils, terminal, unicode]
 # External modules imports
