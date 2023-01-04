@@ -1,4 +1,4 @@
-# Copyright © 2021-2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2021-2023 Bartek Jasicki <thindil@laeran.pl>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,6 +22,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## The main module of the shell. Contains code for command line options, starting,
+## and stopping the shell and the main loop of the shell itself.
 
 # Standard library imports
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal, unicode]
