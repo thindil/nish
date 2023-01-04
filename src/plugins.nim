@@ -23,6 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module contains code related to the shells' plugin system, like adding,
+## removing or executing the plugins. For examples of how to use the shell's
+## plugins' API, please look at the testplugin.sh in the tools directory.
+
 # Standard library imports
 import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
 # External modules imports
