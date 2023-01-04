@@ -23,6 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module contains code related to showing the results of user's commands
+## like normal output, errors or formated tables headers.
+
 # Standard library imports
 import std/[db_sqlite, strutils, terminal]
 # External modules imports
