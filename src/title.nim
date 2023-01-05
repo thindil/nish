@@ -23,6 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module contains code to set the terminal's window title, based on the
+## shell's setting and avaiablitity.
+
 # Standard library imports
 import std/[db_sqlite, os, terminal]
 # External modules imports
