@@ -23,6 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module ResultCode type used to return result code from the shell's
+## procedures and the user's entered commands
+
 type ResultCode* = distinct Natural
   ## Used to store result code from commands entered by the user
 
