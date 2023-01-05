@@ -23,6 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+## This module contains code related to the environment variables set by the
+## shell, like adding, editing or deleting variables or setting or unsetting
+## the standard environment variables.
+
 # Standard library imports
 import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
