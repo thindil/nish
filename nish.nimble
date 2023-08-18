@@ -2,7 +2,7 @@ import os
 
 # Package
 
-version = "0.5.0"
+version = "0.6.0"
 author = "Bartek thindil Jasicki"
 description = "A non-POSIX, multiplatform command line shell"
 license = "BSD-3-Clause"
@@ -13,11 +13,13 @@ binDir = "bin"
 
 # Dependencies
 
-requires "nim <= 1.6.10"
+requires "nim >= 1.6.14"
 requires "contracts >= 0.2.2"
 requires "nimassets >= 0.2.4"
 requires "nancy >= 0.1.1"
 requires "termstyle >= 0.1.0"
+if (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
+  requires "db_connector"
 
 # Tasks
 
