@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
 # External modules imports
-import contracts, nancy, termstyle
+import ansiparse, contracts, nancy, termstyle
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables
@@ -105,14 +105,18 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     db != nil
   body:
     var table: TerminalTable
-    table.add(magenta("ID"), magenta("Name"), magenta("Description"))
+    try:
+      table.add(magenta("ID"), magenta("Name"), magenta("Description"))
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      return showError(message = "Can't show aliases list. Reason: ",
+          e = getCurrentException())
     # Show all available aliases declared in the shell
     if arguments == "list all":
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, name, description FROM aliases")):
           table.add(row[0], row[1], row[2])
-      except DbError:
+      except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
       showFormHeader(message = "All available aliases are:",
@@ -125,7 +129,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
               query = "SELECT id, name, description FROM aliases WHERE id=?"),
             args = alias)
           table.add(row[0], row[1], row[2])
-        except DbError:
+        except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
           return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
       showFormHeader(message = "Available aliases are:",
@@ -207,14 +211,18 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "The alias with the ID: " & $id &
         " doesn't exists.")
     var table: TerminalTable
-    table.add(magenta("Id:"), $id)
-    table.add(magenta("Name:"), row[0])
-    table.add(magenta("Description:"), (if row[2].len > 0: row[
-        2] else: "(none)"))
-    table.add(magenta("Path:"), row[3] & (if row[4] ==
-        "1": " (recursive)" else: ""))
-    table.add(magenta("Command(s):"), row[1])
-    table.add(magenta("Output to:"), row[5])
+    try:
+      table.add(magenta("Id:"), $id)
+      table.add(magenta("Name:"), row[0])
+      table.add(magenta("Description:"), (if row[2].len > 0: row[
+          2] else: "(none)"))
+      table.add(magenta("Path:"), row[3] & (if row[4] ==
+          "1": " (recursive)" else: ""))
+      table.add(magenta("Command(s):"), row[1])
+      table.add(magenta("Output to:"), row[5])
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      return showError(message = "Can't show alias. Reason: ",
+          e = getCurrentException())
     try:
       table.echoTable
     except IOError, Exception:
