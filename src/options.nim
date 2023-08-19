@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[db_sqlite, os, osproc, strutils, terminal]
 # External modules imports
-import contracts, nancy, termstyle
+import ansiparse, contracts, nancy, termstyle
 # Internal imports
 import commandslist, constants, help, input, lstring, output, resultcode
 
@@ -128,14 +128,18 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     db != nil
   body:
     var table: TerminalTable
-    table.add(magenta("Name"), magenta("Value"), magenta("Default"), magenta(
-        "Type"), magenta("Description"))
+    try:
+      table.add(magenta("Name"), magenta("Value"), magenta("Default"), magenta(
+          "Type"), magenta("Description"))
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      return showError(message = "Can't show options list. Reason: ",
+          e = getCurrentException())
     showFormHeader(message = "Available options are:", db = db)
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT option, value, defaultvalue, valuetype, description FROM options ORDER BY option ASC")):
         table.add(row)
-    except DbError:
+    except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
     try:
