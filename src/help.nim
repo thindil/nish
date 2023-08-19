@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, terminal]
 # External modules imports
-import contracts, nancy
+import ansiparse, contracts, nancy
 # Internal imports
 import commandslist, helpcontent, constants, input, lstring, output, resultcode
 
@@ -135,7 +135,11 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         row = row & key & "\t"
         i.inc
         if i == columnAmount:
-          table.tabbed(row)
+          try:
+            table.tabbed(row)
+          except UnknownEscapeError, InsufficientInputError, FinalByteError:
+            showError(message = "Can't show the help entries list. Reason: ",
+                e = getCurrentException())
           row = ""
           i = 1
       var width: int = 0
