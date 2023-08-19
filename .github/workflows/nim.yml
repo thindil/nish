@@ -28,6 +28,9 @@ jobs:
       with:
         nim-version: 'stable'
 
+    - name: Update Nimble
+      run: nimble install -y nimble
+
     - name: Debug build
       run: nimble debug
 
