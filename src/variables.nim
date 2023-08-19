@@ -30,7 +30,7 @@
 # Standard library imports
 import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
-import contracts, nancy, termstyle
+import ansiparse, contracts, nancy, termstyle
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode
@@ -203,14 +203,18 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     db != nil
   body:
     var table: TerminalTable
-    table.add(magenta("ID"), magenta("Name"), magenta("Value"), magenta("Description"))
+    try:
+      table.add(magenta("ID"), magenta("Name"), magenta("Value"), magenta("Description"))
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      return showError(message = "Can't show variables list. Reason: ",
+          e = getCurrentException())
     # Show the list of all declared environment variables in the shell
     if arguments == "list all":
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, name, value, description FROM variables")):
           table.add(row)
-      except DbError:
+      except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException())
       var width: int = 0
@@ -225,7 +229,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
             directory = getCurrentDir().DirectoryPath,
                 fields = "id, name, value, description"))):
           table.add(row)
-      except DbError, OSError:
+      except DbError, OSError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException())
       var width: int = 0
