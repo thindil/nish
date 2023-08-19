@@ -30,7 +30,7 @@
 # Standard library imports
 import std/[db_sqlite, os, strutils, terminal]
 # External modules imports
-import contracts, nancy, termstyle
+import ansiparse, contracts, nancy, termstyle
 # Internal imports
 import commandslist, constants, help, input, lstring, output, resultcode
 
@@ -237,7 +237,11 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
         else:
           return showError(message = "Unknown type of history sort order")
     var table: TerminalTable
-    table.add(magenta("Last used"), magenta("Times"), magenta("Command"))
+    try:
+      table.add(magenta("Last used"), magenta("Times"), magenta("Command"))
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      return showError(message = "Can't show history list. Reason: ",
+          e = getCurrentException())
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT command, lastused, amount FROM history ORDER BY " &
@@ -248,7 +252,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
         width = width + size
       showFormHeader(message = "The last " & $amount &
           " commands from the shell's history", width = width.ColumnAmount, db = db)
-    except DbError:
+    except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
     try:
@@ -302,7 +306,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       except IOError, Exception:
         return showError(message = "Can't show the list of search results from history. Reason: ",
             e = getCurrentException())
-    except DbError, ValueError:
+    except DbError, ValueError, UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
