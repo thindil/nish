@@ -18,6 +18,7 @@ requires "contracts >= 0.2.2"
 requires "nimassets >= 0.2.4"
 requires "nancy >= 0.1.1"
 requires "termstyle >= 0.1.0"
+requires "nimalyzer >= 0.6.0"
 if (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
   requires "db_connector"
 
