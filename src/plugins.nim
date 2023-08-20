@@ -30,7 +30,7 @@
 # Standard library imports
 import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
 # External modules imports
-import contracts, nancy, termstyle
+import ansiparse, contracts, nancy, termstyle
 # Internal imports
 import commandslist, constants, databaseid, help, input, lstring, options,
     output, resultcode
@@ -649,12 +649,16 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     var table: TerminalTable
     # Show the list of all installed plugins with information about their state
     if arguments == "list all":
-      table.add(magenta("ID"), magenta("Path"), magenta("Enabled"))
+      try:
+        table.add(magenta("ID"), magenta("Path"), magenta("Enabled"))
+      except UnknownEscapeError, InsufficientInputError, FinalByteError:
+        return showError(message = "Can't show all plugins list. Reason: ",
+            e = getCurrentException())
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, location, enabled FROM plugins")):
           table.add(row[0], row[1], (if row[2] == "1": "Yes" else: "No"))
-      except DbError:
+      except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't read info about plugin from database. Reason:",
             e = getCurrentException())
       var width: int = 0
@@ -664,12 +668,16 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           width = width.ColumnAmount, db = db)
     # Show the list of enabled plugins
     elif arguments[0..3] == "list":
-      table.add(magenta("ID"), magenta("Path"))
+      try:
+        table.add(magenta("ID"), magenta("Path"))
+      except UnknownEscapeError, InsufficientInputError, FinalByteError:
+        return showError(message = "Can't show plugins list. Reason: ",
+            e = getCurrentException())
       try:
         for plugin in db.fastRows(query = sql(
             query = "SELECT id, location FROM plugins WHERE enabled=1")):
           table.add(plugin)
-      except DbError:
+      except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
             e = getCurrentException())
       var width: int = 0
@@ -717,23 +725,31 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
       return showError(message = "The plugin with the ID: " & $id &
         " doesn't exists.")
     var table: TerminalTable
-    table.add(magenta("Id:"), $id)
-    table.add(magenta("Path"), row[0])
-    table.add(magenta("Enabled:"), (if row[1] == "1": "Yes" else: "No"))
+    try:
+      table.add(magenta("Id:"), $id)
+      table.add(magenta("Path"), row[0])
+      table.add(magenta("Enabled:"), (if row[1] == "1": "Yes" else: "No"))
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      return showError(message = "Can't plugin's info. Reason: ",
+          e = getCurrentException())
     let pluginData = execPlugin(pluginPath = row[0], arguments = ["info"],
         db = db, commands = commands)
     # If plugin contains any aditional information, show them
-    if pluginData.code == QuitSuccess:
-      let pluginInfo = split($pluginData.answer, ";")
-      table.add(magenta("API version:"), (if pluginInfo.len > 2: pluginInfo[
-          2] else: "0.1"))
-      if pluginInfo.len > 2:
-        table.add(magenta("API used:"), pluginInfo[3])
-      table.add(magenta("Name:"), pluginInfo[0])
-      if pluginInfo.len > 1:
-        table.add(magenta("Descrition:"), pluginInfo[1])
-    else:
-      table.add(magenta("API version:"), "0.1")
+    try:
+      if pluginData.code == QuitSuccess:
+        let pluginInfo = split($pluginData.answer, ";")
+        table.add(magenta("API version:"), (if pluginInfo.len > 2: pluginInfo[
+            2] else: "0.1"))
+        if pluginInfo.len > 2:
+          table.add(magenta("API used:"), pluginInfo[3])
+        table.add(magenta("Name:"), pluginInfo[0])
+        if pluginInfo.len > 1:
+          table.add(magenta("Descrition:"), pluginInfo[1])
+      else:
+        table.add(magenta("API version:"), "0.1")
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      return showError(message = "Can't plugin's info. Reason: ",
+          e = getCurrentException())
     try:
       table.echoTable
     except IOError, Exception:
