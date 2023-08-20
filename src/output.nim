@@ -27,9 +27,9 @@
 ## like normal output, errors or formated tables headers.
 
 # Standard library imports
-import std/[db_sqlite, strutils, terminal]
+import std/[strutils, terminal]
 # External modules imports
-import contracts, nancy, termstyle
+import contracts, db_sqlite, nancy, termstyle
 # Internal imports
 import constants, resultcode
 

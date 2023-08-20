@@ -27,9 +27,9 @@
 ## prompt or getting formatted directory name
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, strutils, terminal]
+import std/[os, osproc, strutils, terminal]
 # External modules imports
-import contracts
+import contracts, db_sqlite
 # Internal imports
 import constants, directorypath, lstring, options, output, resultcode
 

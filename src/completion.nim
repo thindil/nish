@@ -27,9 +27,9 @@
 ## input, like completing names of files, directories, commands, etc.
 
 # Standard library imports
-import std/[db_sqlite, os, strutils, tables]
+import std/[os, strutils, tables]
 # External modules imports
-import contracts
+import contracts, db_sqlite
 # Internal imports
 import commandslist, constants, lstring, options, output
 

@@ -27,9 +27,9 @@
 ## the help content from file, searching for or printing it to the user.
 
 # Standard library imports
-import std/[algorithm, db_sqlite, os, parsecfg, strutils, streams, terminal]
+import std/[algorithm, os, parsecfg, strutils, streams, terminal]
 # External modules imports
-import ansiparse, contracts, nancy
+import ansiparse, contracts, db_sqlite, nancy
 # Internal imports
 import commandslist, helpcontent, constants, input, lstring, output, resultcode
 

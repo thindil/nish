@@ -27,9 +27,9 @@
 ## setting them, deleting or executing.
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal]
+import std/[os, osproc, parseopt, strutils, tables, terminal]
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, db_sqlite, nancy, termstyle
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables

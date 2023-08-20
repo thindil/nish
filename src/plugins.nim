@@ -28,9 +28,9 @@
 ## plugins' API, please look at the testplugin.sh in the tools directory.
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, parseopt, streams, strutils, tables, terminal]
+import std/[os, osproc, parseopt, streams, strutils, tables, terminal]
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, db_sqlite, nancy, termstyle
 # Internal imports
 import commandslist, constants, databaseid, help, input, lstring, options,
     output, resultcode

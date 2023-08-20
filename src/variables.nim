@@ -28,9 +28,9 @@
 ## the standard environment variables.
 
 # Standard library imports
-import std/[db_sqlite, os, strutils, terminal]
+import std/[os, strutils, terminal]
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, db_sqlite, nancy, termstyle
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode

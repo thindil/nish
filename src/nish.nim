@@ -27,9 +27,9 @@
 ## and stopping the shell and the main loop of the shell itself.
 
 # Standard library imports
-import std/[db_sqlite, os, osproc, parseopt, strutils, tables, terminal, unicode]
+import std/[os, osproc, parseopt, strutils, tables, terminal, unicode]
 # External modules imports
-import contracts, nancy
+import contracts, db_sqlite, nancy
 # Internal imports
 import aliases, commands, commandslist, completion, constants, directorypath,
     help, highlight, history, input, lstring, options, output, plugins, prompt,

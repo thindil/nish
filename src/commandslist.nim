@@ -27,9 +27,9 @@
 ## deleting, replacing them.
 
 # Standard library imports
-import std/[db_sqlite, tables]
+import std/tables
 # External modules imports
-import contracts
+import contracts, db_sqlite
 # Internal imports
 import constants, lstring, output, resultcode
 

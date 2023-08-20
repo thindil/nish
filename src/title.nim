@@ -27,9 +27,9 @@
 ## shell's setting and avaiablitity.
 
 # Standard library imports
-import std/[db_sqlite, os, terminal]
+import std/[os, terminal]
 # External modules imports
-import contracts
+import contracts, db_sqlite
 # Internal imports
 import lstring, options
 

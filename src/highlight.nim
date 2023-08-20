@@ -26,9 +26,9 @@
 ## The module contains code related to coloring the user's input in the shell.
 
 # Standard library imports
-import std/[db_sqlite, os, strutils, tables, terminal, unicode]
+import std/[os, strutils, tables, terminal, unicode]
 # External modules imports
-import contracts
+import contracts, db_sqlite
 # Internal imports
 import commandslist, constants, input, lstring, options, output, prompt, resultcode
 
