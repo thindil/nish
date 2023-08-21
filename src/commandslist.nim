@@ -28,8 +28,13 @@
 
 # Standard library imports
 import std/tables
+# Database library import, depends on version of Nim
+when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
+  import db_connector/db_sqlite
+else:
+  import std/db_sqlite
 # External modules imports
-import contracts, db_sqlite
+import contracts
 # Internal imports
 import constants, lstring, output, resultcode
 

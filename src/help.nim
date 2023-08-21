@@ -28,8 +28,13 @@
 
 # Standard library imports
 import std/[algorithm, os, parsecfg, strutils, streams, terminal]
+# Database library import, depends on version of Nim
+when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
+  import db_connector/db_sqlite
+else:
+  import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, db_sqlite, nancy
+import ansiparse, contracts, nancy
 # Internal imports
 import commandslist, helpcontent, constants, input, lstring, output, resultcode
 
