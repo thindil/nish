@@ -67,7 +67,7 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     stdout.writeLine(x = """
     Nish version: 0.6.0
 
-    Copyright: 2021-2023 Bartek Jasicki <thindil@laeran.pl>
+    Copyright: 2021-2023 Bartek Jasicki <thindil@laeran.pl.eu.org>
     License: 3-Clause BSD""")
     stdout.flushFile
   except IOError:
