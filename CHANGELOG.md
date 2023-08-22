@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file.
 Tag **BREAKING** means the change break compatibility with a previous version
 of the shell.
 
-## Unreleased
+## [Unreleased]
 
 ### Changed
 - Updated README.md
+
+### Fixed
+- Compiling the shell with Nim 2.0
 
 ## [0.5.0] - 2023-01-05
 
