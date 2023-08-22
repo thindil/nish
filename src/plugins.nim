@@ -370,6 +370,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         except CapacityError:
           showError(message = "Can't update help entry '" & options[0] &
               "'. Reason: ", e = getCurrentException())
+          return false
 
     let apiCalls = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
