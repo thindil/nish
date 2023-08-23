@@ -78,7 +78,7 @@ proc `&`*(x: string; y: DirectoryPath): string {.borrow.}
   ##
   ## Returns the merged string and DirectoryPath into one string
 
-func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
+func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [].} =
   ## Compare the DirectoryPath and string
   ##
   ## * x - The DirectoryPath to compare
@@ -87,7 +87,7 @@ func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [], lo
   ## Returns false if both DirectoryPath and string are the same, otherwise true
   return $x != y
 
-func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
+func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [].} =
   ## Compare the DirectoryPath and string
   ##
   ## * x - The DirectoryPath to compare

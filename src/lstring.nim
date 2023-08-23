@@ -38,7 +38,7 @@ type
     ## Raised when the new value of string will be longer than allowed maximum
 
 func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
-    CapacityError], tags: [], locks: 0.} =
+    CapacityError], tags: [].} =
   ## The setter for the text of LimitedString. Check if the new value isn't
   ## bigger than the capacity of the string and if not, assing the new value
   ## to it. Raise RangeDefect exception if the new value is longer than allowed
@@ -53,7 +53,7 @@ func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
         message = "New value for string is longer than its capacity.")
   s.text = value
 
-func `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [], locks: 0.} =
+func `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [].} =
   ## Convert LimitedString to string
   ##
   ## * s - The LimitedString which will be converted
@@ -61,7 +61,7 @@ func `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [], locks: 0.} =
   ## Returns the converted LimitedString, its value of field text
   result = s.text
 
-func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [], locks: 0.} =
+func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [].} =
   ## Get the length of the selected LimitedString
   ##
   ## * s - the LimitedString which length will be get
@@ -70,7 +70,7 @@ func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [], locks: 0.} 
   result = s.text.len
 
 func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
-    tags: [], locks: 0.} =
+    tags: [].} =
   ## Add a string to the selected LimitedString. Check if the new value isn't
   ## bigger than the capacity of the LimitedString and if not, add the string
   ## to the field text of LimitedString. Raise RangeDefect exception if the
@@ -86,7 +86,7 @@ func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
   s.text = s.text & y
 
 func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
-    tags: [], locks: 0.} =
+    tags: [].} =
   ## Add a character to the selected LimitedString. Check if the new value
   ## isn't bigger than the capacity of the LimitedString and if not, add the
   ## character to the field text of LimitedString. Raise RangeDefect exception
@@ -102,7 +102,7 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
   s.text = s.text & y
 
 func initLimitedString*(capacity: Positive;
-    text: string): LimitedString {.gcsafe, raises: [CapacityError], tags: [], locks: 0.} =
+    text: string): LimitedString {.gcsafe, raises: [CapacityError], tags: [].} =
   ## Initialize the new LimitedString with the selected capacity and content.
   ## Raises RangeDefect if the selected text is longer than the selected
   ## capacity.
@@ -116,7 +116,7 @@ func initLimitedString*(capacity: Positive;
         message = "New value for string will exceed its capacity.")
   return LimitedString(capacity: capacity, text: text)
 
-func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [], locks: 0.} =
+func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [].} =
   ## Get the maximum allowed capacity of the selected LimitedString
   ##
   ## * s - The LimitedString which the capacity will be get
@@ -125,7 +125,7 @@ func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [], locks
   return s.capacity
 
 func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
-    U]): LimitedString {.gcsafe, raises: [], tags: [], locks: 0.} =
+    U]): LimitedString {.gcsafe, raises: [], tags: [].} =
   ## Get the slice of the selected LimitedString
   ##
   ## * s - The LimitedString which slice of text will be get
@@ -138,7 +138,7 @@ func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
   return LimitedString(capacity: length, text: newValue)
 
 func `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
-    tags: [], locks: 0.} =
+    tags: [].} =
   ## Get the nth character of the selected LimitedString.
   ##
   ## * s - The LimitedString which slice of text will be get
@@ -148,7 +148,7 @@ func `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
   return s.text[i]
 
 func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
-    tags: [], locks: 0.} =
+    tags: [].} =
   ## Replace the selected character in LimitedString
   ##
   ## * s   - The LimitedString in which the character will be replaced
@@ -158,7 +158,7 @@ func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
   ## Returns the updated parameter s
   s.text[i] = val
 
-func `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
+func `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [].} =
   ## Compare the selected LimitedString and string
   ##
   ## * x - The LimitedString to compare
@@ -167,7 +167,7 @@ func `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], lo
   ## Returns false if string and field text of LimitedString are equal, otherwise true
   return x.text != y
 
-func `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], locks: 0.} =
+func `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [].} =
   ## Compare the selected LimitedString and string
   ##
   ## * x - The LimitedString to compare
@@ -176,7 +176,7 @@ func `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], lo
   ## Returns true if string and field text of LimitedString are equal, otherwise false
   return x.text == y
 
-func `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [], locks: 0.} =
+func `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [].} =
   ## Concatenates string and LimitedString into one string
   ##
   ## * x - The string to concatenate
@@ -185,7 +185,7 @@ func `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [], l
   ## Returns the newly created string with merged both strings
   return x & y.text
 
-func `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [], locks: 0.} =
+func `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [].} =
   ## Concatenates LimitedString and string into one string
   ##
   ## * x - The LimitedString which field text will be concatenate
@@ -195,7 +195,7 @@ func `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [], l
   return x.text & y
 
 func find*(s: LimitedString; sub: char; start: Natural = 0;
-    last = 0): int {.gcsafe, raises: [], tags: [], locks: 0.} =
+    last = 0): int {.gcsafe, raises: [], tags: [].} =
   ## Find the selected character in the selected LimitedString.
   ##
   ## * s     - The LimitedString which will be check for the selected character
@@ -210,7 +210,7 @@ func find*(s: LimitedString; sub: char; start: Natural = 0;
   return s.text.find(sub = sub, start = start, last = last)
 
 func rfind*(s: LimitedString; sub: char; start: Natural = 0;
-    last = -1): int {.gcsafe, raises: [], tags: [], locks: 0.} =
+    last = -1): int {.gcsafe, raises: [], tags: [].} =
   ## Reverse find the selected character in the selected LimitedString. Start
   ## looking from the end of the LimitedString.
   ##
@@ -226,7 +226,7 @@ func rfind*(s: LimitedString; sub: char; start: Natural = 0;
   return s.text.rfind(sub = sub, start = start, last = last)
 
 func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
-    raises: [CapacityError], tags: [], locks: 0.} =
+    raises: [CapacityError], tags: [].} =
   ## Insert the selected string into LimitedString at the selected position
   ##
   ## * x    - The LimitedString to which the string will be inserted
@@ -243,7 +243,7 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
         message = "New value for string will exceed its capacity.")
 
 func startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
-    tags: [], locks: 0.} =
+    tags: [].} =
   ## Check if the selected LimitedString starts with the selected string
   ##
   ## * s      - The LimitedString which will be checked
@@ -254,7 +254,7 @@ func startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
   return s.text.startsWith(prefix = prefix)
 
 func emptyLimitedString*(capacity: Positive = 1): LimitedString {.gcsafe,
-    raises: [], tags: [], locks: 0.} =
+    raises: [], tags: [].} =
   ## Create the new empty LimitedString with the the selected capacity.
   ##
   ## * capacity - The maximum length of the newly created empty LimitedString.

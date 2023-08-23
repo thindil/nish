@@ -40,7 +40,7 @@ import aliases, commands, commandslist, completion, constants, directorypath,
     help, highlight, history, input, lstring, options, output, plugins, prompt,
     resultcode, title, variables
 
-proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
+proc showCommandLineHelp*() {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect].} =
   ## Show the program arguments help
   ##
@@ -57,7 +57,7 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
     quit QuitFailure
   quit QuitSuccess
 
-proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
+proc showProgramVersion*() {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect].} =
   ## Show the program version
   ##
@@ -75,7 +75,8 @@ proc showProgramVersion*() {.gcsafe, sideEffect, locks: 0, raises: [], tags: [
   quit QuitSuccess
 
 proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
-    raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
+    raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+        RootEffect],
     contractual.} =
   ## Close the shell database and quit from the program with the selected return code
   ##
