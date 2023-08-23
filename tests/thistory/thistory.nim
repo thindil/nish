@@ -3,7 +3,11 @@ discard """
   outputsub: commands from the shell
 """
 
-import std/[db_sqlite, tables]
+import std/tables
+when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
+  import db_connector/db_sqlite
+else:
+  import std/db_sqlite
 import ../../src/[commandslist, directorypath, history, lstring, nish, resultcode]
 
 block:

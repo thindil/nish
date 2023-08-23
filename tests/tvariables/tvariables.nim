@@ -3,7 +3,11 @@ discard """
   outputsub: The variable with the Id
 """
 
-import std/[db_sqlite, os, strutils, tables]
+import std/[os, strutils, tables]
+when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
+  import db_connector/db_sqlite
+else:
+  import std/db_sqlite
 import ../../src/[commandslist, directorypath, lstring, nish, resultcode, variables]
 
 block:
