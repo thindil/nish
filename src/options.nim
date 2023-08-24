@@ -171,6 +171,9 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     if arguments.len < 5:
       return showError(message = "Please enter name of the option and its new value.")
     let separatorIndex: ExtendedNatural = arguments.find(sub = ' ', start = 4)
+    echo "len:", arguments.len
+    echo "args:", arguments
+    echo "sep:", separatorIndex
     if separatorIndex == -1:
       return showError(message = "Please enter a new value for the selected option.")
     let optionName: OptionName = arguments[4 .. (separatorIndex - 1)]
