@@ -1,6 +1,6 @@
 discard """
   exitcode: 0
-  outputsub: Value for optionasd
+  outputsub: Value for option
 """
 
 import std/tables
