@@ -89,7 +89,8 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
     capacity = maxInputLength); valueType: ValueType = none; db;
     readOnly: BooleanInt = 0) {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
+    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+        RootEffect],
     contractual.} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
@@ -168,15 +169,16 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     arguments.len > 0
     db != nil
   body:
-    if arguments.len < 5:
+    let setting: seq[string] = ($arguments).split()
+    if setting.len < 2:
       return showError(message = "Please enter name of the option and its new value.")
-    let separatorIndex: ExtendedNatural = arguments.find(sub = ' ', start = 4)
-    echo "len:", arguments.len
-    echo "args:", arguments
-    echo "sep:", separatorIndex
-    if separatorIndex == -1:
+    if setting.len < 3:
       return showError(message = "Please enter a new value for the selected option.")
-    let optionName: OptionName = arguments[4 .. (separatorIndex - 1)]
+    let optionName: OptionName = try:
+        initLimitedString(capacity = setting[1].len, text = setting[1])
+      except CapacityError:
+        return showError(message = "Can't get the option's name from command: '" &
+            arguments & "'.")
     try:
       if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
           optionName) == "1":
@@ -184,7 +186,12 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     except DbError:
       return showError(message = "Can't check if the selected option is read only. Reason: ",
           e = getCurrentException())
-    var value: OptionValue = arguments[(separatorIndex + 1) .. ^1]
+    let stringValue: string = setting[2 .. ^1].join(sep = " ")
+    var value: OptionValue = try:
+        initLimitedString(capacity = stringValue.len, text = stringValue)
+      except CapacityError:
+        return showError(message = "Can't get the option's value from command: '" &
+            arguments & "'.")
     # Check correctness of the option's value
     try:
       case db.getValue(query = sql(query = "SELECT valuetype FROM options WHERE option=?"), optionName)
