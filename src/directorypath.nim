@@ -40,7 +40,10 @@ proc `$`*(x: DirectoryPath): string {.borrow.}
   ##
   ## Returns the string representation of x parameter
 
-proc find*(s, sub: DirectoryPath; start: Natural = 0; last = 0): int {.borrow.}
+when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
+  proc find*(s, sub: DirectoryPath; start: Natural = 0; last = -1): int {.borrow.}
+else:
+  proc find*(s, sub: DirectoryPath; start: Natural = 0; last = 0): int {.borrow.}
   ## Find substring position in DirectoryPath. Borrowed from string type.
   ##
   ## * s     - The DirectoryPath which will be check for the selected character
