@@ -46,7 +46,7 @@ type
     content*: string ## The content of the selected entry
   UserInput* = LimitedString
     ## Used to store text entered by the user
-  ExtendedNatural* = range[-1..high(int)]
+  ExtendedNatural* = range[-1..int.high]
     ## Used to store various indexes
   BooleanInt* = range[0..1]
     ## Used to store boolean values in database
