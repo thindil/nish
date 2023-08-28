@@ -32,7 +32,7 @@ jobs:
       run: nimble install -y nimble
 
     - name: Debug build
-      run: nimble debug
+      run: nimble debug -y
 
     - name: Run tests
       run: nimble tests
