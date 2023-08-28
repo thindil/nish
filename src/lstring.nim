@@ -194,20 +194,36 @@ func `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [].} 
   ## Returns the newly created string with merged both strings
   return x.text & y
 
-func find*(s: LimitedString; sub: char; start: Natural = 0;
-    last = 0): int {.gcsafe, raises: [], tags: [].} =
-  ## Find the selected character in the selected LimitedString.
-  ##
-  ## * s     - The LimitedString which will be check for the selected character
-  ## * sub   - The character which will be looked for in the LimitedString
-  ## * start - The position from which search should start. Can be empty.
-  ##           Default value is 0, start from the beginning of the LimitedString.
-  ## * last  - The position to which search should go. Can be empty. Default
-  ##           value is 0, which means no limit.
-  ##
-  ## Returns the position of the character in the LimitedString or -1 if character not
-  ## found
-  return s.text.find(sub = sub, start = start, last = last)
+when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
+  func find*(s: LimitedString; sub: char; start: Natural = 0;
+      last = -1): int {.gcsafe, raises: [], tags: [].} =
+    ## Find the selected character in the selected LimitedString.
+    ##
+    ## * s     - The LimitedString which will be check for the selected character
+    ## * sub   - The character which will be looked for in the LimitedString
+    ## * start - The position from which search should start. Can be empty.
+    ##           Default value is 0, start from the beginning of the LimitedString.
+    ## * last  - The position to which search should go. Can be empty. Default
+    ##           value is 0, which means no limit.
+    ##
+    ## Returns the position of the character in the LimitedString or -1 if character not
+    ## found
+    return s.text.find(sub = sub, start = start, last = last)
+else:
+  func find*(s: LimitedString; sub: char; start: Natural = 0;
+      last = 0): int {.gcsafe, raises: [], tags: [].} =
+    ## Find the selected character in the selected LimitedString.
+    ##
+    ## * s     - The LimitedString which will be check for the selected character
+    ## * sub   - The character which will be looked for in the LimitedString
+    ## * start - The position from which search should start. Can be empty.
+    ##           Default value is 0, start from the beginning of the LimitedString.
+    ## * last  - The position to which search should go. Can be empty. Default
+    ##           value is 0, which means no limit.
+    ##
+    ## Returns the position of the character in the LimitedString or -1 if character not
+    ## found
+    return s.text.find(sub = sub, start = start, last = last)
 
 func rfind*(s: LimitedString; sub: char; start: Natural = 0;
     last = -1): int {.gcsafe, raises: [], tags: [].} =
