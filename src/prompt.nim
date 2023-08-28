@@ -34,7 +34,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import contracts
+import contracts, nimalyzer
 # Internal imports
 import constants, directorypath, lstring, options, output, resultcode
 
@@ -52,11 +52,10 @@ proc getFormattedDir*(): DirectoryPath {.gcsafe, sideEffect, raises: [], tags: [
     let homeDirectory: DirectoryPath = getHomeDir().DirectoryPath
     if endsWith(s = result & "/", suffix = $homeDirectory):
       return "~".DirectoryPath
-    else:
-      let homeIndex: ExtendedNatural = result.find(sub = homeDirectory)
-      if homeIndex > -1:
-        return DirectoryPath("~/" & result.string[homeIndex +
-                homeDirectory.len..^1])
+    let homeIndex: ExtendedNatural = result.find(sub = homeDirectory)
+    if homeIndex > -1:
+      return ("~/" & result.string[homeIndex +
+          homeDirectory.len..^1]).DirectoryPath
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode; db: DbConn): Natural {.gcsafe, sideEffect, raises: [],
@@ -88,9 +87,9 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
           return
         if output.endsWith(suffix = '\n'):
           output.stripLineEnd
-          stdout.writeLine(output)
+          stdout.writeLine(x = output)
           return
-        stdout.write(output)
+        stdout.write(s = output)
         return output.len
     except CapacityError, Exception:
       showError(message = "Can't get command for prompt. Reason: ",
@@ -98,7 +97,9 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       return
     let currentDirectory: DirectoryPath = getFormattedDir()
     try:
+      {.ruleOff: "namedParams".}
       stdout.styledWrite(fgBlue, $currentDirectory)
+      {.ruleOn: "namedParams".}
     except ValueError, IOError:
       try:
         stdout.write(s = $currentDirectory)
@@ -106,9 +107,11 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         discard
     result = currentDirectory.len
     if previousCommand != "" and resultCode != QuitSuccess:
-      let resultString = $resultCode
+      let resultString: string = $resultCode
       try:
-        stdout.styledWrite(fgRed, "[" & $resultCode & "]")
+        {.ruleOff: "namedParams".}
+        stdout.styledWrite(fgRed,  "[" & resultString & "]")
+        {.ruleOn: "namedParams".}
       except ValueError, IOError:
         try:
           stdout.write(s = "[" & resultString & "]")
@@ -116,10 +119,12 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
           discard
       result = result + 2 + resultString.len
     try:
+      {.ruleOff: "namedParams".}
       stdout.styledWrite(fgBlue, "# ")
+      {.ruleOn: "namedParams".}
     except ValueError, IOError:
       try:
         stdout.write(s = "# ")
       except IOError:
         discard
-    result = result + 2
+    result += 2
