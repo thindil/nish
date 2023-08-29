@@ -70,7 +70,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
       return HistoryRange.low
 
 proc updateHistory*(commandToAdd: string; db;
-    returnCode: ResultCode = ResultCode(QuitSuccess)): HistoryRange {.gcsafe,
+    returnCode: ResultCode = QuitSuccess.ResultCode): HistoryRange {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Add the selected command to the shell history and increase the current
@@ -106,7 +106,7 @@ proc updateHistory*(commandToAdd: string; db;
     if result >= historyAmount:
       try:
         db.exec(query = sql(query = "DELETE FROM history WHERE rowid IN (SELECT rowid FROM history ORDER BY lastused, amount ASC LIMIT ?)"),
-            (if result == historyAmount: 1 else: result - historyAmount))
+            args = (if result == historyAmount: 1 else: result - historyAmount))
         result = historyLength(db = db)
       except DbError, ValueError:
         showError(message = "Can't delete exceeded entries from the shell's history. Reason: ",
@@ -117,14 +117,14 @@ proc updateHistory*(commandToAdd: string; db;
       let currentDir = getCurrentDir()
       if db.execAffectedRows(query = sql(
           query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=? AND path=?"),
-           commandToAdd, currentDir) == 0:
+           args = [commandToAdd, currentDir]) == 0:
         # Update history if there is the command in the history
         if db.execAffectedRows(query = sql(
             query = "UPDATE history SET amount=amount+1, lastused=datetime('now'), path=? WHERE command=?"),
-             currentDir, commandToAdd) == 0:
+             args = [currentDir, commandToAdd]) == 0:
           # If command isn't in the history, add it
           db.exec(query = sql(query = "INSERT INTO history (command, amount, lastused, path) VALUES (?, 1, datetime('now'), ?)"),
-              commandToAdd, currentDir)
+              args = [commandToAdd, currentDir])
           result.inc
     except DbError, OSError:
       showError(message = "Can't update the shell's history. Reason: ",
@@ -153,29 +153,29 @@ proc getHistory*(historyIndex: HistoryRange; db;
       if searchFor.len == 0:
         let value = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-            getCurrentDir(), $(historyLength(db = db) - historyIndex))
+            args = [getCurrentDir(), $(historyLength(db = db) - historyIndex)])
         if value.len == 0:
           result = db.getValue(query = sql(
               query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-              $(historyLength(db = db) - historyIndex))
+              args = [$(historyLength(db = db) - historyIndex)])
         else:
           result = value
       # Get the command based on the searchFor parameter
       else:
         let value = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
-            searchFor & "%", getCurrentDir())
+            args = [searchFor & "%", getCurrentDir()])
         if value.len == 0:
           result = db.getValue(query = sql(
               query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
-              searchFor & "%")
+              args = searchFor & "%")
         else:
           result = value
         if result.len == 0:
           result = $searchFor
     except DbError, OSError:
-      showError("Can't get the selected command from the shell's history. Reason: ",
-          getCurrentException())
+      showError(message = "Can't get the selected command from the shell's history. Reason: ",
+          e = getCurrentException())
 
 proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect,
@@ -243,7 +243,8 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
           return showError(message = "Unknown type of history sort order")
     var table: TerminalTable
     try:
-      table.add(magenta("Last used"), magenta("Times"), magenta("Command"))
+      table.add(parts = [magenta(ss = "Last used"), magenta(ss = "Times"),
+          magenta(ss = "Command")])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show history list. Reason: ",
           e = getCurrentException())
@@ -389,7 +390,8 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
   body:
     # Add commands related to the shell's history system
     proc historyCommand(arguments; db; list: CommandLists): ResultCode {.raises: [
-        ], contractual.} =
+        ], tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ReadDbEffect,
+        ReadIOEffect, ReadEnvEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## The code of the shell's command "history" and its subcommands
