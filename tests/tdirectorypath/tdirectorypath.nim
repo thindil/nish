@@ -13,8 +13,6 @@ block:
   assert path & "/test" == "/test/path/test", "Failed to append a string to a path."
   assert "/new" & path == "/new/test/path", "Failed to prepend a string to a path."
 
-  writeLine(stderr, "path:" & path)
-  writeLine(stderr, "find:" & $path.find("e".DirectoryPath))
   assert path.find("e".DirectoryPath) == 2, "Failed to find a substring in a path."
   assert path.find("z".DirectoryPath) == -1, "Failed to not find a substring in a path."
 
