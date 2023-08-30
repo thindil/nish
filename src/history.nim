@@ -35,11 +35,11 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 # Internal imports
 import commandslist, constants, help, input, lstring, output, resultcode
 
-const historyCommands* = ["clear", "list", "find"]
+const historyCommands*: array[3, string] = ["clear", "list", "find"]
   ## The list of available subcommands for command history
 
 type HistoryRange* = ExtendedNatural
@@ -88,7 +88,7 @@ proc updateHistory*(commandToAdd: string; db;
     commandToAdd.len > 0
   body:
     result = historyLength(db = db)
-    let historyAmount = try:
+    let historyAmount: Natural = try:
         parseInt(s = db.getValue(query = sql(
             query = "SELECT value FROM options WHERE option='historyLength'")))
       except DbError, ValueError:
@@ -114,7 +114,7 @@ proc updateHistory*(commandToAdd: string; db;
         return
     try:
       # Update history if there is the command in the history in the same directory
-      let currentDir = getCurrentDir()
+      let currentDir: string = getCurrentDir()
       if db.execAffectedRows(query = sql(
           query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=? AND path=?"),
            args = [commandToAdd, currentDir]) == 0:
@@ -151,7 +151,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
     try:
       # Get the command based on the historyIndex parameter
       if searchFor.len == 0:
-        let value = db.getValue(query = sql(
+        let value: string = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
             args = [getCurrentDir(), $(historyLength(db = db) - historyIndex)])
         if value.len == 0:
@@ -162,7 +162,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
           result = value
       # Get the command based on the searchFor parameter
       else:
-        let value = db.getValue(query = sql(
+        let value: string = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
             args = [searchFor & "%", getCurrentDir()])
         if value.len == 0:
@@ -241,7 +241,9 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
         of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
         else:
           return showError(message = "Unknown type of history sort order")
+    {.ruleOff: "varDeclared".}
     var table: TerminalTable
+    {.ruleOn: "varDeclared".}
     try:
       table.add(parts = [magenta(ss = "Last used"), magenta(ss = "Times"),
           magenta(ss = "Command")])
@@ -251,11 +253,11 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT command, lastused, amount FROM history ORDER BY " &
-          historyOrder & " LIMIT 0, ?"), amount):
-        table.add(row[1], row[2], row[0])
+          historyOrder & " LIMIT 0, ?"), args = amount):
+        table.add(parts = [row[1], row[2], row[0]])
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size
+        width += size
       showFormHeader(message = "The last " & $amount &
           " commands from the shell's history", width = width.ColumnAmount, db = db)
     except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -284,18 +286,20 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
     var searchFor: string = strip(s = $arguments)
     if searchFor.len < 5:
       return showError(message = "You have to enter a search term for which you want to look in the history.")
-    let searchTerm = searchFor[5..^1]
+    let searchTerm: string = searchFor[5..^1]
     searchFor = replace(s = searchTerm, sub = '*', by = '%')
+    {.ruleOff: "varDeclared".}
     var table: TerminalTable
+    {.ruleOn: "varDeclared".}
     try:
       result = QuitFailure.ResultCode
-      let maxRows = db.getValue(query = sql(
+      let maxRows: int = db.getValue(query = sql(
           query = "SELECT value FROM options WHERE option='historySearchAmount'")).parseInt
       var currentRow: int = 0
       for row in db.fastRows(query = sql(
           query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
-          "%" & searchFor & "%"):
-        table.add(row[0])
+          args = "%" & searchFor & "%"):
+        table.add(parts = row[0])
         result = QuitSuccess.ResultCode
         currentRow.inc
         if currentRow == maxRows:
