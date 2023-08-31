@@ -34,7 +34,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy
+import ansiparse, contracts, nancy, nimalyzer
 # Internal imports
 import commandslist, helpcontent, constants, input, lstring, output, resultcode
 
@@ -61,11 +61,12 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
   body:
     try:
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          topic).len == 0:
+          args = topic).len == 0:
         return showError(message = "Can't update the help entry for topic '" &
             topic & "' because there is no that topic.")
       db.exec(query = sql(query = "UPDATE help SET usage=?, content=?, plugin=?, template=? WHERE topic=?"),
-          usage, content, plugin, topic, (if isTemplate: "1" else: "0"))
+          args = [$usage, content, $plugin, $topic, (
+              if isTemplate: "1" else: "0")])
       return QuitSuccess.ResultCode
     except DbError:
       return showError(message = "Can't update the help entry in the database. Reason: ",
@@ -110,7 +111,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     db != nil
   body:
     proc showHelpEntry(helpEntry: HelpEntry) {.sideEffect, raises: [], tags: [
-        WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect].} =
+        WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect], contractual.} =
       ## FUNCTION
       ##
       ## Show the selected help entry
@@ -118,54 +119,59 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       ## PARAMETERS
       ##
       ## * helpEntry   - the help entry to show to the user
-      showOutput(message = "Usage: ", fgColor = fgYellow,
-          newLine = false)
-      showOutput(message = helpEntry.usage & "\n")
-      showOutput(message = helpEntry.content)
+      body:
+        showOutput(message = "Usage: ", fgColor = fgYellow,
+            newLine = false)
+        showOutput(message = helpEntry.usage & "\n")
+        showOutput(message = helpEntry.content)
 
     proc showHelpList(keys: seq[string]) {.sideEffect, raises: [],
-        tags: [WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect].} =
+        tags: [WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect],
+            contractual.} =
       ## Show the list of help topics
       ##
       ## * keys - The list of help topics to show
-      var
-        i: Positive = 1
-        table: TerminalTable
-        row: string = ""
-      let columnAmount = try:
-          db.getValue(query = sql(query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
-        except ValueError, DbError:
-          4
-      for key in keys:
-        row = row & key & "\t"
-        i.inc
-        if i == columnAmount:
-          try:
-            table.tabbed(row)
-          except UnknownEscapeError, InsufficientInputError, FinalByteError:
-            showError(message = "Can't show the help entries list. Reason: ",
-                e = getCurrentException())
-          row = ""
-          i = 1
-      var width: int = 0
-      for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size + 2
-      showFormHeader(message = "Available help topics",
-          width = width.ColumnAmount, db = db)
-      try:
-        table.echoTable(padding = 4)
-      except IOError, Exception:
-        showError(message = "Can't show the help entries list. Reason: ",
-            e = getCurrentException())
-      showOutput(message = "\n\nTo see more information about the selected topic, type help [topic], for example: help " &
-          keys[0] & ".")
+      require:
+        keys.len > 0
+      body:
+        var
+          i: Positive = 1
+          table: TerminalTable
+          row: string = ""
+        let columnAmount = try:
+            db.getValue(query = sql(query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
+          except ValueError, DbError:
+            4
+        for key in keys:
+          row = row & key & "\t"
+          i.inc
+          if i == columnAmount:
+            try:
+              table.tabbed(row = row)
+            except UnknownEscapeError, InsufficientInputError, FinalByteError:
+              showError(message = "Can't show the help entries list. Reason: ",
+                  e = getCurrentException())
+            row = ""
+            i = 1
+        var width: int = 0
+        for size in table.getColumnSizes(maxSize = int.high):
+          width = width + size + 2
+        showFormHeader(message = "Available help topics",
+            width = width.ColumnAmount, db = db)
+        try:
+          table.echoTable(padding = 4)
+        except IOError, Exception:
+          showError(message = "Can't show the help entries list. Reason: ",
+              e = getCurrentException())
+        showOutput(message = "\n\nTo see more information about the selected topic, type help [topic], for example: help " &
+            keys[0] & ".")
 
     # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
       var keys: seq[string]
       try:
         for key in db.getAllRows(query = sql(query = "SELECT topic FROM help")):
-          keys.add(key[0])
+          keys.add(y = key[0])
       except DbError:
         return showError(message = "Can't get help topics from database. Reason: ",
             e = getCurrentException())
@@ -177,7 +183,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       tokens: seq[string] = split(s = $topic)
       args: UserInput = try:
           initLimitedString(capacity = maxInputLength, text = join(a = tokens[
-              1 .. ^1], " "))
+              1 .. ^1], sep = " "))
         except CapacityError:
           return showError(message = "Can't set arguments for help")
       command: UserInput = try:
@@ -187,7 +193,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       key: string = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
       dbHelp = try:
-          db.getAllRows(query = sql(query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), key)
+          db.getAllRows(query = sql(query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), args = key)
         except DbError:
           return showError(message = "Can't read help content from database. Reason: ",
               e = getCurrentException())
@@ -423,8 +429,11 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
+    {.ruleOff: "paramsUsed".}
     proc helpCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
+        WriteDbEffect, TimeEffect, ReadIOEffect, ReadDbEffect, ReadEnvEffect,
+        RootEffect], contractual.} =
       ## The code of the shell's command "help"
       ##
       ## * arguments - the arguments entered by the user for the command
@@ -434,11 +443,14 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
       ##
       ## Returns QuitSuccess if the selected help's topic was succesully shown, otherwise
       ## QuitFailure.
+      require:
+        db != nil
       body:
         return showHelp(topic = arguments, db = db)
 
     proc updateHelpCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
+        WriteDbEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
       ## The code of the shell's command "updateHelp"
       ##
       ## * arguments - the arguments entered by the user for the command
@@ -448,8 +460,11 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
       ##
       ## Returns QuitSuccess if the help content was succesfully updated, otherwise
       ## QuitFailure.
+      require:
+        db != nil
       body:
         return updateHelp(db = db)
+    {.ruleOn: "paramsUsed".}
 
     try:
       addCommand(name = initLimitedString(capacity = 4, text = "help"),
