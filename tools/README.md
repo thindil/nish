@@ -1,5 +1,6 @@
 Various tools related to the shell:
 
+* nimalyzer.cfg  - the configuration file for nimalyzer tool.
 * zshtonish.nims - the simple script to convert the Zsh configuration file for
                    the user to file containing SQL statements which can be
                    loaded into existing Nish configuration. It contains only
