@@ -134,11 +134,13 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       require:
         keys.len > 0
       body:
+        {.ruleOff: "varDeclared".}
+        var table: TerminalTable
+        {.ruleOn: "varDeclared".}
         var
           i: Positive = 1
-          table: TerminalTable
           row: string = ""
-        let columnAmount = try:
+        let columnAmount: Positive = try:
             db.getValue(query = sql(query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
           except ValueError, DbError:
             4
@@ -168,7 +170,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
 
     # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
-      var keys: seq[string]
+      var keys: seq[string] = @[]
       try:
         for key in db.getAllRows(query = sql(query = "SELECT topic FROM help")):
           keys.add(y = key[0])
@@ -192,7 +194,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           return showError(message = "Can't set command for help")
       key: string = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
-      dbHelp = try:
+      dbHelp: seq[Row] = try:
           db.getAllRows(query = sql(query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), args = key)
         except DbError:
           return showError(message = "Can't read help content from database. Reason: ",
@@ -201,7 +203,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     if dbHelp.len > 0:
       # There is exactly one topic which the user is looking for, show it
       if dbHelp.len == 1:
-        var content = dbHelp[0][1]
+        var content: string = dbHelp[0][1]
         # The help content for the selected topic is template, convert some
         # variables in it to the proper values. At this moment only history list
         # need that conversion.
@@ -236,9 +238,9 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             content: content))
         return QuitSuccess.ResultCode
       # There is a few topics which match the criteria, show the list of them
-      var keys: seq[string]
+      var keys: seq[string] = @[]
       for row in dbHelp:
-        keys.add(row[3])
+        keys.add(y = row[3])
       keys.sort(cmp = system.cmp)
       showHelpList(keys = keys)
       return QuitSuccess.ResultCode
@@ -296,10 +298,11 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
   body:
     try:
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          topic).len > 0:
+          args = topic).len > 0:
         return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
       db.exec(query = sql(query = "INSERT INTO help (topic, usage, content, plugin, template) VALUES (?, ?, ?, ?, ?)"),
-          topic, usage, content, plugin, (if isTemplate: 1 else: 0))
+          args = [$topic, $usage, content, $plugin, (
+              if isTemplate: "1" else: "0")])
       return QuitSuccess.ResultCode
     except DbError:
       return showError(message = "Can't add help entry to database. Reason: ",
@@ -318,13 +321,14 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     db != nil
   body:
     result = QuitSuccess.ResultCode
-    var
-      file = try:
+    var file: StringStream = try:
           newStringStream(s = getAsset(path = "help/help.cfg"))
         except ValueError, OSError, IOError, Exception:
           return showError(message = "Can't read help content. Reason: ",
               e = getCurrentException())
-      parser: CfgParser
+    {.ruleOff: "varDeclared".}
+    var parser: CfgParser
+    {.ruleOn: "varDeclared".}
     try:
       open(c = parser, input = file, filename = "helpContent")
     except OSError, IOError, Exception:
@@ -361,7 +365,7 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     # Read the help configuration file
     while true:
       try:
-        let entry = parser.next
+        let entry: CfgEvent = parser.next
         case entry.kind
         of cfgSectionStart:
           if plugin.len == 0:
@@ -520,10 +524,10 @@ proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
   body:
     try:
       if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          topic).len == 0:
+          args = topic).len == 0:
         return showError(message = "Can't delete the help entry for topic '" &
             topic & "' because there is no that topic.")
-      db.exec(query = sql(query = "DELETE FROM help WHERE topic=?"), topic)
+      db.exec(query = sql(query = "DELETE FROM help WHERE topic=?"), args = topic)
       return QuitSuccess.ResultCode
     except DbError:
       return showError(message = "Can't delete the help entry in the database. Reason: ",
