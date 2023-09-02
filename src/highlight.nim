@@ -94,7 +94,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       # print the variable and get the next word
       while '=' in $command:
         showOutput(message = $command, newLine = false, fgColor = fgCyan)
-        var startIndex = input.find(sub = ' ', start = (if spaceIndex >
+        var startIndex: int = input.find(sub = ' ', start = (if spaceIndex >
             -1: spaceIndex else: 0))
         if startIndex < 0:
           inputString = input
@@ -134,9 +134,9 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       showOutput(message = $command, newLine = false, fgColor = color)
       # Check if command's arguments contains quotes
       var
-        quotes = {'\'', '"'}
-        quotePosition = find(s = $commandArguments, chars = quotes)
-        startPosition = 0
+        quotes: set[char] = {'\'', '"'}
+        quotePosition: int = find(s = $commandArguments, chars = quotes)
+        startPosition: int = 0
       # No quotes, print all
       if quotePosition == -1:
         showOutput(message = $commandArguments, newLine = false)
