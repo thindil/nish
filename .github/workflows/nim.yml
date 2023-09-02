@@ -14,19 +14,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Cache Nim and Nimble
-      id: cache-nim
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.nimble
-          ~/.choosenim
-        key: ${{ runner.os }}-nim
-
     - name: Setup Nim
       uses: jiro4989/setup-nim-action@v1
       with:
         nim-version: 'stable'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Update Nimble
       run: nimble install -y nimble
