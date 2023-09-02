@@ -28,17 +28,19 @@
 
 # Standard library imports
 import std/strutils
+# External modules imports
+import contracts
 
 type
   LimitedString* = object of RootObj
     ## Store all data related to the string
-    text: string ## The text of the LimitedString
+    text: string       ## The text of the LimitedString
     capacity: Positive ## The maximum capacity of the LimitedString
   CapacityError* = object of CatchableError
     ## Raised when the new value of string will be longer than allowed maximum
 
-func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
-    CapacityError], tags: [].} =
+proc `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
+    CapacityError], tags: [], contractual.} =
   ## The setter for the text of LimitedString. Check if the new value isn't
   ## bigger than the capacity of the string and if not, assing the new value
   ## to it. Raise RangeDefect exception if the new value is longer than allowed
@@ -48,29 +50,34 @@ func `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
   ## * value - The string which will be assigned as the new value of text
   ##
   ## Returns updated LimitedString with the new value of the text field.
-  if value.len > s.capacity:
-    raise newException(exceptn = CapacityError,
-        message = "New value for string is longer than its capacity.")
-  s.text = value
+  body:
+    if value.len > s.capacity:
+      raise newException(exceptn = CapacityError,
+          message = "New value for string is longer than its capacity.")
+    s.text = value
 
-func `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [].} =
+proc `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [],
+    contractual.} =
   ## Convert LimitedString to string
   ##
   ## * s - The LimitedString which will be converted
   ##
   ## Returns the converted LimitedString, its value of field text
-  result = s.text
+  body:
+    result = s.text
 
-func len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [].} =
+proc len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [],
+    contractual.} =
   ## Get the length of the selected LimitedString
   ##
   ## * s - the LimitedString which length will be get
   ##
   ## Returns the length of the LimitedString, the length of its field text
-  result = s.text.len
+  body:
+    result = s.text.len
 
-func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
-    tags: [].} =
+proc add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
+    tags: [], contractual.} =
   ## Add a string to the selected LimitedString. Check if the new value isn't
   ## bigger than the capacity of the LimitedString and if not, add the string
   ## to the field text of LimitedString. Raise RangeDefect exception if the
@@ -80,13 +87,14 @@ func add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
   ## * y - The string to add
   ##
   ## Returns updated parameter s
-  if y.len + s.text.len > s.capacity:
-    raise newException(exceptn = CapacityError,
-        message = "New value for string will exceed its capacity.")
-  s.text = s.text & y
+  body:
+    if y.len + s.text.len > s.capacity:
+      raise newException(exceptn = CapacityError,
+          message = "New value for string will exceed its capacity.")
+    s.text = s.text & y
 
-func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
-    tags: [].} =
+proc add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
+    tags: [], contractual.} =
   ## Add a character to the selected LimitedString. Check if the new value
   ## isn't bigger than the capacity of the LimitedString and if not, add the
   ## character to the field text of LimitedString. Raise RangeDefect exception
@@ -96,13 +104,15 @@ func add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
   ## * y - The character to add
   ##
   ## Returns updated parameter s
-  if s.text.len == s.capacity:
-    raise newException(exceptn = CapacityError,
-        message = "New value for string will exceed its capacity.")
-  s.text = s.text & y
+  body:
+    if s.text.len == s.capacity:
+      raise newException(exceptn = CapacityError,
+          message = "New value for string will exceed its capacity.")
+    s.text = s.text & y
 
-func initLimitedString*(capacity: Positive;
-    text: string): LimitedString {.gcsafe, raises: [CapacityError], tags: [].} =
+proc initLimitedString*(capacity: Positive;
+    text: string): LimitedString {.gcsafe, raises: [CapacityError], tags: [],
+    contractual.} =
   ## Initialize the new LimitedString with the selected capacity and content.
   ## Raises RangeDefect if the selected text is longer than the selected
   ## capacity.
@@ -111,41 +121,46 @@ func initLimitedString*(capacity: Positive;
   ## * text     - The content of the newly created LimitedString.
   ##
   ## Returns the new LimitedString with the selected capacity and content
-  if text.len > capacity:
-    raise newException(exceptn = CapacityError,
-        message = "New value for string will exceed its capacity.")
-  return LimitedString(capacity: capacity, text: text)
+  body:
+    if text.len > capacity:
+      raise newException(exceptn = CapacityError,
+          message = "New value for string will exceed its capacity.")
+    return LimitedString(capacity: capacity, text: text)
 
-func capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [].} =
+proc capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [],
+    contractual.} =
   ## Get the maximum allowed capacity of the selected LimitedString
   ##
   ## * s - The LimitedString which the capacity will be get
   ##
   ## Returns the maximum allowed capacity of the selected LimitedString
-  return s.capacity
+  body:
+    return s.capacity
 
-func `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
-    U]): LimitedString {.gcsafe, raises: [], tags: [].} =
+proc `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
+    U]): LimitedString {.gcsafe, raises: [], tags: [], contractual.} =
   ## Get the slice of the selected LimitedString
   ##
   ## * s - The LimitedString which slice of text will be get
   ## * x - The range of the slice of text to get
   ##
   ## Returns the new LimitedString with the slice with the selected range
-  let
-    newValue: string = s.text[x]
-    length: Positive = (if newValue.len == 0: 1 else: newValue.len)
-  return LimitedString(capacity: length, text: newValue)
+  body:
+    let
+      newValue: string = s.text[x]
+      length: Positive = (if newValue.len == 0: 1 else: newValue.len)
+    return LimitedString(capacity: length, text: newValue)
 
-func `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
-    tags: [].} =
+proc `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
+    tags: [], contractual.} =
   ## Get the nth character of the selected LimitedString.
   ##
   ## * s - The LimitedString which slice of text will be get
   ## * i - The index of the character to get. Is as same as in normal string
   ##
   ## Returns the character at the selected position in the selected LimitedString
-  return s.text[i]
+  body:
+    return s.text[i]
 
 func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
     tags: [].} =
