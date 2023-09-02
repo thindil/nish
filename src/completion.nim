@@ -56,7 +56,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
   body:
     if prefix.len == 0:
       return
-    let completionAmount = try:
+    let completionAmount: int = try:
         parseInt(s = $getOption(optionName = initLimitedString(
           capacity = 16, text = "completionAmount"), db = db,
           defaultValue = initLimitedString(capacity = 2, text = "30")))
@@ -69,7 +69,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
       for item in walkPattern(pattern = prefix & "*"):
         if completions.len >= completionAmount:
           return
-        let completion = (if dirExists(dir = item): item & DirSep else: item)
+        let completion: string = (if dirExists(dir = item): item & DirSep else: item)
         if completion notin completions:
           completions.add(y = completion)
     except OSError:
@@ -93,7 +93,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
   body:
     if prefix.len == 0:
       return
-    let completionAmount = try:
+    let completionAmount: int = try:
         parseInt(s = $getOption(optionName = initLimitedString(
           capacity = 16, text = "completionAmount"), db = db,
           defaultValue = initLimitedString(capacity = 2, text = "30")))
@@ -125,7 +125,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
         for file in walkFiles(pattern = path & DirSep & prefix & "*"):
           if completions.len >= completionAmount:
             return
-          let fileName = file.extractFilename
+          let fileName: string = file.extractFilename
           if fileName notin completions:
             completions.add(y = fileName)
     except OSError:
