@@ -41,7 +41,7 @@ import constants, lstring, output, resultcode
 type
   CommandLists* = object
     ## Store additional data for the shell's command
-    aliases*: ref AliasesList ## List of shell's aliases
+    aliases*: ref AliasesList                 ## List of shell's aliases
     commands*: ref Table[string, CommandData] ## List of the shell's commands
   CommandProc* = proc (arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.raises: [], contractual.}
@@ -54,6 +54,10 @@ type
     ##
     ## Returns QuitSuccess if the command was succesfull, otherwise QuitFalse
   CommandData* = object
+    ## The data structure for the shell command
+    ##
+    ## * command - the shell's command procedure which will be executed
+    ## * plugin  - the name of the plugin to which the command belongs
     command*: CommandProc
     plugin*: string
   CommandsList* = Table[string, CommandData]
@@ -62,9 +66,9 @@ type
     ## Raised when a problem with a command occurs
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = "") {.gcsafe,
-        sideEffect, raises: [
-    CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
+    commands: ref CommandsList; plugin: string = "") {.gcsafe, sideEffect,
+    raises: [CommandsListError], tags: [WriteIOEffect, RootEffect],
+    contractual.} =
   ## Add a new command to the shell's commands' list. If command argument is
   ## different than nil, it will be used as the command code, otherwise, the
   ## argument plugin must be supplied.
@@ -108,8 +112,7 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.gcsafe,
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
     commands: ref CommandsList; plugin: string = "") {.gcsafe, sideEffect,
-        raises: [
-    CommandsListError], tags: [RootEffect], contractual.} =
+    raises: [CommandsListError], tags: [RootEffect], contractual.} =
   ## Replace the code of the selected command with the new procedure. If
   ## command argument is different than nil, it will be used as the command
   ## code, otherwise, the argument plugin must be supplied.
