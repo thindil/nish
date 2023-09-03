@@ -91,7 +91,7 @@ proc add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
     if y.len + s.text.len > s.capacity:
       raise newException(exceptn = CapacityError,
           message = "New value for string will exceed its capacity.")
-    s.text = s.text & y
+    s.text &= y
 
 proc add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
     tags: [], contractual.} =
@@ -108,7 +108,7 @@ proc add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
     if s.text.len == s.capacity:
       raise newException(exceptn = CapacityError,
           message = "New value for string will exceed its capacity.")
-    s.text = s.text & y
+    s.text &= y
 
 proc initLimitedString*(capacity: Positive;
     text: string): LimitedString {.gcsafe, raises: [CapacityError], tags: [],
@@ -162,8 +162,8 @@ proc `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
   body:
     return s.text[i]
 
-func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
-    tags: [].} =
+proc `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
+    tags: [], contractual.} =
   ## Replace the selected character in LimitedString
   ##
   ## * s   - The LimitedString in which the character will be replaced
@@ -171,47 +171,52 @@ func `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
   ## * val - The new value for the character
   ##
   ## Returns the updated parameter s
-  s.text[i] = val
+  body:
+    s.text[i] = val
 
-func `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [].} =
+proc `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], contractual.} =
   ## Compare the selected LimitedString and string
   ##
   ## * x - The LimitedString to compare
   ## * y - The string to compare
   ##
   ## Returns false if string and field text of LimitedString are equal, otherwise true
-  return x.text != y
+  body:
+    return x.text != y
 
-func `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [].} =
+proc `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], contractual.} =
   ## Compare the selected LimitedString and string
   ##
   ## * x - The LimitedString to compare
   ## * y - The string to compare
   ##
   ## Returns true if string and field text of LimitedString are equal, otherwise false
-  return x.text == y
+  body:
+    return x.text == y
 
-func `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [].} =
+proc `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [], contractual.} =
   ## Concatenates string and LimitedString into one string
   ##
   ## * x - The string to concatenate
   ## * y - The LimitedString which field text will be concatenate
   ##
   ## Returns the newly created string with merged both strings
-  return x & y.text
+  body:
+    return x & y.text
 
-func `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [].} =
+proc `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [], contractual.} =
   ## Concatenates LimitedString and string into one string
   ##
   ## * x - The LimitedString which field text will be concatenate
   ## * y - The string to concatenate
   ##
   ## Returns the newly created string with merged both strings
-  return x.text & y
+  body:
+    return x.text & y
 
 when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  func find*(s: LimitedString; sub: char; start: Natural = 0;
-      last = -1): int {.gcsafe, raises: [], tags: [].} =
+  proc find*(s: LimitedString; sub: char; start: Natural = 0;
+      last = -1): int {.gcsafe, raises: [], tags: [], contractual.} =
     ## Find the selected character in the selected LimitedString.
     ##
     ## * s     - The LimitedString which will be check for the selected character
@@ -223,10 +228,11 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
     ##
     ## Returns the position of the character in the LimitedString or -1 if character not
     ## found
-    return s.text.find(sub = sub, start = start, last = last)
+    body:
+      return s.text.find(sub = sub, start = start, last = last)
 else:
-  func find*(s: LimitedString; sub: char; start: Natural = 0;
-      last = 0): int {.gcsafe, raises: [], tags: [].} =
+  proc find*(s: LimitedString; sub: char; start: Natural = 0;
+      last = 0): int {.gcsafe, raises: [], tags: [], contractual.} =
     ## Find the selected character in the selected LimitedString.
     ##
     ## * s     - The LimitedString which will be check for the selected character
@@ -238,10 +244,11 @@ else:
     ##
     ## Returns the position of the character in the LimitedString or -1 if character not
     ## found
-    return s.text.find(sub = sub, start = start, last = last)
+    body:
+      return s.text.find(sub = sub, start = start, last = last)
 
-func rfind*(s: LimitedString; sub: char; start: Natural = 0;
-    last = -1): int {.gcsafe, raises: [], tags: [].} =
+proc rfind*(s: LimitedString; sub: char; start: Natural = 0;
+    last = -1): int {.gcsafe, raises: [], tags: [], contractual.} =
   ## Reverse find the selected character in the selected LimitedString. Start
   ## looking from the end of the LimitedString.
   ##
@@ -254,10 +261,11 @@ func rfind*(s: LimitedString; sub: char; start: Natural = 0;
   ##
   ## Returns the position of the character in the LimitedString or -1 if character not
   ## found
-  return s.text.rfind(sub = sub, start = start, last = last)
+  body:
+    return s.text.rfind(sub = sub, start = start, last = last)
 
-func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
-    raises: [CapacityError], tags: [].} =
+proc insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
+    raises: [CapacityError], tags: [], contractual.} =
   ## Insert the selected string into LimitedString at the selected position
   ##
   ## * x    - The LimitedString to which the string will be inserted
@@ -266,15 +274,16 @@ func insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
   ##          Default value is 0, at start of the LimitedString
   ##
   ## Returns the updated paramater x
-  let oldValue: string = x.text
-  x.text.insert(item = item, i = i)
-  if x.text.len > x.capacity:
-    x.text = oldValue
-    raise newException(exceptn = CapacityError,
-        message = "New value for string will exceed its capacity.")
+  body:
+    let oldValue: string = x.text
+    x.text.insert(item = item, i = i)
+    if x.text.len > x.capacity:
+      x.text = oldValue
+      raise newException(exceptn = CapacityError,
+          message = "New value for string will exceed its capacity.")
 
-func startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
-    tags: [].} =
+proc startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
+    tags: [], contractual.} =
   ## Check if the selected LimitedString starts with the selected string
   ##
   ## * s      - The LimitedString which will be checked
@@ -282,15 +291,17 @@ func startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
   ##            LimitedString
   ##
   ## Returns true if the LimitedString starts with the prefix, otherwise false
-  return s.text.startsWith(prefix = prefix)
+  body:
+    return s.text.startsWith(prefix = prefix)
 
-func emptyLimitedString*(capacity: Positive = 1): LimitedString {.gcsafe,
-    raises: [], tags: [].} =
+proc emptyLimitedString*(capacity: Positive = 1): LimitedString {.gcsafe,
+    raises: [], tags: [], contractual.} =
   ## Create the new empty LimitedString with the the selected capacity.
   ##
   ## * capacity - The maximum length of the newly created empty LimitedString.
   ##              Can be empty. Default value is 1
   ##
   ## Returns the new empty LimitedString with the selected capacity.
-  return LimitedString(capacity: capacity, text: "")
+  body:
+    return LimitedString(capacity: capacity, text: "")
 
