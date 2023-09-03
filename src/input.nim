@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[parseopt, strutils, terminal, unicode]
 # External modules imports
-import contracts
+import contracts, nimalyzer
 # Internal imports
 import constants, lstring, output
 
@@ -73,7 +73,7 @@ proc deleteChar*(inputString: var UserInput;
   ##
   ## Returns modified inputString and the new cursor position as cursorPosition
   body:
-    var runes = toRunes(s = $inputString)
+    var runes: seq[Rune] = toRunes(s = $inputString)
     cursorPosition.dec
     runes.delete(i = cursorPosition)
     try:
@@ -93,6 +93,7 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
   ## Returns the new position of the cursor as modified cursorPosition argument
   body:
     try:
+      {.ruleOff: "ifStatements".}
       # Arrow left key pressed
       if inputChar == 'D' and cursorPosition > 0:
         stdout.cursorBackward
@@ -109,6 +110,7 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
       elif inputChar == 'F' and cursorPosition < runeLen(s = $inputString):
         stdout.cursorForward(count = runeLen(s = $inputString) - cursorPosition)
         cursorPosition = runeLen(s = $inputString)
+      {.ruleOn: "ifStatements".}
     except IOError, ValueError, OSError:
       showError(message = "Can't move the cursor. Reason: ",
           e = getCurrentException())
@@ -127,7 +129,7 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
   ## input's content as inputString
   if cursorPosition < runeLen(s = $inputString):
     if insertMode:
-      var runes = toRunes(s = $inputString)
+      var runes: seq[Rune] = toRunes(s = $inputString)
       runes[cursorPosition] = inputRune.toRunes[0]
       try:
         inputString.text = $runes
@@ -135,7 +137,7 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
         showError(message = "Entered input is too long.",
             e = getCurrentException())
     else:
-      var runes = toRunes(s = $inputString)
+      var runes: seq[Rune] = toRunes(s = $inputString)
       runes.insert(item = inputRune.toRunes[0], i = cursorPosition)
       try:
         inputString.text = $runes
@@ -192,7 +194,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
           continue
         try:
           stdout.cursorBackward(count = cursorPosition)
-          stdout.write(s = repeat(c = ' ', runeLen(s = $resultString)))
+          stdout.write(s = repeat(c = ' ', count = runeLen(s = $resultString)))
           stdout.cursorBackward(count = runeLen(s = $resultString))
           deleteChar(inputString = resultString,
               cursorPosition = cursorPosition)
@@ -247,7 +249,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
 
 proc getArguments*(userInput: var OptParser;
     conjCommands: var bool): UserInput {.gcsafe, sideEffect, raises: [], tags: [
-    ReadIOEffect].} =
+    ReadIOEffect], contractual.} =
   ## Set the command arguments from the user input
   ##
   ## * userInput    - the input string entered by the user
@@ -256,30 +258,31 @@ proc getArguments*(userInput: var OptParser;
   ##                  previous was failure
   ##
   ## Returns properly converted user input and parameter conjCommands
-  result = emptyLimitedString(capacity = maxInputLength)
-  conjCommands = false
-  var
-    arguments = userInput.remainingArgs
-    index = -1
-  for argument in arguments:
-    index.inc
-    if argument == "&&":
-      conjCommands = true
-      break
-    if argument == "||":
-      break
+  body:
+    result = emptyLimitedString(capacity = maxInputLength)
+    conjCommands = false
+    var
+      arguments: seq[string] = userInput.remainingArgs
+      index: int = -1
+    for argument in arguments:
+      index.inc
+      if argument == "&&":
+        conjCommands = true
+        break
+      if argument == "||":
+        break
+      try:
+        if " " in argument:
+          result.add(y = " \"" & argument & "\"")
+        else:
+          result.add(y = " " & argument)
+      except CapacityError:
+        break
+    if index < arguments.len - 1:
+      userInput = initOptParser(cmdline = arguments[index + 1..^1])
+    else:
+      userInput = initOptParser(cmdline = @[""])
     try:
-      if " " in argument:
-        result.add(y = " \"" & argument & "\"")
-      else:
-        result.add(y = " " & argument)
+      result.text = strutils.strip(s = $result)
     except CapacityError:
-      break
-  if index < arguments.len - 1:
-    userInput = initOptParser(cmdline = arguments[index + 1..^1])
-  else:
-    userInput = initOptParser(cmdline = @[""])
-  try:
-    result.text = strutils.strip(s = $result)
-  except CapacityError:
-    return
+      return
