@@ -41,38 +41,40 @@ import aliases, commands, commandslist, completion, constants, directorypath,
     resultcode, title, variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect].} =
+    WriteIOEffect], contractual.} =
   ## Show the program arguments help
   ##
   ## Return QuitSuccess when the program's arguments help was shown, otherwise
   ## QuitFailure.
-  try:
-    stdout.writeLine("""Available arguments are:
-    -c [command]  - Run the selected command in shell and quit
-    --db [path]   - Set the shell database to the selected file
-    -h, --help    - Show this help and quit
-    -v, --version - Show the shell version info""")
-    stdout.flushFile
-  except IOError:
-    quit QuitFailure
-  quit QuitSuccess
+  body:
+    try:
+      stdout.writeLine("""Available arguments are:
+      -c [command]  - Run the selected command in shell and quit
+      --db [path]   - Set the shell database to the selected file
+      -h, --help    - Show this help and quit
+      -v, --version - Show the shell version info""")
+      stdout.flushFile
+    except IOError:
+      quit QuitFailure
+    quit QuitSuccess
 
 proc showProgramVersion*() {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect].} =
+    WriteIOEffect], contractual.} =
   ## Show the program version
   ##
   ## Returns QuitSuccess when the program's arguments help was shown, otherwise
   ## QuitFailure.
-  try:
-    stdout.writeLine(x = """
-    Nish version: 0.6.0
+  body:
+    try:
+      stdout.writeLine(x = """
+      Nish version: 0.6.0
 
-    Copyright: 2021-2023 Bartek Jasicki <thindil@laeran.pl.eu.org>
-    License: 3-Clause BSD""")
-    stdout.flushFile
-  except IOError:
-    quit QuitFailure
-  quit QuitSuccess
+      Copyright: 2021-2023 Bartek Jasicki <thindil@laeran.pl.eu.org>
+      License: 3-Clause BSD""")
+      stdout.flushFile
+    except IOError:
+      quit QuitFailure
+    quit QuitSuccess
 
 proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
@@ -226,142 +228,302 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       return nil
 
 proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
-    ExecIOEffect, RootEffect].} =
+    ExecIOEffect, RootEffect], contractual.} =
   ## The main procedure of the shell
+  body:
+    var
+      userInput: OptParser
+      commandName: string = ""
+      inputString: UserInput = emptyLimitedString(capacity = maxInputLength)
+      options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
+          "help", "version"])
+      historyIndex: HistoryRange
+      oneTimeCommand, conjCommands, keyWasArrow, insertMode,
+        completionMode: bool = false
+      returnCode: ResultCode = QuitSuccess.ResultCode
+      aliases = newOrderedTable[AliasName, int]()
+      dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
+          DirSep & "nish.db")
+      cursorPosition, currentCompletion: Natural = 0
+      commands = newTable[string, CommandData]()
+      completions: seq[string]
+      completionWidth: seq[Natural]
 
-  var
-    userInput: OptParser
-    commandName: string = ""
-    inputString: UserInput = emptyLimitedString(capacity = maxInputLength)
-    options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
-        "help", "version"])
-    historyIndex: HistoryRange
-    oneTimeCommand, conjCommands, keyWasArrow, insertMode,
-      completionMode: bool = false
-    returnCode: ResultCode = QuitSuccess.ResultCode
-    aliases = newOrderedTable[AliasName, int]()
-    dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
-        DirSep & "nish.db")
-    cursorPosition, currentCompletion: Natural = 0
-    commands = newTable[string, CommandData]()
-    completions: seq[string]
-    completionWidth: seq[Natural]
-
-  # Check the command line parameters entered by the user. Available options
-  # are "-c [command]" to run only one command, "-h" or "--help" to show
-  # help about the shell's command line arguments, "-v" or "--version" to show
-  # the shell's version info and "-db [path]" to set path to the shell's
-  # database
-  while true:
-    options.next
-    case options.kind
-    of cmdEnd:
-      break
-    of cmdShortOption, cmdLongOption:
-      case options.key
-      of "c":
-        oneTimeCommand = true
-        options.next
-        try:
-          inputString.text = options.key
-        except CapacityError:
-          quit showError(message = "The entered command is too long.").int
-      of "h", "help":
-        showCommandLineHelp()
-      of "v", "version":
-        showProgramVersion()
-      of "db":
-        dbPath = options.val.DirectoryPath
-    else:
-      discard
-
-  # Connect to the shell database
-  let db: DbConn = startDb(dbPath = dbPath)
-
-  # Stop shell if connection to its database was unsuccesful
-  if db == nil:
-    quit QuitFailure
-
-  # Initialize the shell's commands history
-  historyIndex = initHistory(db = db, commands = commands)
-
-  # Initialize the shell's options system
-  initOptions(commands = commands)
-
-  # Initialize the shell's aliases system
-  initAliases(db = db, aliases = aliases, commands = commands)
-
-  # Initialize the shell's environment variables system
-  initVariables(db = db, commands = commands)
-
-  # Set the shell's help
-  initHelp(db = db, commands = commands)
-
-  # Initialize the shell's plugins system
-  initPlugins(db = db, commands = commands)
-
-  # Set the title of the terminal to current directory
-  setTitle(title = $getFormattedDir(), db = db)
-
-  # Start the shell
-  while true:
-    try:
-      # Write the shell's prompt and get the input from the user, only when the
-      # shell's didn't start in one command mode and there is no remaining the
-      # user input to parse
-      if not oneTimeCommand and inputString.len == 0:
-        # Write prompt
-        let promptLength: Natural = showPrompt(
-            promptEnabled = not oneTimeCommand, previousCommand = commandName,
-                resultCode = returnCode, db = db)
-        # Get the user input and parse it
-        var inputChar: char = '\0'
-        # Read the user input until not meet new line character or the input
-        # reach the maximum length
-        while inputChar.ord != 13 and inputString.len < maxInputLength:
-          # Get the character from the user's input
+    # Check the command line parameters entered by the user. Available options
+    # are "-c [command]" to run only one command, "-h" or "--help" to show
+    # help about the shell's command line arguments, "-v" or "--version" to show
+    # the shell's version info and "-db [path]" to set path to the shell's
+    # database
+    while true:
+      options.next
+      case options.kind
+      of cmdEnd:
+        break
+      of cmdShortOption, cmdLongOption:
+        case options.key
+        of "c":
+          oneTimeCommand = true
+          options.next
           try:
-            inputChar = getch()
-          except IOError:
-            # If there is a problem with input/output, quit the shell or it
-            # will be stuck in endless loop. Later it should be replaced by
-            # more elegant solution.
-            quitShell(returnCode = QuitFailure.ResultCode, db = db)
-          # Backspace pressed, delete the character before cursor from the user
-          # input
-          if inputChar.ord == 127:
-            keyWasArrow = false
-            if cursorPosition == 0:
-              continue
-            deleteChar(inputString = inputString,
-                cursorPosition = cursorPosition)
-            highlightOutput(promptLength = promptLength,
-                inputString = inputString, commands = commands,
-                aliases = aliases,
-                oneTimeCommand = oneTimeCommand, commandName = $commandName,
-                returnCode = returnCode, db = db,
-                cursorPosition = cursorPosition)
-          # Tab key pressed, do autocompletion if possible
-          elif inputChar.ord == 9:
-            let
-              spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-              prefix: string = (if spaceIndex ==
-                  -1: $inputString else: $inputString[spaceIndex + 1..^1])
-            completions = @[]
-            if inputString.startsWith(prefix = prefix) and (spaceIndex == -1 or
-                spaceIndex >= cursorPosition):
-              getCommandCompletion(prefix = prefix, completions = completions,
-                  aliases = aliases, commands = commands, db = db)
-            getDirCompletion(prefix = prefix, completions = completions, db = db)
-            if completions.len == 0:
-              continue
-            elif completions.len == 1:
+            inputString.text = options.key
+          except CapacityError:
+            quit showError(message = "The entered command is too long.").int
+        of "h", "help":
+          showCommandLineHelp()
+        of "v", "version":
+          showProgramVersion()
+        of "db":
+          dbPath = options.val.DirectoryPath
+      else:
+        discard
+
+    # Connect to the shell database
+    let db: DbConn = startDb(dbPath = dbPath)
+
+    # Stop shell if connection to its database was unsuccesful
+    if db == nil:
+      quit QuitFailure
+
+    # Initialize the shell's commands history
+    historyIndex = initHistory(db = db, commands = commands)
+
+    # Initialize the shell's options system
+    initOptions(commands = commands)
+
+    # Initialize the shell's aliases system
+    initAliases(db = db, aliases = aliases, commands = commands)
+
+    # Initialize the shell's environment variables system
+    initVariables(db = db, commands = commands)
+
+    # Set the shell's help
+    initHelp(db = db, commands = commands)
+
+    # Initialize the shell's plugins system
+    initPlugins(db = db, commands = commands)
+
+    # Set the title of the terminal to current directory
+    setTitle(title = $getFormattedDir(), db = db)
+
+    # Start the shell
+    while true:
+      try:
+        # Write the shell's prompt and get the input from the user, only when the
+        # shell's didn't start in one command mode and there is no remaining the
+        # user input to parse
+        if not oneTimeCommand and inputString.len == 0:
+          # Write prompt
+          let promptLength: Natural = showPrompt(
+              promptEnabled = not oneTimeCommand, previousCommand = commandName,
+                  resultCode = returnCode, db = db)
+          # Get the user input and parse it
+          var inputChar: char = '\0'
+          # Read the user input until not meet new line character or the input
+          # reach the maximum length
+          while inputChar.ord != 13 and inputString.len < maxInputLength:
+            # Get the character from the user's input
+            try:
+              inputChar = getch()
+            except IOError:
+              # If there is a problem with input/output, quit the shell or it
+              # will be stuck in endless loop. Later it should be replaced by
+              # more elegant solution.
+              quitShell(returnCode = QuitFailure.ResultCode, db = db)
+            # Backspace pressed, delete the character before cursor from the user
+            # input
+            if inputChar.ord == 127:
+              keyWasArrow = false
+              if cursorPosition == 0:
+                continue
+              deleteChar(inputString = inputString,
+                  cursorPosition = cursorPosition)
+              highlightOutput(promptLength = promptLength,
+                  inputString = inputString, commands = commands,
+                  aliases = aliases,
+                  oneTimeCommand = oneTimeCommand, commandName = $commandName,
+                  returnCode = returnCode, db = db,
+                  cursorPosition = cursorPosition)
+            # Tab key pressed, do autocompletion if possible
+            elif inputChar.ord == 9:
+              let
+                spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
+                prefix: string = (if spaceIndex ==
+                    -1: $inputString else: $inputString[spaceIndex + 1..^1])
+              completions = @[]
+              if inputString.startsWith(prefix = prefix) and (spaceIndex ==
+                  - 1 or spaceIndex >= cursorPosition):
+                getCommandCompletion(prefix = prefix, completions = completions,
+                    aliases = aliases, commands = commands, db = db)
+              getDirCompletion(prefix = prefix, completions = completions, db = db)
+              if completions.len == 0:
+                continue
+              elif completions.len == 1:
+                try:
+                  stdout.cursorBackward(count = runeLen(s = $inputString) -
+                      spaceIndex - 1)
+                  stdout.write(s = completions[0])
+                  inputString.text = inputString[0..spaceIndex] & completions[0]
+                  cursorPosition = runeLen(s = $inputString)
+                except IOError:
+                  discard
+                except ValueError:
+                  showError(message = "Invalid value for character position.",
+                      e = getCurrentException())
+                except CapacityError:
+                  showError(message = "Entered input is too long.",
+                      e = getCurrentException())
+              else:
+                try:
+                  let columnsAmount = try:
+                      parseInt(s = $getOption(optionName = initLimitedString(
+                          capacity = 17, text = "completionColumns"), db = db,
+                          defaultValue = initLimitedString(capacity = 2, text = "5")))
+                    except CapacityError, ValueError:
+                      5
+                  # If Tab pressed the first time, show the list of completion
+                  if not completionMode:
+                    stdout.writeLine("")
+                    var
+                      table: TerminalTable
+                      row: seq[string]
+                      amount, line: Natural = 0
+                    for completion in completions:
+                      row.add(y = completion)
+                      amount.inc
+                      if amount == columnsAmount:
+                        table.add(row)
+                        row = @[]
+                        amount = 0
+                        line.inc
+                    if amount > 0 and amount < columnsAmount:
+                      table.add(row)
+                      line.inc
+                    completionWidth = @[]
+                    for column in table.getColumnSizes(maxSize = terminalWidth()):
+                      completionWidth.add(y = column + 4)
+                    try:
+                      table.echoTable(padding = 4)
+                    except IOError, Exception:
+                      showError(message = "Can't show Tab completion. Reason: ",
+                          e = getCurrentException())
+                    stdout.cursorUp(count = line)
+                    completionMode = true
+                    currentCompletion = 0
+                    stdout.cursorBackward(count = terminalWidth())
+                    continue
+                  # Select the next completion from the list
+                  currentCompletion.inc
+                  # Return to the first completion if reached the end of the list
+                  if currentCompletion == completions.len:
+                    let line = completions.len div columnsAmount
+                    if line > 0 and completions.len > columnsAmount:
+                      stdout.cursorUp(count = line)
+                    stdout.cursorBackward(count = terminalWidth())
+                    currentCompletion = 0
+                    continue
+                  # Go to the next line if the last completion in the line reached
+                  if currentCompletion mod columnsAmount == 0:
+                    stdout.cursorDown
+                    stdout.cursorBackward(count = terminalWidth())
+                    continue
+                  # Move cursor to the next completion
+                  stdout.cursorForward(count = completionWidth[(
+                      currentCompletion - 1) mod columnsAmount])
+                except IOError, ValueError:
+                  discard
+            # Special keys pressed
+            elif inputChar.ord == 27:
               try:
-                stdout.cursorBackward(count = runeLen(s = $inputString) -
-                    spaceIndex - 1)
-                stdout.write(s = completions[0])
-                inputString.text = inputString[0..spaceIndex] & completions[0]
+                if getch() in ['[', 'O']:
+                  inputChar = getch()
+                  # Arrow up key pressed
+                  if inputChar == 'A' and historyIndex > 0:
+                    try:
+                      inputString.text = getHistory(
+                          historyIndex = historyIndex, db = db,
+                          searchFor = initLimitedString(
+                              capacity = maxInputLength,
+
+text = (if keyWasArrow: "" else: $inputString)))
+                    except CapacityError:
+                      showError(message = "Entered input is too long.",
+                          e = getCurrentException())
+                    cursorPosition = runeLen(s = $inputString)
+                    highlightOutput(promptLength = promptLength,
+                        inputString = inputString, commands = commands,
+                        aliases = aliases, oneTimeCommand = oneTimeCommand,
+                        commandName = $commandName, returnCode = returnCode,
+                        db = db, cursorPosition = cursorPosition)
+                    historyIndex.dec
+                    if historyIndex < 1:
+                      historyIndex = 1;
+                  # Arrow down key pressed
+                  elif inputChar == 'B' and historyIndex > 0:
+                    historyIndex.inc
+                    let currentHistoryLength: HistoryRange = historyLength(db = db)
+                    if historyIndex > currentHistoryLength:
+                      historyIndex = currentHistoryLength
+                    try:
+                      inputString.text = getHistory(
+                          historyIndex = historyIndex, db = db,
+                          searchFor = initLimitedString(
+                              capacity = maxInputLength,
+
+text = (if keyWasArrow: "" else: $inputString)))
+                    except CapacityError:
+                      showError(message = "Entered input is too long.",
+                          e = getCurrentException())
+                    cursorPosition = runeLen(s = $inputString)
+                    highlightOutput(promptLength = promptLength,
+                        inputString = inputString, commands = commands,
+                        aliases = aliases, oneTimeCommand = oneTimeCommand,
+                        commandName = $commandName, returnCode = returnCode,
+                        db = db, cursorPosition = cursorPosition)
+                  # Insert key pressed
+                  elif inputChar == '2' and getch() == '~':
+                    insertMode = not insertMode
+                  # Move cursor if the proper key was pressed (arrows, home, end)
+                  # if not in completion mode
+                  else:
+                    if not completionMode:
+                      moveCursor(inputChar = inputChar,
+                          cursorPosition = cursorPosition,
+                          inputString = inputString)
+                  keyWasArrow = true
+              except IOError:
+                discard
+              except ValueError:
+                showError(message = "Invalid value for moving cursor.",
+                    e = getCurrentException())
+            # Ctrl-c pressed, cancel current command and return 130 result code
+            elif inputChar.ord == 3:
+              completionMode = false
+              inputString = emptyLimitedString(capacity = maxInputLength)
+              returnCode = 130.ResultCode
+              cursorPosition = 0
+              commandName = "ctrl-c"
+              break
+            # Enter the currently selected completion into the user's input
+            elif inputChar.ord == 13 and completionMode:
+              try:
+                let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
+                inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
                 cursorPosition = runeLen(s = $inputString)
+                let line = (if completions.len > 3: (completions.len / 3).int + 1 else: 1)
+                stdout.cursorUp(count = (currentCompletion / 3).int)
+                for i in 1..line:
+                  stdout.cursorDown
+                  stdout.eraseLine
+                if line > 0:
+                  stdout.cursorUp(count = line)
+                highlightOutput(promptLength = promptLength,
+                    inputString = inputString, commands = commands,
+                    aliases = aliases, oneTimeCommand = oneTimeCommand,
+                    commandName = $commandName, returnCode = returnCode,
+                    db = db, cursorPosition = cursorPosition)
+                completionMode = false
+                keyWasArrow = false
+                inputChar = '\0'
               except IOError:
                 discard
               except ValueError:
@@ -370,298 +532,145 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               except CapacityError:
                 showError(message = "Entered input is too long.",
                     e = getCurrentException())
-            else:
-              try:
-                let columnsAmount = try:
-                    parseInt(s = $getOption(optionName = initLimitedString(
-                        capacity = 17, text = "completionColumns"), db = db,
-                        defaultValue = initLimitedString(capacity = 2, text = "5")))
-                  except CapacityError, ValueError:
-                    5
-                # If Tab pressed the first time, show the list of completion
-                if not completionMode:
-                  stdout.writeLine("")
-                  var
-                    table: TerminalTable
-                    row: seq[string]
-                    amount, line: Natural = 0
-                  for completion in completions:
-                    row.add(y = completion)
-                    amount.inc
-                    if amount == columnsAmount:
-                      table.add(row)
-                      row = @[]
-                      amount = 0
-                      line.inc
-                  if amount > 0 and amount < columnsAmount:
-                    table.add(row)
-                    line.inc
-                  completionWidth = @[]
-                  for column in table.getColumnSizes(maxSize = terminalWidth()):
-                    completionWidth.add(y = column + 4)
-                  try:
-                    table.echoTable(padding = 4)
-                  except IOError, Exception:
-                    showError(message = "Can't show Tab completion. Reason: ",
-                        e = getCurrentException())
-                  stdout.cursorUp(count = line)
-                  completionMode = true
-                  currentCompletion = 0
-                  stdout.cursorBackward(count = terminalWidth())
-                  continue
-                # Select the next completion from the list
-                currentCompletion.inc
-                # Return to the first completion if reached the end of the list
-                if currentCompletion == completions.len:
-                  let line = completions.len div columnsAmount
-                  if line > 0 and completions.len > columnsAmount:
-                    stdout.cursorUp(count = line)
-                  stdout.cursorBackward(count = terminalWidth())
-                  currentCompletion = 0
-                  continue
-                # Go to the next line if the last completion in the line reached
-                if currentCompletion mod columnsAmount == 0:
-                  stdout.cursorDown
-                  stdout.cursorBackward(count = terminalWidth())
-                  continue
-                # Move cursor to the next completion
-                stdout.cursorForward(count = completionWidth[(
-                    currentCompletion - 1) mod columnsAmount])
-              except IOError, ValueError:
-                discard
-          # Special keys pressed
-          elif inputChar.ord == 27:
-            try:
-              if getch() in ['[', 'O']:
-                inputChar = getch()
-                # Arrow up key pressed
-                if inputChar == 'A' and historyIndex > 0:
-                  try:
-                    inputString.text = getHistory(
-                        historyIndex = historyIndex, db = db,
-                        searchFor = initLimitedString(capacity = maxInputLength,
-                            text = (if keyWasArrow: "" else: $inputString)))
-                  except CapacityError:
-                    showError(message = "Entered input is too long.",
-                        e = getCurrentException())
-                  cursorPosition = runeLen(s = $inputString)
-                  highlightOutput(promptLength = promptLength,
-                      inputString = inputString, commands = commands,
-                      aliases = aliases, oneTimeCommand = oneTimeCommand,
-                      commandName = $commandName, returnCode = returnCode,
-                      db = db, cursorPosition = cursorPosition)
-                  historyIndex.dec
-                  if historyIndex < 1:
-                    historyIndex = 1;
-                # Arrow down key pressed
-                elif inputChar == 'B' and historyIndex > 0:
-                  historyIndex.inc
-                  let currentHistoryLength: HistoryRange = historyLength(db = db)
-                  if historyIndex > currentHistoryLength:
-                    historyIndex = currentHistoryLength
-                  try:
-                    inputString.text = getHistory(
-                        historyIndex = historyIndex, db = db,
-                        searchFor = initLimitedString(capacity = maxInputLength,
-                            text = (if keyWasArrow: "" else: $inputString)))
-                  except CapacityError:
-                    showError(message = "Entered input is too long.",
-                        e = getCurrentException())
-                  cursorPosition = runeLen(s = $inputString)
-                  highlightOutput(promptLength = promptLength,
-                      inputString = inputString, commands = commands,
-                      aliases = aliases, oneTimeCommand = oneTimeCommand,
-                      commandName = $commandName, returnCode = returnCode,
-                      db = db, cursorPosition = cursorPosition)
-                # Insert key pressed
-                elif inputChar == '2' and getch() == '~':
-                  insertMode = not insertMode
-                # Move cursor if the proper key was pressed (arrows, home, end)
-                # if not in completion mode
-                else:
-                  if not completionMode:
-                    moveCursor(inputChar = inputChar,
-                        cursorPosition = cursorPosition,
-                        inputString = inputString)
-                keyWasArrow = true
-            except IOError:
-              discard
-            except ValueError:
-              showError(message = "Invalid value for moving cursor.",
-                  e = getCurrentException())
-          # Ctrl-c pressed, cancel current command and return 130 result code
-          elif inputChar.ord == 3:
-            completionMode = false
-            inputString = emptyLimitedString(capacity = maxInputLength)
-            returnCode = 130.ResultCode
-            cursorPosition = 0
-            commandName = "ctrl-c"
-            break
-          # Enter the currently selected completion into the user's input
-          elif inputChar.ord == 13 and completionMode:
-            try:
-              let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-              inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
-              cursorPosition = runeLen(s = $inputString)
-              let line = (if completions.len > 3: (completions.len / 3).int + 1 else: 1)
-              stdout.cursorUp(count = (currentCompletion / 3).int)
-              for i in 1..line:
-                stdout.cursorDown
-                stdout.eraseLine
-              if line > 0:
-                stdout.cursorUp(count = line)
+            # Any graphical character pressed, show it in the input field
+            elif inputChar.ord > 31:
+              let inputRune: string = readChar(inputChar = inputChar)
+              updateInput(cursorPosition = cursorPosition,
+                  inputString = inputString, insertMode = insertMode,
+                  inputRune = inputRune)
               highlightOutput(promptLength = promptLength,
                   inputString = inputString, commands = commands,
                   aliases = aliases, oneTimeCommand = oneTimeCommand,
                   commandName = $commandName, returnCode = returnCode,
                   db = db, cursorPosition = cursorPosition)
-              completionMode = false
               keyWasArrow = false
-              inputChar = '\0'
-            except IOError:
-              discard
-            except ValueError:
-              showError(message = "Invalid value for character position.",
-                  e = getCurrentException())
-            except CapacityError:
-              showError(message = "Entered input is too long.",
-                  e = getCurrentException())
-          # Any graphical character pressed, show it in the input field
-          elif inputChar.ord > 31:
-            let inputRune: string = readChar(inputChar = inputChar)
-            updateInput(cursorPosition = cursorPosition,
-                inputString = inputString, insertMode = insertMode,
-                inputRune = inputRune)
-            highlightOutput(promptLength = promptLength,
-                inputString = inputString, commands = commands,
-                aliases = aliases, oneTimeCommand = oneTimeCommand,
-                commandName = $commandName, returnCode = returnCode,
-                db = db, cursorPosition = cursorPosition)
-            keyWasArrow = false
-            completionMode = false
-        try:
-          stdout.writeLine(x = "")
-        except IOError:
-          discard
-      # User just press Enter key, reset return code (if user doesn't pressed
-      # ctrl-c) and back to beginning
-      if inputString.len == 0:
-        if returnCode != 130:
-          returnCode = QuitSuccess.ResultCode
-        continue
-      userInput = initOptParser(cmdLine = $inputString)
-      # Reset the return code of the program
-      returnCode = QuitSuccess.ResultCode
-      # Go to the first token
-      userInput.next
-      # If it looks like an argument, it must be command name
-      if userInput.kind == cmdArgument:
-        commandName = userInput.key
-      # Set the command arguments
-      let arguments: UserInput = try:
-          initLimitedString(capacity = maxInputLength, text = $getArguments(
-              userInput = userInput, conjCommands = conjCommands))
-        except CapacityError:
-          emptyLimitedString(capacity = maxInputLength)
-      try:
-        inputString.text = join(a = userInput.remainingArgs, sep = " ")
-      except CapacityError:
-        showError(message = "Entered input is too long.",
-            e = getCurrentException())
-      # Set a terminal title to current command
-      setTitle(title = commandName, db = db)
-      # Execute plugins with precommand hook
-      try:
-        for plugin in db.fastRows(query = sql(
-            query = "SELECT location FROM plugins WHERE precommand=1")):
-          discard execPlugin(pluginPath = plugin[0], arguments = ["preCommand",
-              commandName & " " & arguments], db = db, commands = commands)
-      except DbError:
-        showError(message = "Can't execute preCommand hook for plugins. Reason: ",
-            e = getCurrentException())
-      # Parse commands
-      case commandName
-      # Quit from shell
-      of "exit":
-        historyIndex = updateHistory(commandToAdd = "exit", db = db)
-        try:
-          setTitle(title = getCurrentDir(), db = db)
-        except OSError:
-          setTitle(title = "nish", db = db)
-        quitShell(returnCode = returnCode, db = db)
-      # Change current directory
-      of "cd":
-        returnCode = cdCommand(newDirectory = DirectoryPath($arguments),
-            aliases = aliases, db = db)
-      # Set the environment variable
-      of "set":
-        returnCode = setCommand(arguments = arguments)
-      # Delete environment variable
-      of "unset":
-        returnCode = unsetCommand(arguments = arguments)
-      # Execute command (the shell's or external) or the shell's alias
-      else:
-        # Check if command is the shell's command, if yes, execute it
-        if commands.hasKey(key = commandName):
+              completionMode = false
           try:
-            # Build-in shell's command
-            if commands[commandName].command != nil:
-              returnCode = commands[commandName].command(arguments = arguments,
-                  db = db, list = CommandLists(aliases: aliases,
-                  commands: commands))
-            # The shell's command from plugin
-            else:
-              let returnValues = execPlugin(pluginPath = commands[
-                  commandName].plugin, arguments = [commandName, $arguments],
-                  db = db, commands = commands)
-              returnCode = returnValues.code
-          except KeyError:
-            showError(message = "Can't execute command '" & commandName &
-                "'. Reason: ", e = getCurrentException())
-        else:
-          let commandToExecute: string = commandName & (if arguments.len >
-              0: " " & arguments else: "")
-          try:
-            # Check if command is an alias, if yes, execute it
-            if initLimitedString(capacity = maxInputLength,
-                text = commandName) in aliases:
-              returnCode = execAlias(arguments = arguments,
-                  aliasId = commandName, aliases = aliases, db = db)
-              cursorPosition = runeLen(s = $inputString)
-            else:
-              # Execute external command
-              returnCode = ResultCode(execCmd(command = commandToExecute))
+            stdout.writeLine(x = "")
+          except IOError:
+            discard
+        # User just press Enter key, reset return code (if user doesn't pressed
+        # ctrl-c) and back to beginning
+        if inputString.len == 0:
+          if returnCode != 130:
+            returnCode = QuitSuccess.ResultCode
+          continue
+        userInput = initOptParser(cmdLine = $inputString)
+        # Reset the return code of the program
+        returnCode = QuitSuccess.ResultCode
+        # Go to the first token
+        userInput.next
+        # If it looks like an argument, it must be command name
+        if userInput.kind == cmdArgument:
+          commandName = userInput.key
+        # Set the command arguments
+        let arguments: UserInput = try:
+            initLimitedString(capacity = maxInputLength, text = $getArguments(
+                userInput = userInput, conjCommands = conjCommands))
           except CapacityError:
-            returnCode = QuitFailure.ResultCode
-      # Update the shell's history with info about the executed command
-      historyIndex = updateHistory(commandToAdd = commandName & (
-          if arguments.len > 0: " " & arguments else: ""), db = db,
-          returnCode = returnCode)
-      # Restore the terminal title
-      setTitle(title = $getFormattedDir(), db = db)
-      # Execute plugins with postcommand hook
-      try:
-        for plugin in db.fastRows(query = sql(
-            query = "SELECT location FROM plugins WHERE postcommand=1")):
-          discard execPlugin(pluginPath = plugin[0], arguments = ["postCommand",
-              commandName & " " & arguments], db = db, commands = commands)
-      except DbError:
-        showError(message = "Can't execute postCommand hook for plugins. Reason: ",
+            emptyLimitedString(capacity = maxInputLength)
+        try:
+          inputString.text = join(a = userInput.remainingArgs, sep = " ")
+        except CapacityError:
+          showError(message = "Entered input is too long.",
+              e = getCurrentException())
+        # Set a terminal title to current command
+        setTitle(title = commandName, db = db)
+        # Execute plugins with precommand hook
+        try:
+          for plugin in db.fastRows(query = sql(
+              query = "SELECT location FROM plugins WHERE precommand=1")):
+            discard execPlugin(pluginPath = plugin[0], arguments = [
+                "preCommand", commandName & " " & arguments], db = db,
+                    commands = commands)
+        except DbError:
+          showError(message = "Can't execute preCommand hook for plugins. Reason: ",
+              e = getCurrentException())
+        # Parse commands
+        case commandName
+        # Quit from shell
+        of "exit":
+          historyIndex = updateHistory(commandToAdd = "exit", db = db)
+          try:
+            setTitle(title = getCurrentDir(), db = db)
+          except OSError:
+            setTitle(title = "nish", db = db)
+          quitShell(returnCode = returnCode, db = db)
+        # Change current directory
+        of "cd":
+          returnCode = cdCommand(newDirectory = DirectoryPath($arguments),
+              aliases = aliases, db = db)
+        # Set the environment variable
+        of "set":
+          returnCode = setCommand(arguments = arguments)
+        # Delete environment variable
+        of "unset":
+          returnCode = unsetCommand(arguments = arguments)
+        # Execute command (the shell's or external) or the shell's alias
+        else:
+          # Check if command is the shell's command, if yes, execute it
+          if commands.hasKey(key = commandName):
+            try:
+              # Build-in shell's command
+              if commands[commandName].command != nil:
+                returnCode = commands[commandName].command(
+                    arguments = arguments, db = db, list = CommandLists(
+                    aliases: aliases,
+                    commands: commands))
+              # The shell's command from plugin
+              else:
+                let returnValues = execPlugin(pluginPath = commands[
+                    commandName].plugin, arguments = [commandName, $arguments],
+                    db = db, commands = commands)
+                returnCode = returnValues.code
+            except KeyError:
+              showError(message = "Can't execute command '" & commandName &
+                  "'. Reason: ", e = getCurrentException())
+          else:
+            let commandToExecute: string = commandName & (if arguments.len >
+                0: " " & arguments else: "")
+            try:
+              # Check if command is an alias, if yes, execute it
+              if initLimitedString(capacity = maxInputLength,
+                  text = commandName) in aliases:
+                returnCode = execAlias(arguments = arguments,
+                    aliasId = commandName, aliases = aliases, db = db)
+                cursorPosition = runeLen(s = $inputString)
+              else:
+                # Execute external command
+                returnCode = ResultCode(execCmd(command = commandToExecute))
+            except CapacityError:
+              returnCode = QuitFailure.ResultCode
+        # Update the shell's history with info about the executed command
+        historyIndex = updateHistory(commandToAdd = commandName & (
+            if arguments.len > 0: " " & arguments else: ""), db = db,
+            returnCode = returnCode)
+        # Restore the terminal title
+        setTitle(title = $getFormattedDir(), db = db)
+        # Execute plugins with postcommand hook
+        try:
+          for plugin in db.fastRows(query = sql(
+              query = "SELECT location FROM plugins WHERE postcommand=1")):
+            discard execPlugin(pluginPath = plugin[0], arguments = [
+                "postCommand", commandName & " " & arguments], db = db,
+                    commands = commands)
+        except DbError:
+          showError(message = "Can't execute postCommand hook for plugins. Reason: ",
+              e = getCurrentException())
+        # If there is more commands to execute check if the next commands should
+        # be executed. if the last command wasn't success and commands conjuncted
+        # with && or the last command was success and command disjuncted, reset
+        # the input, don't execute more commands.
+        if inputString.len > 0 and ((returnCode != QuitSuccess and
+            conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
+          inputString = emptyLimitedString(capacity = maxInputLength)
+        # Run only one command, quit from the shell
+        if oneTimeCommand and inputString.len == 0:
+          quitShell(returnCode = returnCode, db = db)
+        cursorPosition = runeLen(s = $inputString)
+      except:
+        showError(message = "Internal shell error. Additional details: ",
             e = getCurrentException())
-      # If there is more commands to execute check if the next commands should
-      # be executed. if the last command wasn't success and commands conjuncted
-      # with && or the last command was success and command disjuncted, reset
-      # the input, don't execute more commands.
-      if inputString.len > 0 and ((returnCode != QuitSuccess and
-          conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
-        inputString = emptyLimitedString(capacity = maxInputLength)
-      # Run only one command, quit from the shell
-      if oneTimeCommand and inputString.len == 0:
-        quitShell(returnCode = returnCode, db = db)
-      cursorPosition = runeLen(s = $inputString)
-    except:
-      showError(message = "Internal shell error. Additional details: ",
-          e = getCurrentException())
 
 when isMainModule:
   main()
