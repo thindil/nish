@@ -53,6 +53,9 @@ type
     ## Store information about the shell's plugin
     path*: string    ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
+  PluginResult* = tuple
+    code: ResultCode
+    answer: LimitedString
 
 using
   db: DbConn # Connection to the shell's database
@@ -85,10 +88,9 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
-    commands): tuple [code: ResultCode; answer: LimitedString] {.gcsafe,
-    sideEffect, raises: [], tags: [ExecIOEffect, ReadEnvEffect, ReadIOEffect,
-    WriteIOEffect, ReadDbEffect, TimeEffect, WriteDbEffect, RootEffect],
-    contractual.} =
+    commands): PluginResult {.gcsafe, sideEffect, raises: [], tags: [
+    ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, ReadDbEffect,
+    TimeEffect, WriteDbEffect, RootEffect], contractual.} =
   ## Communicate with the selected plugin via the shell's plugins API. Run the
   ## selected plugin, send a message to it to execute the selected section of
   ## the plugin and show its output to the user.
@@ -177,8 +179,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           return false
         return true
 
-    proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
+    proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [
+        ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
         contractual.} =
       ## Remove the selected option from the shell
       ##
