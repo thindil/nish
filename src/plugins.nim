@@ -54,8 +54,10 @@ type
     path*: string    ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
   PluginResult* = tuple
-    code: ResultCode
-    answer: LimitedString
+    ## Store the result of the plugin's API command
+    code: ResultCode ## The exit code returned by the plugin's command
+    answer: LimitedString ## If code is QuitFailure, contains the error's message.
+                          ## Otherwise, empty string.
 
 using
   db: DbConn # Connection to the shell's database
