@@ -613,18 +613,18 @@ text = (if keyWasArrow: "" else: $inputString)))
           # Check if command is the shell's command, if yes, execute it
           if commands.hasKey(key = commandName):
             try:
+              # The shell's command from plugin
+              if commands[commandName].command == nil:
+                let returnValues: PluginResult = execPlugin(pluginPath = commands[
+                    commandName].plugin, arguments = [commandName, $arguments],
+                    db = db, commands = commands)
+                returnCode = returnValues.code
               # Build-in shell's command
-              if commands[commandName].command != nil:
+              else:
                 returnCode = commands[commandName].command(
                     arguments = arguments, db = db, list = CommandLists(
                     aliases: aliases,
                     commands: commands))
-              # The shell's command from plugin
-              else:
-                let returnValues = execPlugin(pluginPath = commands[
-                    commandName].plugin, arguments = [commandName, $arguments],
-                    db = db, commands = commands)
-                returnCode = returnValues.code
             except KeyError:
               showError(message = "Can't execute command '" & commandName &
                   "'. Reason: ", e = getCurrentException())
