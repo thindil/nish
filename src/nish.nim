@@ -34,7 +34,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import contracts, nancy
+import contracts, nancy, nimalyzer
 # Internal imports
 import aliases, commands, commandslist, completion, constants, directorypath,
     help, highlight, history, input, lstring, options, output, plugins, prompt,
@@ -48,7 +48,7 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, raises: [], tags: [
   ## QuitFailure.
   body:
     try:
-      stdout.writeLine("""Available arguments are:
+      stdout.writeLine(x = """Available arguments are:
       -c [command]  - Run the selected command in shell and quit
       --db [path]   - Set the shell database to the selected file
       -h, --help    - Show this help and quit
@@ -116,7 +116,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't create directory for the shell's database. Reason: ",
           e = getCurrentException())
       return nil
-    let dbExists: bool = fileExists($dbPath)
+    let dbExists: bool = fileExists(filename = $dbPath)
     try:
       result = open(connection = $dbPath, user = "", password = "", database = "")
     except DbError:
@@ -181,7 +181,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
     # If database version is different than the newest, update database
     try:
-      let dbVersion = parseInt(s = $getOption(optionName = initLimitedString(
+      let dbVersion: int = parseInt(s = $getOption(optionName = initLimitedString(
           capacity = 9, text = "dbVersion"), db = result,
           defaultValue = initLimitedString(capacity = 1, text = "0")))
       case dbVersion
@@ -232,22 +232,22 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   ## The main procedure of the shell
   body:
     var
-      userInput: OptParser
+      userInput: OptParser = initOptParser()
       commandName: string = ""
       inputString: UserInput = emptyLimitedString(capacity = maxInputLength)
       options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
           "help", "version"])
-      historyIndex: HistoryRange
+      historyIndex: HistoryRange = -1
       oneTimeCommand, conjCommands, keyWasArrow, insertMode,
         completionMode: bool = false
       returnCode: ResultCode = QuitSuccess.ResultCode
-      aliases = newOrderedTable[AliasName, int]()
-      dbPath: DirectoryPath = DirectoryPath(getConfigDir() & DirSep & "nish" &
-          DirSep & "nish.db")
+      aliases: ref OrderedTable[AliasName, int] = newOrderedTable[AliasName, int]()
+      dbPath: DirectoryPath = (getConfigDir() & DirSep & "nish" &
+          DirSep & "nish.db").DirectoryPath
       cursorPosition, currentCompletion: Natural = 0
-      commands = newTable[string, CommandData]()
-      completions: seq[string]
-      completionWidth: seq[Natural]
+      commands: ref Table[string, CommandData] = newTable[string, CommandData]()
+      completions: seq[string] = @[]
+      completionWidth: seq[Natural] = @[]
 
     # Check the command line parameters entered by the user. Available options
     # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -374,7 +374,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                       e = getCurrentException())
               else:
                 try:
-                  let columnsAmount = try:
+                  let columnsAmount: int = try:
                       parseInt(s = $getOption(optionName = initLimitedString(
                           capacity = 17, text = "completionColumns"), db = db,
                           defaultValue = initLimitedString(capacity = 2, text = "5")))
@@ -382,21 +382,23 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                       5
                   # If Tab pressed the first time, show the list of completion
                   if not completionMode:
-                    stdout.writeLine("")
+                    stdout.writeLine(x = "")
+                    {.ruleOff: "varDeclared".}
+                    var table: TerminalTable
+                    {.ruleOn: "varDeclared".}
                     var
-                      table: TerminalTable
                       row: seq[string]
                       amount, line: Natural = 0
                     for completion in completions:
                       row.add(y = completion)
                       amount.inc
                       if amount == columnsAmount:
-                        table.add(row)
+                        table.add(parts = row)
                         row = @[]
                         amount = 0
                         line.inc
                     if amount > 0 and amount < columnsAmount:
-                      table.add(row)
+                      table.add(parts = row)
                       line.inc
                     completionWidth = @[]
                     for column in table.getColumnSizes(maxSize = terminalWidth()):
@@ -598,7 +600,7 @@ text = (if keyWasArrow: "" else: $inputString)))
           quitShell(returnCode = returnCode, db = db)
         # Change current directory
         of "cd":
-          returnCode = cdCommand(newDirectory = DirectoryPath($arguments),
+          returnCode = cdCommand(newDirectory = ($arguments).DirectoryPath,
               aliases = aliases, db = db)
         # Set the environment variable
         of "set":
@@ -638,7 +640,7 @@ text = (if keyWasArrow: "" else: $inputString)))
                 cursorPosition = runeLen(s = $inputString)
               else:
                 # Execute external command
-                returnCode = ResultCode(execCmd(command = commandToExecute))
+                returnCode = execCmd(command = commandToExecute).ResultCode
             except CapacityError:
               returnCode = QuitFailure.ResultCode
         # Update the shell's history with info about the executed command
