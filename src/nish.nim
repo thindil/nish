@@ -387,7 +387,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     var table: TerminalTable
                     {.ruleOn: "varDeclared".}
                     var
-                      row: seq[string]
+                      row: seq[string] = @[]
                       amount, line: Natural = 0
                     for completion in completions:
                       row.add(y = completion)
@@ -417,7 +417,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                   currentCompletion.inc
                   # Return to the first completion if reached the end of the list
                   if currentCompletion == completions.len:
-                    let line = completions.len div columnsAmount
+                    let line: int = completions.len div columnsAmount
                     if line > 0 and completions.len > columnsAmount:
                       stdout.cursorUp(count = line)
                     stdout.cursorBackward(count = terminalWidth())
@@ -511,7 +511,7 @@ text = (if keyWasArrow: "" else: $inputString)))
                 let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
                 inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
                 cursorPosition = runeLen(s = $inputString)
-                let line = (if completions.len > 3: (completions.len / 3).int + 1 else: 1)
+                let line: int = (if completions.len > 3: (completions.len / 3).int + 1 else: 1)
                 stdout.cursorUp(count = (currentCompletion / 3).int)
                 for i in 1..line:
                   stdout.cursorDown
