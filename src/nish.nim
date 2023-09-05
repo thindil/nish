@@ -34,7 +34,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import contracts, nancy, nimalyzer
+import ansiparse, contracts, nancy, nimalyzer
 # Internal imports
 import aliases, commands, commandslist, completion, constants, directorypath,
     help, highlight, history, input, lstring, options, output, plugins, prompt,
@@ -307,7 +307,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     # Set the title of the terminal to current directory
     setTitle(title = $getFormattedDir(), db = db)
 
-    proc readUserInput() =
+    proc readUserInput() {.raises: [], tags: [WriteIOEffect, ReadEnvEffect,
+        ReadDirEffect, TimeEffect, DbEffect, ReadIOEffect, RootEffect],
+        contractual.} =
       body:
         # Write prompt
         let promptLength: Natural = showPrompt(
@@ -389,12 +391,20 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     row.add(y = completion)
                     amount.inc
                     if amount == columnsAmount:
-                      table.add(parts = row)
+                      try:
+                        table.add(parts = row)
+                      except UnknownEscapeError, InsufficientInputError, FinalByteError:
+                        showError(message = "Can't show Tab completion. Reason: ",
+                            e = getCurrentException())
                       row = @[]
                       amount = 0
                       line.inc
                   if amount > 0 and amount < columnsAmount:
-                    table.add(parts = row)
+                    try:
+                      table.add(parts = row)
+                    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+                      showError(message = "Can't show Tab completion. Reason: ",
+                          e = getCurrentException())
                     line.inc
                   completionWidth = @[]
                   for column in table.getColumnSizes(maxSize = terminalWidth()):
