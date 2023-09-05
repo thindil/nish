@@ -181,8 +181,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
     # If database version is different than the newest, update database
     try:
-      let dbVersion: int = parseInt(s = $getOption(optionName = initLimitedString(
-          capacity = 9, text = "dbVersion"), db = result,
+      let dbVersion: int = parseInt(s = $getOption(
+          optionName = initLimitedString(capacity = 9, text = "dbVersion"),
+              db = result,
           defaultValue = initLimitedString(capacity = 1, text = "0")))
       case dbVersion
       of 0 .. 1:
@@ -241,7 +242,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       oneTimeCommand, conjCommands, keyWasArrow, insertMode,
         completionMode: bool = false
       returnCode: ResultCode = QuitSuccess.ResultCode
-      aliases: ref OrderedTable[AliasName, int] = newOrderedTable[AliasName, int]()
+      aliases: ref OrderedTable[AliasName, int] = newOrderedTable[AliasName,
+          int]()
       dbPath: DirectoryPath = (getConfigDir() & DirSep & "nish" &
           DirSep & "nish.db").DirectoryPath
       cursorPosition, currentCompletion: Natural = 0
@@ -305,227 +307,59 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     # Set the title of the terminal to current directory
     setTitle(title = $getFormattedDir(), db = db)
 
-    # Start the shell
-    while true:
-      try:
-        # Write the shell's prompt and get the input from the user, only when the
-        # shell's didn't start in one command mode and there is no remaining the
-        # user input to parse
-        if not oneTimeCommand and inputString.len == 0:
-          # Write prompt
-          let promptLength: Natural = showPrompt(
-              promptEnabled = not oneTimeCommand, previousCommand = commandName,
-                  resultCode = returnCode, db = db)
-          # Get the user input and parse it
-          var inputChar: char = '\0'
-          # Read the user input until not meet new line character or the input
-          # reach the maximum length
-          while inputChar.ord != 13 and inputString.len < maxInputLength:
-            # Get the character from the user's input
-            try:
-              inputChar = getch()
-            except IOError:
-              # If there is a problem with input/output, quit the shell or it
-              # will be stuck in endless loop. Later it should be replaced by
-              # more elegant solution.
-              quitShell(returnCode = QuitFailure.ResultCode, db = db)
-            # Backspace pressed, delete the character before cursor from the user
-            # input
-            if inputChar.ord == 127:
-              keyWasArrow = false
-              if cursorPosition == 0:
-                continue
-              deleteChar(inputString = inputString,
-                  cursorPosition = cursorPosition)
-              highlightOutput(promptLength = promptLength,
-                  inputString = inputString, commands = commands,
-                  aliases = aliases,
-                  oneTimeCommand = oneTimeCommand, commandName = $commandName,
-                  returnCode = returnCode, db = db,
-                  cursorPosition = cursorPosition)
-            # Tab key pressed, do autocompletion if possible
-            elif inputChar.ord == 9:
-              let
-                spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-                prefix: string = (if spaceIndex ==
-                    -1: $inputString else: $inputString[spaceIndex + 1..^1])
-              completions = @[]
-              if inputString.startsWith(prefix = prefix) and (spaceIndex ==
-                  - 1 or spaceIndex >= cursorPosition):
-                getCommandCompletion(prefix = prefix, completions = completions,
-                    aliases = aliases, commands = commands, db = db)
-              getDirCompletion(prefix = prefix, completions = completions, db = db)
-              if completions.len == 0:
-                continue
-              elif completions.len == 1:
-                try:
-                  stdout.cursorBackward(count = runeLen(s = $inputString) -
-                      spaceIndex - 1)
-                  stdout.write(s = completions[0])
-                  inputString.text = inputString[0..spaceIndex] & completions[0]
-                  cursorPosition = runeLen(s = $inputString)
-                except IOError:
-                  discard
-                except ValueError:
-                  showError(message = "Invalid value for character position.",
-                      e = getCurrentException())
-                except CapacityError:
-                  showError(message = "Entered input is too long.",
-                      e = getCurrentException())
-              else:
-                try:
-                  let columnsAmount: int = try:
-                      parseInt(s = $getOption(optionName = initLimitedString(
-                          capacity = 17, text = "completionColumns"), db = db,
-                          defaultValue = initLimitedString(capacity = 2, text = "5")))
-                    except CapacityError, ValueError:
-                      5
-                  # If Tab pressed the first time, show the list of completion
-                  if not completionMode:
-                    stdout.writeLine(x = "")
-                    {.ruleOff: "varDeclared".}
-                    var table: TerminalTable
-                    {.ruleOn: "varDeclared".}
-                    var
-                      row: seq[string] = @[]
-                      amount, line: Natural = 0
-                    for completion in completions:
-                      row.add(y = completion)
-                      amount.inc
-                      if amount == columnsAmount:
-                        table.add(parts = row)
-                        row = @[]
-                        amount = 0
-                        line.inc
-                    if amount > 0 and amount < columnsAmount:
-                      table.add(parts = row)
-                      line.inc
-                    completionWidth = @[]
-                    for column in table.getColumnSizes(maxSize = terminalWidth()):
-                      completionWidth.add(y = column + 4)
-                    try:
-                      table.echoTable(padding = 4)
-                    except IOError, Exception:
-                      showError(message = "Can't show Tab completion. Reason: ",
-                          e = getCurrentException())
-                    stdout.cursorUp(count = line)
-                    completionMode = true
-                    currentCompletion = 0
-                    stdout.cursorBackward(count = terminalWidth())
-                    continue
-                  # Select the next completion from the list
-                  currentCompletion.inc
-                  # Return to the first completion if reached the end of the list
-                  if currentCompletion == completions.len:
-                    let line: int = completions.len div columnsAmount
-                    if line > 0 and completions.len > columnsAmount:
-                      stdout.cursorUp(count = line)
-                    stdout.cursorBackward(count = terminalWidth())
-                    currentCompletion = 0
-                    continue
-                  # Go to the next line if the last completion in the line reached
-                  if currentCompletion mod columnsAmount == 0:
-                    stdout.cursorDown
-                    stdout.cursorBackward(count = terminalWidth())
-                    continue
-                  # Move cursor to the next completion
-                  stdout.cursorForward(count = completionWidth[(
-                      currentCompletion - 1) mod columnsAmount])
-                except IOError, ValueError:
-                  discard
-            # Special keys pressed
-            elif inputChar.ord == 27:
+    proc readUserInput() =
+      body:
+        # Write prompt
+        let promptLength: Natural = showPrompt(
+            promptEnabled = not oneTimeCommand, previousCommand = commandName,
+            resultCode = returnCode, db = db)
+        # Get the user input and parse it
+        var inputChar: char = '\0'
+        # Read the user input until not meet new line character or the input
+        # reach the maximum length
+        while inputChar.ord != 13 and inputString.len < maxInputLength:
+          # Get the character from the user's input
+          try:
+            inputChar = getch()
+          except IOError:
+            # If there is a problem with input/output, quit the shell or it
+            # will be stuck in endless loop. Later it should be replaced by
+            # more elegant solution.
+            quitShell(returnCode = QuitFailure.ResultCode, db = db)
+          # Backspace pressed, delete the character before cursor from the user
+          # input
+          if inputChar.ord == 127:
+            keyWasArrow = false
+            if cursorPosition == 0:
+              continue
+            deleteChar(inputString = inputString,
+                cursorPosition = cursorPosition)
+            highlightOutput(promptLength = promptLength,
+                inputString = inputString, commands = commands,
+                aliases = aliases, oneTimeCommand = oneTimeCommand,
+                commandName = $commandName, returnCode = returnCode, db = db,
+                cursorPosition = cursorPosition)
+          # Tab key pressed, do autocompletion if possible
+          elif inputChar.ord == 9:
+            let
+              spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
+              prefix: string = (if spaceIndex ==
+                  -1: $inputString else: $inputString[spaceIndex + 1..^1])
+            completions = @[]
+            if inputString.startsWith(prefix = prefix) and (spaceIndex == - 1 or
+                spaceIndex >= cursorPosition):
+              getCommandCompletion(prefix = prefix, completions = completions,
+                  aliases = aliases, commands = commands, db = db)
+            getDirCompletion(prefix = prefix, completions = completions, db = db)
+            if completions.len == 0:
+              continue
+            elif completions.len == 1:
               try:
-                if getch() in ['[', 'O']:
-                  inputChar = getch()
-                  # Arrow up key pressed
-                  if inputChar == 'A' and historyIndex > 0:
-                    try:
-                      inputString.text = getHistory(
-                          historyIndex = historyIndex, db = db,
-                          searchFor = initLimitedString(
-                              capacity = maxInputLength,
-
-text = (if keyWasArrow: "" else: $inputString)))
-                    except CapacityError:
-                      showError(message = "Entered input is too long.",
-                          e = getCurrentException())
-                    cursorPosition = runeLen(s = $inputString)
-                    highlightOutput(promptLength = promptLength,
-                        inputString = inputString, commands = commands,
-                        aliases = aliases, oneTimeCommand = oneTimeCommand,
-                        commandName = $commandName, returnCode = returnCode,
-                        db = db, cursorPosition = cursorPosition)
-                    historyIndex.dec
-                    if historyIndex < 1:
-                      historyIndex = 1;
-                  # Arrow down key pressed
-                  elif inputChar == 'B' and historyIndex > 0:
-                    historyIndex.inc
-                    let currentHistoryLength: HistoryRange = historyLength(db = db)
-                    if historyIndex > currentHistoryLength:
-                      historyIndex = currentHistoryLength
-                    try:
-                      inputString.text = getHistory(
-                          historyIndex = historyIndex, db = db,
-                          searchFor = initLimitedString(
-                              capacity = maxInputLength,
-
-text = (if keyWasArrow: "" else: $inputString)))
-                    except CapacityError:
-                      showError(message = "Entered input is too long.",
-                          e = getCurrentException())
-                    cursorPosition = runeLen(s = $inputString)
-                    highlightOutput(promptLength = promptLength,
-                        inputString = inputString, commands = commands,
-                        aliases = aliases, oneTimeCommand = oneTimeCommand,
-                        commandName = $commandName, returnCode = returnCode,
-                        db = db, cursorPosition = cursorPosition)
-                  # Insert key pressed
-                  elif inputChar == '2' and getch() == '~':
-                    insertMode = not insertMode
-                  # Move cursor if the proper key was pressed (arrows, home, end)
-                  # if not in completion mode
-                  else:
-                    if not completionMode:
-                      moveCursor(inputChar = inputChar,
-                          cursorPosition = cursorPosition,
-                          inputString = inputString)
-                  keyWasArrow = true
-              except IOError:
-                discard
-              except ValueError:
-                showError(message = "Invalid value for moving cursor.",
-                    e = getCurrentException())
-            # Ctrl-c pressed, cancel current command and return 130 result code
-            elif inputChar.ord == 3:
-              completionMode = false
-              inputString = emptyLimitedString(capacity = maxInputLength)
-              returnCode = 130.ResultCode
-              cursorPosition = 0
-              commandName = "ctrl-c"
-              break
-            # Enter the currently selected completion into the user's input
-            elif inputChar.ord == 13 and completionMode:
-              try:
-                let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-                inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
+                stdout.cursorBackward(count = runeLen(s = $inputString) -
+                    spaceIndex - 1)
+                stdout.write(s = completions[0])
+                inputString.text = inputString[0..spaceIndex] & completions[0]
                 cursorPosition = runeLen(s = $inputString)
-                let line: int = (if completions.len > 3: (completions.len / 3).int + 1 else: 1)
-                stdout.cursorUp(count = (currentCompletion / 3).int)
-                for i in 1..line:
-                  stdout.cursorDown
-                  stdout.eraseLine
-                if line > 0:
-                  stdout.cursorUp(count = line)
-                highlightOutput(promptLength = promptLength,
-                    inputString = inputString, commands = commands,
-                    aliases = aliases, oneTimeCommand = oneTimeCommand,
-                    commandName = $commandName, returnCode = returnCode,
-                    db = db, cursorPosition = cursorPosition)
-                completionMode = false
-                keyWasArrow = false
-                inputChar = '\0'
               except IOError:
                 discard
               except ValueError:
@@ -534,23 +368,191 @@ text = (if keyWasArrow: "" else: $inputString)))
               except CapacityError:
                 showError(message = "Entered input is too long.",
                     e = getCurrentException())
-            # Any graphical character pressed, show it in the input field
-            elif inputChar.ord > 31:
-              let inputRune: string = readChar(inputChar = inputChar)
-              updateInput(cursorPosition = cursorPosition,
-                  inputString = inputString, insertMode = insertMode,
-                  inputRune = inputRune)
+            else:
+              try:
+                let columnsAmount: int = try:
+                    parseInt(s = $getOption(optionName = initLimitedString(
+                        capacity = 17, text = "completionColumns"), db = db,
+                        defaultValue = initLimitedString(capacity = 2, text = "5")))
+                  except CapacityError, ValueError:
+                    5
+                # If Tab pressed the first time, show the list of completion
+                if not completionMode:
+                  stdout.writeLine(x = "")
+                  {.ruleOff: "varDeclared".}
+                  var table: TerminalTable
+                  {.ruleOn: "varDeclared".}
+                  var
+                    row: seq[string] = @[]
+                    amount, line: Natural = 0
+                  for completion in completions:
+                    row.add(y = completion)
+                    amount.inc
+                    if amount == columnsAmount:
+                      table.add(parts = row)
+                      row = @[]
+                      amount = 0
+                      line.inc
+                  if amount > 0 and amount < columnsAmount:
+                    table.add(parts = row)
+                    line.inc
+                  completionWidth = @[]
+                  for column in table.getColumnSizes(maxSize = terminalWidth()):
+                    completionWidth.add(y = column + 4)
+                  try:
+                    table.echoTable(padding = 4)
+                  except IOError, Exception:
+                    showError(message = "Can't show Tab completion. Reason: ",
+                        e = getCurrentException())
+                  stdout.cursorUp(count = line)
+                  completionMode = true
+                  currentCompletion = 0
+                  stdout.cursorBackward(count = terminalWidth())
+                  continue
+                # Select the next completion from the list
+                currentCompletion.inc
+                # Return to the first completion if reached the end of the list
+                if currentCompletion == completions.len:
+                  let line: int = completions.len div columnsAmount
+                  if line > 0 and completions.len > columnsAmount:
+                    stdout.cursorUp(count = line)
+                  stdout.cursorBackward(count = terminalWidth())
+                  currentCompletion = 0
+                  continue
+                # Go to the next line if the last completion in the line reached
+                if currentCompletion mod columnsAmount == 0:
+                  stdout.cursorDown
+                  stdout.cursorBackward(count = terminalWidth())
+                  continue
+                # Move cursor to the next completion
+                stdout.cursorForward(count = completionWidth[(
+                    currentCompletion - 1) mod columnsAmount])
+              except IOError, ValueError:
+                discard
+          # Special keys pressed
+          elif inputChar.ord == 27:
+            try:
+              if getch() in ['[', 'O']:
+                inputChar = getch()
+                # Arrow up key pressed
+                if inputChar == 'A' and historyIndex > 0:
+                  try:
+                    inputString.text = getHistory(historyIndex = historyIndex,
+                        db = db, searchFor = initLimitedString(
+                        capacity = maxInputLength, text = (
+                        if keyWasArrow: "" else: $inputString)))
+                  except CapacityError:
+                    showError(message = "Entered input is too long.",
+                        e = getCurrentException())
+                  cursorPosition = runeLen(s = $inputString)
+                  highlightOutput(promptLength = promptLength,
+                      inputString = inputString, commands = commands,
+                      aliases = aliases, oneTimeCommand = oneTimeCommand,
+                      commandName = $commandName, returnCode = returnCode,
+                      db = db, cursorPosition = cursorPosition)
+                  historyIndex.dec
+                  if historyIndex < 1:
+                    historyIndex = 1;
+                # Arrow down key pressed
+                elif inputChar == 'B' and historyIndex > 0:
+                  historyIndex.inc
+                  let currentHistoryLength: HistoryRange = historyLength(db = db)
+                  if historyIndex > currentHistoryLength:
+                    historyIndex = currentHistoryLength
+                  try:
+                    inputString.text = getHistory(historyIndex = historyIndex,
+                        db = db, searchFor = initLimitedString(
+                        capacity = maxInputLength, text = (
+                        if keyWasArrow: "" else: $inputString)))
+                  except CapacityError:
+                    showError(message = "Entered input is too long.",
+                        e = getCurrentException())
+                  cursorPosition = runeLen(s = $inputString)
+                  highlightOutput(promptLength = promptLength,
+                      inputString = inputString, commands = commands,
+                      aliases = aliases, oneTimeCommand = oneTimeCommand,
+                      commandName = $commandName, returnCode = returnCode,
+                      db = db, cursorPosition = cursorPosition)
+                # Insert key pressed
+                elif inputChar == '2' and getch() == '~':
+                  insertMode = not insertMode
+                # Move cursor if the proper key was pressed (arrows, home, end)
+                # if not in completion mode
+                else:
+                  if not completionMode:
+                    moveCursor(inputChar = inputChar,
+                        cursorPosition = cursorPosition,
+                        inputString = inputString)
+                keyWasArrow = true
+            except IOError:
+              discard
+            except ValueError:
+              showError(message = "Invalid value for moving cursor.",
+                  e = getCurrentException())
+          # Ctrl-c pressed, cancel current command and return 130 result code
+          elif inputChar.ord == 3:
+            completionMode = false
+            inputString = emptyLimitedString(capacity = maxInputLength)
+            returnCode = 130.ResultCode
+            cursorPosition = 0
+            commandName = "ctrl-c"
+            break
+          # Enter the currently selected completion into the user's input
+          elif inputChar.ord == 13 and completionMode:
+            try:
+              let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
+              inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
+              cursorPosition = runeLen(s = $inputString)
+              let line: int = (if completions.len > 3: (completions.len /
+                  3).int + 1 else: 1)
+              stdout.cursorUp(count = (currentCompletion / 3).int)
+              for i in 1..line:
+                stdout.cursorDown
+                stdout.eraseLine
+              if line > 0:
+                stdout.cursorUp(count = line)
               highlightOutput(promptLength = promptLength,
                   inputString = inputString, commands = commands,
                   aliases = aliases, oneTimeCommand = oneTimeCommand,
-                  commandName = $commandName, returnCode = returnCode,
-                  db = db, cursorPosition = cursorPosition)
-              keyWasArrow = false
+                  commandName = $commandName, returnCode = returnCode, db = db,
+                  cursorPosition = cursorPosition)
               completionMode = false
-          try:
-            stdout.writeLine(x = "")
-          except IOError:
-            discard
+              keyWasArrow = false
+              inputChar = '\0'
+            except IOError:
+              discard
+            except ValueError:
+              showError(message = "Invalid value for character position.",
+                  e = getCurrentException())
+            except CapacityError:
+              showError(message = "Entered input is too long.",
+                  e = getCurrentException())
+          # Any graphical character pressed, show it in the input field
+          elif inputChar.ord > 31:
+            let inputRune: string = readChar(inputChar = inputChar)
+            updateInput(cursorPosition = cursorPosition,
+                inputString = inputString, insertMode = insertMode,
+                inputRune = inputRune)
+            highlightOutput(promptLength = promptLength,
+                inputString = inputString, commands = commands,
+                aliases = aliases, oneTimeCommand = oneTimeCommand,
+                commandName = $commandName, returnCode = returnCode, db = db,
+                cursorPosition = cursorPosition)
+            keyWasArrow = false
+            completionMode = false
+        try:
+          stdout.writeLine(x = "")
+        except IOError:
+          discard
+
+    # Start the shell
+    while true:
+      try:
+        # Write the shell's prompt and get the input from the user, only when the
+        # shell's didn't start in one command mode and there is no remaining the
+        # user input to parse
+        if not oneTimeCommand and inputString.len == 0:
+          readUserInput()
         # User just press Enter key, reset return code (if user doesn't pressed
         # ctrl-c) and back to beginning
         if inputString.len == 0:
@@ -615,8 +617,9 @@ text = (if keyWasArrow: "" else: $inputString)))
             try:
               # The shell's command from plugin
               if commands[commandName].command == nil:
-                let returnValues: PluginResult = execPlugin(pluginPath = commands[
-                    commandName].plugin, arguments = [commandName, $arguments],
+                let returnValues: PluginResult = execPlugin(
+                    pluginPath = commands[commandName].plugin, arguments = [
+                        commandName, $arguments],
                     db = db, commands = commands)
                 returnCode = returnValues.code
               # Build-in shell's command
