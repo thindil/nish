@@ -330,9 +330,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             # will be stuck in endless loop. Later it should be replaced by
             # more elegant solution.
             quitShell(returnCode = QuitFailure.ResultCode, db = db)
+          case inputChar.ord
           # Backspace pressed, delete the character before cursor from the user
           # input
-          if inputChar.ord == 127:
+          of 127:
             keyWasArrow = false
             if cursorPosition == 0:
               continue
@@ -344,7 +345,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 commandName = $commandName, returnCode = returnCode, db = db,
                 cursorPosition = cursorPosition)
           # Tab key pressed, do autocompletion if possible
-          elif inputChar.ord == 9:
+          of 9:
             let
               spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
               prefix: string = (if spaceIndex ==
@@ -442,12 +443,15 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               except IOError, ValueError:
                 discard
           # Special keys pressed
-          elif inputChar.ord == 27:
+          of 27:
             try:
               if getch() in ['[', 'O']:
                 inputChar = getch()
                 # Arrow up key pressed
-                if inputChar == 'A' and historyIndex > 0:
+                case inputChar
+                of 'A':
+                  if historyIndex == 0:
+                    continue
                   try:
                     inputString.text = getHistory(historyIndex = historyIndex,
                         db = db, searchFor = initLimitedString(
@@ -466,7 +470,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                   if historyIndex < 1:
                     historyIndex = 1;
                 # Arrow down key pressed
-                elif inputChar == 'B' and historyIndex > 0:
+                of 'B':
+                  if historyIndex == 0:
+                    continue
                   historyIndex.inc
                   let currentHistoryLength: HistoryRange = historyLength(db = db)
                   if historyIndex > currentHistoryLength:
@@ -486,8 +492,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                       commandName = $commandName, returnCode = returnCode,
                       db = db, cursorPosition = cursorPosition)
                 # Insert key pressed
-                elif inputChar == '2' and getch() == '~':
-                  insertMode = not insertMode
+                of '2':
+                  if getch() == '~':
+                    insertMode = not insertMode
                 # Move cursor if the proper key was pressed (arrows, home, end)
                 # if not in completion mode
                 else:
@@ -502,7 +509,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               showError(message = "Invalid value for moving cursor.",
                   e = getCurrentException())
           # Ctrl-c pressed, cancel current command and return 130 result code
-          elif inputChar.ord == 3:
+          of 3:
             completionMode = false
             inputString = emptyLimitedString(capacity = maxInputLength)
             returnCode = 130.ResultCode
@@ -510,7 +517,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             commandName = "ctrl-c"
             break
           # Enter the currently selected completion into the user's input
-          elif inputChar.ord == 13 and completionMode:
+          of 13:
+            if not completionMode:
+              continue
             try:
               let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
               inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
@@ -540,7 +549,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               showError(message = "Entered input is too long.",
                   e = getCurrentException())
           # Any graphical character pressed, show it in the input field
-          elif inputChar.ord > 31:
+          else:
+            if inputChar.ord < 32:
+              continue
             let inputRune: string = readChar(inputChar = inputChar)
             updateInput(cursorPosition = cursorPosition,
                 inputString = inputString, insertMode = insertMode,
