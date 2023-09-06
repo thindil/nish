@@ -310,6 +310,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     proc readUserInput() {.raises: [], tags: [WriteIOEffect, ReadEnvEffect,
         ReadDirEffect, TimeEffect, DbEffect, ReadIOEffect, RootEffect],
         contractual.} =
+      ## Handle the user's input, show the shell's prompt, tab completion and
+      ## highglight the input if needed
       body:
         # Write prompt
         let promptLength: Natural = showPrompt(
