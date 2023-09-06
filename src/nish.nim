@@ -228,6 +228,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           e = getCurrentException())
       return nil
 
+{.push ruleOff: "complexity".}
 proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     ExecIOEffect, RootEffect], contractual.} =
   ## The main procedure of the shell
@@ -701,6 +702,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       except:
         showError(message = "Internal shell error. Additional details: ",
             e = getCurrentException())
+{.pop ruleOff: "complexity".}
 
 when isMainModule:
   main()
