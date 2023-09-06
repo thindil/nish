@@ -239,17 +239,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
           "help", "version"])
       historyIndex: HistoryRange = -1
-      oneTimeCommand, conjCommands, keyWasArrow, insertMode,
-        completionMode: bool = false
+      oneTimeCommand, conjCommands: bool = false
       returnCode: ResultCode = QuitSuccess.ResultCode
       aliases: ref OrderedTable[AliasName, int] = newOrderedTable[AliasName,
           int]()
       dbPath: DirectoryPath = (getConfigDir() & DirSep & "nish" &
           DirSep & "nish.db").DirectoryPath
-      cursorPosition, currentCompletion: Natural = 0
+      cursorPosition: Natural = 0
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
-      completions: seq[string] = @[]
-      completionWidth: seq[Natural] = @[]
 
     # Check the command line parameters entered by the user. Available options
     # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -318,7 +315,12 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             promptEnabled = not oneTimeCommand, previousCommand = commandName,
             resultCode = returnCode, db = db)
         # Get the user input and parse it
-        var inputChar: char = '\0'
+        var
+          inputChar: char = '\0'
+          completions: seq[string] = @[]
+          completionWidth: seq[Natural] = @[]
+          currentCompletion: Natural = 0
+          keyWasArrow, insertMode, completionMode: bool = false
         # Read the user input until not meet new line character or the input
         # reach the maximum length
         while inputChar.ord != 13 and inputString.len < maxInputLength:
