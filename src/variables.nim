@@ -35,17 +35,17 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode
 
 const
   variableNameLength*: Positive = maxNameLength
-  ## The maximum length of the shell's environment variable name
+    ## The maximum length of the shell's environment variable name
 
-  variablesCommands* = ["list", "delete", "add", "edit"]
-  ## The list of available subcommands for command variable
+  variablesCommands*: array[4, string] = ["list", "delete", "add", "edit"]
+    ## The list of available subcommands for command variable
 
 type
   VariableName = LimitedString # Used to store variables names in the database.
@@ -102,7 +102,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
     newDirectory.len > 0
     db != nil
   body:
-    var skipped: seq[string]
+    var skipped: seq[string] = @[]
 
     # Remove the old environment variables if needed
     if oldDirectory.len > 0:
@@ -207,9 +207,12 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.len > 0
     db != nil
   body:
+    {.ruleOff: "varDeclared".}
     var table: TerminalTable
+    {.ruleOn: "varDeclared".}
     try:
-      table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(ss = "Value"), magenta(ss = "Description")])
+      table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(
+          ss = "Value"), magenta(ss = "Description")])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show variables list. Reason: ",
           e = getCurrentException())
@@ -333,7 +336,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "".DirectoryPath
     while path.len == 0:
-      path = DirectoryPath($readInput())
+      path = ($readInput()).DirectoryPath
       if path.len == 0:
         showError(message = "Please enter a path for the alias.")
       elif not dirExists(dir = $path) and path != "exit":
@@ -376,7 +379,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Check if variable with the same parameters exists in the database
     try:
       if db.getValue(query = sql(query = "SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?"),
-          name, path, recursive, value).len > 0:
+          args = [$name, $path, $recursive, $value]).len > 0:
         return showError(message = "There is a variable with the same name, path and value in the database.")
     except DbError:
       return showError(message = "Can't check if the same variable exists in the database. Reason: ",
@@ -384,7 +387,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Save the variable to the database
     try:
       if db.tryInsertID(query = sql(query = "INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)"),
-          name, path, recursive, value, description) == -1:
+          args = [$name, $path, $recursive, $value, $description]) == -1:
         return showError(message = "Can't add variable.")
     except DbError:
       return showError(message = "Can't add the variable to database. Reason: ",
@@ -417,12 +420,12 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if arguments.len < 6:
       return showError(message = "Enter the ID of the variable to edit.")
     let varId: DatabaseId = try:
-        parseInt($arguments[7 .. ^1]).DatabaseId
+        ($arguments[7 .. ^1]).parseInt.DatabaseId
       except ValueError:
         return showError(message = "The Id of the variable must be a positive number.")
     let
       row: Row = try:
-          db.getRow(query = sql(query = "SELECT name, path, value, description FROM variables WHERE id=?"), varId)
+          db.getRow(query = sql(query = "SELECT name, path, value, description FROM variables WHERE id=?"), args = varId)
         except DbError:
           return showError(message = "The variable with the ID: " & $varId & " doesn't exists.")
     showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by pressing Enter.")
@@ -447,7 +450,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       try:
         name.text = row[0]
       except CapacityError:
-        return showError("Editing the variable cancelled. Reason: can't set name for the variable.")
+        return showError(message = "Editing the variable cancelled. Reason: can't set name for the variable.")
     # Set the description for the variable
     showFormHeader(message = "(2/5) Description", db = db)
     showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '" &
@@ -459,7 +462,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       try:
         description.text = row[3]
       except CapacityError:
-        return showError("Editing the variable cancelled. Reason: can't set description for the variable.")
+        return showError(message = "Editing the variable cancelled. Reason: can't set description for the variable.")
     # Set the working directory for the variable
     showFormHeader(message = "(3/5) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
@@ -467,7 +470,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "exit".DirectoryPath
     while path.len > 0:
-      path = DirectoryPath($readInput())
+      path = ($readInput()).DirectoryPath
       if path.len > 0 and not dirExists(dir = $path) and path != "exit":
         showError(message = "Please enter a path to the existing directory")
         showOutput(message = "Path: ", newLine = false)
@@ -506,12 +509,12 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       try:
         value.text = row[2]
       except CapacityError:
-        return showError("Editing the variable cancelled. Reason: can't set value for the variable.")
+        return showError(message = "Editing the variable cancelled. Reason: can't set value for the variable.")
     # Save the variable to the database
     try:
       if db.execAffectedRows(query = sql(
           query = "UPDATE variables SET name=?, path=?, recursive=?, value=?, description=? where id=?"),
-           name, path, recursive, value, description, varId) != 1:
+           args = [$name, $path, $recursive, $value, $description, $varId]) != 1:
         return showError(message = "Can't edit the variable.")
     except DbError:
       return showError(message = "Can't save the edits of the variable to database. Reason: ",
@@ -588,6 +591,7 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
+        {.ruleOff: "ifStatements".}
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "variable",
@@ -604,13 +608,13 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
         # Edit an existing variable
         elif arguments.startsWith(prefix = "edit"):
           return editVariable(arguments = arguments, db = db)
-        else:
-          try:
-            return showUnknownHelp(subCommand = arguments,
-                command = initLimitedString(capacity = 8, text = "variable"),
-                helpType = initLimitedString(capacity = 9, text = "variables"))
-          except CapacityError:
-            return QuitFailure.ResultCode
+        {.ruleOn: "ifStatements".}
+        try:
+          return showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 8, text = "variable"),
+              helpType = initLimitedString(capacity = 9, text = "variables"))
+        except CapacityError:
+          return QuitFailure.ResultCode
 
     try:
       addCommand(name = initLimitedString(capacity = 8, text = "variable"),
@@ -620,8 +624,8 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
           e = getCurrentException())
     # Set the environment variables for the current directory
     try:
-      setVariables(getCurrentDir().DirectoryPath, db)
+      setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db)
     except OSError:
-      showError("Can't set environment variables for the current directory. Reason:",
+      showError(message = "Can't set environment variables for the current directory. Reason:",
           e = getCurrentException())
 
