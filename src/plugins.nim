@@ -45,16 +45,16 @@ const
   ## The minimal version of the shell's plugins' API which plugins must support
   ## in order to work
 
-  pluginsCommands* = ["list", "remove", "show", "add", "enable", "disable"]
-  ## The list of available subcommands for command plugin
+  pluginsCommands*: array[6, string] = ["list", "remove", "show", "add",
+      "enable", "disable"]
+    ## The list of available subcommands for command plugin
 
 type
   PluginData = object
     ## Store information about the shell's plugin
     path*: string    ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
-  PluginResult* = tuple
-    ## Store the result of the plugin's API command
+  PluginResult* = tuple ## Store the result of the plugin's API command
     code: ResultCode ## The exit code returned by the plugin's command
     answer: LimitedString ## If code is QuitFailure, contains the error's message.
                           ## Otherwise, empty string.
@@ -689,14 +689,14 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     # Show the list of enabled plugins
     elif arguments[0..3] == "list":
       try:
-        table.add(magenta("ID"), magenta("Path"))
+        table.add(parts = [magenta(ss = "ID"), magenta(ss = "Path")])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show plugins list. Reason: ",
             e = getCurrentException())
       try:
         for plugin in db.fastRows(query = sql(
             query = "SELECT id, location FROM plugins WHERE enabled=1")):
-          table.add(plugin)
+          table.add(parts = plugin)
       except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
             e = getCurrentException())
@@ -746,9 +746,10 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
         " doesn't exists.")
     var table: TerminalTable
     try:
-      table.add(magenta("Id:"), $id)
-      table.add(magenta("Path"), row[0])
-      table.add(magenta("Enabled:"), (if row[1] == "1": "Yes" else: "No"))
+      table.add(parts = [magenta(ss = "Id:"), $id])
+      table.add(parts = [magenta(ss = "Path"), row[0]])
+      table.add(parts = [magenta(ss = "Enabled:"), (if row[1] ==
+          "1": "Yes" else: "No")])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't plugin's info. Reason: ",
           e = getCurrentException())
@@ -757,16 +758,16 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     # If plugin contains any aditional information, show them
     try:
       if pluginData.code == QuitSuccess:
-        let pluginInfo = split($pluginData.answer, ";")
-        table.add(magenta("API version:"), (if pluginInfo.len > 2: pluginInfo[
-            2] else: "0.1"))
+        let pluginInfo = ($pluginData.answer).split(sep = ";")
+        table.add(parts = [magenta(ss = "API version:"), (if pluginInfo.len >
+            2: pluginInfo[2] else: "0.1")])
         if pluginInfo.len > 2:
-          table.add(magenta("API used:"), pluginInfo[3])
-        table.add(magenta("Name:"), pluginInfo[0])
+          table.add(parts = [magenta(ss = "API used:"), pluginInfo[3]])
+        table.add(parts = [magenta(ss = "Name:"), pluginInfo[0]])
         if pluginInfo.len > 1:
-          table.add(magenta("Descrition:"), pluginInfo[1])
+          table.add(parts = [magenta(ss = "Descrition:"), pluginInfo[1]])
       else:
-        table.add(magenta("API version:"), "0.1")
+        table.add(parts = [magenta(ss = "API version:"), "0.1"])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't plugin's info. Reason: ",
           e = getCurrentException())
@@ -854,7 +855,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
               commands = commands)
           if newPlugin.path.len == 0:
             db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
-                dbResult[0])
+                args = dbResult[0])
             showError(message = "Plugin '" & dbResult[1] & "' isn't compatible with the current version of shell's API and will be disabled.")
             continue
           if "init" in newPlugin.api:
