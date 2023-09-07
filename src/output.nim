@@ -34,7 +34,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import contracts, nancy, termstyle
+import contracts, nancy, nimalyzer, termstyle
 # Internal imports
 import constants, resultcode
 
@@ -56,16 +56,17 @@ proc showOutput*(message; newLine: bool = true;
   ## * centered        - if true, center the message on the screen
   body:
     if message != "":
-      var newMessage: OutputMessage
-      if centered:
-        try:
-          newMessage = center(s = message, width = terminalWidth())
-        except ValueError:
-          newMessage = message
-      else:
-        newMessage = message
+      var newMessage: OutputMessage = if centered:
+          try:
+            center(s = message, width = terminalWidth())
+          except ValueError:
+            message
+        else:
+          message
       try:
+        {.ruleOff: "namedParams".}
         stdout.styledWrite(fgColor, newMessage)
+        {.ruleOn: "namedParams".}
       except IOError, ValueError:
         try:
           stdout.write(s = newMessage)
@@ -98,16 +99,22 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
     try:
       if e != nil:
         stderr.writeLine(x = "")
+      {.ruleOff: "namedParams".}
       stderr.styledWrite(fgRed, message)
-      if e != nil:
+      {.ruleOn: "namedParams".}
+      if e == nil:
+        stderr.writeLine(x = "")
+      else:
+        {.ruleOff: "namedParams".}
         stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
         when defined(debug):
           stderr.styledWrite(fgRed, getStackTrace(e = e))
-      else:
-        stderr.writeLine(x = "")
+        {.ruleOn: "namedParams".}
     except IOError, ValueError:
       try:
+        {.ruleOff: "namedParams".}
         stderr.writeLine(x = message)
+        {.ruleOn: "namedParams".}
       except IOError:
         discard
     return QuitFailure.ResultCode
@@ -127,12 +134,14 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
     db != nil
   body:
     try:
-      let headerType = db.getValue(query = sql(
+      let headerType: string = db.getValue(query = sql(
           query = "SELECT value FROM options WHERE option='outputHeaders'"))
       if headerType == "hidden":
         return
+      {.ruleOff: "varDeclared".}
       var table: TerminalTable
-      table.add(yellow(message.center(width = width.int)))
+      {.ruleOn: "varDeclared".}
+      table.add(parts = yellow(ss = message.center(width = width.int)))
       case headerType
       of "unicode":
         table.echoTableSeps(seps = boxSeps)
