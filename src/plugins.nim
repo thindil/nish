@@ -134,7 +134,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             if options.len == 1:
               fgDefault
             else:
-              parseEnum[ForegroundColor](options[1])
+              parseEnum[ForegroundColor](s = options[1])
           except ValueError:
             fgDefault
         showOutput(message = options[0], fgColor = color)
@@ -174,7 +174,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               text = options[0]), value = initLimitedString(
               capacity = maxInputLength, text = options[1]),
               description = initLimitedString(capacity = maxInputLength,
-              text = options[2]), valueType = parseEnum[ValueType](options[3]), db = db)
+              text = options[2]), valueType = parseEnum[ValueType](s = options[
+                  3]), db = db)
         except CapacityError, ValueError:
           showError(message = "Can't set option '" & options[0] & "'. Reason: ",
               e = getCurrentException())
@@ -208,7 +209,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
 
     proc getPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
-        RootEffect].} =
+        RootEffect], contractual.} =
       ## Get the value of the selected option and send it to the plugin
       ##
       ## * options - The list of options from the API call. 0 - the name of
@@ -221,8 +222,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           showError(message = "Insufficient arguments for getOption.")
           return false
         try:
-          plugin.inputStream.write($getOption(optionName = initLimitedString(
-              capacity = maxNameLength, text = options[0]), db = db) & "\n")
+          plugin.inputStream.write(args = $getOption(
+              optionName = initLimitedString(capacity = maxNameLength,
+              text = options[0]), db = db) & "\n")
           plugin.inputStream.flush
         except CapacityError, IOError, OSError:
           showError(message = "Can't get the value of the selected option. Reason: ",
@@ -492,7 +494,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
     try:
       # Check if the plugin isn't added previously
       if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
-          pluginPath) != @[""]:
+          args = pluginPath) != @[""]:
         return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
       # Check if the plugin can be added
       let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
@@ -501,19 +503,21 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
         return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.")
       # Add the plugin to the shell database
       db.exec(query = sql(query = "INSERT INTO plugins (location, enabled, precommand, postcommand) VALUES (?, 1, ?, ?)"),
-          pluginPath, (if "preCommand" in newPlugin.api: 1 else: 0), (
-          if "postCommand" in newPlugin.api: 1 else: 0))
+          args = [pluginPath, $(if "preCommand" in newPlugin.api: 1 else: 0), $(
+          if "postCommand" in newPlugin.api: 1 else: 0)])
       # Execute the installation code of the plugin
       if "install" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
             db = db, commands = commands).code != QuitSuccess:
-          db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"), pluginPath)
+          db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"),
+              args = pluginPath)
           return showError(message = "Can't install plugin '" & pluginPath & "'.")
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
             db = db, commands = commands).code != QuitSuccess:
-          db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"), pluginPath)
+          db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"),
+              args = pluginPath)
           return showError(message = "Can't enable plugin '" & pluginPath & "'.")
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
@@ -542,11 +546,12 @@ proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
     let
       pluginId: DatabaseId = try:
-          parseInt($arguments[7 .. ^1]).DatabaseId
+          ($arguments[7 .. ^1]).parseInt.DatabaseId
         except ValueError:
           return showError(message = "The Id of the plugin must be a positive number.")
       pluginPath: string = try:
-          db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"), pluginId)
+          db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"),
+              args = pluginId)
         except DbError:
           return showError(message = "Can't get plugin's Id from database. Reason: ",
             e = getCurrentException())
@@ -563,7 +568,8 @@ proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
           db = db, commands = commands).code != QuitSuccess:
         return showError(message = "Can't remove plugin '" & pluginPath & "'.")
       # Remove the plugin from the base
-      db.exec(query = sql(query = "DELETE FROM plugins WHERE id=?"), pluginId)
+      db.exec(query = sql(query = "DELETE FROM plugins WHERE id=?"),
+          args = pluginId)
     except DbError:
       return showError(message = "Can't delete plugin from database. Reason: ",
           e = getCurrentException())
@@ -598,12 +604,13 @@ proc togglePlugin*(db; arguments; disable: bool = true;
           actionName & ".")
     let
       pluginId: DatabaseId = try:
-          parseInt($arguments[idStart .. ^1]).DatabaseId
+          ($arguments[idStart .. ^1]).parseInt.DatabaseId
         except ValueError:
           return showError(message = "The Id of the plugin must be a positive number.")
       pluginState: BooleanInt = (if disable: 0 else: 1)
       pluginPath: string = try:
-          db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"), pluginId)
+          db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"),
+              args = pluginId)
         except DbError:
           return showError(message = "Can't get plugin's location from database. Reason: ",
             e = getCurrentException())
@@ -624,11 +631,12 @@ proc togglePlugin*(db; arguments; disable: bool = true;
               pluginPath & "'.")
       # Update the state of the plugin
       db.exec(query = sql(query = ("UPDATE plugins SET enabled=? WHERE id=?")),
-          pluginState, pluginId)
+          args = [$pluginState, $pluginId])
       # Remove or add the plugin to the list of enabled plugins and clear
       # the plugin help when disabling it
       if disable:
-        db.exec(query = sql(query = ("DELETE FROM help WHERE plugin=?")), pluginPath)
+        db.exec(query = sql(query = ("DELETE FROM help WHERE plugin=?")),
+            args = pluginPath)
       else:
         let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
             commands = commands)
@@ -660,14 +668,16 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     # Show the list of all installed plugins with information about their state
     if arguments == "list all":
       try:
-        table.add(magenta("ID"), magenta("Path"), magenta("Enabled"))
+        table.add(parts = [magenta(ss = "ID"), magenta(ss = "Path"), magenta(
+            ss = "Enabled")])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show all plugins list. Reason: ",
             e = getCurrentException())
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, location, enabled FROM plugins")):
-          table.add(row[0], row[1], (if row[2] == "1": "Yes" else: "No"))
+          table.add(parts = [row[0], row[1], (if row[2] ==
+              "1": "Yes" else: "No")])
       except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't read info about plugin from database. Reason:",
             e = getCurrentException())
@@ -784,7 +794,9 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
   body:
     # Add commands related to the shell's aliases
     proc pluginCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], tags: [ReadDirEffect,
+        WriteIOEffect, WriteDbEffect, ExecIOEffect, TimeEffect, ReadDbEffect,
+        ReadIOEffect, ReadEnvEffect, RootEffect], contractual.} =
       ## The code of the shell's command "plugin" and its subcommands
       ##
       ## * arguments - the arguments entered by the user for the command
