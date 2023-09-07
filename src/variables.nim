@@ -78,7 +78,7 @@ proc buildQuery*(directory: DirectoryPath; fields: string;
     # if they are recursive
     while remainingDirectory != "":
       result.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
-      remainingDirectory = parentDir($remainingDirectory).DirectoryPath
+      remainingDirectory = parentDir(path = $remainingDirectory).DirectoryPath
 
     # If optional arguments entered, add them to the query
     if where.len > 0:
@@ -115,7 +115,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
           if existingVariable.len == 0:
             delEnv(key = dbResult[0])
           else:
-            skipped.add(existingVariable[0])
+            skipped.add(y = existingVariable[0])
       except DbError, OSError:
         showError(message = "Can't delete environment variables from the old directory. Reason: ",
             e = getCurrentException())
@@ -132,7 +132,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
         while variableIndex in 0..(value.len - 1):
           var variableEnd: ExtendedNatural = variableIndex + 1
           # Variables names can start only with letters
-          if not isAlphaAscii(value[variableEnd]):
+          if not isAlphaAscii(c = value[variableEnd]):
             variableIndex = value.find(sub = '$', start = variableEnd)
             continue
           # Variables names can contain only letters and numbers
@@ -141,7 +141,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
           if variableEnd > value.len:
             variableEnd = value.len
           let variableName: string = value[variableIndex + 1..variableEnd - 1]
-          value[variableIndex..variableEnd - 1] = getEnv(variableName)
+          value[variableIndex..variableEnd - 1] = getEnv(key = variableName)
           variableIndex = value.find(sub = '$', start = variableEnd)
         putEnv(key = dbResult[0], val = value)
     except DbError, OSError:
@@ -209,7 +209,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     var table: TerminalTable
     try:
-      table.add(magenta("ID"), magenta("Name"), magenta("Value"), magenta("Description"))
+      table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(ss = "Value"), magenta(ss = "Description")])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show variables list. Reason: ",
           e = getCurrentException())
@@ -218,7 +218,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, name, value, description FROM variables")):
-          table.add(row)
+          table.add(parts = row)
       except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException())
@@ -233,7 +233,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         for row in db.fastRows(query = sql(query = buildQuery(
             directory = getCurrentDir().DirectoryPath,
                 fields = "id, name, value, description"))):
-          table.add(row)
+          table.add(parts = row)
       except DbError, OSError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException())
@@ -266,12 +266,12 @@ proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
     if arguments.len < 8:
       return showError(message = "Enter the Id of the variable to delete.")
     let varId: DatabaseId = try:
-        parseInt($arguments[7 .. ^1]).DatabaseId
+        ($arguments[7 .. ^1]).parseInt.DatabaseId
       except ValueError:
         return showError(message = "The Id of the variable must be a positive number.")
     try:
       if db.execAffectedRows(query = sql(query = (
-          "DELETE FROM variables WHERE id=?")), varId) == 0:
+          "DELETE FROM variables WHERE id=?")), args = varId) == 0:
         return showError(message = "The variable with the Id: " & $varId &
           " doesn't exist.")
     except DbError:
@@ -575,7 +575,9 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
     # Add commands related to the variables, except commands set and unset,
     # they are build-in commands, thus cannot be replaced
     proc variableCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
+        WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
+        RootEffect], contractual.} =
       ## The code of the shell's command "variable" and its subcommands
       ##
       ## * arguments - the arguments entered by the user for the command
