@@ -29,6 +29,8 @@
 
 # Standard library imports
 import std/strutils
+# External modules imports
+import contracts
 
 type DirectoryPath* = distinct string
   ## Used to store paths to directories
@@ -81,20 +83,22 @@ proc `&`*(x: string; y: DirectoryPath): string {.borrow.}
   ##
   ## Returns the merged string and DirectoryPath into one string
 
-func `!=`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [].} =
+proc `!=`*(x: DirectoryPath; y: string): bool {.raises: [], tags: [], contractual.} =
   ## Compare the DirectoryPath and string
   ##
   ## * x - The DirectoryPath to compare
   ## * y - The string to compare
   ##
   ## Returns false if both DirectoryPath and string are the same, otherwise true
-  return $x != y
+  body:
+    return $x != y
 
-func `==`*(x: DirectoryPath; y: string): bool {.gcsafe, raises: [], tags: [].} =
+proc `==`*(x: DirectoryPath; y: string): bool {.raises: [], tags: [], contractual.} =
   ## Compare the DirectoryPath and string
   ##
   ## * x - The DirectoryPath to compare
   ## * y - The string to compare
   ##
   ## Returns true if both DirectoryPath and string are the same, otherwise false
-  return $x == y
+  body:
+    return $x == y
