@@ -35,7 +35,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 # Internal imports
 import commandslist, constants, databaseid, help, input, lstring, options,
     output, resultcode
@@ -88,7 +88,7 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
-    commands): PluginResult {.gcsafe, sideEffect, raises: [], tags: [
+    commands): PluginResult {.sideEffect, raises: [], tags: [
     ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, ReadDbEffect,
     TimeEffect, WriteDbEffect, RootEffect], contractual.} =
   ## Communicate with the selected plugin via the shell's plugins API. Run the
@@ -110,8 +110,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     db != nil
   body:
     let
-      emptyAnswer = emptyLimitedString(capacity = maxInputLength)
-      plugin = try:
+      emptyAnswer: LimitedString = emptyLimitedString(capacity = maxInputLength)
+      plugin: Process = try:
           startProcess(command = pluginPath, args = arguments)
         except OSError, Exception:
           return (showError(message = "Can't execute the plugin '" &
@@ -128,7 +128,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## This procedure always returns true
       body:
-        let color = try:
+        let color: ForegroundColor = try:
             if options.len == 1:
               fgDefault
             else:
@@ -376,7 +376,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               "'. Reason: ", e = getCurrentException())
           return false
 
-    let apiCalls = try:
+    let apiCalls: Table[string, proc(options: seq[string]): bool] = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
               "setOption": setPluginOption,
               "removeOption": removePluginOption,
@@ -394,7 +394,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     try:
       # Read the plugin response and act accordingly to it
       for line in plugin.lines:
-        var options = initOptParser(cmdline = line.strip)
+        var options: OptParser = initOptParser(cmdline = line.strip)
         while true:
           options.next
           # If the plugin sent a valid request, execute it
@@ -404,7 +404,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           # Set the answer from the plugin. The argument is the plugin's answer
           # with semicolon limited values
           elif options.key == "answer":
-            let remainingOptions = options.remainingArgs
+            let remainingOptions: seq[string] = options.remainingArgs
             if remainingOptions.len == 0:
               showError(message = "Insufficient arguments for answer.")
               break
@@ -432,9 +432,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
 
-proc checkPlugin*(pluginPath: string; db; commands): PluginData {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect,
-        ExecIOEffect,
+proc checkPlugin*(pluginPath: string; db; commands): PluginData {.sideEffect,
+    raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
   ## Get information about the selected plugin and check it compatybility with
   ## the shell's API
@@ -449,11 +448,11 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.gcsafe,
     pluginPath.len > 0
     db != nil
   body:
-    let pluginData = execPlugin(pluginPath = pluginPath, arguments = ["info"],
+    let pluginData: PluginResult = execPlugin(pluginPath = pluginPath, arguments = ["info"],
         db = db, commands = commands)
     if pluginData.code == QuitFailure:
       return
-    let pluginInfo = split(s = $pluginData.answer, sep = ";")
+    let pluginInfo: seq[string] = split(s = $pluginData.answer, sep = ";")
     if pluginInfo.len < 4:
       return
     try:
@@ -463,7 +462,7 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.gcsafe,
       return
     result = PluginData(path: pluginPath, api: split(s = pluginInfo[3], sep = ","))
 
-proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
+proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, TimeEffect, WriteDbEffect, RootEffect],
     contractual.} =
@@ -495,7 +494,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
           args = pluginPath) != @[""]:
         return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
       # Check if the plugin can be added
-      let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
+      let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
       if newPlugin.path.len == 0:
         return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.")
@@ -524,7 +523,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
         "' added as a plugin to the shell.", fgColor = fgGreen);
     return QuitSuccess.ResultCode
 
-proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
+proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
     ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Disable the plugin and remove it from the shell.
@@ -577,7 +576,7 @@ proc removePlugin*(db; arguments; commands): ResultCode {.gcsafe, sideEffect,
     return QuitSuccess.ResultCode
 
 proc togglePlugin*(db; arguments; disable: bool = true;
-    commands): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    commands): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
     ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Enable or disable the selected plugin.
@@ -617,7 +616,7 @@ proc togglePlugin*(db; arguments; disable: bool = true;
       if pluginPath.len == 0:
         return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
       # Check if plugin can be enabled due to version of API
-      let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
+      let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
       if newPlugin.path.len == 0 and not disable:
         return showError(message = "Can't enable plugin with Id: " & $pluginId & " because its API version is incompatible with the shell's version.")
@@ -635,11 +634,8 @@ proc togglePlugin*(db; arguments; disable: bool = true;
       if disable:
         db.exec(query = sql(query = ("DELETE FROM help WHERE plugin=?")),
             args = pluginPath)
-      else:
-        let newPlugin = checkPlugin(pluginPath = pluginPath, db = db,
-            commands = commands)
-        if newPlugin.path.len == 0:
-          return QuitFailure.ResultCode
+      elif checkPlugin(pluginPath = pluginPath, db = db, commands = commands).path.len == 0:
+        return QuitFailure.ResultCode
     except DbError:
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
           e = getCurrentException())
@@ -662,7 +658,9 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 3
     db != nil
   body:
+    {.ruleOff: "varDeclared".}
     var table: TerminalTable
+    {.ruleOn: "varDeclared".}
     # Show the list of all installed plugins with information about their state
     if arguments == "list all":
       try:
@@ -742,7 +740,9 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     if row[0] == "":
       return showError(message = "The plugin with the ID: " & $id &
         " doesn't exists.")
+    {.ruleOff: "varDeclared".}
     var table: TerminalTable
+    {.ruleOn: "varDeclared".}
     try:
       table.add(parts = [magenta(ss = "Id:"), $id])
       table.add(parts = [magenta(ss = "Path"), row[0]])
@@ -751,12 +751,12 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't plugin's info. Reason: ",
           e = getCurrentException())
-    let pluginData = execPlugin(pluginPath = row[0], arguments = ["info"],
+    let pluginData: PluginResult = execPlugin(pluginPath = row[0], arguments = ["info"],
         db = db, commands = commands)
     # If plugin contains any aditional information, show them
     try:
       if pluginData.code == QuitSuccess:
-        let pluginInfo = ($pluginData.answer).split(sep = ";")
+        let pluginInfo: seq[string] = ($pluginData.answer).split(sep = ";")
         table.add(parts = [magenta(ss = "API version:"), (if pluginInfo.len >
             2: pluginInfo[2] else: "0.1")])
         if pluginInfo.len > 2:
@@ -805,6 +805,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
+        {.ruleOff: "ifStatements".}
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "plugin", subcommands = pluginsCommands)
@@ -831,13 +832,13 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
         elif arguments.startsWith(prefix = "show"):
           return showPlugin(arguments = arguments, db = db,
               commands = list.commands)
-        else:
-          try:
-            return showUnknownHelp(subCommand = arguments,
-                command = initLimitedString(capacity = 6, text = "plugin"),
-                helpType = initLimitedString(capacity = 6, text = "plugin"))
-          except CapacityError:
-            return QuitFailure.ResultCode
+        {.ruleOn: "ifStatements".}
+        try:
+          return showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 6, text = "plugin"),
+              helpType = initLimitedString(capacity = 6, text = "plugin"))
+        except CapacityError:
+          return QuitFailure.ResultCode
     try:
       addCommand(name = initLimitedString(capacity = 6, text = "plugin"),
           command = pluginCommand, commands = commands)
@@ -849,7 +850,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
       for dbResult in db.fastRows(query = sql(
           query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
         if dbResult[2] == "1":
-          let newPlugin = checkPlugin(pluginPath = dbResult[1], db = db,
+          let newPlugin: PluginData = checkPlugin(pluginPath = dbResult[1], db = db,
               commands = commands)
           if newPlugin.path.len == 0:
             db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
