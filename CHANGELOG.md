@@ -8,6 +8,7 @@ of the shell.
 
 ### Changed
 - Updated README.md
+- Updated contributing guide
 
 ### Fixed
 - Compiling the shell with Nim 2.0
