@@ -34,12 +34,12 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables
 
-const aliasesCommands* = ["list", "delete", "show", "add", "edit"]
+const aliasesCommands*: array[5, string] = ["list", "delete", "show", "add", "edit"]
   ## The list of available subcommands for command alias
 
 using
@@ -79,7 +79,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
     # Set the aliases
     try:
       for dbResult in db.fastRows(query = sql(query = dbQuery)):
-        let index = try:
+        let index: LimitedString = try:
             initLimitedString(capacity = maxInputLength, text = dbResult[1])
           except CapacityError:
             showError(message = "Can't set index from " & dbResult[1])
@@ -106,12 +106,15 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
   ## Returns QuitSuccess if the list of aliases was shown, otherwise QuitFailure
   require:
     arguments.len > 3
-    arguments.startsWith("list")
+    arguments.startsWith(prefix = "list")
     db != nil
   body:
+    {.ruleOff: "varDeclared".}
     var table: TerminalTable
+    {.ruleOn: "varDeclared".}
     try:
-      table.add(magenta("ID"), magenta("Name"), magenta("Description"))
+      table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(
+          ss = "Description")])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show aliases list. Reason: ",
           e = getCurrentException())
@@ -120,7 +123,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       try:
         for row in db.fastRows(query = sql(
             query = "SELECT id, name, description FROM aliases")):
-          table.add(row[0], row[1], row[2])
+          table.add(parts = [row[0], row[1], row[2]])
       except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
@@ -133,7 +136,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           let row: Row = db.getRow(query = sql(
               query = "SELECT id, name, description FROM aliases WHERE id=?"),
             args = alias)
-          table.add(row[0], row[1], row[2])
+          table.add(parts = [row[0], row[1], row[2]])
         except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
           return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
@@ -159,7 +162,7 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
   ## QuitFailure. Also, updated paramete aliases
   require:
     arguments.len > 5
-    arguments.startsWith("delete")
+    arguments.startsWith(prefix = "delete")
     db != nil
   body:
     if arguments.len < 8:
@@ -170,7 +173,7 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
         return showError(message = "The Id of the alias must be a positive number.")
     try:
       if db.execAffectedRows(query = sql(
-          query = "DELETE FROM aliases WHERE id=?"), id.int) == 0:
+          query = "DELETE FROM aliases WHERE id=?"), args = id.int) == 0:
         return showError(message = "The alias with the Id: " & $id &
           " doesn't exists.")
     except DbError:
@@ -198,7 +201,7 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
   ## QuitFailure.
   require:
     arguments.len > 3
-    arguments.startsWith("show")
+    arguments.startsWith(prefix = "show")
     db != nil
   body:
     if arguments.len < 6:
@@ -215,16 +218,18 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     if row[0] == "":
       return showError(message = "The alias with the ID: " & $id &
         " doesn't exists.")
+    {.ruleOff: "varDeclared".}
     var table: TerminalTable
+    {.ruleOn: "varDeclared".}
     try:
-      table.add(magenta("Id:"), $id)
-      table.add(magenta("Name:"), row[0])
-      table.add(magenta("Description:"), (if row[2].len > 0: row[
-          2] else: "(none)"))
-      table.add(magenta("Path:"), row[3] & (if row[4] ==
-          "1": " (recursive)" else: ""))
-      table.add(magenta("Command(s):"), row[1])
-      table.add(magenta("Output to:"), row[5])
+      table.add(parts = [magenta(ss = "Id:"), $id])
+      table.add(parts = [magenta(ss = "Name:"), row[0]])
+      table.add(parts = [magenta(ss = "Description:"), (if row[2].len > 0: row[
+          2] else: "(none)")])
+      table.add(parts = [magenta(ss = "Path:"), row[3] & (if row[4] ==
+          "1": " (recursive)" else: "")])
+      table.add(parts = [magenta(ss = "Command(s):"), row[1]])
+      table.add(parts = [magenta(ss = "Output to:"), row[5]])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show alias. Reason: ",
           e = getCurrentException())
@@ -282,7 +287,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "".DirectoryPath
     while path.len == 0:
-      path = DirectoryPath($readInput())
+      path = ($readInput()).DirectoryPath
       if path.len == 0:
         showError(message = "Please enter a path for the alias.")
       elif not dirExists(dir = $path) and path != "exit":
@@ -334,7 +339,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     # Check if alias with the same parameters exists in the database
     try:
       if db.getValue(query = sql(query = "SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?"),
-          name, path, recursive, commands).len > 0:
+          args = [$name, $path, $recursive, $commands]).len > 0:
         return showError(message = "There is an alias with the same name, path and commands in the database.")
     except DbError:
       return showError(message = "Can't check if the similar alias exists. Reason: ",
@@ -342,7 +347,8 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     # Save the alias to the database
     try:
       if db.tryInsertID(query = sql(query = "INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)"),
-          name, path, recursive, commands, description, output) == -1:
+          args = [$name, $path, $recursive, $commands, $description,
+          $output]) == -1:
         return showError(message = "Can't add alias.")
     except DbError:
       return showError(message = "Can't add the alias to the database. Reason: ",
@@ -379,7 +385,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
       except ValueError:
         return showError(message = "The Id of the alias must be a positive number.")
     let row: Row = try:
-          db.getRow(query = sql(query = "SELECT name, path, commands, description, output FROM aliases WHERE id=?"), id)
+          db.getRow(query = sql(query = "SELECT name, path, commands, description, output FROM aliases WHERE id=?"), args = id)
       except DbError:
         return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
     showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
@@ -422,10 +428,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
         newLine = false)
     showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
     showOutput(message = "'. Must be a path to the existing directory.")
-    var path: DirectoryPath = DirectoryPath($readInput())
+    var path: DirectoryPath = ($readInput()).DirectoryPath
     while path.len > 0 and (path != "exit" and not dirExists(dir = $path)):
       showError(message = "Please enter a path to the existing directory")
-      path = DirectoryPath($readInput())
+      path = ($readInput()).DirectoryPath
     if path == "exit":
       return showError(message = "Editing the alias cancelled.")
     elif path == "":
@@ -479,7 +485,8 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
     try:
       if db.execAffectedRows(query = sql(
           query = "UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=?, output=? where id=?"),
-           name, path, recursive, commands, description, output, id) != 1:
+           args = [$name, $path, $recursive, $commands, $description, $output,
+               $id]) != 1:
         return showError(message = "Can't edit the alias.")
     except DbError:
       return showError(message = "Can't save the alias to database. Reason: ",
@@ -518,7 +525,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           return showError(message = "Can't set alias index for " & aliasId)
       outputLocation: string = try:
         db.getValue(query = sql(query = "SELECT output FROM aliases WHERE id=?"),
-            aliases[aliasIndex])
+            args = aliases[aliasIndex])
       except KeyError, DbError:
         return showError(message = "Can't get output for alias. Reason: ",
             e = getCurrentException())
@@ -530,7 +537,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     var
       inputString: string = try:
           db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
-              aliases[aliasIndex])
+              args = aliases[aliasIndex])
         except KeyError, DbError:
           return showError(message = "Can't get commands for alias. Reason: ",
               e = getCurrentException())
@@ -561,9 +568,9 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           argumentPosition..argumentPosition + 1], by = commandArguments.join(sep = " "))
       argumentPosition = inputString.find(sub = '$', start = argumentPosition + 1)
     # If output location is set to file, create or open the file
-    let outputFile = try:
-          (if outputLocation notin ["stdout", "stderr"]: open(outputLocation,
-              fmWrite) else: nil)
+    let outputFile: File = try:
+          (if outputLocation notin ["stdout", "stderr"]: open(
+              filename = outputLocation, mode = fmWrite) else: nil)
         except IOError:
           return showError(message = "Can't open output file. Reason: ",
               e = getCurrentException())
@@ -571,10 +578,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     var workingDir: string = ""
     while inputString.len > 0:
       var
-        conjCommands: bool
+        conjCommands: bool = false
         userInput: OptParser = initOptParser(cmdline = inputString)
         returnCode: int = QuitSuccess
-        resultOutput: string
+        resultOutput: string = ""
       let
         command: UserInput = getArguments(userInput = userInput,
             conjCommands = conjCommands)
@@ -594,7 +601,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         else:
           (resultOutput, returnCode) = execCmdEx(command = $command)
           if outputFile != nil:
-            outputFile.write(resultOutput)
+            outputFile.write(s = resultOutput)
           else:
             showError(message = resultOutput)
         result = returnCode.ResultCode
@@ -640,7 +647,9 @@ proc initAliases*(db; aliases: ref AliasesList;
   body:
     # Add commands related to the shell's aliases
     proc aliasCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
+        WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
+        RootEffect], contractual.} =
       ## The code of the shell's command "alias" and its subcommands
       ##
       ## * arguments - the arguments entered by the user for the command
@@ -650,6 +659,7 @@ proc initAliases*(db; aliases: ref AliasesList;
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
+        {.ruleOff: "ifStatements".}
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "alias",
@@ -669,14 +679,14 @@ proc initAliases*(db; aliases: ref AliasesList;
         # Edit the selected alias
         elif arguments.startsWith(prefix = "edit"):
           return editAlias(arguments = arguments, aliases = aliases, db = db)
-        else:
-          try:
-            return showUnknownHelp(subCommand = arguments,
-                command = initLimitedString(capacity = 5, text = "alias"),
-                    helpType = initLimitedString(capacity = 7,
-                        text = "aliases"))
-          except CapacityError:
-            return QuitFailure.ResultCode
+        {.ruleOn: "ifStatements".}
+        try:
+          return showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 5, text = "alias"),
+                  helpType = initLimitedString(capacity = 7,
+                      text = "aliases"))
+        except CapacityError:
+          return QuitFailure.ResultCode
 
     try:
       addCommand(name = initLimitedString(capacity = 5, text = "alias"),
