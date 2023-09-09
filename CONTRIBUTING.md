@@ -49,14 +49,21 @@ The project follows the default coding standards for [Nim](https://nim-lang.org/
 with additional extensions:
 
 * All calls to subprograms must use named parameters.
-* All subprograms must have pragmas: `gcSafe`, `raises` and `tags`.
+* All subprograms must have pragmas: `raises` and `tags`.
 * Subprograms shouldn't propagate exceptions, pragma `raises: []` unless they
-  are low level subprograms, like type initialization, etc. The main shell's
-  loop can't raise any exception.
+  are low level subprograms, like type initialization, etc. The main procedure
+  of the program can't raise any exception.
 * If possible, subprograms without side effects should be declared as functions.
 * All subprograms must have a corresponding unit test, even if it is a very simple
   test.
 * All subprograms must have written contracts, even it they are very simple.
+* All subprograms must use their parameters.
+* All subprograms and public declarations (variables, constants too) must have
+  documentation.
+* All variables must have declared type and initial value for them.
+* The code must be validated with the *nimalyzer* tool, by running it with
+  configuration files *tools/nimalyzer.cfg* for the program's code. *nimalyzer*
+  can be installed with *nimble*: `nimble install -y nimalyzer`.
 
 ### Code submission
 
