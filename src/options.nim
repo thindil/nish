@@ -34,11 +34,11 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 # Internal imports
 import commandslist, constants, help, input, lstring, output, resultcode
 
-const optionsCommands* = ["list", "set", "reset"]
+const optionsCommands*: array[3, string] = ["list", "set", "reset"]
   ## The list of available subcommands for command options
 
 type
@@ -74,8 +74,9 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     db != nil
   body:
     try:
-      let value = db.getValue(query = sql(
-          query = "SELECT value FROM options WHERE option=?"), optionName)
+      let value: string = db.getValue(query = sql(
+          query = "SELECT value FROM options WHERE option=?"),
+          args = optionName)
       result = initLimitedString(capacity = (if value.len ==
           0: 1 else: value.len), text = value)
     except DbError, CapacityError:
@@ -119,7 +120,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     try:
       if db.execAffectedRows(query = sql(query = sqlQuery)) == 0:
         db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES (?, ?, ?, ?, ?, ?)"),
-            optionName, value, description, valueType, value, readOnly)
+            args = [$optionName, $value, $description, $valueType, $value, $readOnly])
     except DbError:
       showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException())
@@ -133,10 +134,12 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
+    {.ruleOff: "varDeclared".}
     var table: TerminalTable
+    {.ruleOn: "varDeclared".}
     try:
-      table.add(magenta("Name"), magenta("Value"), magenta("Default"), magenta(
-          "Type"), magenta("Description"))
+      table.add(parts = [magenta(ss = "Name"), magenta(ss = "Value"), magenta(
+          ss = "Default"), magenta(ss = "Type"), magenta(ss = "Description")])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show options list. Reason: ",
           e = getCurrentException())
@@ -144,7 +147,7 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     try:
       for row in db.fastRows(query = sql(
           query = "SELECT option, value, defaultvalue, valuetype, description FROM options ORDER BY option ASC")):
-        table.add(row)
+        table.add(parts = row)
     except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
@@ -181,7 +184,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             arguments & "'.")
     try:
       if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
-          optionName) == "1":
+          args = optionName) == "1":
         return showError(message = "You can't set a new value for the selected option because it is read-only.")
     except DbError:
       return showError(message = "Can't check if the selected option is read only. Reason: ",
@@ -194,7 +197,8 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             arguments & "'.")
     # Check correctness of the option's value
     try:
-      case db.getValue(query = sql(query = "SELECT valuetype FROM options WHERE option=?"), optionName)
+      case db.getValue(query = sql(query = "SELECT valuetype FROM options WHERE option=?"),
+          args = optionName)
       of "integer":
         try:
           discard parseInt(s = $value)
@@ -284,7 +288,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     db != nil
   body:
     if arguments.len < 7:
-      return showError("Please enter name of the option to reset or 'all' to reset all options.")
+      return showError(message = "Please enter name of the option to reset or 'all' to reset all options.")
     let optionName: OptionName = arguments[6 .. ^1]
     # Reset all options
     if optionName == "all":
@@ -298,17 +302,18 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     else:
       try:
         if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
-            optionName) == "1":
+            args = optionName) == "1":
           return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.")
         if db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"),
-            optionName) == "":
+            args = optionName) == "":
           return showError(message = "Shell's option with name '" & optionName &
             "' doesn't exists. Please use command 'options list' to see all available shell's options.")
       except DbError:
         return showError(message = "Can't get value for option '" & optionName &
             "'. Reason: ", e = getCurrentException())
       try:
-        db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE option=?"), optionName)
+        db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE option=?"),
+            args = optionName)
         showOutput(message = "The shell's option '" & optionName &
             "' reseted to its default value.", fgColor = fgGreen)
       except DbError:
@@ -379,7 +384,7 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
   body:
     try:
       if db.execAffectedRows(query = sql(
-          query = "DELETE FROM options WHERE option=?"), optionName) == 0:
+          query = "DELETE FROM options WHERE option=?"), args = optionName) == 0:
         return QuitFailure.ResultCode
     except DbError:
       return showError(message = "Can't delete the selected option. Reason: ",
@@ -396,7 +401,9 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect,
   body:
     # Add commands related to the shell's options
     proc optionsCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.raises: [], contractual.} =
+        list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
+        WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
+        Rooteffect], contractual.} =
       ## The code of the shell's command "options" and its subcommands
       ##
       ## * arguments - the arguments entered by the user for the command
@@ -407,6 +414,7 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect,
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
+        {.ruleOff: "ifStatements".}
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "options",
@@ -420,13 +428,13 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect,
         elif arguments.startsWith(prefix = "reset"):
           result = resetOptions(arguments = arguments, db = db)
           return
-        else:
-          try:
-            return showUnknownHelp(subCommand = arguments,
-                command = initLimitedString(capacity = 7, text = "options"),
-                helpType = initLimitedString(capacity = 7, text = "options"))
-          except CapacityError:
-            return QuitFailure.ResultCode
+        {.ruleOn: "ifStatements".}
+        try:
+          return showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 7, text = "options"),
+              helpType = initLimitedString(capacity = 7, text = "options"))
+        except CapacityError:
+          return QuitFailure.ResultCode
 
     try:
       addCommand(name = initLimitedString(capacity = 7, text = "options"),
