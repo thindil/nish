@@ -26,5 +26,18 @@ jobs:
     - name: Debug build
       run: nimble debug -y
 
+    - name: Install nimalyzer
+      run: nimble install -y nimalyzer@"> 0.6"
+
+    - name: Check with Nimalyzer
+      run: nimalyzer tools/nimalyzer.cfg
+
+    - name: Upload the log
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+         name: nimalyzer.log
+         path: nimalyzer.log
+
     - name: Run tests
       run: nimble tests -y
