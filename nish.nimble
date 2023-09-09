@@ -49,5 +49,4 @@ task releasearm, "builds the project in release mode for Linux on arm":
 task releasewindows, "builds the project in release mode for Windows 64-bit":
   exec "nimble install -d -y"
   exec "nimassets -d=help -o=src/helpcontent.nim"
-  exec "nim c -d:mingw --os:windows --cpu:amd64 --amd64.windows.gcc.exe:x86_64-w64-mingw32-gcc -d:release --passc:-flto --passl:-s --outdir:" &
-      binDir & " " & srcDir & DirSep & "nish.nim"
+  exec "nim c -d:mingw --os:windows --cpu:amd64 --amd64.windows.gcc.exe:x86_64-w64-mingw32-gcc --amd64.windows.gcc.linkerexe=x86_64-w64-mingw32-gcc  -d:release --passc:-flto --passl:-s --outdir:" & binDir & " " & srcDir & DirSep & "nish.nim"
