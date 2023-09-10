@@ -26,7 +26,9 @@
 ## This module contains constants and variables types used by the shell's code
 
 # Standard library imports
-import std/tables
+import std/[os, tables]
+# External modules imports
+import contracts
 # Internal imports
 import lstring
 
@@ -42,7 +44,7 @@ const
 type
   HelpEntry* = object
     ## Used to store the shell's help entries
-    usage*: string ## The shell's command to enter for the selected entry
+    usage*: string   ## The shell's command to enter for the selected entry
     content*: string ## The content of the selected entry
   UserInput* = LimitedString
     ## Used to store text entered by the user
@@ -60,3 +62,23 @@ type
     ## Used to store the available aliases in the selected directory
   ColumnAmount* = distinct Natural
     ## Used to store length or amount of terminal's characters columns
+
+proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
+    contractual.} =
+  ## Get the current directory. Exception free version of getCurrentDir
+  ##
+  ## Returns the current directory path. If it doesn't exist, for example was
+  ## deleted by other program, returns the home directory of the user.
+  body:
+    try:
+      result = getCurrentDir()
+    except OSError:
+      result = getHomeDir()
+      try:
+        setCurrentDir(newDir = result)
+      except OSError:
+        try:
+          result = getAppDir()
+          setCurrentDir(newDir = result)
+        except OSError:
+          discard
