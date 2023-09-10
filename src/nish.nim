@@ -368,7 +368,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 stdout.write(s = completions[0])
                 inputString.text = inputString[0..spaceIndex] & completions[0]
                 cursorPosition = runeLen(s = $inputString)
-              except IOError:
+              except IOError, OSError:
                 discard
               except ValueError:
                 showError(message = "Invalid value for character position.",
@@ -443,7 +443,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 # Move cursor to the next completion
                 stdout.cursorForward(count = completionWidth[(
                     currentCompletion - 1) mod columnsAmount])
-              except IOError, ValueError:
+              except IOError, ValueError, OSError:
                 discard
           # Special keys pressed
           of 27:
@@ -543,7 +543,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               completionMode = false
               keyWasArrow = false
               inputChar = '\0'
-            except IOError:
+            except IOError, OSError:
               discard
             except ValueError:
               showError(message = "Invalid value for character position.",
@@ -568,7 +568,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             completionMode = false
         try:
           stdout.writeLine(x = "")
-        except IOError:
+        except IOError, OSError:
           discard
 
     # Start the shell
@@ -622,7 +622,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         of "exit":
           historyIndex = updateHistory(commandToAdd = "exit", db = db)
           try:
-            setTitle(title = getCurrentDir(), db = db)
+            setTitle(title = getCurrentDirectory(), db = db)
           except OSError:
             setTitle(title = "nish", db = db)
           quitShell(returnCode = returnCode, db = db)
