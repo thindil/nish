@@ -114,7 +114,7 @@ proc updateHistory*(commandToAdd: string; db;
         return
     try:
       # Update history if there is the command in the history in the same directory
-      let currentDir: string = getCurrentDir()
+      let currentDir: string = getCurrentDirectory()
       if db.execAffectedRows(query = sql(
           query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=? AND path=?"),
            args = [commandToAdd, currentDir]) == 0:
@@ -153,7 +153,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
       if searchFor.len == 0:
         let value: string = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-            args = [getCurrentDir(), $(historyLength(db = db) - historyIndex)])
+            args = [getCurrentDirectory(), $(historyLength(db = db) - historyIndex)])
         if value.len == 0:
           result = db.getValue(query = sql(
               query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
@@ -164,7 +164,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
       else:
         let value: string = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
-            args = [searchFor & "%", getCurrentDir()])
+            args = [searchFor & "%", getCurrentDirectory()])
         if value.len == 0:
           result = db.getValue(query = sql(
               query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),

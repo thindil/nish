@@ -67,7 +67,7 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
       if not dirExists(dir = $path):
         return showError(message = "Directory '" & path & "' doesn't exist.")
       path = expandFilename(filename = $path).DirectoryPath
-      setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDir().DirectoryPath)
+      setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDirectory().DirectoryPath)
       setCurrentDir(newDir = $path)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess.ResultCode

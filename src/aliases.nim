@@ -180,7 +180,7 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Can't delete alias from database. Reason: ",
           e = getCurrentException())
     try:
-      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       return showError(message = "Can't delete alias, setting a new aliases not work. Reason: ",
           e = getCurrentException())
@@ -355,7 +355,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException())
     # Refresh the list of available aliases
     try:
-      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
@@ -493,7 +493,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
           e = getCurrentException())
     # Refresh the list of available aliases
     try:
-      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
@@ -530,7 +530,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         return showError(message = "Can't get output for alias. Reason: ",
             e = getCurrentException())
       currentDirectory: DirectoryPath = try:
-          getCurrentDir().DirectoryPath
+          getCurrentDirectory().DirectoryPath
       except OSError:
         return showError(message = "Can't get current directory. Reason: ",
             e = getCurrentException())
@@ -590,11 +590,11 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         # Threat cd command specially, it should just change the current
         # directory for the alias
         if command[0..2] == "cd ":
-          workingDir = getCurrentDir()
+          workingDir = getCurrentDirectory()
           setCurrentDir(newDir = $command[3..^1])
-          setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
+          setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db,
               oldDirectory = workingDir.DirectoryPath)
-          aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+          aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
           continue
         if outputLocation == "stdout":
           returnCode = execCmd(command = $command)
@@ -619,7 +619,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     if workingDir.len > 0:
       try:
         setVariables(newDirectory = currentDirectory, db = db,
-            oldDirectory = getCurrentDir().DirectoryPath)
+            oldDirectory = getCurrentDirectory().DirectoryPath)
         setCurrentDir(newDir = $currentDirectory)
         aliases.setAliases(directory = currentDirectory, db = db)
       except OSError:
@@ -696,7 +696,7 @@ proc initAliases*(db; aliases: ref AliasesList;
           e = getCurrentException())
     # Set the shell's aliases for the current directory
     try:
-      aliases.setAliases(directory = getCurrentDir().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       showError(message = "Can't initialize aliases. Reason: ",
           e = getCurrentException())

@@ -46,7 +46,7 @@ proc getFormattedDir*(): DirectoryPath {.gcsafe, sideEffect, raises: [], tags: [
   ## Returns the formatted path to the current directory
   body:
     result = try:
-      getCurrentDir().DirectoryPath
+      getCurrentDirectory().DirectoryPath
     except OSError:
       "[unknown dir]".DirectoryPath
     let homeDirectory: DirectoryPath = getHomeDir().DirectoryPath

@@ -482,7 +482,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
     if arguments.len < 5:
       return showError(message = "Please enter the path to the plugin which will be added to the shell.")
     let pluginPath: string = try:
-        normalizedPath(path = getCurrentDir() & DirSep & $arguments[4..^1])
+        normalizedPath(path = getCurrentDirectory() & DirSep & $arguments[4..^1])
       except OSError:
         $arguments[4..^1]
     # Check if the file exists

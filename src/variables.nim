@@ -234,7 +234,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     elif arguments[0..3] == "list":
       try:
         for row in db.fastRows(query = sql(query = buildQuery(
-            directory = getCurrentDir().DirectoryPath,
+            directory = getCurrentDirectory().DirectoryPath,
                 fields = "id, name, value, description"))):
           table.add(parts = row)
       except DbError, OSError, UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -281,8 +281,8 @@ proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
       return showError(message = "Can't delete variable from database. Reason: ",
           e = getCurrentException())
     try:
-      setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
-          oldDirectory = getCurrentDir().DirectoryPath)
+      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db,
+          oldDirectory = getCurrentDirectory().DirectoryPath)
     except OSError:
       return showError(message = "Can't set environment variables in the current directory. Reason: ",
           e = getCurrentException())
@@ -393,8 +393,8 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       return showError(message = "Can't add the variable to database. Reason: ",
           e = getCurrentException())
     try:
-      setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
-          oldDirectory = getCurrentDir().DirectoryPath)
+      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db,
+          oldDirectory = getCurrentDirectory().DirectoryPath)
     except OSError:
       return showError(message = "Can't set variables for the current directory. Reason: ",
           e = getCurrentException())
@@ -520,8 +520,8 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Can't save the edits of the variable to database. Reason: ",
           e = getCurrentException())
     try:
-      setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db,
-          oldDirectory = getCurrentDir().DirectoryPath)
+      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db,
+          oldDirectory = getCurrentDirectory().DirectoryPath)
     except OSError:
       return showError(message = "Can't set variables for the current directory. Reason: ",
           e = getCurrentException())
@@ -624,7 +624,7 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
           e = getCurrentException())
     # Set the environment variables for the current directory
     try:
-      setVariables(newDirectory = getCurrentDir().DirectoryPath, db = db)
+      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       showError(message = "Can't set environment variables for the current directory. Reason:",
           e = getCurrentException())
