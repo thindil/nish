@@ -12,6 +12,7 @@ of the shell.
 
 ### Fixed
 - Compiling the shell with Nim 2.0
+- Compiling the shell on Windows
 
 ## [0.5.0] - 2023-01-05
 
