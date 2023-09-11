@@ -15,6 +15,7 @@ of the shell.
 - Compiling the shell on Windows
 - The shell hangs when the directory in which the user doesn't exist anymore
 - Return the user's command's result as a shell's result
+- Crash when trying to edit an existing environment variable
 
 ## [0.5.0] - 2023-01-05
 
