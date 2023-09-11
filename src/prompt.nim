@@ -107,7 +107,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         discard
     result = currentDirectory.len
     if previousCommand != "" and resultCode != QuitSuccess:
-      let resultString: string = $resultCode
+      let resultString: string = $exitStatusLikeShell(status = resultCode.cint)
       try:
         {.ruleOff: "namedParams".}
         stdout.styledWrite(fgRed,  "[" & resultString & "]")
