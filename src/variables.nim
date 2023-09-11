@@ -420,7 +420,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if arguments.len < 6:
       return showError(message = "Enter the ID of the variable to edit.")
     let varId: DatabaseId = try:
-        ($arguments[7 .. ^1]).parseInt.DatabaseId
+        ($arguments[5 .. ^1]).parseInt.DatabaseId
       except ValueError:
         return showError(message = "The Id of the variable must be a positive number.")
     let
