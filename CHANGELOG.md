@@ -13,6 +13,7 @@ of the shell.
 ### Fixed
 - Compiling the shell with Nim 2.0
 - Compiling the shell on Windows
+- The shell hangs when the directory in which the user doesn't exist anymore
 
 ## [0.5.0] - 2023-01-05
 
