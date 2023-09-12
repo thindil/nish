@@ -9,6 +9,7 @@ of the shell.
 ### Changed
 - Updated README.md
 - Updated contributing guide
+- Made the current values of a variable colored during its edition
 
 ### Fixed
 - Compiling the shell with Nim 2.0
