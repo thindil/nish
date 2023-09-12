@@ -450,7 +450,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
       except IOError:
         'y'
     let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
-    showOutput(message = "")
+    try:
+      stdout.writeLine(x = "")
+    except IOError:
+      discard
     # Set the commands to execute for the alias
     showFormHeader(message = "(5/6) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
