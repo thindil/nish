@@ -431,7 +431,10 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by pressing Enter.")
     # Set the name for the variable
     showFormHeader(message = "(1/5) Name", db = db)
-    showOutput(message = "The name of the variable. Current value: '" & row[0] & "'. Can contains only letters, numbers and underscores.:")
+    showOutput(message = "The name of the variable. Current value: '",
+        newLine = false)
+    showOutput(message = row[0], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Can contains only letters, numbers and underscores.:")
     var name: VariableName = try:
         initLimitedString(capacity = variableNameLength, text = "exit")
       except CapacityError:
@@ -453,8 +456,10 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         return showError(message = "Editing the variable cancelled. Reason: can't set name for the variable.")
     # Set the description for the variable
     showFormHeader(message = "(2/5) Description", db = db)
-    showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '" &
-        row[3] & "'. Can't contains a new line character.: ")
+    showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '",
+        newLine = false)
+    showOutput(message = row[3], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Can't contains a new line character.: ")
     var description: UserInput = readInput()
     if description == "exit":
       return showError(message = "Editing the variable cancelled.")
@@ -465,8 +470,10 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         return showError(message = "Editing the variable cancelled. Reason: can't set description for the variable.")
     # Set the working directory for the variable
     showFormHeader(message = "(3/5) Working directory", db = db)
-    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
-        row[1] & "'. Must be a path to the existing directory.:")
+    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '",
+        newLine = false)
+    showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Must be a path to the existing directory.:")
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "exit".DirectoryPath
     while path.len > 0:
@@ -499,9 +506,10 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       discard
     # Set the value for the variable
     showFormHeader(message = "(5/5) Value", db = db)
-    showOutput(message = "The value of the variable. Current value: '" & row[
-        2] &
-        "'. Value can't contain a new line character.:")
+    showOutput(message = "The value of the variable. Current value: '",
+        newLine = false)
+    showOutput(message = row[2], newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Value can't contain a new line character.:")
     var value: UserInput = readInput()
     if value == "exit":
       return showError(message = "Editing the variable cancelled.")
