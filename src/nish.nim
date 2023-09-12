@@ -237,6 +237,18 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
     contractual.} =
   ## Handle the user's input, show the shell's prompt, tab completion and
   ## highglight the input if needed
+  ##
+  ## * inputString    - the text entered by the user, after processing, with
+  ##                    syntax highlightning, read from shell's history, etc.
+  ## * oneTimeCommand - if true, the shell will quit after executing the user's
+  ##                    command
+  ## * db             - the connection to the shell's database
+  ## * commandName    - the user's last command name
+  ## * returnCode     - the return code of the user's last command
+  ## * historyIndex   - the index of the command in the shell's history
+  ## * cursorPosition - the current vertical position of the cursor on the screen
+  ## * aliases        - the list of the shell's aliases
+  ## * commands       - the list of the shell's commands
   body:
     # Write prompt
     let promptLength: Natural = showPrompt(
