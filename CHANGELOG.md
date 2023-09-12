@@ -17,6 +17,7 @@ of the shell.
 - The shell hangs when the directory in which the user doesn't exist anymore
 - Return the user's command's result as a shell's result
 - Crash when trying to edit an existing environment variable
+- Showing header during editing an alias after setting its recursiveness
 
 ## [0.5.0] - 2023-01-05
 
