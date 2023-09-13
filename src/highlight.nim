@@ -35,12 +35,12 @@ else:
 # External modules imports
 import contracts
 # Internal imports
-import commandslist, constants, input, lstring, options, output, prompt, resultcode
+import commandslist, constants, input, lstring, output, prompt, resultcode
 
 proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     commands: ref Table[string, CommandData]; aliases: ref AliasesList;
     oneTimeCommand: bool; commandName: string; returnCode: ResultCode;
-    db: DbConn; cursorPosition: Natural) {.gcsafe, sideEffect, raises: [],
+    db: DbConn; cursorPosition: Natural; enabled: bool) {.gcsafe, sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Refresh the user input, clear the old and show the new. Color the entered
@@ -56,6 +56,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
   ## * returnCode     - the code returned by the previously entered command
   ## * db             - the connection to the shell's database
   ## * cursorPosition - the position of the cursor on the screen
+  ## * enabled        - if true, the syntax highlightning is enabled, otherwise
+  ##                    false
   require:
     commands != nil
     aliases != nil
@@ -81,14 +83,9 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         showPrompt(promptEnabled = not oneTimeCommand,
             previousCommand = $commandName, resultCode = returnCode, db = db)
       # If syntax highlightning is disabled, show the user's input and quit
-      try:
-        if getOption(optionName = initLimitedString(capacity = 11,
-            text = "colorSyntax"), db = db, defaultValue = initLimitedString(
-            capacity = 4, text = "true")) == "false":
-          inputString = input
-          showOutput(message = $inputString, newLine = false)
-          return
-      except CapacityError:
+      if not enabled:
+        inputString = input
+        showOutput(message = $inputString, newLine = false)
         return
       # If command contains equal sign it must be an environment variable,
       # print the variable and get the next word

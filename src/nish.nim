@@ -259,6 +259,12 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
         promptEnabled = not oneTimeCommand, previousCommand = commandName,
         resultCode = returnCode, db = db)
     # Get the user input and parse it
+    let highlightEnabled: bool = try:
+          getOption(optionName = initLimitedString(capacity = 11,
+            text = "colorSyntax"), db = db, defaultValue = initLimitedString(
+            capacity = 4, text = "true")) == "true"
+        except CapacityError:
+          true
     var
       inputChar: char = '\0'
       completions: seq[string] = @[]
@@ -289,7 +295,7 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
             inputString = inputString, commands = commands,
             aliases = aliases, oneTimeCommand = oneTimeCommand,
             commandName = $commandName, returnCode = returnCode, db = db,
-            cursorPosition = cursorPosition)
+            cursorPosition = cursorPosition, enabled = highlightEnabled)
       # Tab key pressed, do autocompletion if possible
       of 9:
         let
@@ -411,7 +417,8 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
                   inputString = inputString, commands = commands,
                   aliases = aliases, oneTimeCommand = oneTimeCommand,
                   commandName = $commandName, returnCode = returnCode,
-                  db = db, cursorPosition = cursorPosition)
+                  db = db, cursorPosition = cursorPosition,
+                  enabled = highlightEnabled)
               historyIndex.dec
               if historyIndex < 1:
                 historyIndex = 1;
@@ -436,7 +443,8 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
                   inputString = inputString, commands = commands,
                   aliases = aliases, oneTimeCommand = oneTimeCommand,
                   commandName = $commandName, returnCode = returnCode,
-                  db = db, cursorPosition = cursorPosition)
+                  db = db, cursorPosition = cursorPosition,
+                  enabled = highlightEnabled)
             # Insert key pressed
             of '2':
               if getch() == '~':
@@ -482,7 +490,7 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
               inputString = inputString, commands = commands,
               aliases = aliases, oneTimeCommand = oneTimeCommand,
               commandName = $commandName, returnCode = returnCode, db = db,
-              cursorPosition = cursorPosition)
+              cursorPosition = cursorPosition, enabled = highlightEnabled)
           completionMode = false
           keyWasArrow = false
           inputChar = '\0'
@@ -518,7 +526,7 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
             inputString = inputString, commands = commands,
             aliases = aliases, oneTimeCommand = oneTimeCommand,
             commandName = $commandName, returnCode = returnCode, db = db,
-            cursorPosition = cursorPosition)
+            cursorPosition = cursorPosition, enabled = highlightEnabled)
         keyWasArrow = false
         completionMode = false
     try:
