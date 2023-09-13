@@ -255,7 +255,7 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
     aliases != nil
   body:
     # Write prompt
-    let promptLength: Natural = showPrompt(
+    var promptLength: Natural = showPrompt(
         promptEnabled = not oneTimeCommand, previousCommand = commandName,
         resultCode = returnCode, db = db)
     # Get the user input and parse it
@@ -499,6 +499,18 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
         if inputChar.ord < 32:
           continue
         let inputRune: string = readChar(inputChar = inputChar)
+        try:
+          if promptLength + cursorPosition == terminalWidth() - 1:
+            stdout.eraseLine
+            discard showPrompt(promptEnabled = not oneTimeCommand,
+                previousCommand = commandName, resultCode = returnCode, db = db)
+            stdout.writeLine(x = "")
+            promptLength = 0
+        except IOError:
+          discard
+        except ValueError:
+          showError(message = "Invalid value for terminal width.",
+              e = getCurrentException())
         updateInput(cursorPosition = cursorPosition,
             inputString = inputString, insertMode = insertMode,
             inputRune = inputRune)
