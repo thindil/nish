@@ -42,27 +42,6 @@ jobs:
     - name: Run tests
       run: nimble tests -y
 
-  build_windows:
-    needs: tests
-    timeout-minutes: 30
-    runs-on: windows-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Setup Nim
-      uses: jiro4989/setup-nim-action@v1
-      with:
-        nim-version: 'stable'
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Update Nimble
-      run: nimble install -y nimble
-
-    - name: Release build
-      run: nimble -y release
-
   build_linux:
     needs: tests
     timeout-minutes: 30
