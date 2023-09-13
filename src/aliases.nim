@@ -118,6 +118,10 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show aliases list. Reason: ",
           e = getCurrentException())
+    # If there are no aliases, show only the message and quit
+    if aliases.len == 0:
+      showOutput(message = "There are no defined shell's aliases.")
+      return QuitSuccess.ResultCode
     # Show all available aliases declared in the shell
     if arguments == "list all":
       try:
