@@ -10,6 +10,7 @@ of the shell.
 - Updated README.md
 - Updated contributing guide
 - Made the current values of a variable colored during its edition
+- Show message when there are no defined aliases instead of empty list
 
 ### Fixed
 - Compiling the shell with Nim 2.0
