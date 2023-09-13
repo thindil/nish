@@ -249,6 +249,10 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
   ## * cursorPosition - the current vertical position of the cursor on the screen
   ## * aliases        - the list of the shell's aliases
   ## * commands       - the list of the shell's commands
+  require:
+    db != nil
+    commands != nil
+    aliases != nil
   body:
     # Write prompt
     let promptLength: Natural = showPrompt(
