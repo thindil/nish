@@ -16,6 +16,6 @@ block:
     inputString: UserInput = initLimitedString(4, "test")
 
   highlightOutput(0, inputString, commands, myaliases, false, "",
-      QuitSuccess.ResultCode, db, 0)
+      QuitSuccess.ResultCode, db, 0, true)
 
   quitShell(ResultCode(QuitSuccess), db)
