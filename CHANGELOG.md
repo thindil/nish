@@ -11,6 +11,7 @@ of the shell.
 - Updated contributing guide
 - Made the current values of a variable colored during its edition
 - Show message when there are no defined aliases instead of empty list
+- Better handling very long lines in the user's input
 
 ### Fixed
 - Compiling the shell with Nim 2.0
