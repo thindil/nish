@@ -512,8 +512,11 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
             stdout.eraseLine
             discard showPrompt(promptEnabled = not oneTimeCommand,
                 previousCommand = commandName, resultCode = returnCode, db = db)
-            stdout.writeLine(x = "")
             promptLength = 0
+            stdout.writeLine(x = "")
+          if cursorPosition > terminalWidth() and
+              cursorPosition mod terminalWidth() == 0:
+            stdout.writeLine(x = "")
         except IOError:
           discard
         except ValueError:

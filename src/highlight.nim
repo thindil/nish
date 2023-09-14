@@ -82,6 +82,15 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       if promptLength > 0 and promptLength + runeLen(s = $input) <= terminalWidth():
         showPrompt(promptEnabled = not oneTimeCommand,
             previousCommand = $commandName, resultCode = returnCode, db = db)
+      # Erase the previous content if the new line is longer than the terminal's
+      # width
+      if promptLength + runeLen(s = $input) > terminalWidth():
+        let linesToDelete: int = (runeLen(s = $input) / terminalWidth()).int
+        for i in 1 .. linesToDelete:
+          stdout.cursorUp
+          stdout.eraseLine
+        if runeLen(s = $input) mod terminalWidth() == 0:
+          stdout.cursorDown
       # If syntax highlightning is disabled, show the user's input and quit
       if not enabled:
         inputString = input
