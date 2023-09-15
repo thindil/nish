@@ -41,7 +41,7 @@ import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables
 
 type Alias* {.tableName: "aliases".} = ref object of Model
-  name*: LimitedString
+  name* {.unique.}: LimitedString
   path*: LimitedString
   recursive*: bool
   commands*: LimitedString
