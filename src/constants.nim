@@ -40,6 +40,8 @@ const
     ## The maximum length of the shell's alias namev
   builtinCommands*: array[0..3, string] = ["cd", "exit", "set", "unset"]
     ## The list of the shell's built-in commands
+  maxInputLength*: Positive = 4096
+    ## The maximum length of the user input
 
 type
   HelpEntry* = object

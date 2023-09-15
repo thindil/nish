@@ -33,9 +33,6 @@ import contracts, nimalyzer
 # Internal imports
 import constants, lstring, output
 
-const maxInputLength*: Positive = 4096
-  ## The maximum length of the user input
-
 type MaxInputLength* = range[1..maxInputLength]
   ## Used to store maximum allowed length of the user input
 
