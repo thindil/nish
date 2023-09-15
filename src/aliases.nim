@@ -48,7 +48,7 @@ type Alias* {.tableName: "aliases".} = ref object of Model
   description*: LimitedString
   output*: LimitedString
 
-func dbType*(T: typedesc[LimitedString]): string = "TEXT"
+func dbType*(T: typedesc[LimitedString]): string = "VARCHAR(" & $maxInputLength & ")"
 func dbValue*(val: LimitedString): DbValue = dbValue($val)
 proc to*(dbVal: DbValue, T: typedesc[LimitedString]): T = initLimitedString(
     capacity: dbVal.s.len, text: dbVal.s)
