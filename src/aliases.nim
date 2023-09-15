@@ -35,15 +35,24 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
+import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables
+
+type Alias* {.tableName: "aliases".} = ref object of Model
+  name*: string
+  path*: string
+  recursive*: bool
+  commands*: string
+  description*: string
+  output*: string
 
 const aliasesCommands*: array[5, string] = ["list", "delete", "show", "add", "edit"]
   ## The list of available subcommands for command alias
 
 using
-  db: DbConn # Connection to the shell's database
+  db: db_sqlite.DbConn # Connection to the shell's database
   aliases: ref AliasesList # The list of aliases available in the selected directory
   arguments: UserInput # The string with arguments entered by the user for the command
 
@@ -78,7 +87,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
     dbQuery.add(y = " ORDER BY id ASC")
     # Set the aliases
     try:
-      for dbResult in db.fastRows(query = sql(query = dbQuery)):
+      for dbResult in db_sqlite.fastRows(db = db, query = sql(query = dbQuery)):
         let index: LimitedString = try:
             initLimitedString(capacity = maxInputLength, text = dbResult[1])
           except CapacityError:
@@ -125,7 +134,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     # Show all available aliases declared in the shell
     if arguments == "list all":
       try:
-        for row in db.fastRows(query = sql(
+        for row in db_sqlite.fastRows(db = db, query = sql(
             query = "SELECT id, name, description FROM aliases")):
           table.add(parts = [row[0], row[1], row[2]])
       except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -137,7 +146,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     elif arguments[0 .. 3] == "list":
       for alias in aliases.values:
         try:
-          let row: Row = db.getRow(query = sql(
+          let row: db_sqlite.Row = db_sqlite.getRow(db = db, query = sql(
               query = "SELECT id, name, description FROM aliases WHERE id=?"),
             args = alias)
           table.add(parts = [row[0], row[1], row[2]])
@@ -176,7 +185,7 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       except ValueError:
         return showError(message = "The Id of the alias must be a positive number.")
     try:
-      if db.execAffectedRows(query = sql(
+      if db_sqlite.execAffectedRows(db = db, query = sql(
           query = "DELETE FROM aliases WHERE id=?"), args = id.int) == 0:
         return showError(message = "The alias with the Id: " & $id &
           " doesn't exists.")
@@ -214,7 +223,7 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
       except ValueError:
         return showError(message = "The Id of the alias must be a positive number.")
-    let row: Row = try:
+    let row: db_sqlite.Row = try:
           db.getRow(query = sql(query = "SELECT name, commands, description, path, recursive, output FROM aliases WHERE id=?"), args = id)
       except DbError:
         return showError(message = "Can't read alias data from database. Reason: ",
@@ -388,7 +397,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
       except ValueError:
         return showError(message = "The Id of the alias must be a positive number.")
-    let row: Row = try:
+    let row: db_sqlite.Row = try:
           db.getRow(query = sql(query = "SELECT name, path, commands, description, output FROM aliases WHERE id=?"), args = id)
       except DbError:
         return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
@@ -531,8 +540,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         except CapacityError:
           return showError(message = "Can't set alias index for " & aliasId)
       outputLocation: string = try:
-        db.getValue(query = sql(query = "SELECT output FROM aliases WHERE id=?"),
-            args = aliases[aliasIndex])
+        db_sqlite.getValue(db = db, query = sql(
+            query = "SELECT output FROM aliases WHERE id=?"),
+
+args = aliases[aliasIndex])
       except KeyError, DbError:
         return showError(message = "Can't get output for alias. Reason: ",
             e = getCurrentException())
@@ -543,8 +554,10 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
             e = getCurrentException())
     var
       inputString: string = try:
-          db.getValue(query = sql(query = "SELECT commands FROM aliases WHERE id=?"),
-              args = aliases[aliasIndex])
+          db_sqlite.getValue(db = db, query = sql(
+              query = "SELECT commands FROM aliases WHERE id=?"),
+
+args = aliases[aliasIndex])
         except KeyError, DbError:
           return showError(message = "Can't get commands for alias. Reason: ",
               e = getCurrentException())
@@ -599,8 +612,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
         if command[0..2] == "cd ":
           workingDir = getCurrentDirectory()
           setCurrentDir(newDir = $command[3..^1])
-          setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db,
-              oldDirectory = workingDir.DirectoryPath)
+          setVariables(newDirectory = getCurrentDirectory().DirectoryPath,
+              db = db, oldDirectory = workingDir.DirectoryPath)
           aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
           continue
         if outputLocation == "stdout":
@@ -653,7 +666,7 @@ proc initAliases*(db; aliases: ref AliasesList;
     db != nil
   body:
     # Add commands related to the shell's aliases
-    proc aliasCommand(arguments: UserInput; db: DbConn;
+    proc aliasCommand(arguments: UserInput; db;
         list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
         WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
         RootEffect], contractual.} =
@@ -720,15 +733,22 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """ALTER TABLE aliases ADD output VARCHAR(""" & $maxInputLength &
+      db_sqlite.exec(db = db, query = sql(query = """ALTER TABLE aliases ADD output VARCHAR(""" & $maxInputLength &
                   """) NOT NULL DEFAULT 'stdout'"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
+proc newAlias*(name, path, commands, description: LimitedString = emptyLimitedString();
+    recursive: bool = true; output: LimitedString = initLimitedString(
+    capacity = maxInputLength, text = "output")): Alias =
+  Alias(name: $name, path: $path, commands: $commands, description: $description,
+      recursive: recursive, output: $output)
+
+proc createAliasesDb*(db: sqlite.DbConn): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
+        contractual.} =
   ## Create the table aliases
   ##
   ## * db - the connection to the shell's database
@@ -739,20 +759,8 @@ proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """CREATE TABLE aliases (
-                   id          INTEGER       PRIMARY KEY,
-                   name        VARCHAR(""" & $aliasNameLength &
-              """) NOT NULL,
-                   path        VARCHAR(""" & $maxInputLength &
-              """) NOT NULL,
-                   recursive   BOOLEAN       NOT NULL,
-                   commands    VARCHAR(""" & $maxInputLength &
-              """) NOT NULL,
-                   description VARCHAR(""" & $maxInputLength &
-              """) NOT NULL,
-                   output VARCHAR(""" & $maxInputLength &
-              """) NOT NULL DEFAULT 'stdout')"""))
-    except DbError, CapacityError:
+      db.createTables(newAlias())
+    except DBError, ValueError, CapacityError:
       return showError(message = "Can't create 'aliases' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
