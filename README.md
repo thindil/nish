@@ -335,6 +335,7 @@ You will need:
 * [Nancy](https://github.com/PMunch/nancy)
 * [TermStyle](https://github.com/PMunch/termstyle)
 * [Nimalyzer](https://github.com/thindil/nimalyzer)
+* [Norm](https://github.com/moigagoo/norm)
 
 You can install them manually or by using [Nimble](https://github.com/nim-lang/nimble).
 In that second option, type `nimble install https://github.com/thindil/nish` to
