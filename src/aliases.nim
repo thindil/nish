@@ -41,12 +41,17 @@ import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables
 
 type Alias* {.tableName: "aliases".} = ref object of Model
-  name*: string
-  path*: string
+  name*: LimitedString
+  path*: LimitedString
   recursive*: bool
-  commands*: string
-  description*: string
-  output*: string
+  commands*: LimitedString
+  description*: LimitedString
+  output*: LimitedString
+
+func dbType*(T: typedesc[LimitedString]): string = "TEXT"
+func dbValue*(val: LimitedString): DbValue = dbValue($val)
+proc to*(dbVal: DbValue, T: typedesc[LimitedString]): T = initLimitedString(
+    capacity: dbVal.s.len, text: dbVal.s)
 
 const aliasesCommands*: array[5, string] = ["list", "delete", "show", "add", "edit"]
   ## The list of available subcommands for command alias
@@ -742,9 +747,9 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 
 proc newAlias*(name, path, commands, description: LimitedString = emptyLimitedString();
     recursive: bool = true; output: LimitedString = initLimitedString(
-    capacity = maxInputLength, text = "output")): Alias =
-  Alias(name: $name, path: $path, commands: $commands, description: $description,
-      recursive: recursive, output: $output)
+    capacity = 6, text = "output")): Alias =
+  Alias(name: name, path: path, commands: commands, description: description,
+      recursive: recursive, output: output)
 
 proc createAliasesDb*(db: sqlite.DbConn): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
