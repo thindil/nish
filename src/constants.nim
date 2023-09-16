@@ -29,6 +29,7 @@
 import std/[os, tables]
 # External modules imports
 import contracts
+import norm/sqlite
 # Internal imports
 import lstring
 
@@ -84,3 +85,13 @@ proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
           setCurrentDir(newDir = result)
         except OSError:
           discard
+
+func dbType*(T: typedesc[LimitedString]): string =
+  return "TEXT"
+
+func dbValue*(val: LimitedString): DbValue =
+  return dbValue($val)
+
+proc to*(dbVal: DbValue, T: typedesc[LimitedString]): T =
+  return initLimitedString(capacity: dbVal.s.len, text: dbVal.s)
+

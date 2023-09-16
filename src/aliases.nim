@@ -48,11 +48,6 @@ type Alias* {.tableName: "aliases".} = ref object of Model
   description*: LimitedString
   output*: LimitedString
 
-func dbType*(T: typedesc[LimitedString]): string = "VARCHAR(" & $maxInputLength & ")"
-func dbValue*(val: LimitedString): DbValue = dbValue($val)
-proc to*(dbVal: DbValue, T: typedesc[LimitedString]): T = initLimitedString(
-    capacity: dbVal.s.len, text: dbVal.s)
-
 const aliasesCommands*: array[5, string] = ["list", "delete", "show", "add", "edit"]
   ## The list of available subcommands for command alias
 
