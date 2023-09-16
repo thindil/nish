@@ -742,9 +742,11 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 
 proc newAlias*(name, path, commands, description: LimitedString = emptyLimitedString();
     recursive: bool = true; output: LimitedString = initLimitedString(
-    capacity = 6, text = "output")): Alias =
-  Alias(name: name, path: path, commands: commands, description: description,
-      recursive: recursive, output: output)
+    capacity = 6, text = "output")): Alias {.raises: [], tags: [],
+    contractual.} =
+  body:
+    Alias(name: name, path: path, commands: commands, description: description,
+        recursive: recursive, output: output)
 
 proc createAliasesDb*(db: sqlite.DbConn): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
