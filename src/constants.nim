@@ -86,6 +86,7 @@ proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
         except OSError:
           discard
 
+{.push ruleOff: "paramsUsed".}
 proc dbType*(T: typedesc[LimitedString]): string {.raises: [], tags: [],
     contractual.} =
   ## Get the type of database's field for LimitedString fields
@@ -95,6 +96,7 @@ proc dbType*(T: typedesc[LimitedString]): string {.raises: [], tags: [],
   ## Returns string with the type of the database's field for the selected type.
   body:
     return "TEXT"
+{.pop ruleOff: "paramsUsed".}
 
 proc dbValue*(val: LimitedString): DbValue {.raises: [], tags: [],
     contractual.} =
