@@ -28,7 +28,7 @@
 # Standard library imports
 import std/[os, tables]
 # External modules imports
-import contracts
+import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
 import lstring
@@ -88,16 +88,32 @@ proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
 
 proc dbType*(T: typedesc[LimitedString]): string {.raises: [], tags: [],
     contractual.} =
+  ## Get the type of database's field for LimitedString fields
+  ##
+  ## * T - the type of the object field for which the database type will be get
+  ##
+  ## Returns string with the type of the database's field for the selected type.
   body:
     return "TEXT"
 
 proc dbValue*(val: LimitedString): DbValue {.raises: [], tags: [],
     contractual.} =
+  ## Get the value of LimitedString for the database
+  ##
+  ## * val - the value which will be converted to the database's value
+  ##
+  ## Returns the database value of the LimitedString variable
   body:
-    return dbValue($val)
+    return dbValue(v = $val)
 
 proc to*(dbVal: DbValue, T: typedesc[LimitedString]): T {.raises: [], tags: [],
     contractual.} =
+  ## Convert the database's value to LimitedString value
+  ##
+  ## * dbVal - the value which will be converted to LimitedString
+  ## * T     - the type to which the value will be converted
+  ##
+  ## Returns LimitedString with the value from the database
   body:
     return initLimitedString(capacity: dbVal.s.len, text: dbVal.s)
 
