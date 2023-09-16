@@ -36,7 +36,7 @@ else:
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 # Internal imports
-import commandslist, constants, help, input, lstring, output, resultcode
+import commandslist, constants, help, lstring, output, resultcode
 
 const optionsCommands*: array[3, string] = ["list", "set", "reset"]
   ## The list of available subcommands for command options

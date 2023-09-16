@@ -36,7 +36,7 @@ else:
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer
 # Internal imports
-import commandslist, helpcontent, constants, input, lstring, output, resultcode
+import commandslist, helpcontent, constants, lstring, output, resultcode
 
 using db: DbConn # Connection to the shell's database
 

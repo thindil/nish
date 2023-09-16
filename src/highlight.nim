@@ -35,7 +35,7 @@ else:
 # External modules imports
 import contracts
 # Internal imports
-import commandslist, constants, input, lstring, output, prompt, resultcode
+import commandslist, constants, lstring, output, prompt, resultcode
 
 proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     commands: ref Table[string, CommandData]; aliases: ref AliasesList;

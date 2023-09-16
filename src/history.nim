@@ -37,7 +37,7 @@ else:
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 # Internal imports
-import commandslist, constants, help, input, lstring, output, resultcode
+import commandslist, constants, help, lstring, output, resultcode
 
 const historyCommands*: array[3, string] = ["clear", "list", "find"]
   ## The list of available subcommands for command history

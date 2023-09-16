@@ -37,7 +37,7 @@ else:
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 # Internal imports
-import commandslist, constants, databaseid, help, input, lstring, options,
+import commandslist, constants, databaseid, help, lstring, options,
     output, resultcode
 
 const
