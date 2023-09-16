@@ -86,12 +86,18 @@ proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
         except OSError:
           discard
 
-func dbType*(T: typedesc[LimitedString]): string =
-  return "TEXT"
+proc dbType*(T: typedesc[LimitedString]): string {.raises: [], tags: [],
+    contractual.} =
+  body:
+    return "TEXT"
 
-func dbValue*(val: LimitedString): DbValue =
-  return dbValue($val)
+proc dbValue*(val: LimitedString): DbValue {.raises: [], tags: [],
+    contractual.} =
+  body:
+    return dbValue($val)
 
-proc to*(dbVal: DbValue, T: typedesc[LimitedString]): T =
-  return initLimitedString(capacity: dbVal.s.len, text: dbVal.s)
+proc to*(dbVal: DbValue, T: typedesc[LimitedString]): T {.raises: [], tags: [],
+    contractual.} =
+  body:
+    return initLimitedString(capacity: dbVal.s.len, text: dbVal.s)
 
