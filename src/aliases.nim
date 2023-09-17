@@ -773,7 +773,7 @@ proc createAliasesDb*(db: sqlite.DbConn): ResultCode {.gcsafe, sideEffect,
     db != nil
   body:
     try:
-      db.createTables(newAlias())
+      db.createTables(obj = newAlias())
     except DBError, ValueError, CapacityError:
       return showError(message = "Can't create 'aliases' table. Reason: ",
           e = getCurrentException())
