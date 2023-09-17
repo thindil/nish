@@ -744,6 +744,18 @@ proc newAlias*(name, path, commands, description: LimitedString = emptyLimitedSt
     recursive: bool = true; output: LimitedString = initLimitedString(
     capacity = 6, text = "output")): Alias {.raises: [], tags: [],
     contractual.} =
+  ## Create a new data structure for the shell's alias.
+  ##
+  ## * name        - the name of the alias. Must be unique
+  ## * path        - the path in which the alias will work
+  ## * commands    - the commands to execute by the alias
+  ## * description - the description of the alias
+  ## * recursive   - if true, the alias should work in children directories
+  ##                 of the path too. Default value is true
+  ## * output      - where to redirect the output of the alias' commands.
+  ##                 Default value is the standard output
+  ##
+  ## Returns the new data structure for the selected shell's alias.
   body:
     Alias(name: name, path: path, commands: commands, description: description,
         recursive: recursive, output: output)
