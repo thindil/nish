@@ -2,7 +2,7 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[input, lstring]
+import ../../src/[constants, lstring]
 
 block:
   var testString: LimitedString = initLimitedString(capacity = 14, text = "test")
