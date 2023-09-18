@@ -40,7 +40,7 @@ jobs:
          path: nimalyzer.log
 
     - name: Run tests
-      run: nimble tests -y
+      run: nimble test -y
 
   build_linux:
     needs: tests
@@ -65,7 +65,7 @@ jobs:
 
   build_freebsd:
     needs: tests
-    runs-on: macos-12
+    runs-on: macos-latest
     timeout-minutes: 30
 
     steps:
@@ -79,6 +79,7 @@ jobs:
         operating_system: freebsd
         architecture: x86-64
         version: '13.2'
+        hypervisor: 'qemu'
         run: |
           sudo sed -i '' -e 's/quarterly/latest/g' /etc/pkg/FreeBSD.conf
           sudo pkg install -y git nimble
