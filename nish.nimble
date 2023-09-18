@@ -37,7 +37,7 @@ task release, "builds the project in release mode":
   exec "nim c -d:release --passc:-flto --passl:-s --outdir:" & binDir & " " &
       srcDir & DirSep & "nish.nim"
 
-task tests, "run the project unit tests":
+task test, "run the project unit tests":
   exec "nimassets -d=help -o=" & srcDir & DirSep & "helpcontent.nim"
   exec "testament all"
 
