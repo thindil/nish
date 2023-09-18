@@ -56,4 +56,7 @@ try:
 except PreConditionDefect:
   discard
 
+let newAlias = newAlias(name = initLimitedString(capacity = 3, text = "ala"))
+assert $newAlias.name == "ala", "Failed to set a new alias."
+
 quitShell(ResultCode(QuitSuccess), db)
