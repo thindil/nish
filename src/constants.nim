@@ -117,5 +117,8 @@ proc to*(dbVal: DbValue, T: typedesc[LimitedString]): T {.raises: [], tags: [],
   ##
   ## Returns LimitedString with the value from the database
   body:
-    return initLimitedString(capacity: dbVal.s.len, text: dbVal.s)
+    try:
+      return initLimitedString(capacity = dbVal.s.len, text = dbVal.s)
+    except CapacityError:
+      return emptyLimitedString()
 
