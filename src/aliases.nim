@@ -70,9 +70,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
     directory.len > 0
     db != nil
   body:
-    {.warning[ProveInit]: off.}
     aliases.clear
-    {.warning[ProveInit]: on.}
     var
       dbQuery: string = "SELECT id, name FROM aliases WHERE path='" &
           directory & "'"
@@ -86,19 +84,20 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
       remainingDirectory = parentDir(path = $remainingDirectory).DirectoryPath
     dbQuery.add(y = " ORDER BY id ASC")
     # Set the aliases
+    type LocalAlias = ref object
+      id: Positive = 1
+      name: string
+    var dbAliases: seq[LocalAlias] = @[LocalAlias()]
     try:
-      for dbResult in db_sqlite.fastRows(db = db, query = sql(query = dbQuery)):
+      db.rawSelect(qry = dbQuery, objs = dbAliases)
+      for dbResult in dbAliases:
         let index: LimitedString = try:
-            initLimitedString(capacity = maxInputLength, text = dbResult[1])
+            initLimitedString(capacity = maxInputLength, text = dbResult.name)
           except CapacityError:
-            showError(message = "Can't set index from " & dbResult[1])
+            showError(message = "Can't set index from " & dbResult.name)
             return
-        try:
-          aliases[index] = parseInt(s = dbResult[0])
-        except ValueError:
-          showError(message = "Can't set alias, invalid Id: " &
-              dbResult[0])
-    except DbError:
+        aliases[index] = dbResult.id
+    except:
       showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
 
