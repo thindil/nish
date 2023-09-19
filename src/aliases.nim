@@ -733,8 +733,7 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(query = """ALTER TABLE aliases ADD output VARCHAR(""" & $maxInputLength &
-                  """) NOT NULL DEFAULT 'stdout'"""))
+      sqlite.exec(db = db, query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
