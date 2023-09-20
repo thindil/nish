@@ -134,9 +134,7 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
-    {.ruleOff: "varDeclared".}
-    var table: TerminalTable
-    {.ruleOn: "varDeclared".}
+    var table: TerminalTable = TerminalTable()
     try:
       table.add(parts = [magenta(ss = "Name"), magenta(ss = "Value"), magenta(
           ss = "Default"), magenta(ss = "Type"), magenta(ss = "Description")])

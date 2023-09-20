@@ -336,10 +336,8 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
             # If Tab pressed the first time, show the list of completion
             if not completionMode:
               stdout.writeLine(x = "")
-              {.ruleOff: "varDeclared".}
-              var table: TerminalTable
-              {.ruleOn: "varDeclared".}
               var
+                table: TerminalTable = TerminalTable()
                 row: seq[string] = @[]
                 amount, line: Natural = 0
               for completion in completions:

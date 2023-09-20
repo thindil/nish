@@ -134,9 +134,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       require:
         keys.len > 0
       body:
-        {.ruleOff: "varDeclared".}
-        var table: TerminalTable
-        {.ruleOn: "varDeclared".}
+        var table: TerminalTable = TerminalTable()
         var
           i: Positive = 1
           row: string = ""

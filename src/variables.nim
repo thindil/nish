@@ -207,9 +207,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.len > 0
     db != nil
   body:
-    {.ruleOff: "varDeclared".}
-    var table: TerminalTable
-    {.ruleOn: "varDeclared".}
+    var table: TerminalTable = TerminalTable()
     try:
       table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(
           ss = "Value"), magenta(ss = "Description")])

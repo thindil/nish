@@ -658,9 +658,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 3
     db != nil
   body:
-    {.ruleOff: "varDeclared".}
-    var table: TerminalTable
-    {.ruleOn: "varDeclared".}
+    var table: TerminalTable = TerminalTable()
     # Show the list of all installed plugins with information about their state
     if arguments == "list all":
       try:
@@ -740,9 +738,7 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     if row[0] == "":
       return showError(message = "The plugin with the ID: " & $id &
         " doesn't exists.")
-    {.ruleOff: "varDeclared".}
-    var table: TerminalTable
-    {.ruleOn: "varDeclared".}
+    var table: TerminalTable = TerminalTable()
     try:
       table.add(parts = [magenta(ss = "Id:"), $id])
       table.add(parts = [magenta(ss = "Path"), row[0]])

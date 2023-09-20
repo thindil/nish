@@ -35,7 +35,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, nimalyzer, termstyle
+import ansiparse, contracts, nancy, termstyle
 # Internal imports
 import commandslist, constants, help, lstring, output, resultcode
 
@@ -241,9 +241,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
         of "recentamount": "lastused " & historyDirection & ", amount " & historyDirection
         else:
           return showError(message = "Unknown type of history sort order")
-    {.ruleOff: "varDeclared".}
-    var table: TerminalTable
-    {.ruleOn: "varDeclared".}
+    var table: TerminalTable = TerminalTable()
     try:
       table.add(parts = [magenta(ss = "Last used"), magenta(ss = "Times"),
           magenta(ss = "Command")])
@@ -288,9 +286,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       return showError(message = "You have to enter a search term for which you want to look in the history.")
     let searchTerm: string = searchFor[5..^1]
     searchFor = replace(s = searchTerm, sub = '*', by = '%')
-    {.ruleOff: "varDeclared".}
-    var table: TerminalTable
-    {.ruleOn: "varDeclared".}
+    var table: TerminalTable = TerminalTable()
     try:
       result = QuitFailure.ResultCode
       let maxRows: int = db.getValue(query = sql(

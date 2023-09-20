@@ -138,9 +138,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
           query = "SELECT value FROM options WHERE option='outputHeaders'"))
       if headerType == "hidden":
         return
-      {.ruleOff: "varDeclared".}
-      var table: TerminalTable
-      {.ruleOn: "varDeclared".}
+      var table: TerminalTable = TerminalTable()
       table.add(parts = yellow(ss = message.center(width = width.int)))
       case headerType
       of "unicode":

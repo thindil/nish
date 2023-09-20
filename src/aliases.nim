@@ -117,9 +117,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     arguments.startsWith(prefix = "list")
     db != nil
   body:
-    {.ruleOff: "varDeclared".}
-    var table: TerminalTable
-    {.ruleOn: "varDeclared".}
+    var table: TerminalTable = TerminalTable()
     try:
       table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(
           ss = "Description")])
@@ -230,9 +228,7 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     if row[0] == "":
       return showError(message = "The alias with the ID: " & $id &
         " doesn't exists.")
-    {.ruleOff: "varDeclared".}
-    var table: TerminalTable
-    {.ruleOn: "varDeclared".}
+    var table: TerminalTable = TerminalTable()
     try:
       table.add(parts = [magenta(ss = "Id:"), $id])
       table.add(parts = [magenta(ss = "Name:"), row[0]])
