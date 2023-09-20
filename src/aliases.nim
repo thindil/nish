@@ -41,12 +41,12 @@ import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables
 
 type Alias* {.tableName: "aliases".} = ref object of Model
-  name* {.unique.}: LimitedString
-  path*: LimitedString
+  name* {.unique.}: string
+  path*: string
   recursive*: bool
-  commands*: LimitedString
-  description*: LimitedString
-  output*: LimitedString
+  commands*: string
+  description*: string
+  output*: string
 
 const aliasesCommands*: array[5, string] = ["list", "delete", "show", "add", "edit"]
   ## The list of available subcommands for command alias
@@ -734,14 +734,9 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc newAlias*(name: LimitedString = initLimitedString(capacity = maxNameLength,
-    text = ""); path: LimitedString = initLimitedString(
-    capacity = maxInputLength, text = "");
-    commands: LimitedString = initLimitedString(capacity = maxInputLength,
-    text = ""); description: LimitedString = initLimitedString(
-    capacity = maxInputLength, text = ""); recursive: bool = true;
-    output: LimitedString = initLimitedString(capacity = 6,
-    text = "output")): Alias {.raises: [], tags: [], contractual.} =
+proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
+    description: string = ""; recursive: bool = true;
+    output: string = "output"): Alias {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's alias.
   ##
   ## * name        - the name of the alias. Must be unique
