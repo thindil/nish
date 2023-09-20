@@ -738,10 +738,12 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc newAlias*(name: LimitedString = emptyLimitedString();
-    path: LimitedString = emptyLimitedString();
-    commands: LimitedString = emptyLimitedString();
-    description: LimitedString = emptyLimitedString(); recursive: bool = true;
+proc newAlias*(name: LimitedString = initLimitedString(capacity = maxNameLength,
+    text = ""); path: LimitedString = initLimitedString(
+    capacity = maxInputLength, text = "");
+    commands: LimitedString = initLimitedString(capacity = maxInputLength,
+    text = ""); description: LimitedString = initLimitedString(
+    capacity = maxInputLength, text = ""); recursive: bool = true;
     output: LimitedString = initLimitedString(capacity = 6,
     text = "output")): Alias {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's alias.
