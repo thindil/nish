@@ -169,6 +169,25 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
+proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
+    description: string = ""; recursive: bool = true;
+    output: string = "output"): Alias {.raises: [], tags: [], contractual.} =
+  ## Create a new data structure for the shell's alias.
+  ##
+  ## * name        - the name of the alias. Must be unique
+  ## * path        - the path in which the alias will work
+  ## * commands    - the commands to execute by the alias
+  ## * description - the description of the alias
+  ## * recursive   - if true, the alias should work in children directories
+  ##                 of the path too. Default value is true
+  ## * output      - where to redirect the output of the alias' commands.
+  ##                 Default value is the standard output
+  ##
+  ## Returns the new data structure for the selected shell's alias.
+  body:
+    Alias(name: name, path: path, commands: commands, description: description,
+        recursive: recursive, output: output)
+
 proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
@@ -192,11 +211,13 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       except ValueError:
         return showError(message = "The Id of the alias must be a positive number.")
     try:
-      if db_sqlite.execAffectedRows(db = db, query = sql(
-          query = "DELETE FROM aliases WHERE id=?"), args = id.int) == 0:
+      var aliasToDelete: Alias = newAlias()
+      db.select(obj = aliasToDelete, cond = "id=?", params = $id)
+      if aliasToDelete.name.len == 0:
         return showError(message = "The alias with the Id: " & $id &
           " doesn't exists.")
-    except DbError:
+      db.delete(obj = aliasToDelete)
+    except:
       return showError(message = "Can't delete alias from database. Reason: ",
           e = getCurrentException())
     try:
@@ -743,25 +764,6 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
-
-proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
-    description: string = ""; recursive: bool = true;
-    output: string = "output"): Alias {.raises: [], tags: [], contractual.} =
-  ## Create a new data structure for the shell's alias.
-  ##
-  ## * name        - the name of the alias. Must be unique
-  ## * path        - the path in which the alias will work
-  ## * commands    - the commands to execute by the alias
-  ## * description - the description of the alias
-  ## * recursive   - if true, the alias should work in children directories
-  ##                 of the path too. Default value is true
-  ## * output      - where to redirect the output of the alias' commands.
-  ##                 Default value is the standard output
-  ##
-  ## Returns the new data structure for the selected shell's alias.
-  body:
-    Alias(name: name, path: path, commands: commands, description: description,
-        recursive: recursive, output: output)
 
 proc createAliasesDb*(db: sqlite.DbConn): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
