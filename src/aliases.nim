@@ -121,40 +121,50 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     try:
       table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(
           ss = "Description")])
-    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+    except:
       return showError(message = "Can't show aliases list. Reason: ",
           e = getCurrentException())
-    # If there are no aliases, show only the message and quit
-    if aliases.len == 0:
-      showOutput(message = "There are no defined shell's aliases.")
-      return QuitSuccess.ResultCode
+    type LocalAlias = ref object
+      id: Positive = 1
+      name: string
+      description: string
+    var dbAliases: seq[LocalAlias] = @[LocalAlias()]
     # Show all available aliases declared in the shell
     if arguments == "list all":
       try:
-        for row in db_sqlite.fastRows(db = db, query = sql(
-            query = "SELECT id, name, description FROM aliases")):
-          table.add(parts = [row[0], row[1], row[2]])
-      except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+        db.rawSelect(qry = "SELECT id, name, description FROM aliases",
+            objs = dbAliases)
+      except:
         return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
+      if dbAliases[0].name.len == 0:
+        showOutput(message = "There are no defined shell's aliases.")
+        return QuitSuccess.ResultCode
       showFormHeader(message = "All available aliases are:",
           width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount, db = db)
     # Show only aliases available in the current directory
     elif arguments[0 .. 3] == "list":
       for alias in aliases.values:
         try:
-          let row: db_sqlite.Row = db_sqlite.getRow(db = db, query = sql(
-              query = "SELECT id, name, description FROM aliases WHERE id=?"),
-            args = alias)
-          table.add(parts = [row[0], row[1], row[2]])
-        except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+          db.rawSelect(qry = "SELECT id, name, description FROM aliases WHERE id=?",
+              objs = dbAliases, params = alias)
+        except:
           return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
+      if dbAliases[0].name.len == 0:
+        showOutput(message = "There are no defined shell's aliases in the current directory.")
+        return QuitSuccess.ResultCode
       showFormHeader(message = "Available aliases are:",
           width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount, db = db)
     try:
+      for dbResult in dbAliases:
+        table.add(parts = [$dbResult.id, dbResult.name, dbResult.description])
+    except:
+      return showError(message = "Can't add an alias to the list. Reason:",
+          e = getCurrentException())
+    try:
       table.echoTable
-    except IOError, Exception:
+    except:
       return showError(message = "Can't show the list of aliases. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
