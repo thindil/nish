@@ -137,7 +137,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       except:
         return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException())
-      if dbAliases[0].name.len == 0:
+      if dbAliases.len == 0:
         showOutput(message = "There are no defined shell's aliases.")
         return QuitSuccess.ResultCode
       showFormHeader(message = "All available aliases are:",
