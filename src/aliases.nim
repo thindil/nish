@@ -211,12 +211,12 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
       except ValueError:
         return showError(message = "The Id of the alias must be a positive number.")
     try:
-      var aliasToDelete: Alias = newAlias()
-      db.select(obj = aliasToDelete, cond = "id=?", params = $id)
-      if aliasToDelete.name.len == 0:
+      var alias: Alias = newAlias()
+      db.select(obj = alias, cond = "id=?", params = $id)
+      if alias.name.len == 0:
         return showError(message = "The alias with the Id: " & $id &
           " doesn't exists.")
-      db.delete(obj = aliasToDelete)
+      db.delete(obj = alias)
     except:
       return showError(message = "Can't delete alias from database. Reason: ",
           e = getCurrentException())
