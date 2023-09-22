@@ -415,17 +415,23 @@ proc editOrAddAlias*(arguments; aliases; db;
     arguments.len > 3
     db != nil
   body:
-    if arguments.len < 6:
-      return showError(message = "Enter the ID of the alias to edit.")
-    let id: DatabaseId = try:
-        parseInt(s = $arguments[5 .. ^1]).DatabaseId
+    var
+      alias: Alias = newAlias()
+      id: DatabaseId = 0.DatabaseId
+    if editing:
+      if arguments.len < 6:
+        return showError(message = "Enter the ID of the alias to edit.")
+      try:
+        id = parseInt(s = $arguments[5 .. ^1]).DatabaseId
       except ValueError:
         return showError(message = "The Id of the alias must be a positive number.")
-    let row: db_sqlite.Row = try:
-          db.getRow(query = sql(query = "SELECT name, path, commands, description, output FROM aliases WHERE id=?"), args = id)
-      except DbError:
-        return showError(message = "The alias with the ID: " & $id & " doesn't exists.")
-    if editing:
+      try:
+        db.select(obj = alias, cond = "id=?", params = $id)
+      except:
+        return showError(message = "Can't check if the alias exists.")
+      if alias.name.len == 0:
+        return showError(message = "The alias with the Id: " & $id &
+          " doesn't exists.")
       showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
     else:
       showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word 'exit' as an answer.")
@@ -434,7 +440,7 @@ proc editOrAddAlias*(arguments; aliases; db;
     if editing:
       showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
           newLine = false)
-      showOutput(message = row[0], newLine = false, fgColor = fgMagenta)
+      showOutput(message = alias.name, newLine = false, fgColor = fgMagenta)
       showOutput(message = "'. Can contains only letters, numbers and underscores.")
     else:
       showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
@@ -447,14 +453,14 @@ proc editOrAddAlias*(arguments; aliases; db;
       return showError(message = "Editing the alias cancelled.")
     elif name == "":
       try:
-        name.text = row[0]
+        name.text = alias.name
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
     # Set the description for the alias
     showFormHeader(message = "(2/6) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
         newLine = false)
-    showOutput(message = row[3], newLine = false, fgColor = fgMagenta)
+    showOutput(message = alias.description, newLine = false, fgColor = fgMagenta)
     showOutput(message = "'. Can't contains a new line character.: ")
     showOutput(message = "Description: ", newLine = false)
     var description: UserInput = readInput()
@@ -462,14 +468,14 @@ proc editOrAddAlias*(arguments; aliases; db;
       return showError(message = "Editing the alias cancelled.")
     elif description == "":
       try:
-        description.text = row[3]
+        description.text = alias.description
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
     # Set the working directory for the alias
     showFormHeader(message = "(3/6) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
         newLine = false)
-    showOutput(message = row[1], newLine = false, fgColor = fgMagenta)
+    showOutput(message = alias.path, newLine = false, fgColor = fgMagenta)
     showOutput(message = "'. Must be a path to the existing directory.")
     var path: DirectoryPath = ($readInput()).DirectoryPath
     while path.len > 0 and (path != "exit" and not dirExists(dir = $path)):
@@ -478,7 +484,7 @@ proc editOrAddAlias*(arguments; aliases; db;
     if path == "exit":
       return showError(message = "Editing the alias cancelled.")
     elif path == "":
-      path = row[1].DirectoryPath
+      path = alias.path.DirectoryPath
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
@@ -501,7 +507,7 @@ proc editOrAddAlias*(arguments; aliases; db;
     showFormHeader(message = "(5/6) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
         newLine = false)
-    showOutput(message = row[2], newLine = false, fgColor = fgMagenta)
+    showOutput(message = alias.commands, newLine = false, fgColor = fgMagenta)
     showOutput(message = "'. Commands can't contain a new line character.:")
     showOutput(message = "Commands: ", newLine = false)
     var commands: UserInput = readInput()
@@ -509,14 +515,14 @@ proc editOrAddAlias*(arguments; aliases; db;
       return showError(message = "Editing the alias cancelled.")
     elif commands == "":
       try:
-        commands.text = row[2]
+        commands.text = alias.commands
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
     # Set the destination for the alias' output
     showFormHeader(message = "(6/6) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
         newLine = false)
-    showOutput(message = row[4], newLine = false, fgColor = fgMagenta)
+    showOutput(message = alias.output, newLine = false, fgColor = fgMagenta)
     showOutput(message = "':")
     showOutput(message = "Output to: ", newLine = false)
     var output: UserInput = readInput()
@@ -524,14 +530,17 @@ proc editOrAddAlias*(arguments; aliases; db;
       return showError(message = "Editing the alias cancelled.")
     elif output == "":
       try:
-        output.text = row[4]
+        output.text = alias.output
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
     # Save the alias to the database
     try:
-      var alias: Alias = newAlias(name = $name, path = $path,
-          recursive = recursive == 1, commands = $commands,
-          description = $description, output = $output)
+      alias.name = $name
+      alias.path = $path
+      alias.recursive = recursive == 1
+      alias.commands = $commands
+      alias.description = $description
+      alias.output = $output
       db.update(obj = alias)
     except:
       return showError(message = "Can't update the alias. Reason: ",
@@ -542,8 +551,9 @@ proc editOrAddAlias*(arguments; aliases; db;
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
-    showOutput(message = "The alias  with Id: '" & $id & "' edited.",
-        fgColor = fgGreen)
+    if editing:
+      showOutput(message = "The alias  with Id: '" & $id & "' edited.",
+          fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
 proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
