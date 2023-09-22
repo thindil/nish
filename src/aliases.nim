@@ -398,9 +398,10 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc editOrAddAlias*(arguments; aliases; db; editing: bool): ResultCode {.sideEffect,
-    raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc editOrAddAlias*(arguments; aliases; db;
+    editing: bool): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
+    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
+    RootEffect], contractual.} =
   ## Edit the selected alias or add a new one
   ##
   ## * arguments - the user entered text with arguments for the editing alias
@@ -569,9 +570,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           return showError(message = "Can't set alias index for " & aliasId)
       outputLocation: string = try:
         db_sqlite.getValue(db = db, query = sql(
-            query = "SELECT output FROM aliases WHERE id=?"),
-
-args = aliases[aliasIndex])
+            query = "SELECT output FROM aliases WHERE id=?"), args = aliases[aliasIndex])
       except KeyError, DbError:
         return showError(message = "Can't get output for alias. Reason: ",
             e = getCurrentException())
@@ -584,8 +583,7 @@ args = aliases[aliasIndex])
       inputString: string = try:
           db_sqlite.getValue(db = db, query = sql(
               query = "SELECT commands FROM aliases WHERE id=?"),
-
-args = aliases[aliasIndex])
+              args = aliases[aliasIndex])
         except KeyError, DbError:
           return showError(message = "Can't get commands for alias. Reason: ",
               e = getCurrentException())
@@ -726,7 +724,8 @@ proc initAliases*(db; aliases: ref AliasesList;
           return addAlias(aliases = aliases, db = db)
         # Edit the selected alias
         elif arguments.startsWith(prefix = "edit"):
-          return editOrAddAlias(arguments = arguments, aliases = aliases, db = db, editing = true)
+          return editOrAddAlias(arguments = arguments, aliases = aliases,
+              db = db, editing = true)
         {.ruleOn: "ifStatements".}
         try:
           return showUnknownHelp(subCommand = arguments,
