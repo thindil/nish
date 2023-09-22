@@ -34,7 +34,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, nimalyzer, termstyle
+import contracts, nancy, nimalyzer, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
@@ -249,32 +249,29 @@ proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Enter the ID of the alias to show.")
     let id: DatabaseId = try:
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
-      except ValueError:
+      except:
         return showError(message = "The Id of the alias must be a positive number.")
-    let row: db_sqlite.Row = try:
-          db.getRow(query = sql(query = "SELECT name, commands, description, path, recursive, output FROM aliases WHERE id=?"), args = id)
-      except DbError:
-        return showError(message = "Can't read alias data from database. Reason: ",
-            e = getCurrentException())
-    if row[0] == "":
-      return showError(message = "The alias with the ID: " & $id &
-        " doesn't exists.")
+    var alias: Alias = newAlias()
+    try:
+      if not db.exists(T = Alias, cond = "id=?", params = $id):
+        return showError(message = "The alias with the ID: " & $id &
+          " doesn't exists.")
+      db.select(obj = alias, cond = "id=?", params = $id)
+    except:
+      return showError(message = "Can't read alias data from database. Reason: ",
+          e = getCurrentException())
     var table: TerminalTable = TerminalTable()
     try:
       table.add(parts = [magenta(ss = "Id:"), $id])
-      table.add(parts = [magenta(ss = "Name:"), row[0]])
-      table.add(parts = [magenta(ss = "Description:"), (if row[2].len > 0: row[
-          2] else: "(none)")])
-      table.add(parts = [magenta(ss = "Path:"), row[3] & (if row[4] ==
-          "1": " (recursive)" else: "")])
-      table.add(parts = [magenta(ss = "Command(s):"), row[1]])
-      table.add(parts = [magenta(ss = "Output to:"), row[5]])
-    except UnknownEscapeError, InsufficientInputError, FinalByteError:
-      return showError(message = "Can't show alias. Reason: ",
-          e = getCurrentException())
-    try:
+      table.add(parts = [magenta(ss = "Name:"), alias.name])
+      table.add(parts = [magenta(ss = "Description:"), (
+          if alias.description.len > 0: alias.description else: "(none)")])
+      table.add(parts = [magenta(ss = "Path:"), alias.path & (
+          if alias.recursive: " (recursive)" else: "")])
+      table.add(parts = [magenta(ss = "Command(s):"), alias.commands])
+      table.add(parts = [magenta(ss = "Output to:"), alias.output])
       table.echoTable
-    except IOError, Exception:
+    except:
       return showError(message = "Can't show alias. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
