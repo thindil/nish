@@ -521,13 +521,12 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect,
         return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
     # Save the alias to the database
     try:
-      if db.execAffectedRows(query = sql(
-          query = "UPDATE aliases SET name=?, path=?, recursive=?, commands=?, description=?, output=? where id=?"),
-           args = [$name, $path, $recursive, $commands, $description, $output,
-               $id]) != 1:
-        return showError(message = "Can't edit the alias.")
-    except DbError:
-      return showError(message = "Can't save the alias to database. Reason: ",
+      var alias: Alias = newAlias(name = $name, path = $path,
+          recursive = recursive == 1, commands = $commands,
+          description = $description, output = $output)
+      db.update(obj = alias)
+    except:
+      return showError(message = "Can't update the alias. Reason: ",
           e = getCurrentException())
     # Refresh the list of available aliases
     try:
