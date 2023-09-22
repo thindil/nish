@@ -372,21 +372,20 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
         output.text = "stdout"
       except CapacityError:
         return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
+    var alias: Alias = newAlias(name = $name, path = $path,
+        recursive = recursive == 1, commands = $commands,
+        description = $description, output = $output)
     # Check if alias with the same parameters exists in the database
     try:
-      if db.getValue(query = sql(query = "SELECT id FROM aliases WHERE name=? AND path=? AND recursive=? AND commands=?"),
-          args = [$name, $path, $recursive, $commands]).len > 0:
-        return showError(message = "There is an alias with the same name, path and commands in the database.")
-    except DbError:
+      if db.exists(T = Alias, cond = "name=?", params = alias.name):
+        return showError(message = "There is an alias with the same name in the database.")
+    except:
       return showError(message = "Can't check if the similar alias exists. Reason: ",
           e = getCurrentException())
     # Save the alias to the database
     try:
-      if db.tryInsertID(query = sql(query = "INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)"),
-          args = [$name, $path, $recursive, $commands, $description,
-          $output]) == -1:
-        return showError(message = "Can't add alias.")
-    except DbError:
+      db.insert(obj = alias)
+    except:
       return showError(message = "Can't add the alias to the database. Reason: ",
           e = getCurrentException())
     # Refresh the list of available aliases
