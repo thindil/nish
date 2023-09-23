@@ -34,7 +34,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import contracts, nancy, nimalyzer, termstyle
+import contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
@@ -706,27 +706,25 @@ proc initAliases*(db; aliases: ref AliasesList;
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
-        {.ruleOff: "ifStatements".}
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "alias",
               subcommands = aliasesCommands)
         # Show the list of available aliases
-        elif arguments.startsWith(prefix = "list"):
+        if arguments.startsWith(prefix = "list"):
           return listAliases(arguments = arguments, aliases = aliases, db = db)
         # Delete the selected alias
-        elif arguments.startsWith(prefix = "delete"):
+        if arguments.startsWith(prefix = "delete"):
           return deleteAlias(arguments = arguments, aliases = aliases, db = db)
         # Show the selected alias
-        elif arguments.startsWith(prefix = "show"):
+        if arguments.startsWith(prefix = "show"):
           return showAlias(arguments = arguments, db = db)
         # Add a new alias
-        elif arguments.startsWith(prefix = "add"):
+        if arguments.startsWith(prefix = "add"):
           return addAlias(aliases = aliases, db = db)
         # Edit the selected alias
-        elif arguments.startsWith(prefix = "edit"):
+        if arguments.startsWith(prefix = "edit"):
           return editAlias(arguments = arguments, aliases = aliases, db = db)
-        {.ruleOn: "ifStatements".}
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 5, text = "alias"),
