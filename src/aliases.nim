@@ -228,14 +228,13 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
     showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc showAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
-    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
   ## Show details about the selected alias, its ID, name, description and
   ## commands which will be executed
   ##
   ## * arguments - the user entered text with arguments for the showing alias
-  ## * aliases   - the list of aliases available in the current directory
   ## * db        - the connection to the shell's database
   ##
   ## Returns quitSuccess if the selected alias was properly show, otherwise
@@ -398,7 +397,9 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
+    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Edit the selected alias
   ##
   ## * arguments - the user entered text with arguments for the editing alias
@@ -450,7 +451,8 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [], ta
     showFormHeader(message = "(2/6) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
         newLine = false)
-    showOutput(message = alias.description, newLine = false, fgColor = fgMagenta)
+    showOutput(message = alias.description, newLine = false,
+        fgColor = fgMagenta)
     showOutput(message = "'. Can't contains a new line character.: ")
     showOutput(message = "Description: ", newLine = false)
     var description: UserInput = readInput()
@@ -717,7 +719,7 @@ proc initAliases*(db; aliases: ref AliasesList;
           return deleteAlias(arguments = arguments, aliases = aliases, db = db)
         # Show the selected alias
         elif arguments.startsWith(prefix = "show"):
-          return showAlias(arguments = arguments, aliases = aliases, db = db)
+          return showAlias(arguments = arguments, db = db)
         # Add a new alias
         elif arguments.startsWith(prefix = "add"):
           return addAlias(aliases = aliases, db = db)
