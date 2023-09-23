@@ -569,26 +569,22 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
           initLimitedString(capacity = maxInputLength, text = aliasId)
         except CapacityError:
           return showError(message = "Can't set alias index for " & aliasId)
-      outputLocation: string = try:
-        db_sqlite.getValue(db = db, query = sql(
-            query = "SELECT output FROM aliases WHERE id=?"), args = aliases[aliasIndex])
-      except KeyError, DbError:
-        return showError(message = "Can't get output for alias. Reason: ",
-            e = getCurrentException())
       currentDirectory: DirectoryPath = try:
           getCurrentDirectory().DirectoryPath
       except OSError:
         return showError(message = "Can't get current directory. Reason: ",
             e = getCurrentException())
-    var
-      inputString: string = try:
-          db_sqlite.getValue(db = db, query = sql(
-              query = "SELECT commands FROM aliases WHERE id=?"),
-              args = aliases[aliasIndex])
-        except KeyError, DbError:
-          return showError(message = "Can't get commands for alias. Reason: ",
-              e = getCurrentException())
-      commandArguments: seq[string] = (if arguments.len > 0: initOptParser(
+    type LocalAlias = ref object
+      output: string
+      commands: string
+    var alias: LocalAlias = LocalAlias()
+    try:
+      db.rawSelect(qry = "SELECT output, commands FROM aliases WHERE id=?",
+          obj = alias, params = aliases[aliasIndex])
+    except:
+      return showError(message = "Can't get information about the alias from the database. Reason:",
+          e = getCurrentException())
+    var commandArguments: seq[string] = (if arguments.len > 0: initOptParser(
           cmdline = $arguments).remainingArgs else: @[])
     # Add quotes to arguments which contains spaces
     for argument in commandArguments.mitems:
@@ -597,42 +593,42 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
     # Convert all $number in commands to arguments taken from the user
     # input
     var
-      argumentPosition: ExtendedNatural = inputString.find(sub = '$')
+      argumentPosition: ExtendedNatural = alias.commands.find(sub = '$')
     while argumentPosition > -1:
       var argumentNumber: Natural = try:
-          parseInt(s = inputString[argumentPosition + 1] & "")
+          parseInt(s = alias.commands[argumentPosition + 1] & "")
         except ValueError:
           0
       # Not enough argument entered by the user, quit with error
       if argumentNumber > commandArguments.len:
         return showError(message = "Not enough arguments entered")
       elif argumentNumber > 0:
-        inputString = inputString.replace(sub = inputString[
+        alias.commands = alias.commands.replace(sub = alias.commands[
           argumentPosition..argumentPosition + 1], by = commandArguments[
               argumentNumber - 1])
       else:
-        inputString = inputString.replace(sub = inputString[
+        alias.commands = alias.commands.replace(sub = alias.commands[
           argumentPosition..argumentPosition + 1], by = commandArguments.join(sep = " "))
-      argumentPosition = inputString.find(sub = '$', start = argumentPosition + 1)
+      argumentPosition = alias.commands.find(sub = '$', start = argumentPosition + 1)
     # If output location is set to file, create or open the file
     let outputFile: File = try:
-          (if outputLocation notin ["stdout", "stderr"]: open(
-              filename = outputLocation, mode = fmWrite) else: nil)
+          (if alias.output notin ["stdout", "stderr"]: open(
+              filename = alias.output, mode = fmWrite) else: nil)
         except IOError:
           return showError(message = "Can't open output file. Reason: ",
               e = getCurrentException())
     # Execute the selected alias
     var workingDir: string = ""
-    while inputString.len > 0:
+    while alias.commands.len > 0:
       var
         conjCommands: bool = false
-        userInput: OptParser = initOptParser(cmdline = inputString)
+        userInput: OptParser = initOptParser(cmdline = alias.commands)
         returnCode: int = QuitSuccess
         resultOutput: string = ""
       let
         command: UserInput = getArguments(userInput = userInput,
             conjCommands = conjCommands)
-      inputString = join(a = userInput.remainingArgs, sep = " ")
+      alias.commands = join(a = userInput.remainingArgs, sep = " ")
       try:
         # Threat cd command specially, it should just change the current
         # directory for the alias
@@ -643,7 +639,7 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
               db = db, oldDirectory = workingDir.DirectoryPath)
           aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
           continue
-        if outputLocation == "stdout":
+        if alias.output == "stdout":
           returnCode = execCmd(command = $command)
         else:
           (resultOutput, returnCode) = execCmdEx(command = $command)
