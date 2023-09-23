@@ -28,11 +28,6 @@
 
 # Standard library imports
 import std/[os, osproc, parseopt, strutils, tables, terminal]
-# Database library import, depends on version of Nim
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 # External modules imports
 import contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -52,7 +47,7 @@ const aliasesCommands*: array[5, string] = ["list", "delete", "show", "add", "ed
   ## The list of available subcommands for command alias
 
 using
-  db: db_sqlite.DbConn # Connection to the shell's database
+  db: DbConn # Connection to the shell's database
   aliases: ref AliasesList # The list of aliases available in the selected directory
   arguments: UserInput # The string with arguments entered by the user for the command
 
@@ -754,7 +749,7 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      sqlite.exec(db = db, query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
+      exec(db = db, query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
