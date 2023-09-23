@@ -398,18 +398,14 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc editOrAddAlias*(arguments; aliases; db;
-    editing: bool): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
-    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
-    RootEffect], contractual.} =
-  ## Edit the selected alias or add a new one
+proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+  ## Edit the selected alias
   ##
   ## * arguments - the user entered text with arguments for the editing alias
   ## * aliases   - the list of aliases available in the current directory
   ## * db        - the connection to the shell's database
-  ## * editing   - if true, edit an existing alias, otherwise add a new one
   ##
-  ## Returns QuitSuccess if the alias was properly edited or added, otherwise
+  ## Returns QuitSuccess if the alias was properly edited, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   require:
     arguments.len > 3
@@ -418,32 +414,26 @@ proc editOrAddAlias*(arguments; aliases; db;
     var
       alias: Alias = newAlias()
       id: DatabaseId = 0.DatabaseId
-    if editing:
-      if arguments.len < 6:
-        return showError(message = "Enter the ID of the alias to edit.")
-      try:
-        id = parseInt(s = $arguments[5 .. ^1]).DatabaseId
-      except ValueError:
-        return showError(message = "The Id of the alias must be a positive number.")
-      try:
-        db.select(obj = alias, cond = "id=?", params = $id)
-      except:
-        return showError(message = "Can't check if the alias exists.")
-      if alias.name.len == 0:
-        return showError(message = "The alias with the Id: " & $id &
-          " doesn't exists.")
-      showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
-    else:
-      showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word 'exit' as an answer.")
+    if arguments.len < 6:
+      return showError(message = "Enter the ID of the alias to edit.")
+    try:
+      id = parseInt(s = $arguments[5 .. ^1]).DatabaseId
+    except ValueError:
+      return showError(message = "The Id of the alias must be a positive number.")
+    try:
+      db.select(obj = alias, cond = "id=?", params = $id)
+    except:
+      return showError(message = "Can't check if the alias exists.")
+    if alias.name.len == 0:
+      return showError(message = "The alias with the Id: " & $id &
+        " doesn't exists.")
+    showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
     # Set the name for the alias
     showFormHeader(message = "(1/6) Name", db = db)
-    if editing:
-      showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
-          newLine = false)
-      showOutput(message = alias.name, newLine = false, fgColor = fgMagenta)
-      showOutput(message = "'. Can contains only letters, numbers and underscores.")
-    else:
-      showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
+    showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
+        newLine = false)
+    showOutput(message = alias.name, newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Can contains only letters, numbers and underscores.")
     showOutput(message = "Name: ", newLine = false)
     var name: AliasName = readInput(maxLength = aliasNameLength)
     while name.len > 0 and not validIdentifier(s = $name):
@@ -551,9 +541,8 @@ proc editOrAddAlias*(arguments; aliases; db;
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
-    if editing:
-      showOutput(message = "The alias  with Id: '" & $id & "' edited.",
-          fgColor = fgGreen)
+    showOutput(message = "The alias  with Id: '" & $id & "' edited.",
+        fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
 proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
@@ -734,8 +723,7 @@ proc initAliases*(db; aliases: ref AliasesList;
           return addAlias(aliases = aliases, db = db)
         # Edit the selected alias
         elif arguments.startsWith(prefix = "edit"):
-          return editOrAddAlias(arguments = arguments, aliases = aliases,
-              db = db, editing = true)
+          return editAlias(arguments = arguments, aliases = aliases, db = db)
         {.ruleOn: "ifStatements".}
         try:
           return showUnknownHelp(subCommand = arguments,
@@ -776,7 +764,7 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc createAliasesDb*(db: sqlite.DbConn): ResultCode {.gcsafe, sideEffect,
+proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
         contractual.} =
   ## Create the table aliases
