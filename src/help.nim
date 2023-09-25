@@ -35,10 +35,19 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer
+import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, helpcontent, constants, lstring, output, resultcode
 
-using db: DbConn # Connection to the shell's database
+type
+  HelpEntry* {.tableName: "help".} = ref object of Model
+    topic* {.pk.}: string
+    usage*: string
+    content*: string
+    plugin*: string
+    `template`*: bool
+
+using db: db_sqlite.DbConn # Connection to the shell's database
 
 proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
     isTemplate: bool): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
@@ -139,7 +148,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           i: Positive = 1
           row: string = ""
         let columnAmount: Positive = try:
-            db.getValue(query = sql(query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
+            db_sqlite.getValue(db = db, query = sql(query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
           except ValueError, DbError:
             4
         for key in keys:
@@ -170,7 +179,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     if topic.len == 0:
       var keys: seq[string] = @[]
       try:
-        for key in db.getAllRows(query = sql(query = "SELECT topic FROM help")):
+        for key in db_sqlite.getAllRows(db = db, query = sql(query = "SELECT topic FROM help")):
           keys.add(y = key[0])
       except DbError:
         return showError(message = "Can't get help topics from database. Reason: ",
@@ -192,8 +201,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           return showError(message = "Can't set command for help")
       key: string = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
-      dbHelp: seq[Row] = try:
-          db.getAllRows(query = sql(query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), args = key)
+      dbHelp: seq[db_sqlite.Row] = try:
+          db_sqlite.getAllRows(db = db, query = sql(query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), args = key)
         except DbError:
           return showError(message = "Can't read help content from database. Reason: ",
               e = getCurrentException())
@@ -207,7 +216,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         # need that conversion.
         if dbHelp[0][2] == "1":
           let sortOrder: string = try:
-                case db.getValue(query = sql(
+                case db_sqlite.getValue(db = db, query = sql(
                     query = "SELECT value FROM options WHERE option='historySort'")):
                 of "recent": "recently used"
                 of "amount": "how many times used"
@@ -218,12 +227,13 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             except DbError:
               "recently used and how many times"
           let sortDirection: string = try:
-                if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
+                if db_sqlite.getValue(db = db, query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
                       "true": " in reversed order." else: "."
             except DbError:
               "."
           try:
-            content = replace(s = content, sub = "$1", by = db.getValue(
+            content = replace(s = content, sub = "$1", by = db_sqlite.getValue(
+                db = db,
                 query = sql(
                 query = "SELECT value FROM options WHERE option='historyAmount'")))
             content = replace(s = content, sub = "$2", by = sortOrder)
@@ -409,7 +419,7 @@ proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     db != nil
   body:
     try:
-      db.exec(query = sql(query = "DELETE FROM help"));
+      db_sqlite.exec(db = db, query = sql(query = "DELETE FROM help"));
     except DbError:
       return showError(message = "Can't clear the help content. Reason: ",
           e = getCurrentException())
@@ -432,7 +442,7 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     db != nil
   body:
     {.ruleOff: "paramsUsed".}
-    proc helpCommand(arguments: UserInput; db: DbConn;
+    proc helpCommand(arguments: UserInput; db;
         list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
         WriteDbEffect, TimeEffect, ReadIOEffect, ReadDbEffect, ReadEnvEffect,
         RootEffect], contractual.} =
@@ -450,7 +460,7 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
       body:
         return showHelp(topic = arguments, db = db)
 
-    proc updateHelpCommand(arguments: UserInput; db: DbConn;
+    proc updateHelpCommand(arguments: UserInput; db;
         list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
         WriteDbEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
       ## The code of the shell's command "updateHelp"
@@ -492,7 +502,7 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     # Create table help in the shell's database
     try:
-      db.exec(query = sql(query = """CREATE TABLE help (
+      db_sqlite.exec(db = db, query = sql(query = """CREATE TABLE help (
                    topic       VARCHAR(""" & $maxInputLength &
               """) NOT NULL PRIMARY KEY,
                    usage       VARCHAR(""" & $maxInputLength &
