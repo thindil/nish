@@ -174,7 +174,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
+proc newAlias(name: string = ""; path: string = ""; commands: string = "";
     description: string = ""; recursive: bool = true;
     output: string = "output"): Alias {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's alias.
