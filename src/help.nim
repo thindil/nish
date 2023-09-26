@@ -46,8 +46,7 @@ type
     ## * topic    - the help's entry topic, show on the list of help's entries
     ## * usage    - the usage section of the help's entry
     ## * content  - the content of the help's entry
-    ## * plugin   - the plugin to which the help's entry belongs. If empty, the
-    ##              entry is a core entry, not from a plugin.
+    ## * plugin   - the name of the plugin to which the help's entry belongs.
     ## * template - if true, the entry is a template and treated differently. It
     ##              have some variables in own content which will be replaced by
     ##              proper values when show to the user.
@@ -508,7 +507,7 @@ proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
   ## * topic   - the topic of the help's entry
   ## * usage   - the usage information about the help's entry
   ## * content - the content of the help's entry
-  ## * plugin  - the plugin to which the help's entry belongs
+  ## * plugin  - the name of the plugin to which the help's entry belongs
   ## * templ   - if true, the help entry's is a template
   ##
   ## Returns the new data structure for the selected shell's help's entry.
