@@ -493,6 +493,15 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
 proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
     plugin: string = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
     tags: [], contractual.} =
+  ## Create a new data structure for the shell's help's entry.
+  ##
+  ## * topic   - the topic of the help's entry
+  ## * usage   - the usage information about the help's entry
+  ## * content - the content of the help's entry
+  ## * plugin  - the plugin to which the help's entry belongs
+  ## * templ   - if true, the help entry's is a template
+  ##
+  ## Returns the new data structure for the selected shell's help's entry.
   body:
     HelpEntry(topic: topic, usage: usage, content: content, plugin: plugin,
         `template`: templ)
