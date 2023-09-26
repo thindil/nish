@@ -58,6 +58,22 @@ type
 
 using db: db_sqlite.DbConn # Connection to the shell's database
 
+proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
+    plugin: string = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
+    tags: [], contractual.} =
+  ## Create a new data structure for the shell's help's entry.
+  ##
+  ## * topic   - the topic of the help's entry
+  ## * usage   - the usage information about the help's entry
+  ## * content - the content of the help's entry
+  ## * plugin  - the name of the plugin to which the help's entry belongs
+  ## * templ   - if true, the help entry's is a template
+  ##
+  ## Returns the new data structure for the selected shell's help's entry.
+  body:
+    HelpEntry(topic: topic, usage: usage, content: content, plugin: plugin,
+        `template`: templ)
+
 proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
     isTemplate: bool): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
@@ -78,15 +94,14 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
     db != nil
   body:
     try:
-      if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          args = topic).len == 0:
+      var entry = newHelpEntry()
+      db.select(obj = entry, cond = "topic=?", params = $topic)
+      if entry.topic.len == 0:
         return showError(message = "Can't update the help entry for topic '" &
             topic & "' because there is no that topic.")
-      db.exec(query = sql(query = "UPDATE help SET usage=?, content=?, plugin=?, template=? WHERE topic=?"),
-          args = [$usage, content, $plugin, $topic, (
-              if isTemplate: "1" else: "0")])
+      db.update(obj = entry)
       return QuitSuccess.ResultCode
-    except DbError:
+    except:
       return showError(message = "Can't update the help entry in the database. Reason: ",
           e = getCurrentException())
 
@@ -498,23 +513,6 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
-
-proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
-    plugin: string = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
-    tags: [], contractual.} =
-  ## Create a new data structure for the shell's help's entry.
-  ##
-  ## * topic   - the topic of the help's entry
-  ## * usage   - the usage information about the help's entry
-  ## * content - the content of the help's entry
-  ## * plugin  - the name of the plugin to which the help's entry belongs
-  ## * templ   - if true, the help entry's is a template
-  ##
-  ## Returns the new data structure for the selected shell's help's entry.
-  body:
-    HelpEntry(topic: topic, usage: usage, content: content, plugin: plugin,
-        `template`: templ)
-
 
 proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect, RootEffect],
