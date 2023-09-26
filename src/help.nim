@@ -167,19 +167,21 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       require:
         keys.len > 0
       body:
-        var table: TerminalTable = TerminalTable()
+        type ColumnsAmount = ref object
+          amount: Positive = 1
         var
           i: Positive = 1
           row: string = ""
-        let columnAmount: Positive = try:
-            db_sqlite.getValue(db = db, query = sql(
-                query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
-          except ValueError, DbError:
-            4
+          table: TerminalTable = TerminalTable()
+          columnAmount: ColumnsAmount = ColumnsAmount()
+        try:
+          db.rawSelect("SELECT value FROM options WHERE option='helpColumns'", columnAmount)
+        except:
+          columnAmount.amount = 4
         for key in keys:
           row = row & key & "\t"
           i.inc
-          if i == columnAmount:
+          if i == columnAmount.amount:
             try:
               table.tabbed(row = row)
             except UnknownEscapeError, InsufficientInputError, FinalByteError:
