@@ -41,6 +41,16 @@ import commandslist, helpcontent, constants, lstring, output, resultcode
 
 type
   HelpEntry* {.tableName: "help".} = ref object of Model
+    ## Data structure for the help's entries
+    ##
+    ## * topic    - the help's entry topic, show on the list of help's entries
+    ## * usage    - the usage section of the help's entry
+    ## * content  - the content of the help's entry
+    ## * plugin   - the plugin to which the help's entry belongs. If empty, the
+    ##              entry is a core entry, not from a plugin.
+    ## * template - if true, the entry is a template and treated differently. It
+    ##              have some variables in own content which will be replaced by
+    ##              proper values when show to the user.
     topic* {.unique.}: string
     usage*: string
     content*: string
