@@ -41,7 +41,7 @@ import commandslist, helpcontent, constants, lstring, output, resultcode
 
 type
   HelpEntry* {.tableName: "help".} = ref object of Model
-    topic* {.pk.}: string
+    topic* {.unique.}: string
     usage*: string
     content*: string
     plugin*: string
@@ -148,7 +148,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           i: Positive = 1
           row: string = ""
         let columnAmount: Positive = try:
-            db_sqlite.getValue(db = db, query = sql(query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
+            db_sqlite.getValue(db = db, query = sql(
+                query = "SELECT value FROM options WHERE option='helpColumns'")).parseInt + 1
           except ValueError, DbError:
             4
         for key in keys:
@@ -179,7 +180,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     if topic.len == 0:
       var keys: seq[string] = @[]
       try:
-        for key in db_sqlite.getAllRows(db = db, query = sql(query = "SELECT topic FROM help")):
+        for key in db_sqlite.getAllRows(db = db, query = sql(
+            query = "SELECT topic FROM help")):
           keys.add(y = key[0])
       except DbError:
         return showError(message = "Can't get help topics from database. Reason: ",
@@ -202,7 +204,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       key: string = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
       dbHelp: seq[db_sqlite.Row] = try:
-          db_sqlite.getAllRows(db = db, query = sql(query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), args = key)
+          db_sqlite.getAllRows(db = db, query = sql(
+              query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), args = key)
         except DbError:
           return showError(message = "Can't read help content from database. Reason: ",
               e = getCurrentException())
@@ -487,6 +490,14 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
 
+proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
+    plugin: string = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
+    tags: [], contractual.} =
+  body:
+    HelpEntry(topic: topic, usage: usage, content: content, plugin: plugin,
+        `template`: templ)
+
+
 proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect, RootEffect],
     contractual.} =
@@ -502,16 +513,8 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     # Create table help in the shell's database
     try:
-      db_sqlite.exec(db = db, query = sql(query = """CREATE TABLE help (
-                   topic       VARCHAR(""" & $maxInputLength &
-              """) NOT NULL PRIMARY KEY,
-                   usage       VARCHAR(""" & $maxInputLength &
-              """) NOT NULL,
-                   content     TEXT NOT NULL,
-                   plugin      VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                   template     BOOLEAN NOT NULL)"""))
-    except DbError, CapacityError:
+      db.createTables(obj = newHelpEntry())
+    except DbError, CapacityError, ValueError:
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException())
     return readHelpFromFile(db = db)
