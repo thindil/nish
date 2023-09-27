@@ -216,21 +216,21 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           return showError(message = "Can't set command for help")
       key: string = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
-      dbHelp: seq[db_sqlite.Row] = try:
-          db_sqlite.getAllRows(db = db, query = sql(
-              query = "SELECT usage, content, template, topic FROM help WHERE topic LIKE ?"), args = key)
-        except DbError:
-          return showError(message = "Can't read help content from database. Reason: ",
-              e = getCurrentException())
+    var dbHelp: seq[HelpEntry] = @[newHelpEntry()]
+    try:
+      db.select(dbHelp, "topic LIKE ?", key)
+    except:
+      return showError(message = "Can't read help content from database. Reason: ",
+          e = getCurrentException())
     # It there are topic or topics which the user is looking for, show them
     if dbHelp.len > 0:
       # There is exactly one topic which the user is looking for, show it
       if dbHelp.len == 1:
-        var content: string = dbHelp[0][1]
+        var content: string = dbHelp[0].content
         # The help content for the selected topic is template, convert some
         # variables in it to the proper values. At this moment only history list
         # need that conversion.
-        if dbHelp[0][2] == "1":
+        if dbHelp[0].`template`:
           let sortOrder: string = try:
                 case db_sqlite.getValue(db = db, query = sql(
                     query = "SELECT value FROM options WHERE option='historySort'")):
@@ -258,13 +258,13 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             discard showError(message = "Can't set the shell's help. Reason: ",
                 e = getCurrentException())
         # Show the help entry to the user
-        showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0][0],
+        showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0].usage,
             content: content))
         return QuitSuccess.ResultCode
       # There is a few topics which match the criteria, show the list of them
       var keys: seq[ShellOption] = @[ShellOption()]
       for row in dbHelp:
-        keys.add(y = ShellOption(value: row[3]))
+        keys.add(y = ShellOption(value: row.topic))
       keys.sort(cmp = system.cmp)
       showHelpList(keys = keys)
       return QuitSuccess.ResultCode
