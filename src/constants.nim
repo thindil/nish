@@ -29,6 +29,7 @@
 import std/[os, tables]
 # External modules imports
 import contracts
+import norm/[model, pragmas]
 # Internal imports
 import lstring
 
@@ -44,10 +45,21 @@ const
     ## The maximum length of the user input
 
 type
-  HelpEntry* = object
-    ## Used to store the shell's help entries
-    usage*: string   ## The shell's command to enter for the selected entry
-    content*: string ## The content of the selected entry
+  HelpEntry* {.tableName: "help".} = ref object of Model
+    ## Data structure for the help's entries
+    ##
+    ## * topic    - the help's entry topic, show on the list of help's entries
+    ## * usage    - the usage section of the help's entry
+    ## * content  - the content of the help's entry
+    ## * plugin   - the name of the plugin to which the help's entry belongs.
+    ## * template - if true, the entry is a template and treated differently. It
+    ##              have some variables in own content which will be replaced by
+    ##              proper values when show to the user.
+    topic* {.unique.}: string
+    usage*: string
+    content*: string
+    plugin*: string
+    `template`*: bool
   UserInput* = LimitedString
     ## Used to store text entered by the user
   ExtendedNatural* = range[-1..int.high]

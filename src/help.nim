@@ -35,26 +35,9 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer
-import norm/[model, pragmas, sqlite]
+import norm/sqlite
 # Internal imports
 import commandslist, helpcontent, constants, lstring, output, resultcode
-
-type
-  HelpEntry* {.tableName: "help".} = ref object of Model
-    ## Data structure for the help's entries
-    ##
-    ## * topic    - the help's entry topic, show on the list of help's entries
-    ## * usage    - the usage section of the help's entry
-    ## * content  - the content of the help's entry
-    ## * plugin   - the name of the plugin to which the help's entry belongs.
-    ## * template - if true, the entry is a template and treated differently. It
-    ##              have some variables in own content which will be replaced by
-    ##              proper values when show to the user.
-    topic* {.unique.}: string
-    usage*: string
-    content*: string
-    plugin*: string
-    `template`*: bool
 
 using db: db_sqlite.DbConn # Connection to the shell's database
 
