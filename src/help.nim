@@ -94,8 +94,8 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
     db != nil
   body:
     try:
-      var entry = newHelpEntry(topic = $topic, usage = $usage, plugin = $plugin,
-          content = content, templ = isTemplate)
+      var entry: HelpEntry = newHelpEntry(topic = $topic, usage = $usage,
+          plugin = $plugin, content = content, templ = isTemplate)
       db.select(obj = entry, cond = "topic=?", params = $topic)
       if entry.topic.len == 0:
         return showError(message = "Can't update the help entry for topic '" &
@@ -176,7 +176,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           table: TerminalTable = TerminalTable()
           columnAmount: ColumnsAmount = ColumnsAmount()
         try:
-          db.rawSelect("SELECT value FROM options WHERE option='helpColumns'", columnAmount)
+          db.rawSelect(qry = "SELECT value FROM options WHERE option='helpColumns'",
+              obj = columnAmount)
         except:
           columnAmount.amount = 4
         for key in keys:
