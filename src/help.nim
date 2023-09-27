@@ -151,22 +151,25 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       require:
         keys.len > 0
       body:
-        type ColumnsAmount = ref object
-          amount: Positive = 1
+        type ShellOption = ref object
+          value: string = ""
         var
           i: Positive = 1
           row: string = ""
           table: TerminalTable = TerminalTable()
-          columnAmount: ColumnsAmount = ColumnsAmount()
+          option: ShellOption = ShellOption()
+          columnAmount: Positive = 4
         try:
           db.rawSelect(qry = "SELECT value FROM options WHERE option='helpColumns'",
-              obj = columnAmount)
+              obj = option)
+          columnAmount = option.value.parseInt
         except:
-          columnAmount.amount = 4
+          showError(message = "Can't get the shell's setting for amount of help list columns. Reason: ",
+              e = getCurrentException())
         for key in keys:
           row = row & key & "\t"
           i.inc
-          if i == columnAmount.amount:
+          if i == columnAmount + 1:
             try:
               table.tabbed(row = row)
             except UnknownEscapeError, InsufficientInputError, FinalByteError:
