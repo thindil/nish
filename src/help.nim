@@ -142,7 +142,10 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         showOutput(message = helpEntry.usage & "\n")
         showOutput(message = helpEntry.content)
 
-    proc showHelpList(keys: seq[string]) {.sideEffect, raises: [],
+    type ShellOption = ref object
+      value: string = ""
+
+    proc showHelpList(keys: seq[ShellOption]) {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect],
             contractual.} =
       ## Show the list of help topics
@@ -151,8 +154,6 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       require:
         keys.len > 0
       body:
-        type ShellOption = ref object
-          value: string = ""
         var
           i: Positive = 1
           row: string = ""
@@ -167,7 +168,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           showError(message = "Can't get the shell's setting for amount of help list columns. Reason: ",
               e = getCurrentException())
         for key in keys:
-          row = row & key & "\t"
+          row = row & key.value & "\t"
           i.inc
           if i == columnAmount + 1:
             try:
@@ -188,16 +189,14 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           showError(message = "Can't show the help entries list. Reason: ",
               e = getCurrentException())
         showOutput(message = "\n\nTo see more information about the selected topic, type help [topic], for example: help " &
-            keys[0] & ".")
+            keys[0].value & ".")
 
     # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
-      var keys: seq[string] = @[]
+      var keys: seq[ShellOption] = @[ShellOption()]
       try:
-        for key in db_sqlite.getAllRows(db = db, query = sql(
-            query = "SELECT topic FROM help")):
-          keys.add(y = key[0])
-      except DbError:
+        db.rawSelect(qry = "SELECT topic FROM help", objs = keys)
+      except:
         return showError(message = "Can't get help topics from database. Reason: ",
             e = getCurrentException())
       keys.sort(cmp = system.cmp)
@@ -263,9 +262,9 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             content: content))
         return QuitSuccess.ResultCode
       # There is a few topics which match the criteria, show the list of them
-      var keys: seq[string] = @[]
+      var keys: seq[ShellOption] = @[ShellOption()]
       for row in dbHelp:
-        keys.add(y = row[3])
+        keys.add(y = ShellOption(value: row[3]))
       keys.sort(cmp = system.cmp)
       showHelpList(keys = keys)
       return QuitSuccess.ResultCode
