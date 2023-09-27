@@ -75,8 +75,8 @@ proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
         `template`: templ)
 
 proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
-    isTemplate: bool): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
+    isTemplate: bool): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Update the help entry in the help table in the shell's database
   ##
   ## * topic   - the topic of the help. Used as search entry in help
@@ -94,7 +94,8 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
     db != nil
   body:
     try:
-      var entry = newHelpEntry()
+      var entry = newHelpEntry(topic = $topic, usage = $usage, plugin = $plugin,
+          content = content, templ = isTemplate)
       db.select(obj = entry, cond = "topic=?", params = $topic)
       if entry.topic.len == 0:
         return showError(message = "Can't update the help entry for topic '" &
