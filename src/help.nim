@@ -218,7 +218,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           args else: "")).replace(sub = '*', by = '%')
     var dbHelp: seq[HelpEntry] = @[newHelpEntry()]
     try:
-      db.select(dbHelp, "topic LIKE ?", key)
+      db.select(objs = dbHelp, cond = "topic LIKE ?", params = key)
     except:
       return showError(message = "Can't read help content from database. Reason: ",
           e = getCurrentException())
