@@ -437,7 +437,7 @@ proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(query = "DELETE FROM help"));
+      sqlite.exec(db = db, query = sql(query = "DELETE FROM help"));
     except DbError:
       return showError(message = "Can't clear the help content. Reason: ",
           e = getCurrentException())
