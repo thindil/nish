@@ -233,23 +233,27 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         if dbHelp[0].`template`:
           var historyOption: ShellOption = ShellOption()
           try:
-            db.rawSelect(qry = "SELECT value FROM options WHERE option='historySort'", obj = historyOption)
+            db.rawSelect(qry = "SELECT value FROM options WHERE option='historySort'",
+                obj = historyOption)
           except:
             historyOption.value = "recentamount"
           let sortOrder: string = case historyOption.value:
-                of "recent": "recently used"
-                of "amount": "how many times used"
-                of "name": "name"
-                of "recentamount": "recently used and how many times"
-                else:
-                  "unknown"
+            of "recent": "recently used"
+            of "amount": "how many times used"
+            of "name": "name"
+            of "recentamount": "recently used and how many times"
+            else:
+              "unknown"
           try:
-            db.rawSelect(qry = "SELECT value FROM options WHERE option='historyReverse'", obj = historyOption)
+            db.rawSelect(qry = "SELECT value FROM options WHERE option='historyReverse'",
+                obj = historyOption)
           except:
             historyOption.value = "false"
-          let sortDirection: string = (if historyOption.value == "true": " in reversed order." else: ".")
+          let sortDirection: string = (if historyOption.value ==
+              "true": " in reversed order." else: ".")
           try:
-            db.rawSelect(qry = "SELECT value FROM options WHERE option='historyAmount'", obj = historyOption)
+            db.rawSelect(qry = "SELECT value FROM options WHERE option='historyAmount'",
+                obj = historyOption)
             content = replace(s = content, sub = "$1", by = historyOption.value)
             content = replace(s = content, sub = "$2", by = sortOrder)
             content = replace(s = content, sub = "$3", by = sortDirection)
@@ -320,14 +324,13 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
     db != nil
   body:
     try:
-      if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          args = topic).len > 0:
+      if db.exists(T = HelpEntry, cond = "topic=?", params = $topic):
         return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
-      db.exec(query = sql(query = "INSERT INTO help (topic, usage, content, plugin, template) VALUES (?, ?, ?, ?, ?)"),
-          args = [$topic, $usage, content, $plugin, (
-              if isTemplate: "1" else: "0")])
+      var newHelp = newHelpEntry(topic = $topic, usage = $usage,
+          content = content, plugin = $plugin, templ = isTemplate)
+      db.insert(obj = newHelp)
       return QuitSuccess.ResultCode
-    except DbError:
+    except:
       return showError(message = "Can't add help entry to database. Reason: ",
           e = getCurrentException())
 
