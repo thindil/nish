@@ -541,12 +541,13 @@ proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
     db != nil
   body:
     try:
-      if db.getValue(query = sql(query = "SELECT topic FROM help WHERE topic=?"),
-          args = topic).len == 0:
+      var entry: HelpEntry = newHelpEntry(topic = $topic)
+      db.select(obj = entry, cond = "topic=?", params = $topic)
+      if entry.topic.len == 0:
         return showError(message = "Can't delete the help entry for topic '" &
             topic & "' because there is no that topic.")
-      db.exec(query = sql(query = "DELETE FROM help WHERE topic=?"), args = topic)
+      db.delete(obj = entry)
       return QuitSuccess.ResultCode
-    except DbError:
+    except:
       return showError(message = "Can't delete the help entry in the database. Reason: ",
           e = getCurrentException())
