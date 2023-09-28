@@ -231,30 +231,29 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         # variables in it to the proper values. At this moment only history list
         # need that conversion.
         if dbHelp[0].`template`:
-          let sortOrder: string = try:
-                case db_sqlite.getValue(db = db, query = sql(
-                    query = "SELECT value FROM options WHERE option='historySort'")):
+          var historyOption: ShellOption = ShellOption()
+          try:
+            db.rawSelect(qry = "SELECT value FROM options WHERE option='historySort'", obj = historyOption)
+          except:
+            historyOption.value = "recentamount"
+          let sortOrder: string = case historyOption.value:
                 of "recent": "recently used"
                 of "amount": "how many times used"
                 of "name": "name"
                 of "recentamount": "recently used and how many times"
                 else:
                   "unknown"
-            except DbError:
-              "recently used and how many times"
-          let sortDirection: string = try:
-                if db_sqlite.getValue(db = db, query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
-                      "true": " in reversed order." else: "."
-            except DbError:
-              "."
           try:
-            content = replace(s = content, sub = "$1", by = db_sqlite.getValue(
-                db = db,
-                query = sql(
-                query = "SELECT value FROM options WHERE option='historyAmount'")))
+            db.rawSelect(qry = "SELECT value FROM options WHERE option='historyReverse'", obj = historyOption)
+          except:
+            historyOption.value = "false"
+          let sortDirection: string = (if historyOption.value == "true": " in reversed order." else: ".")
+          try:
+            db.rawSelect(qry = "SELECT value FROM options WHERE option='historyAmount'", obj = historyOption)
+            content = replace(s = content, sub = "$1", by = historyOption.value)
             content = replace(s = content, sub = "$2", by = sortOrder)
             content = replace(s = content, sub = "$3", by = sortDirection)
-          except DbError:
+          except:
             discard showError(message = "Can't set the shell's help. Reason: ",
                 e = getCurrentException())
         # Show the help entry to the user
