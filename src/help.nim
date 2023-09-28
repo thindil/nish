@@ -326,7 +326,7 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
     try:
       if db.exists(T = HelpEntry, cond = "topic=?", params = $topic):
         return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
-      var newHelp = newHelpEntry(topic = $topic, usage = $usage,
+      var newHelp: HelpEntry = newHelpEntry(topic = $topic, usage = $usage,
           content = content, plugin = $plugin, templ = isTemplate)
       db.insert(obj = newHelp)
       return QuitSuccess.ResultCode
