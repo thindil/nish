@@ -36,17 +36,25 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
+import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, help, lstring, output, resultcode
 
 const historyCommands*: array[3, string] = ["clear", "list", "find"]
   ## The list of available subcommands for command history
 
-type HistoryRange* = ExtendedNatural
-  ## Used to store the amount of commands in the shell's history
+type
+  HistoryRange* = ExtendedNatural
+    ## Used to store the amount of commands in the shell's history
+
+  HistoryEntry* {.tableName: "history".} = ref object of Model
+    command*: string
+    lastused*: string
+    amount*: string
+    path*: int
 
 using
-  db: DbConn # Connection to the shell's database
+  db: db_sqlite.DbConn # Connection to the shell's database
   arguments: UserInput # The arguments for a command entered by the user
 
 proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
@@ -62,7 +70,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      return parseInt(s = db.getValue(query = sql(query =
+      return parseInt(s = db_sqlite.getValue(db = db, query = sql(query =
         "SELECT COUNT(*) FROM history")))
     except DbError, ValueError:
       showError(message = "Can't get the length of the shell's commands history. Reason: ",
@@ -89,14 +97,14 @@ proc updateHistory*(commandToAdd: string; db;
   body:
     result = historyLength(db = db)
     let historyAmount: Natural = try:
-        parseInt(s = db.getValue(query = sql(
+        parseInt(s = db_sqlite.getValue(db = db, query = sql(
             query = "SELECT value FROM options WHERE option='historyLength'")))
       except DbError, ValueError:
         500
     if historyAmount == 0:
       return
     try:
-      if returnCode != QuitSuccess and db.getValue(query = sql(query =
+      if returnCode != QuitSuccess and db_sqlite.getValue(db = db, query = sql(query =
         "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
         return
     except DbError:
@@ -105,8 +113,10 @@ proc updateHistory*(commandToAdd: string; db;
       return
     if result >= historyAmount:
       try:
-        db.exec(query = sql(query = "DELETE FROM history WHERE rowid IN (SELECT rowid FROM history ORDER BY lastused, amount ASC LIMIT ?)"),
-            args = (if result == historyAmount: 1 else: result - historyAmount))
+        db_sqlite.exec(db = db, query = sql(
+            query = "DELETE FROM history WHERE rowid IN (SELECT rowid FROM history ORDER BY lastused, amount ASC LIMIT ?)"),
+             args = (if result == historyAmount: 1 else: result -
+                historyAmount))
         result = historyLength(db = db)
       except DbError, ValueError:
         showError(message = "Can't delete exceeded entries from the shell's history. Reason: ",
@@ -153,7 +163,8 @@ proc getHistory*(historyIndex: HistoryRange; db;
       if searchFor.len == 0:
         let value: string = db.getValue(query = sql(
             query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-            args = [getCurrentDirectory(), $(historyLength(db = db) - historyIndex)])
+            args = [getCurrentDirectory(), $(historyLength(db = db) -
+                historyIndex)])
         if value.len == 0:
           result = db.getValue(query = sql(
               query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
@@ -166,7 +177,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
             query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
             args = [searchFor & "%", getCurrentDirectory()])
         if value.len == 0:
-          result = db.getValue(query = sql(
+          result = db_sqlite.getValue(db = db, query = sql(
               query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
               args = searchFor & "%")
         else:
@@ -189,7 +200,7 @@ proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = "DELETE FROM history"));
+      db_sqlite.exec(db = db, query = sql(query = "DELETE FROM history"));
     except DbError:
       return showError(message = "Can't clear the shell's commands history. Reason: ",
           e = getCurrentException())
@@ -215,20 +226,21 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       argumentsList: seq[string] = split(s = $arguments)
       amount: HistoryRange = try:
           parseInt(s = (if argumentsList.len > 1: argumentsList[
-              1] else: db.getValue(query = sql(
+              1] else: db_sqlite.getValue(db = db, query = sql(
                   query = "SELECT value FROM options WHERE option='historyAmount'"))))
         except ValueError, DbError:
           return showError(message = "Can't get setting for the amount of history commands to show.")
       historyDirection: string = try:
           if argumentsList.len > 3: (if argumentsList[3] ==
               "true": "ASC" else: "DESC") else:
-            if db.getValue(query = sql(query = "SELECT value FROM options WHERE option='historyReverse'")) ==
+            if db_sqlite.getValue(db = db, query = sql(
+                query = "SELECT value FROM options WHERE option='historyReverse'")) ==
                 "true": "ASC" else: "DESC"
         except DbError:
           return showError(message = "Can't get setting for the reverse order of history commands to show.")
       orderText: string = try:
-          if argumentsList.len > 2: argumentsList[2] else: db.getValue(
-              query = sql(
+          if argumentsList.len > 2: argumentsList[2] else: db_sqlite.getValue(
+              db = db, query = sql(
               query = "SELECT value FROM options WHERE option='historySort'"))
         except DbError:
           return showError(message = "Can't get setting for the order of history commands to show.")
@@ -249,7 +261,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't show history list. Reason: ",
           e = getCurrentException())
     try:
-      for row in db.fastRows(query = sql(
+      for row in db_sqlite.fastRows(db = db, query = sql(
           query = "SELECT command, lastused, amount FROM history ORDER BY " &
           historyOrder & " LIMIT 0, ?"), args = amount):
         table.add(parts = [row[1], row[2], row[0]])
@@ -289,10 +301,10 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
     var table: TerminalTable = TerminalTable()
     try:
       result = QuitFailure.ResultCode
-      let maxRows: int = db.getValue(query = sql(
+      let maxRows: int = db_sqlite.getValue(db = db, query = sql(
           query = "SELECT value FROM options WHERE option='historySearchAmount'")).parseInt
       var currentRow: int = 0
-      for row in db.fastRows(query = sql(
+      for row in db_sqlite.fastRows(db = db, query = sql(
           query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
           args = "%" & searchFor & "%"):
         table.add(parts = row[0])
@@ -331,20 +343,26 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
   body:
     try:
       if dbVersion < 2:
-        db.exec(query = sql(query = """ALTER TABLE history ADD path VARCHAR(""" &
+        db_sqlite.exec(db = db, query = sql(
+            query = """ALTER TABLE history ADD path VARCHAR(""" &
             $maxInputLength & """)"""))
-        db.exec(query = sql(query = "UPDATE options SET valuetype='natural' WHERE option='historyLength'"))
-        db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
-        db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
+        db_sqlite.exec(db = db, query = sql(
+            query = "UPDATE options SET valuetype='natural' WHERE option='historyLength'"))
+        db_sqlite.exec(db = db, query = sql(
+            query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
+        db_sqlite.exec(db = db, query = sql(
+            query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
       if dbVersion < 3:
-        db.exec(query = sql(query = "UPDATE options SET valuetype='positive' WHERE option='historyAmount'"))
-        db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
+        db_sqlite.exec(db = db, query = sql(
+            query = "UPDATE options SET valuetype='positive' WHERE option='historyAmount'"))
+        db_sqlite.exec(db = db, query = sql(
+            query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
     except DbError, CapacityError:
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc createHistoryDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Create the table history and set shell's options related to the history
@@ -357,21 +375,27 @@ proc createHistoryDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """CREATE TABLE history (
-                   command     VARCHAR(""" & $maxInputLength &
-          """) PRIMARY KEY,
+      db_sqlite.exec(db = db, query = sql(
+            query = """CREATE TABLE history (
+                   command     VARCHAR(""" & $maxInputLength & """) PRIMARY KEY,
                    lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
                    amount      INTEGER NOT NULL DEFAULT 1,
                    path        VARCHAR(""" & $maxInputLength &
             """)
                 )"""))
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyLength', '500', 'Max amount of entries in shell commands history.', 'natural', '500', '0')"))
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyAmount', '20', 'Amount of entries in shell commands history to show with history list command.', 'natural', '20', '0')"))
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySaveInvalid', 'false', 'Save in shell command history also invalid commands.', 'boolean', 'false', '0')"))
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
-      db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
-    except DbError, CapacityError:
+      db_sqlite.exec(db = db, query = sql(
+          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyLength', '500', 'Max amount of entries in shell commands history.', 'natural', '500', '0')"))
+      db_sqlite.exec(db = db, query = sql(
+          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyAmount', '20', 'Amount of entries in shell commands history to show with history list command.', 'natural', '20', '0')"))
+      db_sqlite.exec(db = db, query = sql(
+          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySaveInvalid', 'false', 'Save in shell command history also invalid commands.', 'boolean', 'false', '0')"))
+      db_sqlite.exec(db = db, query = sql(
+          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
+      db_sqlite.exec(db = db, query = sql(
+          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
+      db_sqlite.exec(db = db, query = sql(
+          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
+    except:
       return showError(message = "Can't create 'history' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
