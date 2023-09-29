@@ -28,7 +28,7 @@
 ## in.
 
 # Standard library imports
-import std/[os, strutils, terminal]
+import std/[os, strutils, terminal, times]
 # Database library import, depends on version of Nim
 when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
   import db_connector/db_sqlite
@@ -49,9 +49,9 @@ type
 
   HistoryEntry* {.tableName: "history".} = ref object of Model
     command*: string
-    lastused*: string
-    amount*: string
-    path*: int
+    lastused*: DateTime
+    amount*: int
+    path*: string
 
 using
   db: db_sqlite.DbConn # Connection to the shell's database
@@ -362,6 +362,12 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
+proc newHistoryEntry(command: string = ""; lastUsed: DateTime = now();
+    amount: Positive = 1; path: string = ""): HistoryEntry {.raises: [], tags: [],
+    contractual.} =
+  body:
+    return HistoryEntry(command: command, lastUsed: lastUsed, amount: amount, path: path)
+
 proc createHistoryDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
@@ -375,14 +381,7 @@ proc createHistoryDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(
-            query = """CREATE TABLE history (
-                   command     VARCHAR(""" & $maxInputLength & """) PRIMARY KEY,
-                   lastused    DATETIME NOT NULL DEFAULT 'datetime(''now'')',
-                   amount      INTEGER NOT NULL DEFAULT 1,
-                   path        VARCHAR(""" & $maxInputLength &
-            """)
-                )"""))
+      db.createTables(obj = newHistoryEntry())
       db_sqlite.exec(db = db, query = sql(
           query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyLength', '500', 'Max amount of entries in shell commands history.', 'natural', '500', '0')"))
       db_sqlite.exec(db = db, query = sql(
@@ -395,10 +394,10 @@ proc createHistoryDb*(db): ResultCode {.sideEffect, raises: [], tags: [
           query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
       db_sqlite.exec(db = db, query = sql(
           query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
+      return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't create 'history' table. Reason: ",
           e = getCurrentException())
-    return QuitSuccess.ResultCode
 
 proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
     sideEffect, raises: [], tags: [ReadDbEffect, WriteIOEffect, WriteDbEffect,
