@@ -541,11 +541,11 @@ proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
     db != nil
   body:
     try:
-      var entry: HelpEntry = newHelpEntry(topic = $topic)
-      db.select(obj = entry, cond = "topic=?", params = $topic)
-      if entry.topic.len == 0:
+      if not db.exists(T = HelpEntry, cond = "topic=?", params = $topic):
         return showError(message = "Can't delete the help entry for topic '" &
             topic & "' because there is no that topic.")
+      var entry: HelpEntry = newHelpEntry(topic = $topic)
+      db.select(obj = entry, cond = "topic=?", params = $topic)
       db.delete(obj = entry)
       return QuitSuccess.ResultCode
     except:
