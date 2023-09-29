@@ -28,18 +28,13 @@
 
 # Standard library imports
 import std/[algorithm, os, parsecfg, strutils, streams, terminal]
-# Database library import, depends on version of Nim
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer
 import norm/sqlite
 # Internal imports
 import commandslist, helpcontent, constants, lstring, output, resultcode
 
-using db: db_sqlite.DbConn # Connection to the shell's database
+using db: DbConn # Connection to the shell's database
 
 proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
     plugin: string = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
