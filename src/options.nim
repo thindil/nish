@@ -355,9 +355,10 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 
 proc newOption*(name: string = ""; value: string = ""; description: string = "";
     valueType: ValueType = none; defaultValue: string = "";
-    readOnly: bool = false): Option =
-  return Option(option: name, value: value, description: description,
-      valueType: valueType, defaultValue: defaultValue, readOnly: readOnly)
+    readOnly: bool = false): Option {.raises: [], tags: [], contractual.} =
+  body:
+    Option(option: name, value: value, description: description,
+        valueType: valueType, defaultValue: defaultValue, readOnly: readOnly)
 
 proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
