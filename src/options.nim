@@ -62,7 +62,7 @@ type
     option*: string
     value*: string
     description*: string
-    valueType*: string
+    valueType*: ValueType
     defaultValue*: string
     readOnly*: bool
 
