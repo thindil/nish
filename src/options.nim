@@ -356,6 +356,16 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
 proc newOption*(name: string = ""; value: string = ""; description: string = "";
     valueType: ValueType = none; defaultValue: string = "";
     readOnly: bool = false): Option {.raises: [], tags: [], contractual.} =
+  ## Create a new data structure for the shell's option.
+  ##
+  ## * name         - the name of the option
+  ## * value        - the value of the option
+  ## * description  - the description of the option
+  ## * valueType    - the type of the option's value
+  ## * defaultValue - the default value for the option
+  ## * readOnly     - if true, the option can be only read by the user, not set
+  ##
+  ## Returns the new data structure for the selected shell's option.
   body:
     Option(option: name, value: value, description: description,
         valueType: valueType, defaultValue: defaultValue, readOnly: readOnly)
