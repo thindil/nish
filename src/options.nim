@@ -35,6 +35,7 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
+import norm/[model, pragmas]
 # Internal imports
 import commandslist, constants, help, lstring, output, resultcode
 
@@ -49,6 +50,21 @@ type
   ValueType* = enum
     ## Used to set the type of option's value
     integer, float, boolean, none, historysort, natural, text, command, header, positive
+  Option* {.tableName: "options".} = ref object of Model
+    ## Data structure for the shell's option
+    ##
+    ## * option       - the name of the option
+    ## * value        - the value of the option
+    ## * description  - the description of the option
+    ## * valueType    - the type of the option's value
+    ## * defaultValue - the default value for the option
+    ## * readOnly     - if true, the option can be only read by the user, not set
+    option*: string
+    value*: string
+    description*: string
+    valueType*: string
+    defaultValue*: string
+    readOnly*: bool
 
 using
   db: DbConn # Connection to the shell's database
