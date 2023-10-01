@@ -38,7 +38,7 @@ else:
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import commandslist, constants, help, lstring, output, resultcode
+import commandslist, constants, help, lstring, output, options, resultcode
 
 const historyCommands*: array[3, string] = ["clear", "list", "find"]
   ## The list of available subcommands for command history
@@ -367,7 +367,7 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc newHistoryEntry(command: string = ""; lastUsed: DateTime = now();
+proc newHistoryEntry*(command: string = ""; lastUsed: DateTime = now();
     amount: Positive = 1; path: string = ""): HistoryEntry {.raises: [], tags: [],
     contractual.} =
   ## Create a new data structure for the shell's commands' history entry.
@@ -395,18 +395,31 @@ proc createHistoryDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newHistoryEntry())
-      db_sqlite.exec(db = db, query = sql(
-          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyLength', '500', 'Max amount of entries in shell commands history.', 'natural', '500', '0')"))
-      db_sqlite.exec(db = db, query = sql(
-          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyAmount', '20', 'Amount of entries in shell commands history to show with history list command.', 'natural', '20', '0')"))
-      db_sqlite.exec(db = db, query = sql(
-          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySaveInvalid', 'false', 'Save in shell command history also invalid commands.', 'boolean', 'false', '0')"))
-      db_sqlite.exec(db = db, query = sql(
-          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
-      db_sqlite.exec(db = db, query = sql(
-          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
-      db_sqlite.exec(db = db, query = sql(
-          query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
+      var newOption: Option = newOption(name = "historyLength", value = "500",
+          description = "Max amount of entries in shell commands history.",
+          valueType = natural, defaultValue = "500", readOnly = false)
+      db.insert(obj = newOption)
+      newOption = newOption(name = "historyAmount", value = "20",
+          description = "Amount of entries in shell commands history to show with history list command.",
+          valueType = natural, defaultValue = "20", readOnly = false)
+      db.insert(obj = newOption)
+      newOption = newOption(name = "historySaveInvalid", value = "false",
+          description = "Save in shell command history also invalid commands.",
+          valueType = boolean, defaultValue = "false", readOnly = false)
+      db.insert(obj = newOption)
+      newOption = newOption(name = "historySort", value = "recentamount",
+          description = "How to sort the list of the last commands from shell history.",
+          valueType = historysort, defaultValue = "recentamount",
+          readOnly = false)
+      db.insert(obj = newOption)
+      newOption = newOption(name = "historyReverse", value = "false",
+          description = "Reverse order when showing the last commands from shell history.",
+          valueType = boolean, defaultValue = "false", readOnly = false)
+      db.insert(obj = newOption)
+      newOption = newOption(name = "historySearchAmount", value = "20",
+          description = "The amount of results to return when search shell history.",
+          valueType = natural, defaultValue = "20", readOnly = false)
+      db.insert(obj = newOption)
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't create 'history' table. Reason: ",
