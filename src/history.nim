@@ -75,7 +75,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      return db.count(HistoryEntry)
+      return db.count(T = HistoryEntry)
     except DbError, ValueError:
       showError(message = "Can't get the length of the shell's commands history. Reason: ",
           e = getCurrentException())

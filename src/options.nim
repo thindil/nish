@@ -88,7 +88,7 @@ proc dbValue*(val: ValueType): DbValue {.raises: [], tags: [], contractual.} =
   ##
   ## Returns the converted val parameter
   body:
-    dbValue($val)
+    dbValue(v = $val)
 
 proc to*(dbVal: DbValue, T: typedesc[ValueType]): T {.raises: [], tags: [],
     contractual.} =
@@ -99,7 +99,7 @@ proc to*(dbVal: DbValue, T: typedesc[ValueType]): T {.raises: [], tags: [],
   ##
   ## Returns the converted dbVal parameter
   body:
-    parseEnum[ValueType](dbVal.s)
+    parseEnum[ValueType](s = dbVal.s)
 
 proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
