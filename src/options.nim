@@ -35,7 +35,7 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
-import norm/[model, pragmas]
+import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, help, lstring, output, resultcode
 
@@ -67,9 +67,39 @@ type
     readOnly*: bool
 
 using
-  db: DbConn # Connection to the shell's database
+  db: db_sqlite.DbConn # Connection to the shell's database
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
+
+proc dbType*(T: typedesc[ValueType]): string {.raises: [], tags: [],
+    contractual.} =
+  ## Set the type of field in the database
+  ##
+  ## * T - the type for which the field will be set
+  ##
+  ## Returns the type of the field in the database
+  body:
+    "TEXT"
+
+proc dbValue*(val: ValueType): DbValue {.raises: [], tags: [], contractual.} =
+  ## Convert the type of the option's value to database field
+  ##
+  ## * val - the value to convert
+  ##
+  ## Returns the converted val parameter
+  body:
+    dbValue($val)
+
+proc to*(dbVal: DbValue, T: typedesc[ValueType]): T {.raises: [], tags: [],
+    contractual.} =
+  ## Convert the value from the database to enumeration
+  ##
+  ## * dbVal - the value to convert
+  ## * T     - the type to which the value will be converted
+  ##
+  ## Returns the converted dbVal parameter
+  body:
+    parseEnum[ValueType](dbVal.s)
 
 proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
@@ -134,7 +164,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
       sqlQuery.add(y = "valuetype='" & $valueType & "'")
     sqlQuery.add(y = " WHERE option='" & optionName & "'")
     try:
-      if db.execAffectedRows(query = sql(query = sqlQuery)) == 0:
+      if db_sqlite.execAffectedRows(db = db, query = sql(query = sqlQuery)) == 0:
         db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES (?, ?, ?, ?, ?, ?)"),
             args = [$optionName, $value, $description, $valueType, $value, $readOnly])
     except DbError:
@@ -159,7 +189,7 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     showFormHeader(message = "Available options are:", db = db)
     try:
-      for row in db.fastRows(query = sql(
+      for row in db_sqlite.fastRows(db = db, query = sql(
           query = "SELECT option, value, defaultvalue, valuetype, description FROM options ORDER BY option ASC")):
         table.add(parts = row)
     except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -307,7 +337,8 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     # Reset all options
     if optionName == "all":
       try:
-        db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
+        db_sqlite.exec(db = db, query = sql(
+            query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
         showOutput(message = "All shell's options are reseted to their default values.")
       except DbError:
         return showError(message = "Can't reset the shell's options to their default values. Reason: ",
@@ -347,7 +378,8 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
+      db_sqlite.exec(db = db, query = sql(
+          query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
     except DbError:
       return showError(message = "Can't update table for the shell's options. Reason: ",
           e = getCurrentException())
@@ -382,7 +414,7 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """CREATE TABLE options (
+      db_sqlite.exec(db = db, query = sql(query = """CREATE TABLE options (
                   option VARCHAR(""" & $ aliasNameLength &
             """) NOT NULL PRIMARY KEY,
                   value	 VARCHAR(""" & $maxInputLength &
@@ -431,7 +463,7 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect,
   ## * commands    - the list of the shell's commands
   body:
     # Add commands related to the shell's options
-    proc optionsCommand(arguments: UserInput; db: DbConn;
+    proc optionsCommand(arguments: UserInput; db;
         list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
         WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
         Rooteffect], contractual.} =
