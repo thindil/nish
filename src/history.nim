@@ -395,31 +395,26 @@ proc createHistoryDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newHistoryEntry())
-      var newOption: Option = newOption(name = "historyLength", value = "500",
+      var newOptions: seq[Option] = @[newOption(name = "historyLength",
+          value = "500",
           description = "Max amount of entries in shell commands history.",
-          valueType = natural, defaultValue = "500", readOnly = false)
-      db.insert(obj = newOption)
-      newOption = newOption(name = "historyAmount", value = "20",
+          valueType = natural, defaultValue = "500", readOnly = false),
+          newOption(name = "historyAmount", value = "20",
           description = "Amount of entries in shell commands history to show with history list command.",
-          valueType = natural, defaultValue = "20", readOnly = false)
-      db.insert(obj = newOption)
-      newOption = newOption(name = "historySaveInvalid", value = "false",
+          valueType = natural, defaultValue = "20", readOnly = false),
+          newOption(name = "historySaveInvalid", value = "false",
           description = "Save in shell command history also invalid commands.",
-          valueType = boolean, defaultValue = "false", readOnly = false)
-      db.insert(obj = newOption)
-      newOption = newOption(name = "historySort", value = "recentamount",
+          valueType = boolean, defaultValue = "false", readOnly = false),
+          newOption(name = "historySort", value = "recentamount",
           description = "How to sort the list of the last commands from shell history.",
           valueType = historysort, defaultValue = "recentamount",
-          readOnly = false)
-      db.insert(obj = newOption)
-      newOption = newOption(name = "historyReverse", value = "false",
+          readOnly = false), newOption(name = "historyReverse", value = "false",
           description = "Reverse order when showing the last commands from shell history.",
-          valueType = boolean, defaultValue = "false", readOnly = false)
-      db.insert(obj = newOption)
-      newOption = newOption(name = "historySearchAmount", value = "20",
+          valueType = boolean, defaultValue = "false", readOnly = false),
+          newOption(name = "historySearchAmount", value = "20",
           description = "The amount of results to return when search shell history.",
-          valueType = natural, defaultValue = "20", readOnly = false)
-      db.insert(obj = newOption)
+          valueType = natural, defaultValue = "20", readOnly = false)]
+      db.insert(objs = newOptions)
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't create 'history' table. Reason: ",
