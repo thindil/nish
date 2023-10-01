@@ -17,8 +17,8 @@ block:
 
   assert getOption(initLimitedString(capacity = 13, text = "historyLength"),
       db).len > 0, "Failed to get value of an option."
-  assert getOption(initLimitedString(capacity = 10, text = "werweewfwe"), db).len ==
-      0, "Failed to not get a value of a non-existing option."
+  assert getOption(initLimitedString(capacity = 10, text = "werweewfwe"),
+      db).len == 0, "Failed to not get a value of a non-existing option."
 
   let optionName = initLimitedString(capacity = 10, text = "testOption")
   setOption(optionName = optionName, value = initLimitedString(capacity = 3,
@@ -26,8 +26,9 @@ block:
   assert deleteOption(optionName, db) == QuitSuccess, "Failed to delete an option."
   assert getOption(optionName, db).len == 0, "Failed to not get a deleted option."
 
-  setOption(optionName = initLimitedString(capacity = 13, text = "historyLength"),
-      value = initLimitedString(capacity = 3, text = "100"), db = db)
+  setOption(optionName = initLimitedString(capacity = 13,
+      text = "historyLength"), value = initLimitedString(capacity = 3,
+          text = "100"), db = db)
   assert getOption(initLimitedString(capacity = 13, text = "historyLength"),
       db) == "100", "Failed to set a value for an option."
 
@@ -42,5 +43,7 @@ block:
       db) == "500", "Failed to get a reseted value for an option."
 
   assert showOptions(db) == QuitSuccess
+
+  assert newOption(name = "newOpt").option == "newOpt", "Failed to initialize a new option."
 
   quitShell(ResultCode(QuitSuccess), db)
