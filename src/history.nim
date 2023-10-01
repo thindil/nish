@@ -349,20 +349,32 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
     try:
       if dbVersion < 2:
         db_sqlite.exec(db = db, query = sql(
-            query = """ALTER TABLE history ADD path VARCHAR(""" &
-            $maxInputLength & """)"""))
-        db_sqlite.exec(db = db, query = sql(
-            query = "UPDATE options SET valuetype='natural' WHERE option='historyLength'"))
-        db_sqlite.exec(db = db, query = sql(
-            query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySort', 'recentamount', 'How to sort the list of the last commands from shell history.', 'historysort', 'recentamount', '0')"))
-        db_sqlite.exec(db = db, query = sql(
-            query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historyReverse', 'false', 'Reverse order when showing the last commands from shell history.', 'boolean', 'false', '0')"))
-      if dbVersion < 3:
-        db_sqlite.exec(db = db, query = sql(
-            query = "UPDATE options SET valuetype='positive' WHERE option='historyAmount'"))
-        db_sqlite.exec(db = db, query = sql(
-            query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES ('historySearchAmount', '20', 'The amount of results to return when search shell history.', 'positive', '20', '0')"))
-    except DbError, CapacityError:
+            query = """ALTER TABLE history ADD path TEXT"""))
+        var
+          newOptions: seq[Option] = @[newOption(name = "historySaveInvalid",
+              value = "false",
+              description = "Save in shell command history also invalid commands.",
+              valueType = boolean, defaultValue = "false", readOnly = false),
+              newOption(name = "historySort", value = "recentamount",
+              description = "How to sort the list of the last commands from shell history.",
+              valueType = historysort, defaultValue = "recentamount",
+              readOnly = false), newOption(name = "historyReverse",
+              value = "false",
+              description = "Reverse order when showing the last commands from shell history.",
+              valueType = boolean, defaultValue = "false", readOnly = false),
+              newOption(name = "historySearchAmount", value = "20",
+              description = "The amount of results to return when search shell history.",
+              valueType = natural, defaultValue = "20", readOnly = false)]
+          updatedOptions: seq[Option] = @[newOption(name = "historyLength",
+              value = "500",
+              description = "Max amount of entries in shell commands history.",
+              valueType = natural, defaultValue = "500", readOnly = false),
+              newOption(name = "historyAmount", value = "20",
+              description = "Amount of entries in shell commands history to show with history list command.",
+              valueType = natural, defaultValue = "20", readOnly = false)]
+        db.update(objs = updatedOptions)
+        db.insert(objs = newOptions)
+    except:
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
