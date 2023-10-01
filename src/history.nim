@@ -75,8 +75,7 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      return parseInt(s = db_sqlite.getValue(db = db, query = sql(query =
-        "SELECT COUNT(*) FROM history")))
+      return db.count(HistoryEntry)
     except DbError, ValueError:
       showError(message = "Can't get the length of the shell's commands history. Reason: ",
           e = getCurrentException())
