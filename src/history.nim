@@ -151,20 +151,22 @@ proc updateHistory*(commandToAdd: string; db;
       # If the history entry exists, update the amount and time
       if db.exists(T = HistoryEntry, cond = "command=? AND path=?", params = [
           commandToAdd.dbValue, currentDir.dbValue]):
-        db.select(entry, "command=? AND path=?", commandToAdd, currentDir)
+        db.select(obj = entry, cond = "command=? AND path=?", params = [
+            commandToAdd.dbValue, currentDir.dbValue])
         entry.amount.inc
         entry.lastUsed = now()
-        db.update(entry)
-      elif db.exists(HistoryEntry, "command=?", commandToAdd):
-        db.select(entry, "command=?", commandToAdd)
+        db.update(obj = entry)
+      elif db.exists(T = HistoryEntry, cond = "command=?",
+          params = commandToAdd):
+        db.select(obj = entry, cond = "command=?", params = commandToAdd)
         entry.path = currentDir
         entry.amount.inc
         entry.lastUsed = now()
-        db.update(entry)
+        db.update(obj = entry)
       # Add the new entry to the shell's history
       else:
         entry = newHistoryEntry(command = commandToAdd, path = currentDir)
-        db.insert(entry)
+        db.insert(obj = entry)
         result.inc
     except:
       showError(message = "Can't update the shell's history. Reason: ",
