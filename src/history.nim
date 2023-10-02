@@ -81,6 +81,20 @@ proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
           e = getCurrentException())
       return HistoryRange.low
 
+proc newHistoryEntry*(command: string = ""; lastUsed: DateTime = now();
+    amount: Positive = 1; path: string = ""): HistoryEntry {.raises: [], tags: [],
+    contractual.} =
+  ## Create a new data structure for the shell's commands' history entry.
+  ##
+  ## * command  - the command executed by the user
+  ## * lastUsed - the time when the command was recently excute
+  ## * amount   - how many times the user executed the command
+  ## * path     - the full path in which the command was executed
+  ##
+  ## Returns the new data structure for the selected shell's commands' history entry.
+  body:
+    return HistoryEntry(command: command, lastUsed: lastUsed, amount: amount, path: path)
+
 proc updateHistory*(commandToAdd: string; db;
     returnCode: ResultCode = QuitSuccess.ResultCode): HistoryRange {.gcsafe,
     sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
@@ -99,48 +113,56 @@ proc updateHistory*(commandToAdd: string; db;
     db != nil
     commandToAdd.len > 0
   body:
-    result = historyLength(db = db)
+    result = db.historyLength
+    var historyOption: Option = newOption()
     let historyAmount: Natural = try:
-        parseInt(s = db_sqlite.getValue(db = db, query = sql(
-            query = "SELECT value FROM options WHERE option='historyLength'")))
-      except DbError, ValueError:
+        db.select(historyOption, "option=?", "historyLength")
+        historyOption.value.parseInt
+      except:
         500
     if historyAmount == 0:
       return
     try:
-      if returnCode != QuitSuccess and db_sqlite.getValue(db = db, query = sql(query =
-        "SELECT value FROM options WHERE option='historySaveInvalid'")) == "false":
+      db.select(historyOption, "option=?", "historySaveInvalid")
+      if returnCode != QuitSuccess and historyOption.value == "false":
         return
-    except DbError:
+    except:
       showError(message = "Can't get value of option historySaveInvalid. Reason: ",
           e = getCurrentException())
       return
     if result >= historyAmount:
       try:
-        db_sqlite.exec(db = db, query = sql(
-            query = "DELETE FROM history WHERE rowid IN (SELECT rowid FROM history ORDER BY lastused, amount ASC LIMIT ?)"),
-             args = (if result == historyAmount: 1 else: result -
-                historyAmount))
-        result = historyLength(db = db)
-      except DbError, ValueError:
+        var entries: seq[HistoryEntry] = @[newHistoryEntry()]
+        db.select(entries, "id IN (SELECT id FROM history ORDER BY lastused, amount ASC LIMIT ?)",
+            (if result == historyAmount: 1 else: result - historyAmount))
+        db.delete(entries)
+        result = db.historyLength
+      except:
         showError(message = "Can't delete exceeded entries from the shell's history. Reason: ",
             e = getCurrentException())
         return
     try:
       # Update history if there is the command in the history in the same directory
       let currentDir: string = getCurrentDirectory()
-      if db.execAffectedRows(query = sql(
-          query = "UPDATE history SET amount=amount+1, lastused=datetime('now') WHERE command=? AND path=?"),
-           args = [commandToAdd, currentDir]) == 0:
-        # Update history if there is the command in the history
-        if db.execAffectedRows(query = sql(
-            query = "UPDATE history SET amount=amount+1, lastused=datetime('now'), path=? WHERE command=?"),
-             args = [currentDir, commandToAdd]) == 0:
-          # If command isn't in the history, add it
-          db.exec(query = sql(query = "INSERT INTO history (command, amount, lastused, path) VALUES (?, 1, datetime('now'), ?)"),
-              args = [commandToAdd, currentDir])
-          result.inc
-    except DbError, OSError:
+      var entry: HistoryEntry = newHistoryEntry()
+      # If the history entry exists, update the amount and time
+      if db.exists(HistoryEntry, "command=? AND path=?", commandToAdd, currentDir):
+        db.select(entry, "command=? AND path=?", commandToAdd, currentDir)
+        entry.amount.inc
+        entry.lastUsed = now()
+        db.update(entry)
+      elif db.exists(HistoryEntry, "command=?", commandToAdd):
+        db.select(entry, "command=?", commandToAdd)
+        entry.path = currentDir
+        entry.amount.inc
+        entry.lastUsed = now()
+        db.update(entry)
+      # Add the new entry to the shell's history
+      else:
+        entry = newHistoryEntry(command = commandToAdd, path = currentDir)
+        db.insert(entry)
+        result.inc
+    except:
       showError(message = "Can't update the shell's history. Reason: ",
           e = getCurrentException())
 
@@ -377,20 +399,6 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
-
-proc newHistoryEntry*(command: string = ""; lastUsed: DateTime = now();
-    amount: Positive = 1; path: string = ""): HistoryEntry {.raises: [], tags: [],
-    contractual.} =
-  ## Create a new data structure for the shell's commands' history entry.
-  ##
-  ## * command  - the command executed by the user
-  ## * lastUsed - the time when the command was recently excute
-  ## * amount   - how many times the user executed the command
-  ## * path     - the full path in which the command was executed
-  ##
-  ## Returns the new data structure for the selected shell's commands' history entry.
-  body:
-    return HistoryEntry(command: command, lastUsed: lastUsed, amount: amount, path: path)
 
 proc createHistoryDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
