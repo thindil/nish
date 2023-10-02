@@ -191,34 +191,37 @@ proc getHistory*(historyIndex: HistoryRange; db;
     db != nil
   body:
     try:
+      type LocalEntry = ref object
+        command: string
+      var entry: LocalEntry = LocalEntry()
       # Get the command based on the historyIndex parameter
       if searchFor.len == 0:
-        let value: string = db.getValue(query = sql(
-            query = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-            args = [getCurrentDirectory(), $(historyLength(db = db) -
-                historyIndex)])
-        if value.len == 0:
-          result = db.getValue(query = sql(
-              query = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?"),
-              args = [$(historyLength(db = db) - historyIndex)])
-        else:
-          result = value
+        if db.exists(T = HistoryEntry, cond = "path=?",
+            params = getCurrentDirectory()):
+          db.rawSelect(qry = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?",
+              obj = entry, params = [getCurrentDirectory().dbValue, ($(
+              historyLength(db = db) - historyIndex)).dbValue])
+        if entry.command.len == 0 and db.exists(T = HistoryEntry):
+          db.rawSelect(qry = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?",
+              obj = entry, params = $(historyLength(db = db) - historyIndex))
+        return entry.command
       # Get the command based on the searchFor parameter
-      else:
-        let value: string = db.getValue(query = sql(
-            query = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC"),
-            args = [searchFor & "%", getCurrentDirectory()])
-        if value.len == 0:
-          result = db_sqlite.getValue(db = db, query = sql(
-              query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
-              args = searchFor & "%")
-        else:
-          result = value
-        if result.len == 0:
-          result = $searchFor
-    except DbError, OSError:
+      if db.exists(T = HistoryEntry, cond = "command LIKE ? AND path=?",
+          params = [(searchFor & "%").dbValue, getCurrentDirectory().dbValue]):
+        db.rawSelect(qry = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC",
+            obj = entry, params = [(searchFor & "%").dbValue,
+            getCurrentDirectory().dbValue])
+      if entry.command.len == 0:
+        if db.exists(T = HistoryEntry, cond = "command LIKE ?", params = (
+            searchFor & "%").dbValue):
+          db.rawSelect(qry = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC",
+              obj = entry, params = (searchFor & "%").dbValue)
+      if entry.command.len > 0:
+        return entry.command
+    except:
       showError(message = "Can't get the selected command from the shell's history. Reason: ",
           e = getCurrentException())
+    return $searchFor
 
 proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect,
