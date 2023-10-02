@@ -99,7 +99,10 @@ proc to*(dbVal: DbValue, T: typedesc[ValueType]): T {.raises: [], tags: [],
   ##
   ## Returns the converted dbVal parameter
   body:
-    parseEnum[ValueType](s = dbVal.s)
+    try:
+      parseEnum[ValueType](s = dbVal.s)
+    except:
+      none
 
 proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
