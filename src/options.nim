@@ -417,19 +417,8 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(query = """CREATE TABLE options (
-                  option VARCHAR(""" & $ aliasNameLength &
-            """) NOT NULL PRIMARY KEY,
-                  value	 VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                  description VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                  valuetype VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                  defaultvalue VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                  readonly BOOLEAN DEFAULT 0)"""))
-    except DbError, CapacityError:
+      db.createTables(obj = newOption())
+    except:
       return showError(message = "Can't create 'options' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
