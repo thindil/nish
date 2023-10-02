@@ -116,14 +116,16 @@ proc updateHistory*(commandToAdd: string; db;
     result = db.historyLength
     var historyOption: Option = newOption()
     let historyAmount: Natural = try:
-        db.select(historyOption, "option=?", "historyLength")
+        db.select(obj = historyOption, cond = "option=?",
+            params = "historyLength")
         historyOption.value.parseInt
       except:
         500
     if historyAmount == 0:
       return
     try:
-      db.select(historyOption, "option=?", "historySaveInvalid")
+      db.select(obj = historyOption, cond = "option=?",
+          params = "historySaveInvalid")
       if returnCode != QuitSuccess and historyOption.value == "false":
         return
     except:
@@ -133,9 +135,10 @@ proc updateHistory*(commandToAdd: string; db;
     if result >= historyAmount:
       try:
         var entries: seq[HistoryEntry] = @[newHistoryEntry()]
-        db.select(entries, "id IN (SELECT id FROM history ORDER BY lastused, amount ASC LIMIT ?)",
-            (if result == historyAmount: 1 else: result - historyAmount))
-        db.delete(entries)
+        db.select(objs = entries, cond = "id IN (SELECT id FROM history ORDER BY lastused, amount ASC LIMIT ?)",
+            params = (if result == historyAmount: 1 else: result -
+                historyAmount))
+        db.delete(objs = entries)
         result = db.historyLength
       except:
         showError(message = "Can't delete exceeded entries from the shell's history. Reason: ",
@@ -146,7 +149,8 @@ proc updateHistory*(commandToAdd: string; db;
       let currentDir: string = getCurrentDirectory()
       var entry: HistoryEntry = newHistoryEntry()
       # If the history entry exists, update the amount and time
-      if db.exists(HistoryEntry, "command=? AND path=?", commandToAdd, currentDir):
+      if db.exists(T = HistoryEntry, cond = "command=? AND path=?", params = [
+          commandToAdd.dbValue, currentDir.dbValue]):
         db.select(entry, "command=? AND path=?", commandToAdd, currentDir)
         entry.amount.inc
         entry.lastUsed = now()
