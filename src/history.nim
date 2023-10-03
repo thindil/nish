@@ -259,27 +259,37 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
     db != nil
     arguments.len > 0
   body:
+    var value: OptionValue = emptyLimitedString(capacity = 10)
     let
       argumentsList: seq[string] = split(s = $arguments)
       amount: HistoryRange = try:
-          parseInt(s = (if argumentsList.len > 1: argumentsList[
-              1] else: db_sqlite.getValue(db = db, query = sql(
-                  query = "SELECT value FROM options WHERE option='historyAmount'"))))
-        except ValueError, DbError:
+          if argumentsList.len > 1:
+            argumentsList[1].parseInt
+          else:
+            value = getOption(optionName = initLimitedString(capacity = 13,
+                text = "historyAmount"), db = db)
+            ($value).parseInt
+        except:
           return showError(message = "Can't get setting for the amount of history commands to show.")
       historyDirection: string = try:
           if argumentsList.len > 3: (if argumentsList[3] ==
               "true": "ASC" else: "DESC") else:
-            if db_sqlite.getValue(db = db, query = sql(
-                query = "SELECT value FROM options WHERE option='historyReverse'")) ==
-                "true": "ASC" else: "DESC"
-        except DbError:
+            value = getOption(optionName = initLimitedString(capacity = 14,
+                text = "historyReverse"), db = db)
+            if value == "true":
+              "ASC"
+            else:
+              "DESC"
+        except:
           return showError(message = "Can't get setting for the reverse order of history commands to show.")
       orderText: string = try:
-          if argumentsList.len > 2: argumentsList[2] else: db_sqlite.getValue(
-              db = db, query = sql(
-              query = "SELECT value FROM options WHERE option='historySort'"))
-        except DbError:
+          if argumentsList.len > 2:
+            argumentsList[2]
+          else:
+            value = getOption(optionName = initLimitedString(capacity = 11,
+                text = "historySort"), db = db)
+            $value
+        except:
           return showError(message = "Can't get setting for the order of history commands to show.")
       historyOrder: string =
         case orderText
@@ -298,16 +308,17 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't show history list. Reason: ",
           e = getCurrentException())
     try:
-      for row in db_sqlite.fastRows(db = db, query = sql(
-          query = "SELECT command, lastused, amount FROM history ORDER BY " &
-          historyOrder & " LIMIT 0, ?"), args = amount):
-        table.add(parts = [row[1], row[2], row[0]])
+      var entries: seq[HistoryEntry] = @[newHistoryEntry()]
+      db.select(entries, "ORDER BY " & historyOrder & " LIMIT 0, ?", amount)
+      for entry in entries:
+        table.add(parts = [entry.lastUsed.format("yyyy-MM-dd HH:mm:ss"),
+            $entry.amount, entry.command])
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
         width += size
       showFormHeader(message = "The last " & $amount &
           " commands from the shell's history", width = width.ColumnAmount, db = db)
-    except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+    except:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
     try:
