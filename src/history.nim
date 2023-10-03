@@ -235,7 +235,7 @@ proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(query = "DELETE FROM history"));
+      sqlite.exec(db = db, query = sql(query = "DELETE FROM history"));
     except DbError:
       return showError(message = "Can't clear the shell's commands history. Reason: ",
           e = getCurrentException())
