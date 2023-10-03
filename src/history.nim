@@ -114,19 +114,21 @@ proc updateHistory*(commandToAdd: string; db;
     commandToAdd.len > 0
   body:
     result = db.historyLength
-    var historyOption: Option = newOption()
+    var value: OptionValue = emptyLimitedString(capacity = 10)
     let historyAmount: Natural = try:
-        db.select(obj = historyOption, cond = "option=?",
-            params = "historyLength")
-        historyOption.value.parseInt
+        value = getOption(optionName = initLimitedString(capacity = 13,
+            text = "historyLength"), db = db, defaultValue = initLimitedString(
+            capacity = 10, text = "500"))
+        ($value).parseInt
       except:
         500
     if historyAmount == 0:
       return
     try:
-      db.select(obj = historyOption, cond = "option=?",
-          params = "historySaveInvalid")
-      if returnCode != QuitSuccess and historyOption.value == "false":
+      value = getOption(optionName = initLimitedString(capacity = 18,
+          text = "historySaveInvalid"), db = db,
+          defaultValue = initLimitedString(capacity = 10, text = "false"))
+      if returnCode != QuitSuccess and value == "false":
         return
     except:
       showError(message = "Can't get value of option historySaveInvalid. Reason: ",
