@@ -308,8 +308,13 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't show history list. Reason: ",
           e = getCurrentException())
     try:
-      var entries: seq[HistoryEntry] = @[newHistoryEntry()]
-      db.select(entries, "ORDER BY " & historyOrder & " LIMIT 0, ?", amount)
+      type LocalEntry = ref object
+        command: string
+        lastUsed: DateTime
+        amount: int
+      var entries: seq[LocalEntry] = @[LocalEntry()]
+      db.rawSelect("SELECT command, lastused, amount FROM history ORDER BY " &
+          historyOrder & " LIMIT 0, ?", entries, amount)
       for entry in entries:
         table.add(parts = [entry.lastUsed.format("yyyy-MM-dd HH:mm:ss"),
             $entry.amount, entry.command])
