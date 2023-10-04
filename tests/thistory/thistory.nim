@@ -4,10 +4,6 @@ discard """
 """
 
 import std/tables
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 import ../../src/[commandslist, directorypath, history, lstring, nish, resultcode]
 
 block:
@@ -16,10 +12,7 @@ block:
   var commands = newTable[string, CommandData]()
   var amount = initHistory(db, commands)
   if amount == 0:
-    if db.tryInsertID(sql"INSERT INTO history (command, amount, lastused, path) VALUES (?, 1, datetime('now'), '/')",
-        "alias delete") == -1:
-      echo "Failed to add a command to the database."
-      quit QuitFailure
+    discard updateHistory("alias delete", db)
 
   assert getHistory(1, db) == "alias delete", "Failed to get the history entry."
 
