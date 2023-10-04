@@ -759,7 +759,7 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      exec(db = db, query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
+      db.exec(query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
