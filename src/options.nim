@@ -438,10 +438,13 @@ proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
     db != nil
   body:
     try:
-      if db.execAffectedRows(query = sql(
-          query = "DELETE FROM options WHERE option=?"), args = optionName) == 0:
-        return QuitFailure.ResultCode
-    except DbError:
+      if not db.exists(T = Option, cond = "option=?", params = $optionName):
+        return showError(message = "Can't delete the selected option '" &
+            optionName & "' because there is no that option.")
+      var option: Option = newOption(name = $optionName)
+      db.select(obj = option, cond = "option=?", params = $optionName)
+      db.delete(obj = option)
+    except:
       return showError(message = "Can't delete the selected option. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
