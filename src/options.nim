@@ -34,7 +34,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, nimalyzer, termstyle
+import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, help, lstring, output, resultcode
@@ -469,21 +469,19 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect,
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
-        {.ruleOff: "ifStatements".}
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "options",
               subcommands = optionsCommands)
         # Show the list of available options
-        elif arguments == "list":
+        if arguments == "list":
           return showOptions(db = db)
-        elif arguments.startsWith(prefix = "set"):
+        if arguments.startsWith(prefix = "set"):
           result = setOptions(arguments = arguments, db = db)
           return
-        elif arguments.startsWith(prefix = "reset"):
+        if arguments.startsWith(prefix = "reset"):
           result = resetOptions(arguments = arguments, db = db)
           return
-        {.ruleOn: "ifStatements".}
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 7, text = "options"),
