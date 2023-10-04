@@ -354,13 +354,16 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
     var table: TerminalTable = TerminalTable()
     try:
       result = QuitFailure.ResultCode
-      let maxRows: int = db_sqlite.getValue(db = db, query = sql(
-          query = "SELECT value FROM options WHERE option='historySearchAmount'")).parseInt
+      let maxRows: int = ($getOption(optionName = initLimitedString(
+          capacity = 19, text = "historySearchAmount"), db = db)).parseInt
       var currentRow: int = 0
-      for row in db_sqlite.fastRows(db = db, query = sql(
-          query = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC"),
-          args = "%" & searchFor & "%"):
-        table.add(parts = row[0])
+      type LocalEntry = ref object
+        command: string
+      var entries: seq[LocalEntry] = @[LocalEntry()]
+      db.rawSelect(qry = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC",
+          objs = entries, params = "%" & searchFor & "%")
+      for entry in entries:
+        table.add(parts = entry.command)
         result = QuitSuccess.ResultCode
         currentRow.inc
         if currentRow == maxRows:
@@ -377,7 +380,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       except IOError, Exception:
         return showError(message = "Can't show the list of search results from history. Reason: ",
             e = getCurrentException())
-    except DbError, ValueError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+    except:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
