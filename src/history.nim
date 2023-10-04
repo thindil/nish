@@ -29,11 +29,6 @@
 
 # Standard library imports
 import std/[os, strutils, terminal, times]
-# Database library import, depends on version of Nim
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -59,7 +54,7 @@ type
     path*: string
 
 using
-  db: db_sqlite.DbConn # Connection to the shell's database
+  db: DbConn # Connection to the shell's database
   arguments: UserInput # The arguments for a command entered by the user
 
 proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
@@ -399,8 +394,7 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
   body:
     try:
       if dbVersion < 2:
-        db_sqlite.exec(db = db, query = sql(
-            query = """ALTER TABLE history ADD path TEXT"""))
+        db.exec(query = sql(query = """ALTER TABLE history ADD path TEXT"""))
         var
           newOptions: seq[Option] = @[newOption(name = "historySaveInvalid",
               value = "false",
