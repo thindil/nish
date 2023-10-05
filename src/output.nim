@@ -106,6 +106,7 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
         stderr.writeLine(x = "")
       else:
         {.ruleOff: "namedParams".}
+        stderr.styledWriteLine(fgRed, $e.name)
         stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
         when defined(debug):
           stderr.styledWrite(fgRed, getStackTrace(e = e))
