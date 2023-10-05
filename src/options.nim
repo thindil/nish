@@ -175,7 +175,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     optionName.len > 0
     db != nil
   body:
-    var option: Option = newOption(name = $optionName)
+    var option: Option = newOption(name = $optionName, readOnly = readOnly == 1)
     try:
       if db.exists(T = Option, cond = "option=?", params = $optionName):
         db.select(obj = option, cond = "option=?", params = $optionName)
@@ -189,9 +189,9 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
       option.valueType = valueType
     try:
       if db.exists(T = Option, cond = "option=?", params = $optionName):
-        db.update(option)
+        db.update(obj = option)
       else:
-        db.insert(option)
+        db.insert(obj = option)
     except:
       showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException())
@@ -214,10 +214,13 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     showFormHeader(message = "Available options are:", db = db)
     try:
-      for row in db_sqlite.fastRows(db = db, query = sql(
-          query = "SELECT option, value, defaultvalue, valuetype, description FROM options ORDER BY option ASC")):
-        table.add(parts = row)
-    except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+      var options: seq[Option] = @[newOption()]
+      db.rawSelect(qry = "SELECT * FROM options ORDER BY option ASC",
+          objs = options)
+      for option in options:
+        table.add(parts = [option.option, option.value, option.defaultValue,
+            $option.valueType, option.description])
+    except:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
     try:
