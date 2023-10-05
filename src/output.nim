@@ -112,9 +112,7 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
         {.ruleOn: "namedParams".}
     except IOError, ValueError:
       try:
-        {.ruleOff: "namedParams".}
         stderr.writeLine(x = message)
-        {.ruleOn: "namedParams".}
       except IOError:
         discard
     return QuitFailure.ResultCode
