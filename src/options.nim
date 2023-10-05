@@ -139,6 +139,23 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     if result == "":
       result = defaultValue
 
+proc newOption*(name: string = ""; value: string = ""; description: string = "";
+    valueType: ValueType = none; defaultValue: string = "";
+    readOnly: bool = false): Option {.raises: [], tags: [], contractual.} =
+  ## Create a new data structure for the shell's option.
+  ##
+  ## * name         - the name of the option
+  ## * value        - the value of the option
+  ## * description  - the description of the option
+  ## * valueType    - the type of the option's value
+  ## * defaultValue - the default value for the option
+  ## * readOnly     - if true, the option can be only read by the user, not set
+  ##
+  ## Returns the new data structure for the selected shell's option.
+  body:
+    Option(option: name, value: value, description: description,
+        valueType: valueType, defaultValue: defaultValue, readOnly: readOnly)
+
 proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
     capacity = maxInputLength); valueType: ValueType = none; db;
@@ -158,23 +175,24 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     optionName.len > 0
     db != nil
   body:
-    var sqlQuery: string = "UPDATE options SET "
-    if value != "":
-      sqlQuery.add(y = "value='" & value & "'")
-    if description != "":
-      if sqlQuery.len > 21:
-        sqlQuery.add(y = ", ")
-      sqlQuery.add(y = "description='" & description & "'")
-    if valueType != none:
-      if sqlQuery.len > 21:
-        sqlQuery.add(y = ", ")
-      sqlQuery.add(y = "valuetype='" & $valueType & "'")
-    sqlQuery.add(y = " WHERE option='" & optionName & "'")
+    var option: Option = newOption(name = $optionName)
     try:
-      if db_sqlite.execAffectedRows(db = db, query = sql(query = sqlQuery)) == 0:
-        db.exec(query = sql(query = "INSERT INTO options (option, value, description, valuetype, defaultvalue, readonly) VALUES (?, ?, ?, ?, ?, ?)"),
-            args = [$optionName, $value, $description, $valueType, $value, $readOnly])
-    except DbError:
+      if db.exists(T = Option, cond = "option=?", params = $optionName):
+        db.select(obj = option, cond = "option=?", params = $optionName)
+    except:
+      discard
+    if value != "":
+      option.value = $value
+    if description != "":
+      option.description = $description
+    if valueType != none:
+      option.valueType = valueType
+    try:
+      if db.exists(T = Option, cond = "option=?", params = $optionName):
+        db.update(option)
+      else:
+        db.insert(option)
+    except:
       showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException())
 
@@ -391,23 +409,6 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
       return showError(message = "Can't update table for the shell's options. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
-
-proc newOption*(name: string = ""; value: string = ""; description: string = "";
-    valueType: ValueType = none; defaultValue: string = "";
-    readOnly: bool = false): Option {.raises: [], tags: [], contractual.} =
-  ## Create a new data structure for the shell's option.
-  ##
-  ## * name         - the name of the option
-  ## * value        - the value of the option
-  ## * description  - the description of the option
-  ## * valueType    - the type of the option's value
-  ## * defaultValue - the default value for the option
-  ## * readOnly     - if true, the option can be only read by the user, not set
-  ##
-  ## Returns the new data structure for the selected shell's option.
-  body:
-    Option(option: name, value: value, description: description,
-        valueType: valueType, defaultValue: defaultValue, readOnly: readOnly)
 
 proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
