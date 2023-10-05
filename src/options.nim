@@ -122,13 +122,17 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
     optionName.len > 0
     db != nil
   body:
+    type LocalOption = ref object
+      value: string
     try:
-      let value: string = db.getValue(query = sql(
-          query = "SELECT value FROM options WHERE option=?"),
-          args = optionName)
-      result = initLimitedString(capacity = (if value.len ==
-          0: 1 else: value.len), text = value)
-    except DbError, CapacityError:
+      if not db.exists(T = Option, cond = "option=?", params = $optionName):
+        return defaultValue
+      var option: LocalOption = LocalOption()
+      db.rawSelect(qry = "SELECT value FROM options WHERE option=?",
+          obj = option, params = $optionName)
+      result = initLimitedString(capacity = (if option.value.len ==
+          0: 1 else: option.value.len), text = option.value)
+    except:
       showError(message = "Can't get value for option '" & optionName &
           "' from database. Reason: ", e = getCurrentException())
       return defaultValue
