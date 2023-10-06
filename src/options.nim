@@ -359,8 +359,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     # Reset all options
     if optionName == "all":
       try:
-        sqlite.exec(db = db, query = sql(
-            query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
+        db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
         showOutput(message = "All shell's options are reseted to their default values.")
       except DbError:
         return showError(message = "Can't reset the shell's options to their default values. Reason: ",
@@ -396,8 +395,7 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      sqlite.exec(db = db, query = sql(
-          query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
+      db.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
     except DbError:
       return showError(message = "Can't update table for the shell's options. Reason: ",
           e = getCurrentException())
