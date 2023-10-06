@@ -272,18 +272,18 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       case option.valueType
       of integer:
         try:
-          discard parseInt(s = $value)
+          discard ($value).parseInt
         except:
           return showError(message = "Value for option '" & optionName &
               "' should be integer type.")
       of float:
         try:
-          discard parseFloat(s = $value)
+          discard ($value).parseFloat
         except:
           return showError(message = "Value for option '" & optionName & "' should be float type.")
       of boolean:
         try:
-          value.text = toLowerAscii(s = $value)
+          value.text = ($value).toLowerAscii
         except CapacityError:
           return showError(message = "Can't set a new value for option '" &
               optionName & "'. Reason: ", e = getCurrentException())
@@ -291,7 +291,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
           return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
       of historysort:
         try:
-          value.text = toLowerAscii(s = $value)
+          value.text = ($value).toLowerAscii
         except CapacityError:
           return showError(message = "Can't set a new value for option '" &
               optionName & "'. Reason: ", e = getCurrentException())
@@ -299,7 +299,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
           return showError(message = "Value for option '" & optionName & "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)")
       of natural:
         try:
-          if parseInt(s = $value) < 0:
+          if ($value).parseInt < 0:
             return showError(message = "Value for option '" & optionName &
                 "' should be a natural integer, zero or more.")
         except:
@@ -317,7 +317,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
               value & "'. Reason: ", e = getCurrentException())
       of header:
         try:
-          value.text = toLowerAscii(s = $value)
+          value.text = ($value).toLowerAscii
         except CapacityError:
           return showError(message = "Can't set a new value for option '" &
               optionName & "'. Reason: ", e = getCurrentException())
@@ -325,7 +325,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
           return showError(message = "Value for option '" & optionName & "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)")
       of positive:
         try:
-          if parseInt(s = $value) < 1:
+          if ($value).parseInt < 1:
             return showError(message = "Value for option '" & optionName &
                 "' should be a positive integer, one or more.")
         except:
