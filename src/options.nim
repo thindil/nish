@@ -401,7 +401,7 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(
+      sqlite.exec(db = db, query = sql(
           query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
     except DbError:
       return showError(message = "Can't update table for the shell's options. Reason: ",
