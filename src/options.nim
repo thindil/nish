@@ -254,35 +254,34 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       except CapacityError:
         return showError(message = "Can't get the option's name from command: '" &
             arguments & "'.")
-    try:
-      if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
-          args = optionName) == "1":
-        return showError(message = "You can't set a new value for the selected option because it is read-only.")
-    except DbError:
-      return showError(message = "Can't check if the selected option is read only. Reason: ",
-          e = getCurrentException())
     let stringValue: string = setting[2 .. ^1].join(sep = " ")
     var value: OptionValue = try:
         initLimitedString(capacity = stringValue.len, text = stringValue)
       except CapacityError:
         return showError(message = "Can't get the option's value from command: '" &
             arguments & "'.")
-    # Check correctness of the option's value
     try:
-      case db.getValue(query = sql(query = "SELECT valuetype FROM options WHERE option=?"),
-          args = optionName)
-      of "integer":
+      if not db.exists(T = Option, cond = "option=?", params = $optionName):
+        return showError(message = "Shell's option with name '" & optionName &
+          "' doesn't exists. Please use command 'options list' to see all available shell's options.")
+      var option: Option = newOption(name = $optionName)
+      db.select(obj = option, cond = "option=?", params = $optionName)
+      if option.readOnly:
+        return showError(message = "You can't set a new value for the selected option because it is read-only.")
+      # Check correctness of the option's value
+      case option.valueType
+      of integer:
         try:
           discard parseInt(s = $value)
         except:
           return showError(message = "Value for option '" & optionName &
               "' should be integer type.")
-      of "float":
+      of float:
         try:
           discard parseFloat(s = $value)
         except:
           return showError(message = "Value for option '" & optionName & "' should be float type.")
-      of "boolean":
+      of boolean:
         try:
           value.text = toLowerAscii(s = $value)
         except CapacityError:
@@ -290,7 +289,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
               optionName & "'. Reason: ", e = getCurrentException())
         if value != "true" and value != "false":
           return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
-      of "historysort":
+      of historysort:
         try:
           value.text = toLowerAscii(s = $value)
         except CapacityError:
@@ -298,7 +297,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
               optionName & "'. Reason: ", e = getCurrentException())
         if $value notin ["recent", "amount", "name", "recentamount"]:
           return showError(message = "Value for option '" & optionName & "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)")
-      of "natural":
+      of natural:
         try:
           if parseInt(s = $value) < 0:
             return showError(message = "Value for option '" & optionName &
@@ -306,9 +305,9 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         except:
           return showError(message = "Value for option '" & optionName &
               "' should be integer type.")
-      of "text":
+      of text:
         discard
-      of "command":
+      of command:
         try:
           let (_, exitCode) = execCmdEx(command = $value)
           if exitCode != QuitSuccess:
@@ -316,7 +315,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         except:
           return showError(message = "Can't check the existence of command '" &
               value & "'. Reason: ", e = getCurrentException())
-      of "header":
+      of header:
         try:
           value.text = toLowerAscii(s = $value)
         except CapacityError:
@@ -324,7 +323,7 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
               optionName & "'. Reason: ", e = getCurrentException())
         if $value notin ["unicode", "ascii", "none", "hidden"]:
           return showError(message = "Value for option '" & optionName & "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)")
-      of "positive":
+      of positive:
         try:
           if parseInt(s = $value) < 1:
             return showError(message = "Value for option '" & optionName &
@@ -332,17 +331,17 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
         except:
           return showError(message = "Value for option '" & optionName &
               "' should be integer type.")
-      of "":
+      of none:
         return showError(message = "Shell's option with name '" & optionName &
           "' doesn't exists. Please use command 'options list' to see all available shell's options.")
-    except DbError:
-      return showError(message = "Can't get type of value for option '" &
+      # Set the option
+      setOption(optionName = optionName, value = value, db = db)
+      showOutput(message = "Value for option '" & optionName &
+          "' was set to '" & value & "'", fgColor = fgGreen);
+      return QuitSuccess.ResultCode
+    except:
+      return showError(message = "Can't set the value for the option '" &
           optionName & "'. Reason: ", e = getCurrentException())
-    # Set the option
-    setOption(optionName = optionName, value = value, db = db)
-    showOutput(message = "Value for option '" & optionName & "' was set to '" &
-        value & "'", fgColor = fgGreen);
-    return QuitSuccess.ResultCode
 
 proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
