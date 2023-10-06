@@ -364,7 +364,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     # Reset all options
     if optionName == "all":
       try:
-        db_sqlite.exec(db = db, query = sql(
+        sqlite.exec(db = db, query = sql(
             query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
         showOutput(message = "All shell's options are reseted to their default values.")
       except DbError:
@@ -373,22 +373,18 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
     # Reset the selected option
     else:
       try:
-        if db.getValue(query = sql(query = "SELECT readonly FROM options WHERE option=?"),
-            args = optionName) == "1":
-          return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.")
-        if db.getValue(query = sql(query = "SELECT value FROM options WHERE option=?"),
-            args = optionName) == "":
+        if not db.exists(T = Option, cond = "option=?", params = $optionName):
           return showError(message = "Shell's option with name '" & optionName &
             "' doesn't exists. Please use command 'options list' to see all available shell's options.")
-      except DbError:
-        return showError(message = "Can't get value for option '" & optionName &
-            "'. Reason: ", e = getCurrentException())
-      try:
-        db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE option=?"),
-            args = optionName)
+        var option: Option = newOption(name = $optionName)
+        db.select(obj = option, cond = "option=?", params = $optionName)
+        if option.readOnly:
+          return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.")
+        option.value = option.defaultValue
+        db.update(obj = option)
         showOutput(message = "The shell's option '" & optionName &
             "' reseted to its default value.", fgColor = fgGreen)
-      except DbError:
+      except:
         return showError(message = "Can't reset option '" & optionName &
             "' to its default value. Reason: ", e = getCurrentException())
     return QuitSuccess.ResultCode
