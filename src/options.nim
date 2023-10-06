@@ -28,11 +28,6 @@
 
 # Standard library imports
 import std/[os, osproc, strutils, terminal]
-# Database library import, depends on version of Nim
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -67,7 +62,7 @@ type
     readOnly*: bool
 
 using
-  db: db_sqlite.DbConn # Connection to the shell's database
+  db: DbConn # Connection to the shell's database
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
