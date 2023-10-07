@@ -35,7 +35,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
 else:
   import std/db_sqlite
 # External modules imports
-import ansiparse, contracts, nancy, nimalyzer, termstyle
+import ansiparse, contracts, nancy, termstyle
 # Internal imports
 import commandslist, constants, databaseid, help, lstring, options,
     output, resultcode
@@ -801,7 +801,6 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
-        {.ruleOff: "ifStatements".}
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "plugin", subcommands = pluginsCommands)
@@ -828,7 +827,6 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
         if arguments.startsWith(prefix = "show"):
           return showPlugin(arguments = arguments, db = db,
               commands = list.commands)
-        {.ruleOn: "ifStatements".}
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 6, text = "plugin"),
