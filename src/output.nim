@@ -35,6 +35,7 @@ else:
   import std/db_sqlite
 # External modules imports
 import contracts, nancy, nimalyzer, termstyle
+import norm/sqlite
 # Internal imports
 import constants, resultcode
 
@@ -120,7 +121,7 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
 
 proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
     ).ColumnAmount except ValueError: 80.ColumnAmount);
-    db: DbConn) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
+    db: sqlite.DbConn) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         RootEffect], contractual.} =
   ## Show form's header with the selected message
   ##
@@ -132,9 +133,12 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
     message.len > 0
     db != nil
   body:
+    type LocalOption = ref object
+      value: string
     try:
-      let headerType: string = db.getValue(query = sql(
-          query = "SELECT value FROM options WHERE option='outputHeaders'"))
+      var option: LocalOption = LocalOption()
+      db.rawSelect(qry = "SELECT value FROM options WHERE option='outputHeaders'", obj = option)
+      let headerType: string = option.value
       if headerType == "hidden":
         return
       var table: TerminalTable = TerminalTable()
