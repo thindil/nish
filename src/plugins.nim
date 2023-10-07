@@ -36,6 +36,7 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
+import norm/sqlite
 # Internal imports
 import commandslist, constants, databaseid, help, lstring, options,
     output, resultcode
@@ -58,7 +59,7 @@ type
       answer: LimitedString] ## Store the result of the plugin's API command
 
 using
-  db: DbConn # Connection to the shell's database
+  db: db_sqlite.DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
   commands: ref CommandsList # The list of the shell's commands
 
@@ -74,7 +75,7 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """CREATE TABLE plugins (
+      db_sqlite.exec(db = db, query = sql(query = """CREATE TABLE plugins (
                  id          INTEGER       PRIMARY KEY,
                  location    VARCHAR(""" & $maxInputLength &
             """) NOT NULL,
@@ -448,8 +449,8 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.sideEffect,
     pluginPath.len > 0
     db != nil
   body:
-    let pluginData: PluginResult = execPlugin(pluginPath = pluginPath, arguments = ["info"],
-        db = db, commands = commands)
+    let pluginData: PluginResult = execPlugin(pluginPath = pluginPath,
+        arguments = ["info"], db = db, commands = commands)
     if pluginData.code == QuitFailure:
       return
     let pluginInfo: seq[string] = split(s = $pluginData.answer, sep = ";")
@@ -490,8 +491,10 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
       return showError(message = "File '" & pluginPath & "' doesn't exist.")
     try:
       # Check if the plugin isn't added previously
-      if db.getRow(query = sql(query = "SELECT id FROM plugins WHERE location=?"),
-          args = pluginPath) != @[""]:
+      if db_sqlite.getRow(db = db, query = sql(
+          query = "SELECT id FROM plugins WHERE location=?"),
+
+args = pluginPath) != @[""]:
         return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
       # Check if the plugin can be added
       let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
@@ -506,15 +509,19 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
       if "install" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
             db = db, commands = commands).code != QuitSuccess:
-          db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"),
-              args = pluginPath)
+          db_sqlite.exec(db = db, query = sql(
+              query = "DELETE FROM plugins WHERE location=?"),
+
+args = pluginPath)
           return showError(message = "Can't install plugin '" & pluginPath & "'.")
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
             db = db, commands = commands).code != QuitSuccess:
-          db.exec(query = sql(query = "DELETE FROM plugins WHERE location=?"),
-              args = pluginPath)
+          db_sqlite.exec(db = db, query = sql(
+              query = "DELETE FROM plugins WHERE location=?"),
+
+args = pluginPath)
           return showError(message = "Can't enable plugin '" & pluginPath & "'.")
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
@@ -632,9 +639,10 @@ proc togglePlugin*(db; arguments; disable: bool = true;
       # Remove or add the plugin to the list of enabled plugins and clear
       # the plugin help when disabling it
       if disable:
-        db.exec(query = sql(query = ("DELETE FROM help WHERE plugin=?")),
-            args = pluginPath)
-      elif checkPlugin(pluginPath = pluginPath, db = db, commands = commands).path.len == 0:
+        db_sqlite.exec(db = db, query = sql(query = (
+            "DELETE FROM help WHERE plugin=?")), args = pluginPath)
+      elif checkPlugin(pluginPath = pluginPath, db = db,
+          commands = commands).path.len == 0:
         return QuitFailure.ResultCode
     except DbError:
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
@@ -668,7 +676,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Can't show all plugins list. Reason: ",
             e = getCurrentException())
       try:
-        for row in db.fastRows(query = sql(
+        for row in db_sqlite.fastRows(db = db, query = sql(
             query = "SELECT id, location, enabled FROM plugins")):
           table.add(parts = [row[0], row[1], (if row[2] ==
               "1": "Yes" else: "No")])
@@ -688,7 +696,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Can't show plugins list. Reason: ",
             e = getCurrentException())
       try:
-        for plugin in db.fastRows(query = sql(
+        for plugin in db_sqlite.fastRows(db = db, query = sql(
             query = "SELECT id, location FROM plugins WHERE enabled=1")):
           table.add(parts = plugin)
       except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -730,8 +738,9 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
       except ValueError:
         return showError(message = "The Id of the plugin must be a positive number.")
-    let row: Row = try:
-          db.getRow(query = sql(query = "SELECT location, enabled FROM plugins WHERE id=?"), args = id)
+    let row: db_sqlite.Row = try:
+          db_sqlite.getRow(db = db, query = sql(
+              query = "SELECT location, enabled FROM plugins WHERE id=?"), args = id)
       except DbError:
         return showError(message = "Can't read plugin data from database. Reason: ",
             e = getCurrentException())
@@ -747,8 +756,8 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't plugin's info. Reason: ",
           e = getCurrentException())
-    let pluginData: PluginResult = execPlugin(pluginPath = row[0], arguments = ["info"],
-        db = db, commands = commands)
+    let pluginData: PluginResult = execPlugin(pluginPath = row[0], arguments = [
+        "info"], db = db, commands = commands)
     # If plugin contains any aditional information, show them
     try:
       if pluginData.code == QuitSuccess:
@@ -788,7 +797,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
     db != nil
   body:
     # Add commands related to the shell's aliases
-    proc pluginCommand(arguments: UserInput; db: DbConn;
+    proc pluginCommand(arguments: UserInput; db;
         list: CommandLists): ResultCode {.raises: [], tags: [ReadDirEffect,
         WriteIOEffect, WriteDbEffect, ExecIOEffect, TimeEffect, ReadDbEffect,
         ReadIOEffect, ReadEnvEffect, RootEffect], contractual.} =
@@ -841,14 +850,16 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     # Load all enabled plugins and execute the initialization code of the plugin
     try:
-      for dbResult in db.fastRows(query = sql(
+      for dbResult in db_sqlite.fastRows(db = db, query = sql(
           query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
         if dbResult[2] == "1":
-          let newPlugin: PluginData = checkPlugin(pluginPath = dbResult[1], db = db,
-              commands = commands)
+          let newPlugin: PluginData = checkPlugin(pluginPath = dbResult[1],
+              db = db, commands = commands)
           if newPlugin.path.len == 0:
-            db.exec(query = sql(query = "UPDATE plugins SET enabled=0 WHERE id=?"),
-                args = dbResult[0])
+            db_sqlite.exec(db = db, query = sql(
+                query = "UPDATE plugins SET enabled=0 WHERE id=?"),
+
+args = dbResult[0])
             showError(message = "Plugin '" & dbResult[1] & "' isn't compatible with the current version of shell's API and will be disabled.")
             continue
           if "init" in newPlugin.api:
@@ -873,8 +884,10 @@ proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """ALTER TABLE plugins ADD precommand BOOLEAN NOT NULL DEFAULT 0"""))
-      db.exec(query = sql(query = """ALTER TABLE plugins ADD postcommand BOOLEAN NOT NULL DEFAULT 0"""))
+      db_sqlite.exec(db = db, query = sql(
+          query = """ALTER TABLE plugins ADD precommand BOOLEAN NOT NULL DEFAULT 0"""))
+      db_sqlite.exec(db = db, query = sql(
+          query = """ALTER TABLE plugins ADD postcommand BOOLEAN NOT NULL DEFAULT 0"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
