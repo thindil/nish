@@ -28,11 +28,6 @@
 
 # Standard library imports
 import std/[strutils, terminal]
-# Database library import, depends on version of Nim
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 # External modules imports
 import contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
@@ -121,7 +116,7 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
 
 proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
     ).ColumnAmount except ValueError: 80.ColumnAmount);
-    db: sqlite.DbConn) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
+    db: DbConn) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         RootEffect], contractual.} =
   ## Show form's header with the selected message
   ##
