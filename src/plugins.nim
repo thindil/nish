@@ -806,26 +806,26 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
         if arguments.len == 0:
           return showHelpList(command = "plugin", subcommands = pluginsCommands)
         # Add a new plugin
-        elif arguments.startsWith(prefix = "add"):
+        if arguments.startsWith(prefix = "add"):
           return addPlugin(arguments = arguments, db = db,
               commands = list.commands)
         # Delete the selected plugin
-        elif arguments.startsWith(prefix = "remove"):
+        if arguments.startsWith(prefix = "remove"):
           return removePlugin(arguments = arguments, db = db,
               commands = list.commands)
         # Disable the selected plugin
-        elif arguments.startsWith(prefix = "disable"):
+        if arguments.startsWith(prefix = "disable"):
           return togglePlugin(arguments = arguments, db = db,
               commands = list.commands)
         # Enable the selected plugin
-        elif arguments.startsWith(prefix = "enable"):
+        if arguments.startsWith(prefix = "enable"):
           return togglePlugin(arguments = arguments, db = db, disable = false,
               commands = list.commands)
         # Show the list of available plugins
-        elif arguments.startsWith(prefix = "list"):
+        if arguments.startsWith(prefix = "list"):
           return listPlugins(arguments = arguments, db = db)
         # Show the selected plugin
-        elif arguments.startsWith(prefix = "show"):
+        if arguments.startsWith(prefix = "show"):
           return showPlugin(arguments = arguments, db = db,
               commands = list.commands)
         {.ruleOn: "ifStatements".}
