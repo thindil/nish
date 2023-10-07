@@ -46,4 +46,10 @@ block:
 
   assert newOption(name = "newOpt").option == "newOpt", "Failed to initialize a new option."
 
+  assert dbType(ValueType) == "TEXT", "Failed to get the type of database field for ValueType."
+
+  assert dbValue(text).s == "text", "Failed to convert ValueType to dbValue."
+
+  assert to(dbValue(text), ValueType) == text, "Failed to convert dbValue to ValueType."
+
   quitShell(ResultCode(QuitSuccess), db)
