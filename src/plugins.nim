@@ -510,9 +510,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
       return showError(message = "File '" & pluginPath & "' doesn't exist.")
     try:
       # Check if the plugin isn't added previously
-      if db_sqlite.getRow(db = db, query = sql(
-          query = "SELECT id FROM plugins WHERE location=?"),
-          args = pluginPath) != @[""]:
+      if db.exists(T = Plugin, cond = "location=?", params = pluginPath):
         return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
       # Check if the plugin can be added
       let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
@@ -520,26 +518,23 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
       if newPlugin.path.len == 0:
         return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.")
       # Add the plugin to the shell database
-      db.exec(query = sql(query = "INSERT INTO plugins (location, enabled, precommand, postcommand) VALUES (?, 1, ?, ?)"),
-          args = [pluginPath, $(if "preCommand" in newPlugin.api: 1 else: 0), $(
-          if "postCommand" in newPlugin.api: 1 else: 0)])
+      var plugin: Plugin = newPlugin(path = pluginPath, enabled = true,
+          preCommand = "preCommand" in newPlugin.api,
+          postCommand = "postCommand" in newPlugin.api)
+      db.insert(obj = plugin)
       # Execute the installation code of the plugin
       if "install" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
             db = db, commands = commands).code != QuitSuccess:
-          db_sqlite.exec(db = db, query = sql(
-              query = "DELETE FROM plugins WHERE location=?"),
-              args = pluginPath)
+          db.delete(plugin)
           return showError(message = "Can't install plugin '" & pluginPath & "'.")
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
             db = db, commands = commands).code != QuitSuccess:
-          db_sqlite.exec(db = db, query = sql(
-              query = "DELETE FROM plugins WHERE location=?"),
-              args = pluginPath)
+          db.delete(plugin)
           return showError(message = "Can't enable plugin '" & pluginPath & "'.")
-    except DbError:
+    except:
       return showError(message = "Can't add plugin to the shell. Reason: ",
           e = getCurrentException())
     showOutput(message = "File '" & pluginPath &
