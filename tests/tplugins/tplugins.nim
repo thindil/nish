@@ -49,4 +49,7 @@ block:
   assert removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
       commands) == QuitFailure, "Failed to not remove a non-existing plugin."
 
+  let newPlugin = newPlugin(path = "/")
+  assert newPlugin.location == "/", "Failed to initialize a new plugin."
+
   quitShell(QuitSuccess.ResultCode, db)
