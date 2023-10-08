@@ -101,15 +101,8 @@ proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(query = """CREATE TABLE plugins (
-                 id          INTEGER       PRIMARY KEY,
-                 location    VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 enabled     BOOLEAN       NOT NULL,
-                 precommand  BOOLEAN       NOT NULL,
-                 postcommand BOOLEAN       NOT NULL
-              )"""))
-    except DbError:
+      db.createTables(obj = newPlugin())
+    except:
       return showError(message = "Can't create 'plugins' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
