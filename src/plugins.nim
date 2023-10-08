@@ -571,7 +571,7 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
           return showError(message = "Can't get plugin's Id from database. Reason: ",
             e = getCurrentException())
     try:
-      if pluginPath.len == 0:
+      if not db.exists(T = Plugin, cond = "id=?", params = $pluginId):
         return showError(message = "The plugin with the Id: " & $pluginId &
           " doesn't exist.")
       # Execute the disabling code of the plugin first
@@ -583,9 +583,10 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
           db = db, commands = commands).code != QuitSuccess:
         return showError(message = "Can't remove plugin '" & pluginPath & "'.")
       # Remove the plugin from the base
-      db.exec(query = sql(query = "DELETE FROM plugins WHERE id=?"),
-          args = pluginId)
-    except DbError:
+      var plugin: Plugin = newPlugin()
+      db.select(obj = plugin, cond = "id=?", params = $pluginId)
+      db.delete(obj = plugin)
+    except:
       return showError(message = "Can't delete plugin from database. Reason: ",
           e = getCurrentException())
     # Remove the plugin from the list of enabled plugins
