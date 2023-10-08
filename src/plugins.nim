@@ -526,13 +526,13 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
       if "install" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
             db = db, commands = commands).code != QuitSuccess:
-          db.delete(plugin)
+          db.delete(obj = plugin)
           return showError(message = "Can't install plugin '" & pluginPath & "'.")
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
             db = db, commands = commands).code != QuitSuccess:
-          db.delete(plugin)
+          db.delete(obj = plugin)
           return showError(message = "Can't enable plugin '" & pluginPath & "'.")
     except:
       return showError(message = "Can't add plugin to the shell. Reason: ",
