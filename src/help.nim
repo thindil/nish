@@ -36,7 +36,7 @@ import commandslist, helpcontent, constants, lstring, output, resultcode
 
 using db: DbConn # Connection to the shell's database
 
-proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
+proc newHelpEntry*(topic: string = ""; usage: string = ""; content: string = "";
     plugin: string = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's help's entry.
