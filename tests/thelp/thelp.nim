@@ -65,4 +65,7 @@ block:
       initLimitedString(capacity = 10, text = "test topic"), initLimitedString(
       capacity = 4, text = "test"), "test help2", db, false) == QuitFailure, "Failed to not update a non-existing help entry."
 
+  let newHelp = newHelpEntry(topic = "test")
+  assert newHelp.topic == "test", "Failed to set a new help entry."
+
   quitShell(ResultCode(QuitSuccess), db)
