@@ -36,7 +36,7 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
-import norm/sqlite
+import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, help, lstring, options,
     output, resultcode
@@ -57,11 +57,37 @@ type
     api: seq[string] ## The list of API calls supported by the plugin
   PluginResult* = tuple [code: ResultCode,
       answer: LimitedString] ## Store the result of the plugin's API command
+  Plugin* {.tableName: "plugins".} = ref object of Model
+    ## Data structure for the shell's plugin
+    ##
+    ## * location    - the full path to the plugin
+    ## * enabled     - if true, the plugin is enabled
+    ## * preCommand  - if true, the plugin is executed before the user's command
+    ## * postCommand - fi true, the plugin is executed after the user's command
+    location*: string
+    enabled*: bool
+    preCommand*: bool
+    postCommand*: bool
 
 using
   db: db_sqlite.DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
   commands: ref CommandsList # The list of the shell's commands
+
+proc newPlugin*(path: string = ""; enabled: bool = false;
+    preCommand: bool = false; postCommand: bool = false): Plugin {.raises: [],
+    tags: [], contractual.} =
+  ## Create a new data structure for the shell's plugin.
+  ##
+  ## * path        - the full path to the plugin
+  ## * enabled     - if true, the plugin is enabled
+  ## * preCommand  - if true, the plugin is executed before the user's command
+  ## * postCommand - fi true, the plugin is executed after the user's command
+  ##
+  ## Returns the new data structure for the selected shell's plugin.
+  body:
+    Plugin(location: path, enabled: enabled, preCommand: preCommand,
+        postCommand: postCommand)
 
 proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
@@ -493,8 +519,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
       # Check if the plugin isn't added previously
       if db_sqlite.getRow(db = db, query = sql(
           query = "SELECT id FROM plugins WHERE location=?"),
-
-args = pluginPath) != @[""]:
+          args = pluginPath) != @[""]:
         return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
       # Check if the plugin can be added
       let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
@@ -511,8 +536,7 @@ args = pluginPath) != @[""]:
             db = db, commands = commands).code != QuitSuccess:
           db_sqlite.exec(db = db, query = sql(
               query = "DELETE FROM plugins WHERE location=?"),
-
-args = pluginPath)
+              args = pluginPath)
           return showError(message = "Can't install plugin '" & pluginPath & "'.")
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
@@ -520,8 +544,7 @@ args = pluginPath)
             db = db, commands = commands).code != QuitSuccess:
           db_sqlite.exec(db = db, query = sql(
               query = "DELETE FROM plugins WHERE location=?"),
-
-args = pluginPath)
+              args = pluginPath)
           return showError(message = "Can't enable plugin '" & pluginPath & "'.")
     except DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
@@ -858,8 +881,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           if newPlugin.path.len == 0:
             db_sqlite.exec(db = db, query = sql(
                 query = "UPDATE plugins SET enabled=0 WHERE id=?"),
-
-args = dbResult[0])
+                args = dbResult[0])
             showError(message = "Plugin '" & dbResult[1] & "' isn't compatible with the current version of shell's API and will be disabled.")
             continue
           if "init" in newPlugin.api:
