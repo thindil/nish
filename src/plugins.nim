@@ -685,6 +685,9 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
       try:
         var plugins: seq[Plugin] = @[newPlugin()]
         db.selectAll(objs = plugins)
+        if plugins.len == 0:
+          showOutput(message = "There are no available shell's plugins.")
+          return QuitSuccess.ResultCode
         for plugin in plugins:
           table.add(parts = [$plugin.id, plugin.location, (
               if plugin.enabled: "Yes" else: "No")])
@@ -706,6 +709,9 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
       try:
         var plugins: seq[Plugin] = @[newPlugin()]
         db.select(objs = plugins, cond = "enabled=1")
+        if plugins.len == 0:
+          showOutput(message = "There are no enabled shell's plugins.")
+          return QuitSuccess.ResultCode
         for plugin in plugins:
           table.add(parts = [$plugin.id, plugin.location])
       except:
