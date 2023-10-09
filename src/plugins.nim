@@ -753,28 +753,20 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
       except ValueError:
         return showError(message = "The Id of the plugin must be a positive number.")
-    let row: db_sqlite.Row = try:
-          db_sqlite.getRow(db = db, query = sql(
-              query = "SELECT location, enabled FROM plugins WHERE id=?"), args = id)
-      except DbError:
-        return showError(message = "Can't read plugin data from database. Reason: ",
-            e = getCurrentException())
-    if row[0] == "":
-      return showError(message = "The plugin with the ID: " & $id &
-        " doesn't exists.")
-    var table: TerminalTable = TerminalTable()
     try:
+      if not db.exists(T = Plugin, cond = "id=?", params = $id):
+        return showError(message = "The plugin with the ID: " & $id &
+          " doesn't exists.")
+      var plugin: Plugin = newPlugin()
+      db.select(obj = plugin, cond = "id=?", params = $id)
+      var table: TerminalTable = TerminalTable()
       table.add(parts = [magenta(ss = "Id:"), $id])
-      table.add(parts = [magenta(ss = "Path"), row[0]])
-      table.add(parts = [magenta(ss = "Enabled:"), (if row[1] ==
-          "1": "Yes" else: "No")])
-    except UnknownEscapeError, InsufficientInputError, FinalByteError:
-      return showError(message = "Can't plugin's info. Reason: ",
-          e = getCurrentException())
-    let pluginData: PluginResult = execPlugin(pluginPath = row[0], arguments = [
-        "info"], db = db, commands = commands)
-    # If plugin contains any aditional information, show them
-    try:
+      table.add(parts = [magenta(ss = "Path"), plugin.location])
+      table.add(parts = [magenta(ss = "Enabled:"), (
+          if plugin.enabled: "Yes" else: "No")])
+      let pluginData: PluginResult = execPlugin(pluginPath = plugin.location,
+          arguments = ["info"], db = db, commands = commands)
+      # If plugin contains any aditional information, show them
       if pluginData.code == QuitSuccess:
         let pluginInfo: seq[string] = ($pluginData.answer).split(sep = ";")
         table.add(parts = [magenta(ss = "API version:"), (if pluginInfo.len >
@@ -786,13 +778,9 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
           table.add(parts = [magenta(ss = "Descrition:"), pluginInfo[1]])
       else:
         table.add(parts = [magenta(ss = "API version:"), "0.1"])
-    except UnknownEscapeError, InsufficientInputError, FinalByteError:
-      return showError(message = "Can't plugin's info. Reason: ",
-          e = getCurrentException())
-    try:
       table.echoTable
-    except IOError, Exception:
-      return showError(message = "Can't show plugin info. Reason: ",
+    except:
+      return showError(message = "Can't show the plugin's info. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
