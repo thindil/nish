@@ -683,11 +683,12 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Can't show all plugins list. Reason: ",
             e = getCurrentException())
       try:
-        for row in db_sqlite.fastRows(db = db, query = sql(
-            query = "SELECT id, location, enabled FROM plugins")):
-          table.add(parts = [row[0], row[1], (if row[2] ==
-              "1": "Yes" else: "No")])
-      except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+        var plugins: seq[Plugin] = @[newPlugin()]
+        db.selectAll(objs = plugins)
+        for plugin in plugins:
+          table.add(parts = [$plugin.id, plugin.location, (
+              if plugin.enabled: "Yes" else: "No")])
+      except:
         return showError(message = "Can't read info about plugin from database. Reason:",
             e = getCurrentException())
       var width: int = 0
@@ -703,10 +704,11 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Can't show plugins list. Reason: ",
             e = getCurrentException())
       try:
-        for plugin in db_sqlite.fastRows(db = db, query = sql(
-            query = "SELECT id, location FROM plugins WHERE enabled=1")):
-          table.add(parts = plugin)
-      except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+        var plugins: seq[Plugin] = @[newPlugin()]
+        db.select(objs = plugins, cond = "enabled=1")
+        for plugin in plugins:
+          table.add(parts = [$plugin.id, plugin.location])
+      except:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
             e = getCurrentException())
       var width: int = 0
