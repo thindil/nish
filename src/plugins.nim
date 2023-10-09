@@ -623,45 +623,40 @@ proc togglePlugin*(db; arguments; disable: bool = true;
           ($arguments[idStart .. ^1]).parseInt.DatabaseId
         except ValueError:
           return showError(message = "The Id of the plugin must be a positive number.")
-      pluginState: BooleanInt = (if disable: 0 else: 1)
-      pluginPath: string = try:
-          db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"),
-              args = pluginId)
-        except DbError:
-          return showError(message = "Can't get plugin's location from database. Reason: ",
-            e = getCurrentException())
     try:
       # Check if plugin exists
-      if pluginPath.len == 0:
+      if not db.exists(T = Plugin, cond = "id=?", params = $pluginId):
         return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
+      var plugin: Plugin = newPlugin()
+      db.select(obj = plugin, cond = "id=?", params = $pluginId)
       # Check if plugin can be enabled due to version of API
-      let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
-          commands = commands)
+      let newPlugin: PluginData = checkPlugin(pluginPath = plugin.location,
+          db = db, commands = commands)
       if newPlugin.path.len == 0 and not disable:
         return showError(message = "Can't enable plugin with Id: " & $pluginId & " because its API version is incompatible with the shell's version.")
       # Execute the enabling or disabling code of the plugin
       if actionName in newPlugin.api:
-        if execPlugin(pluginPath = pluginPath, arguments = [actionName],
+        if execPlugin(pluginPath = plugin.location, arguments = [actionName],
             db = db, commands = commands).code != QuitSuccess:
           return showError(message = "Can't " & actionName & " plugin '" &
-              pluginPath & "'.")
+              plugin.location & "'.")
       # Update the state of the plugin
-      db.exec(query = sql(query = ("UPDATE plugins SET enabled=? WHERE id=?")),
-          args = [$pluginState, $pluginId])
+      plugin.enabled = not disable
+      db.update(obj = plugin)
       # Remove or add the plugin to the list of enabled plugins and clear
       # the plugin help when disabling it
       if disable:
-        db_sqlite.exec(db = db, query = sql(query = (
-            "DELETE FROM help WHERE plugin=?")), args = pluginPath)
-      elif checkPlugin(pluginPath = pluginPath, db = db,
+        sqlite.exec(db = db, query = sql(query = (
+            "DELETE FROM help WHERE plugin=?")), args = plugin.location)
+      elif checkPlugin(pluginPath = plugin.location, db = db,
           commands = commands).path.len == 0:
         return QuitFailure.ResultCode
-    except DbError:
+      showOutput(message = (if disable: "Disabled" else: "Enabled") &
+          " the plugin '" & $plugin.location & "'", fgColor = fgGreen)
+      return QuitSuccess.ResultCode
+    except:
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
           e = getCurrentException())
-    showOutput(message = (if disable: "Disabled" else: "Enabled") &
-        " the plugin '" & $pluginPath & "'", fgColor = fgGreen)
-    return QuitSuccess.ResultCode
 
 proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
