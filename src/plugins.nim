@@ -886,9 +886,9 @@ proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(
+      sqlite.exec(db = db, query = sql(
           query = """ALTER TABLE plugins ADD precommand BOOLEAN NOT NULL DEFAULT 0"""))
-      db_sqlite.exec(db = db, query = sql(
+      sqlite.exec(db = db, query = sql(
           query = """ALTER TABLE plugins ADD postcommand BOOLEAN NOT NULL DEFAULT 0"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
