@@ -559,27 +559,21 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
           ($arguments[7 .. ^1]).parseInt.DatabaseId
         except ValueError:
           return showError(message = "The Id of the plugin must be a positive number.")
-      pluginPath: string = try:
-          db.getValue(query = sql(query = "SELECT location FROM plugins WHERE id=?"),
-              args = pluginId)
-        except DbError:
-          return showError(message = "Can't get plugin's Id from database. Reason: ",
-            e = getCurrentException())
     try:
       if not db.exists(T = Plugin, cond = "id=?", params = $pluginId):
         return showError(message = "The plugin with the Id: " & $pluginId &
           " doesn't exist.")
-      # Execute the disabling code of the plugin first
-      if execPlugin(pluginPath = pluginPath, arguments = ["disable"],
-          db = db, commands = commands).code != QuitSuccess:
-        return showError(message = "Can't disable plugin '" & pluginPath & "'.")
-      # Execute the uninstalling code of the plugin
-      if execPlugin(pluginPath = pluginPath, arguments = ["uninstall"],
-          db = db, commands = commands).code != QuitSuccess:
-        return showError(message = "Can't remove plugin '" & pluginPath & "'.")
-      # Remove the plugin from the base
       var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $pluginId)
+      # Execute the disabling code of the plugin first
+      if execPlugin(pluginPath = plugin.location, arguments = ["disable"],
+          db = db, commands = commands).code != QuitSuccess:
+        return showError(message = "Can't disable plugin '" & plugin.location & "'.")
+      # Execute the uninstalling code of the plugin
+      if execPlugin(pluginPath = plugin.location, arguments = ["uninstall"],
+          db = db, commands = commands).code != QuitSuccess:
+        return showError(message = "Can't remove plugin '" & plugin.location & "'.")
+      # Remove the plugin from the base
       db.delete(obj = plugin)
     except:
       return showError(message = "Can't delete plugin from database. Reason: ",
