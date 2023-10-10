@@ -36,6 +36,7 @@ else:
   import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
+import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode
@@ -49,9 +50,22 @@ const
 
 type
   VariableName = LimitedString # Used to store variables names in the database.
+  Variable* {.tableName: "variables".} = ref object of Model
+    ## Data structure for the shell's environment variable
+    ##
+    ## * name        - the name of the variable
+    ## * path        - the path in which the variable exists
+    ## * recursive   - if true, the variable is available also in subdirectories
+    ## * value       - the value of the variable
+    ## * description - the description of the variable
+    name*: string
+    path*: string
+    recursive*: bool
+    value*: string
+    description*: string
 
 using
-  db: DbConn # Connection to the shell's database
+  db: db_sqlite.DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
 
 proc buildQuery*(directory: DirectoryPath; fields: string;
@@ -107,11 +121,13 @@ proc setVariables*(newDirectory: DirectoryPath; db;
     # Remove the old environment variables if needed
     if oldDirectory.len > 0:
       try:
-        for dbResult in db.fastRows(query = sql(query = buildQuery(
-            directory = oldDirectory, fields = "name, value"))):
-          let existingVariable: Row = db.getRow(query = sql(query = buildQuery(
-              directory = newDirectory, fields = "id", where = "AND name='" &
-                  dbResult[0] & "' AND value='" & dbResult[1] & "'")))
+        for dbResult in db_sqlite.fastRows(db = db, query = sql(
+            query = buildQuery(directory = oldDirectory,
+            fields = "name, value"))):
+          let existingVariable: db_sqlite.Row = db_sqlite.getRow(db = db,
+              query = sql(query = buildQuery(directory = newDirectory,
+              fields = "id", where = "AND name='" & dbResult[0] &
+              "' AND value='" & dbResult[1] & "'")))
           if existingVariable.len == 0:
             delEnv(key = dbResult[0])
           else:
@@ -121,8 +137,9 @@ proc setVariables*(newDirectory: DirectoryPath; db;
             e = getCurrentException())
     # Set the new environment variables
     try:
-      for dbResult in db.fastRows(query = sql(query = buildQuery(
-          directory = newDirectory, fields = "name, value, id"))):
+      for dbResult in db_sqlite.fastRows(db = db, query = sql(
+          query = buildQuery(directory = newDirectory,
+              fields = "name, value, id"))):
         if dbResult[2] in skipped:
           continue
         var
@@ -217,7 +234,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Show the list of all declared environment variables in the shell
     if arguments == "list all":
       try:
-        for row in db.fastRows(query = sql(
+        for row in db_sqlite.fastRows(db = db, query = sql(
             query = "SELECT id, name, value, description FROM variables")):
           table.add(parts = row)
       except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -231,7 +248,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Show the list of environment variables available in current directory
     elif arguments[0..3] == "list":
       try:
-        for row in db.fastRows(query = sql(query = buildQuery(
+        for row in db_sqlite.fastRows(db = db, query = sql(query = buildQuery(
             directory = getCurrentDirectory().DirectoryPath,
                 fields = "id, name, value, description"))):
           table.add(parts = row)
@@ -422,7 +439,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       except ValueError:
         return showError(message = "The Id of the variable must be a positive number.")
     let
-      row: Row = try:
+      row: db_sqlite.Row = try:
           db.getRow(query = sql(query = "SELECT name, path, value, description FROM variables WHERE id=?"), args = varId)
         except DbError:
           return showError(message = "The variable with the ID: " & $varId & " doesn't exists.")
@@ -548,7 +565,7 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """CREATE TABLE variables (
+      db_sqlite.exec(db = db, query = sql(query = """CREATE TABLE variables (
                  id          INTEGER       PRIMARY KEY,
                  name        VARCHAR(""" & $variableNameLength &
             """) NOT NULL,
@@ -583,7 +600,7 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
   body:
     # Add commands related to the variables, except commands set and unset,
     # they are build-in commands, thus cannot be replaced
-    proc variableCommand(arguments: UserInput; db: DbConn;
+    proc variableCommand(arguments: UserInput; db;
         list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
         WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
         RootEffect], contractual.} =
