@@ -853,24 +853,25 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     # Load all enabled plugins and execute the initialization code of the plugin
     try:
-      for dbResult in db_sqlite.fastRows(db = db, query = sql(
-          query = "SELECT id, location, enabled FROM plugins ORDER BY id ASC")):
-        if dbResult[2] == "1":
-          let newPlugin: PluginData = checkPlugin(pluginPath = dbResult[1],
+      var plugins: seq[Plugin] = @[newPlugin()]
+      db.rawSelect(qry = "SELECT id, location, enabled FROM plugins ORDER BY id ASC",
+          objs = plugins)
+      for plugin in plugins.mitems:
+        if plugin.enabled:
+          let newPlugin: PluginData = checkPlugin(pluginPath = plugin.location,
               db = db, commands = commands)
           if newPlugin.path.len == 0:
-            db_sqlite.exec(db = db, query = sql(
-                query = "UPDATE plugins SET enabled=0 WHERE id=?"),
-                args = dbResult[0])
-            showError(message = "Plugin '" & dbResult[1] & "' isn't compatible with the current version of shell's API and will be disabled.")
+            plugin.enabled = false
+            db.update(obj = plugin)
+            showError(message = "Plugin '" & plugin.location & "' isn't compatible with the current version of shell's API and will be disabled.")
             continue
           if "init" in newPlugin.api:
-            if execPlugin(pluginPath = dbResult[1], arguments = ["init"],
+            if execPlugin(pluginPath = plugin.location, arguments = ["init"],
                 db = db, commands = commands).code != QuitSuccess:
-              showError(message = "Can't initialize plugin '" & dbResult[
-                  1] & "'.")
+              showError(message = "Can't initialize plugin '" &
+                  plugin.location & "'.")
               continue
-    except DbError:
+    except:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException())
 
