@@ -582,19 +582,8 @@ proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     db != nil
   body:
     try:
-      db_sqlite.exec(db = db, query = sql(query = """CREATE TABLE variables (
-                 id          INTEGER       PRIMARY KEY,
-                 name        VARCHAR(""" & $variableNameLength &
-            """) NOT NULL,
-                 path        VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 recursive   BOOLEAN       NOT NULL,
-                 value       VARCHAR(""" & $maxInputLength &
-            """) NOT NULL,
-                 description VARCHAR(""" & $maxInputLength &
-            """) NOT NULL
-              )"""))
-    except DbError:
+      db.createTables(obj = newVariable())
+    except:
       return showError(message = "Can't create 'variables' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
