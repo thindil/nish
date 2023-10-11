@@ -62,5 +62,8 @@ block:
   assert unsetCommand(initLimitedString(capacity = 4, text = "test")) ==
       QuitSuccess, "Failed to unset a non-existing variable."
 
+  let newVariable = newVariable(name = "ala")
+  assert newVariable.name == "ala", "Failed to set a new variable."
+
   quitShell(ResultCode(QuitSuccess), db)
 
