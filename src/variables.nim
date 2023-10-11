@@ -552,6 +552,23 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
+proc newVariable*(name: string = ""; path: string = ""; recursive: bool = false;
+    value: string = ""; description: string = ""): Variable {.raises: [], tags: [], contractual.} =
+  ## Create a new data structure for the shell's environment variable.
+  ##
+  ## * name        - the name of the variable. Must be unique
+  ## * path        - the path in which the variabel will be available
+  ## * recursive   - if true, the variable should work in children directories
+  ##                 of the path too. Default value is false
+  ## * value       - the value of the variable
+  ## * description - the description of the variable
+  ##
+  ## Returns the new data structure for the selected shell's environment
+  ## variable.
+  body:
+    Variable(name: name, path: path, recursive: recursive, value: value,
+        description: description)
+
 proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
