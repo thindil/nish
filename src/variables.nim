@@ -68,8 +68,8 @@ using
   db: db_sqlite.DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
 
-proc buildQuery*(directory: DirectoryPath; fields: string;
-    where: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
+proc buildQuery*(directory: DirectoryPath; fields: string; where: string = "";
+    temp: bool = true): string {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect], contractual.} =
   ## Build database query for get environment variables for the selected
   ## directory and its parents
@@ -84,7 +84,8 @@ proc buildQuery*(directory: DirectoryPath; fields: string;
     directory.len > 0
     fields.len > 0
   body:
-    result = "SELECT " & fields & " FROM variables WHERE path='" & directory & "'"
+    result = (if temp: "SELECT " & fields & " FROM variables WHERE " else: "") &
+        "path='" & directory & "'"
     var remainingDirectory: DirectoryPath = parentDir(
         path = $directory).DirectoryPath
 
@@ -553,7 +554,8 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc newVariable*(name: string = ""; path: string = ""; recursive: bool = false;
-    value: string = ""; description: string = ""): Variable {.raises: [], tags: [], contractual.} =
+    value: string = ""; description: string = ""): Variable {.raises: [],
+    tags: [], contractual.} =
   ## Create a new data structure for the shell's environment variable.
   ##
   ## * name        - the name of the variable. Must be unique
