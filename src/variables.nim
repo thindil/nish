@@ -614,24 +614,22 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
-        {.ruleOff: "ifStatements".}
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "variable",
               subcommands = variablesCommands)
         # Show the list of declared environment variables
-        elif arguments.startsWith(prefix = "list"):
+        if arguments.startsWith(prefix = "list"):
           return listVariables(arguments = arguments, db = db)
         # Delete the selected environment variable
-        elif arguments.startsWith(prefix = "delete"):
+        if arguments.startsWith(prefix = "delete"):
           return deleteVariable(arguments = arguments, db = db)
         # Add a new variable
-        elif arguments == "add":
+        if arguments == "add":
           return addVariable(db = db)
         # Edit an existing variable
-        elif arguments.startsWith(prefix = "edit"):
+        if arguments.startsWith(prefix = "edit"):
           return editVariable(arguments = arguments, db = db)
-        {.ruleOn: "ifStatements".}
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 8, text = "variable"),
