@@ -314,11 +314,13 @@ proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
       except ValueError:
         return showError(message = "The Id of the variable must be a positive number.")
     try:
-      if db.execAffectedRows(query = sql(query = (
-          "DELETE FROM variables WHERE id=?")), args = varId) == 0:
+      if not db.exists(T = Variable, cond = "id=?", params = $varId):
         return showError(message = "The variable with the Id: " & $varId &
           " doesn't exist.")
-    except DbError:
+      var variable: Variable = newVariable()
+      db.select(obj = variable, cond = "id=?", params = $varId)
+      db.delete(obj = variable)
+    except:
       return showError(message = "Can't delete variable from database. Reason: ",
           e = getCurrentException())
     try:
