@@ -253,6 +253,9 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if arguments == "list all":
       try:
         db.selectAll(objs = variables)
+        if variables.len == 0:
+          showOutput(message = "There are no defined shell's environment variables.")
+          return QuitSuccess.ResultCode
         for variable in variables:
           table.add(parts = [$variable.id, variable.name, variable.value,
               variable.description])
@@ -269,6 +272,9 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       try:
         db.select(objs = variables, cond = buildQuery(
             directory = getCurrentDirectory().DirectoryPath))
+        if variables.len == 0:
+          showOutput(message = "There are no defined shell's environment variables in this directory.")
+          return QuitSuccess.ResultCode
         for variable in variables:
           table.add(parts = [$variable.id, variable.name, variable.value,
               variable.description])
