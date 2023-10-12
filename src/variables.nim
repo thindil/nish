@@ -68,8 +68,8 @@ using
   db: db_sqlite.DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
 
-proc buildQuery*(directory: DirectoryPath; fields: string; where: string = "";
-    temp: bool = true): string {.gcsafe, sideEffect, raises: [], tags: [
+proc buildQuery*(directory: DirectoryPath; fields: string = "";
+    where: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
     ReadDbEffect], contractual.} =
   ## Build database query for get environment variables for the selected
   ## directory and its parents
@@ -82,10 +82,9 @@ proc buildQuery*(directory: DirectoryPath; fields: string; where: string = "";
   ## Returns the string with database's query for the selected directory and fields
   require:
     directory.len > 0
-    fields.len > 0
   body:
-    result = (if temp: "SELECT " & fields & " FROM variables WHERE " else: "") &
-        "path='" & directory & "'"
+    result = (if fields.len > 0: "SELECT " & fields &
+        " FROM variables WHERE " else: "") & "path='" & directory & "'"
     var remainingDirectory: DirectoryPath = parentDir(
         path = $directory).DirectoryPath
 
@@ -101,8 +100,26 @@ proc buildQuery*(directory: DirectoryPath; fields: string; where: string = "";
 
     result.add(y = " ORDER BY id ASC")
 
+proc newVariable*(name: string = ""; path: string = ""; recursive: bool = false;
+    value: string = ""; description: string = ""): Variable {.raises: [],
+    tags: [], contractual.} =
+  ## Create a new data structure for the shell's environment variable.
+  ##
+  ## * name        - the name of the variable. Must be unique
+  ## * path        - the path in which the variabel will be available
+  ## * recursive   - if true, the variable should work in children directories
+  ##                 of the path too. Default value is false
+  ## * value       - the value of the variable
+  ## * description - the description of the variable
+  ##
+  ## Returns the new data structure for the selected shell's environment
+  ## variable.
+  body:
+    Variable(name: name, path: path, recursive: recursive, value: value,
+        description: description)
+
 proc setVariables*(newDirectory: DirectoryPath; db;
-    oldDirectory: DirectoryPath = "".DirectoryPath) {.gcsafe, sideEffect,
+    oldDirectory: DirectoryPath = "".DirectoryPath) {.sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Set the environment variables in the selected directory and remove the
@@ -117,34 +134,32 @@ proc setVariables*(newDirectory: DirectoryPath; db;
     newDirectory.len > 0
     db != nil
   body:
-    var skipped: seq[string] = @[]
+    var skipped: seq[int] = @[]
 
     # Remove the old environment variables if needed
     if oldDirectory.len > 0:
       try:
-        for dbResult in db_sqlite.fastRows(db = db, query = sql(
-            query = buildQuery(directory = oldDirectory,
-            fields = "name, value"))):
-          let existingVariable: db_sqlite.Row = db_sqlite.getRow(db = db,
-              query = sql(query = buildQuery(directory = newDirectory,
-              fields = "id", where = "AND name='" & dbResult[0] &
-              "' AND value='" & dbResult[1] & "'")))
-          if existingVariable.len == 0:
-            delEnv(key = dbResult[0])
+        var variables: seq[Variable] = @[newVariable()]
+        db.select(objs = variables, cond = buildQuery(directory = oldDirectory))
+        for variable in variables:
+          if not db.exists(T = Variable, cond = buildQuery(
+              directory = newDirectory, where = "AND name='" & variable.name &
+              "' AND value='" & variable.value & "'")):
+            delEnv(key = variable.name)
           else:
-            skipped.add(y = existingVariable[0])
-      except DbError, OSError:
+            skipped.add(y = variable.id)
+      except:
         showError(message = "Can't delete environment variables from the old directory. Reason: ",
             e = getCurrentException())
     # Set the new environment variables
     try:
-      for dbResult in db_sqlite.fastRows(db = db, query = sql(
-          query = buildQuery(directory = newDirectory,
-              fields = "name, value, id"))):
-        if dbResult[2] in skipped:
+      var variables: seq[Variable] = @[newVariable()]
+      db.select(objs = variables, cond = buildQuery(directory = newDirectory))
+      for variable in variables:
+        if variable.id in skipped:
           continue
         var
-          value: string = dbResult[1]
+          value: string = variable.value
           variableIndex: ExtendedNatural = value.find(sub = '$')
         # Convert all environment variables inside the variable to their values
         while variableIndex in 0..(value.len - 1):
@@ -161,8 +176,8 @@ proc setVariables*(newDirectory: DirectoryPath; db;
           let variableName: string = value[variableIndex + 1..variableEnd - 1]
           value[variableIndex..variableEnd - 1] = getEnv(key = variableName)
           variableIndex = value.find(sub = '$', start = variableEnd)
-        putEnv(key = dbResult[0], val = value)
-    except DbError, OSError:
+        putEnv(key = variable.name, val = value)
+    except:
       showError(message = "Can't set environment variables for the new directory. Reason: ",
           e = getCurrentException())
 
@@ -552,24 +567,6 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     showOutput(message = "The variable  with Id: '" & $varId & "' edited.",
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
-
-proc newVariable*(name: string = ""; path: string = ""; recursive: bool = false;
-    value: string = ""; description: string = ""): Variable {.raises: [],
-    tags: [], contractual.} =
-  ## Create a new data structure for the shell's environment variable.
-  ##
-  ## * name        - the name of the variable. Must be unique
-  ## * path        - the path in which the variabel will be available
-  ## * recursive   - if true, the variable should work in children directories
-  ##                 of the path too. Default value is false
-  ## * value       - the value of the variable
-  ## * description - the description of the variable
-  ##
-  ## Returns the new data structure for the selected shell's environment
-  ## variable.
-  body:
-    Variable(name: name, path: path, recursive: recursive, value: value,
-        description: description)
 
 proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
