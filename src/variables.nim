@@ -350,7 +350,9 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Set the name for the variable
     showFormHeader(message = "(1/5) Name", db = db)
     showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
-    var name: VariableName = emptyLimitedString(capacity = variableNameLength)
+    var
+      variable: Variable = newVariable()
+      name: VariableName = emptyLimitedString(capacity = variableNameLength)
     showOutput(message = "Name: ", newLine = false)
     while name.len == 0:
       name = readInput(maxLength = variableNameLength)
@@ -366,6 +368,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         showOutput(message = "Name: ", newLine = false)
     if name == "exit":
       return showError(message = "Adding a new variable cancelled.")
+    variable.name = $name
     # Set the description for the variable
     showFormHeader(message = "(2/5) Description", db = db)
     showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
@@ -373,6 +376,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     let description: UserInput = readInput()
     if description == "exit":
       return showError(message = "Adding a new variable cancelled.")
+    variable.description = $description
     # Set the working directory for the variable
     showFormHeader(message = "(3/5) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
@@ -389,6 +393,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         showOutput(message = "Path: ", newLine = false)
     if path == "exit":
       return showError(message = "Adding a new variable cancelled.")
+    variable.path = $path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
@@ -407,6 +412,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       stdout.writeLine(x = "")
     except IOError:
       discard
+    variable.recursive = recursive == 1
     # Set the value for the variable
     showFormHeader(message = "(5/5) Value", db = db)
     showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
@@ -419,20 +425,20 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         showOutput(message = "Value: ", newLine = false)
     if value == "exit":
       return showError(message = "Adding a new variable cancelled.")
+    variable.value = $value
     # Check if variable with the same parameters exists in the database
     try:
-      if db.getValue(query = sql(query = "SELECT id FROM variables WHERE name=? AND path=? AND recursive=? AND value=?"),
-          args = [$name, $path, $recursive, $value]).len > 0:
+      if db.exists(T = Variable, cond = "name=? AND path=? AND recursive=? AND value=?",
+          params = [($name).dbValue, ($path).dbValue, ($recursive).dbValue, (
+          $value).dbValue]):
         return showError(message = "There is a variable with the same name, path and value in the database.")
-    except DbError:
+    except:
       return showError(message = "Can't check if the same variable exists in the database. Reason: ",
           e = getCurrentException())
     # Save the variable to the database
     try:
-      if db.tryInsertID(query = sql(query = "INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)"),
-          args = [$name, $path, $recursive, $value, $description]) == -1:
-        return showError(message = "Can't add variable.")
-    except DbError:
+      db.insert(obj = variable)
+    except:
       return showError(message = "Can't add the variable to database. Reason: ",
           e = getCurrentException())
     try:
