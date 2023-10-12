@@ -240,7 +240,9 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.len > 0
     db != nil
   body:
-    var table: TerminalTable = TerminalTable()
+    var
+      table: TerminalTable = TerminalTable()
+      variables: seq[Variable] = @[newVariable()]
     try:
       table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(
           ss = "Value"), magenta(ss = "Description")])
@@ -250,10 +252,11 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Show the list of all declared environment variables in the shell
     if arguments == "list all":
       try:
-        for row in db_sqlite.fastRows(db = db, query = sql(
-            query = "SELECT id, name, value, description FROM variables")):
-          table.add(parts = row)
-      except DbError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+        db.selectAll(objs = variables)
+        for variable in variables:
+          table.add(parts = [$variable.id, variable.name, variable.value,
+              variable.description])
+      except:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException())
       var width: int = 0
@@ -264,11 +267,12 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Show the list of environment variables available in current directory
     elif arguments[0..3] == "list":
       try:
-        for row in db_sqlite.fastRows(db = db, query = sql(query = buildQuery(
-            directory = getCurrentDirectory().DirectoryPath,
-                fields = "id, name, value, description"))):
-          table.add(parts = row)
-      except DbError, OSError, UnknownEscapeError, InsufficientInputError, FinalByteError:
+        db.select(objs = variables, cond = buildQuery(
+            directory = getCurrentDirectory().DirectoryPath))
+        for variable in variables:
+          table.add(parts = [$variable.id, variable.name, variable.value,
+              variable.description])
+      except:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException())
       var width: int = 0
