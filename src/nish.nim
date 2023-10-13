@@ -33,8 +33,9 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
   import db_connector/db_sqlite
 else:
   import std/db_sqlite
-# External modules imports
+ External modules imports
 import ansiparse, contracts, nancy, nimalyzer
+import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, directorypath,
     help, highlight, history, input, lstring, options, output, plugins, prompt,
@@ -653,9 +654,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         setTitle(title = commandName, db = db)
         # Execute plugins with precommand hook
         try:
-          for plugin in db.fastRows(query = sql(
-              query = "SELECT location FROM plugins WHERE precommand=1")):
-            discard execPlugin(pluginPath = plugin[0], arguments = [
+          var plugins: seq[Plugin] = @[newPlugin()]
+          db.select(objs = plugins, cond = "precommand=1")
+          for plugin in plugins:
+            discard execPlugin(pluginPath = plugin.location, arguments = [
                 "preCommand", commandName & " " & arguments], db = db,
                     commands = commands)
         except DbError:
@@ -725,9 +727,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         setTitle(title = $getFormattedDir(), db = db)
         # Execute plugins with postcommand hook
         try:
-          for plugin in db.fastRows(query = sql(
-              query = "SELECT location FROM plugins WHERE postcommand=1")):
-            discard execPlugin(pluginPath = plugin[0], arguments = [
+          var plugins: seq[Plugin] = @[newPlugin()]
+          db.select(objs = plugins, cond = "postcommand=1")
+          for plugin in plugins:
+            discard execPlugin(pluginPath = plugin.location, arguments = [
                 "postCommand", commandName & " " & arguments], db = db,
                     commands = commands)
         except DbError:
