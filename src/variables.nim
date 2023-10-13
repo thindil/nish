@@ -29,11 +29,6 @@
 
 # Standard library imports
 import std/[os, strutils, terminal]
-# Database library import, depends on version of Nim
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -65,7 +60,7 @@ type
     description*: string
 
 using
-  db: db_sqlite.DbConn # Connection to the shell's database
+  db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
 
 proc buildQuery*(directory: DirectoryPath; fields: string = "";
