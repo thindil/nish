@@ -28,12 +28,7 @@
 
 # Standard library imports
 import std/[os, osproc, parseopt, strutils, tables, terminal, unicode]
-# Database library import, depends on version of Nim
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
- External modules imports
+# External modules imports
 import ansiparse, contracts, nancy, nimalyzer
 import norm/sqlite
 # Internal imports
