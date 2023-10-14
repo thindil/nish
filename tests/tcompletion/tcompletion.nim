@@ -3,12 +3,9 @@ discard """
 """
 
 import std/[os, strutils, tables]
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 import ../../src/[aliases, completion, commandslist, directorypath, lstring,
     nish, resultcode]
+import norm/sqlite
 
 let db = startDb("test5.db".DirectoryPath)
 assert db != nil, "No connection to database."
@@ -16,13 +13,18 @@ var
   myaliases = newOrderedTable[LimitedString, int]()
   commands = newTable[string, CommandData]()
   completions: seq[string]
-if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
-  if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)",
-      "tests", "/", 1, "ls -a", "Test alias.", "output") == -1:
+if db.count(Alias) == 0:
+  try:
+    var alias = newAlias(name = "tests", path = "/", recursive = true,
+        commands = "ls -a", description = "Test alias.", output = "output")
+    db.insert(alias)
+  except:
     quit("Can't add test alias.")
-if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 1:
-  if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)",
-      "tests2", "/", 0, "ls -a", "Test alias 2.", "output") == -1:
+  try:
+    var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
+        commands = "ls -a", description = "Test alias 2.", output = "output")
+    db.insert(testAlias2)
+  except:
     quit("Can't add the second test alias.")
 initAliases(db, myaliases, commands)
 
