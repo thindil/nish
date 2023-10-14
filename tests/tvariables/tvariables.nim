@@ -4,11 +4,8 @@ discard """
 """
 
 import std/[os, strutils, tables]
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
 import ../../src/[commandslist, directorypath, lstring, nish, resultcode, variables]
+import norm/sqlite
 
 block:
   assert buildQuery("/".DirectoryPath, "name") ==
@@ -20,16 +17,23 @@ block:
 
   initVariables(db, commands)
 
-  if parseInt(db.getValue(sql"SELECT COUNT(*) FROM variables")) == 0:
-    if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
-        "TESTS", "/", 1, "test_variable", "Test variable.") == -1:
+  if db.count(Variable) == 0:
+    try:
+      var variable = newVariable(name = "TESTS", path = "/", recursive = true,
+          value = "test_variable", description = "Test variable.")
+      db.insert(variable)
+      var variable2 = newVariable(name = "TESTS2", path = "/",
+          recursive = false, value = "test_variable2",
+          description = "Test variable 2.")
+      db.insert(variable2)
+    except:
       quit QuitFailure
-    if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
-        "TESTS2", "/", 0, "test_variable2", "Test variable 2.") == -1:
-      quit QuitFailure
-  if parseInt(db.getValue(sql"SELECT COUNT(*) FROM variables")) == 1:
-    if db.tryInsertID(sql"INSERT INTO variables (name, path, recursive, value, description) VALUES (?, ?, ?, ?, ?)",
-        "TESTS2", "/", 0, "test_variable2", "Test variable 2.") == -1:
+  if db.count(Variable) == 1:
+    try:
+      var variable = newVariable(name = "TESTS2", path = "/", recursive = false,
+          value = "test_variable2", description = "Test variable 2.")
+      db.insert(variable)
+    except:
       quit QuitFailure
 
   setVariables("/home".DirectoryPath, db)
@@ -38,19 +42,19 @@ block:
 
   assert listVariables(initLimitedString(capacity = 4, text = "list"), db) ==
       QuitSuccess, "Failed to show the list of available variables."
-  assert listVariables(initLimitedString(capacity = 8, text = "list all"), db) ==
-      QuitSuccess, "Failed to show the list of all variables."
-  assert listVariables(initLimitedString(capacity = 8, text = "werwerew"), db) ==
-      QuitSuccess, "Failed to show the list of available variables."
+  assert listVariables(initLimitedString(capacity = 8, text = "list all"),
+      db) == QuitSuccess, "Failed to show the list of all variables."
+  assert listVariables(initLimitedString(capacity = 8, text = "werwerew"),
+      db) == QuitSuccess, "Failed to show the list of available variables."
 
   assert deleteVariable(initLimitedString(capacity = 10, text = "delete 123"),
       db) == QuitFailure, "Failed to not delete a non-existing variable."
   assert deleteVariable(initLimitedString(capacity = 10, text = "delete sdf"),
       db) == QuitFailure, "Failed to not delete a non-existing variable with invalid index."
-  assert deleteVariable(initLimitedString(capacity = 8, text = "delete 2"), db) ==
-      QuitSuccess, "Failed to delete a variable."
-  assert deleteVariable(initLimitedString(capacity = 8, text = "delete 2"), db) ==
-      QuitFailure, "Failed to delete a deleted variable."
+  assert deleteVariable(initLimitedString(capacity = 8, text = "delete 2"),
+      db) == QuitSuccess, "Failed to delete a variable."
+  assert deleteVariable(initLimitedString(capacity = 8, text = "delete 2"),
+      db) == QuitFailure, "Failed to delete a deleted variable."
 
   assert setCommand(initLimitedString(capacity = 13, text = "test=test_val")) ==
       QuitSuccess, "Failed to set a variable."
