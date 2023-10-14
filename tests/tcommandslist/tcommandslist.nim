@@ -3,22 +3,25 @@ discard """
 """
 
 import std/[strutils, tables]
-when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  import db_connector/db_sqlite
-else:
-  import std/db_sqlite
-import ../../src/[commandslist, constants, directorypath, lstring, nish, resultcode]
+import ../../src/[aliases, commandslist, constants, directorypath, lstring, nish, resultcode]
 import contracts
+import norm/sqlite
 
 let db = startDb("test4.db".DirectoryPath)
 assert db != nil, "Failed to initialized database."
-if parseInt(db.getValue(sql"SELECT COUNT(*) FROM aliases")) == 0:
-  if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)",
-      "tests", "/", 1, "ls -a", "Test alias.", "output") == -1:
-    quit("Can't add test alias.", QuitFailure)
-  if db.tryInsertID(sql"INSERT INTO aliases (name, path, recursive, commands, description, output) VALUES (?, ?, ?, ?, ?, ?)",
-      "tests2", "/", 0, "ls -a", "Test alias 2.", "output") == -1:
-    quit("Can't add test2 alias.", QuitFailure)
+if db.count(Alias) == 0:
+  try:
+    var alias = newAlias(name = "tests", path = "/", recursive = true,
+        commands = "ls -a", description = "Test alias.", output = "output")
+    db.insert(alias)
+  except:
+    quit("Can't add test alias.")
+  try:
+    var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
+        commands = "ls -a", description = "Test alias 2.", output = "output")
+    db.insert(testAlias2)
+  except:
+    quit("Can't add the second test alias.")
 var
   commands = newTable[string, CommandData]()
 
