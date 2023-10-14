@@ -20,8 +20,6 @@ requires "nancy >= 0.1.1"
 requires "termstyle >= 0.1.0"
 requires "nimalyzer >= 0.7.1"
 requires "norm >= 2.8.1"
-if (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
-  requires "db_connector"
 
 # Tasks
 
