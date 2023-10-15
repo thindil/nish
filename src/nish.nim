@@ -125,7 +125,7 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
         # If there is a problem with input/output, quit the shell or it
         # will be stuck in endless loop. Later it should be replaced by
         # more elegant solution.
-        quitShell(returnCode = QuitFailure.ResultCode, db = db)
+        closeDb(returnCode = QuitFailure.ResultCode, db = db)
       case inputChar.ord
       # Backspace pressed, delete the character before cursor from the user
       # input
@@ -515,7 +515,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             setTitle(title = getCurrentDirectory(), db = db)
           except OSError:
             setTitle(title = "nish", db = db)
-          quitShell(returnCode = returnCode, db = db)
+          closeDb(returnCode = returnCode, db = db)
         # Change current directory
         of "cd":
           returnCode = cdCommand(newDirectory = ($arguments).DirectoryPath,
@@ -588,7 +588,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           inputString = emptyLimitedString(capacity = maxInputLength)
         # Run only one command, quit from the shell
         if oneTimeCommand and inputString.len == 0:
-          quitShell(returnCode = returnCode, db = db)
+          closeDb(returnCode = returnCode, db = db)
         cursorPosition = runeLen(s = $inputString)
       except:
         showError(message = "Internal shell error. Additional details: ",
