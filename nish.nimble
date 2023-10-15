@@ -20,6 +20,7 @@ requires "nancy >= 0.1.1"
 requires "termstyle >= 0.1.0"
 requires "nimalyzer >= 0.7.1"
 requires "norm >= 2.8.1"
+requires "unittest2"
 
 # Tasks
 
@@ -38,6 +39,9 @@ task release, "builds the project in release mode":
 task test, "run the project unit tests":
   exec "nimassets -d=help -o=" & srcDir & DirSep & "helpcontent.nim"
   exec "testament all"
+#  for file in listFiles("tests"):
+#    if file.endsWith("nim") and file != "tests" & DirSep & "megatest.nim":
+#      exec "nim c -r " & file
 
 task releasearm, "builds the project in release mode for Linux on arm":
   exec "nimble install -d -y"
