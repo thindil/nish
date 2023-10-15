@@ -39,9 +39,9 @@ task release, "builds the project in release mode":
 task test, "run the project unit tests":
   exec "nimassets -d=help -o=" & srcDir & DirSep & "helpcontent.nim"
   exec "testament all"
-#  for file in listFiles("tests"):
-#    if file.endsWith("nim") and file != "tests" & DirSep & "megatest.nim":
-#      exec "nim c -r " & file
+  for file in listFiles("tests"):
+    if file.endsWith("nim") and file != "tests" & DirSep & "megatest.nim":
+      exec "nim c -r " & file
 
 task releasearm, "builds the project in release mode for Linux on arm":
   exec "nimble install -d -y"
