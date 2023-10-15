@@ -4,7 +4,7 @@ discard """
 """
 
 import std/tables
-import ../../src/[commandslist, directorypath, history, nish, resultcode]
+import ../../src/[commandslist, db ,directorypath, history, nish, resultcode]
 
 block:
   showCommandLineHelp()
@@ -17,4 +17,4 @@ block:
       historyIndex: int
       commands = newTable[string, CommandData]()
   historyIndex = initHistory(db, commands)
-  quitShell(ResultCode(QuitSuccess), db)
+  closeDb(ResultCode(QuitSuccess), db)

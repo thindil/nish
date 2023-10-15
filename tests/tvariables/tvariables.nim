@@ -4,7 +4,7 @@ discard """
 """
 
 import std/[os, strutils, tables]
-import ../../src/[commandslist, directorypath, lstring, nish, resultcode, variables]
+import ../../src/[commandslist, directorypath, db, lstring, resultcode, variables]
 import norm/sqlite
 
 block:
@@ -69,5 +69,5 @@ block:
   let newVariable = newVariable(name = "ala")
   assert newVariable.name == "ala", "Failed to set a new variable."
 
-  quitShell(ResultCode(QuitSuccess), db)
+  closeDb(ResultCode(QuitSuccess), db)
 

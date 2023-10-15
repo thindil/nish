@@ -4,7 +4,7 @@ discard """
 """
 
 import std/tables
-import ../../src/[directorypath, commandslist, highlight, lstring, nish,
+import ../../src/[db, directorypath, commandslist, highlight, lstring,
     resultcode, constants]
 
 block:
@@ -18,4 +18,4 @@ block:
   highlightOutput(0, inputString, commands, myaliases, false, "",
       QuitSuccess.ResultCode, db, 0, true)
 
-  quitShell(ResultCode(QuitSuccess), db)
+  closeDb(ResultCode(QuitSuccess), db)

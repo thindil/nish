@@ -2,7 +2,7 @@ discard """
   exitcode: 0
 """
 
-import ../../src/[directorypath, nish, title]
+import ../../src/[db, directorypath, title]
 
 block:
   let db = startDb("test9.db".DirectoryPath)

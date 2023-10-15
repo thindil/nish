@@ -63,4 +63,4 @@ suite "Unit tests for aliases module":
       newAlias.name == "ala"
 
   suiteTeardown:
-    quitShell(QuitSuccess.ResultCode, db)
+    closeDb(QuitSuccess.ResultCode, db)

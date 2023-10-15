@@ -27,4 +27,4 @@ suite "Unit tests for commands module":
       changeDirectory("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure
 
   suiteTeardown:
-    quitShell(QuitSuccess.ResultCode, db)
+    closeDb(QuitSuccess.ResultCode, db)

@@ -3,7 +3,7 @@ discard """
   outputsub: test error
 """
 
-import ../../src/[directorypath, nish, output, resultcode]
+import ../../src/[db, directorypath, output, resultcode]
 
 block:
   let db = startDb("test12.db".DirectoryPath)
@@ -15,4 +15,4 @@ block:
 
   showOutput("test output")
 
-  quitShell(ResultCode(QuitSuccess), db)
+  closeDb(ResultCode(QuitSuccess), db)

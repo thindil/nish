@@ -4,7 +4,7 @@ discard """
 """
 
 import std/tables
-import ../../src/[commandslist, directorypath, history, lstring, nish, resultcode]
+import ../../src/[commandslist, directorypath, db, history, lstring, resultcode]
 
 block:
   let db = startDb("test8.db".DirectoryPath)
@@ -34,4 +34,4 @@ block:
 
   assert newHistoryEntry(command = "newCom").command == "newCom", "Failed to initialize a new entry for the shell's history."
 
-  quitShell(ResultCode(QuitSuccess), db)
+  closeDb(ResultCode(QuitSuccess), db)

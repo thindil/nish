@@ -4,7 +4,7 @@ discard """
 """
 
 import std/tables
-import ../../src/[commandslist, directorypath, history, lstring, nish, options, resultcode]
+import ../../src/[commandslist, db, directorypath, history, lstring, options, resultcode]
 
 block:
   let db = startDb("test11.db".DirectoryPath)
@@ -52,4 +52,4 @@ block:
 
   assert to(dbValue(text), ValueType) == text, "Failed to convert dbValue to ValueType."
 
-  quitShell(ResultCode(QuitSuccess), db)
+  closeDb(ResultCode(QuitSuccess), db)

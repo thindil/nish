@@ -4,7 +4,7 @@ discard """
 """
 
 import std/tables
-import ../../src/[commandslist, directorypath, lstring, nish, plugins, resultcode]
+import ../../src/[commandslist, db, directorypath, lstring, plugins, resultcode]
 
 block:
   let db = startDb("test13.db".DirectoryPath)
@@ -52,4 +52,4 @@ block:
   let newPlugin = newPlugin(path = "/")
   assert newPlugin.location == "/", "Failed to initialize a new plugin."
 
-  quitShell(QuitSuccess.ResultCode, db)
+  closeDb(QuitSuccess.ResultCode, db)

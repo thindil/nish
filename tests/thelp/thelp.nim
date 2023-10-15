@@ -3,7 +3,7 @@ discard """
   outputsub: delete the help entry for topic
 """
 import std/tables
-import ../../src/[aliases, commandslist, directorypath, help, lstring, nish, resultcode]
+import ../../src/[aliases, commandslist, db, directorypath, help, lstring, resultcode]
 import norm/sqlite
 
 block:
@@ -65,4 +65,4 @@ block:
   let newHelp = newHelpEntry(topic = "test")
   assert newHelp.topic == "test", "Failed to set a new help entry."
 
-  quitShell(ResultCode(QuitSuccess), db)
+  closeDb(ResultCode(QuitSuccess), db)

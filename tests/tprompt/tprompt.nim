@@ -3,7 +3,7 @@ discard """
   outputsub: /
 """
 
-import ../../src/[nish, directorypath, prompt, resultcode]
+import ../../src/[db, directorypath, prompt, resultcode]
 
 block:
   let db = startDb("test14.db".DirectoryPath)
