@@ -35,7 +35,7 @@ import norm/sqlite
 import aliases, directorypath, help, history, lstring, options, output, plugins,
     resultcode, variables
 
-proc quitShell*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
+proc closeDb*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
         RootEffect],
     contractual.} =
