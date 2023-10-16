@@ -1,12 +1,10 @@
-discard """
-  exitcode: 0
-"""
-
 import std/[os, strutils, tables]
-import ../../src/[aliases, completion, commandslist, db, directorypath, lstring, resultcode]
+import ../src/[aliases, completion, commandslist, db, directorypath, lstring, resultcode]
+import unittest2
 import norm/sqlite
 
-block:
+suite "Unit tests for completion module":
+
   let db = startDb("test5.db".DirectoryPath)
   assert db != nil, "No connection to database."
   var
@@ -28,12 +26,17 @@ block:
       quit("Can't add the second test alias.")
   initAliases(db, myaliases, commands)
 
-  open("sometest.txt", fmWrite).close
-  getDirCompletion("somete", completions, db)
-  removeFile("sometest.txt")
-  assert completions == @["sometest.txt"], "Failed to get Tab completion for a file."
+  test "getDirCompletion":
+    open("sometest.txt", fmWrite).close
+    getDirCompletion("somete", completions, db)
+    removeFile("sometest.txt")
+    check:
+      completions == @["sometest.txt"]
 
-  getCommandCompletion("exi", completions, myaliases, commands, db)
-  assert completions[1] == "exit", "Failed to get Tab completion for a command."
+  test "getCommandCompletion":
+    getCommandCompletion("exi", completions, myaliases, commands, db)
+    check:
+      completions[1] == "exit"
 
-  closeDb(ResultCode(QuitSuccess), db)
+  suiteTeardown:
+    closeDb(QuitSuccess.ResultCode, db)
