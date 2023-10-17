@@ -330,12 +330,13 @@ it from the source.
 You will need:
 
 * [Nim compiler](https://nim-lang.org/install.html)
-* [Contracts package](https://github.com/Udiknedormin/NimContracts)
-* [Nimassets package](https://github.com/xmonader/nimassets)
+* [Contracts](https://github.com/Udiknedormin/NimContracts)
+* [Nimassets](https://github.com/xmonader/nimassets)
 * [Nancy](https://github.com/PMunch/nancy)
 * [TermStyle](https://github.com/PMunch/termstyle)
 * [Nimalyzer](https://github.com/thindil/nimalyzer)
 * [Norm](https://github.com/moigagoo/norm)
+* [Unittests2](https://github.com/status-im/nim-unittest2)
 
 You can install them manually or by using [Nimble](https://github.com/nim-lang/nimble).
 In that second option, type `nimble install https://github.com/thindil/nish` to
