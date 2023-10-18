@@ -51,8 +51,10 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, raises: [], tags: [
       -v, --version - Show the shell version info""")
       stdout.flushFile
     except IOError:
-      quit QuitFailure
-    quit QuitSuccess
+      when isMainModule:
+        quit QuitFailure
+    when isMainModule:
+      quit QuitSuccess
 
 proc showProgramVersion*() {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect], contractual.} =
@@ -69,8 +71,10 @@ proc showProgramVersion*() {.gcsafe, sideEffect, raises: [], tags: [
       License: 3-Clause BSD""")
       stdout.flushFile
     except IOError:
-      quit QuitFailure
-    quit QuitSuccess
+      when isMainModule:
+        quit QuitFailure
+    when isMainModule:
+      quit QuitSuccess
 
 proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
     commandName: var string; returnCode: var ResultCode;
