@@ -16,6 +16,7 @@ of the shell.
 - Show message when there are no defined environment variables instead of
   the empty list
 - Better handling very long lines in the user's input
+- Using **unittest2** package for the project's unit tests
 
 ### Fixed
 - Compiling the shell with Nim 2.0
