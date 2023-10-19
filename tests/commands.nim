@@ -5,8 +5,12 @@ import norm/sqlite
 
 suite "Unit tests for commands module":
 
+  checkpoint "Initializing the tests"
   let db = startDb("test3.db".DirectoryPath)
-  assert db != nil, "Failed to initialize database."
+  require:
+    db != nil
+
+  checkpoint "Adding testing aliases if needed"
   if db.count(Alias) == 0:
     var alias = newAlias(name = "tests", path = "/", recursive = true,
         commands = "ls -a", description = "Test alias.", output = "output")
@@ -16,14 +20,20 @@ suite "Unit tests for commands module":
     db.insert(testAlias2)
   var myaliases = newOrderedTable[LimitedString, int]()
 
-  test "cdCommand":
+  test "Testing cd command":
+    checkpoint "Entering an existing directory"
     check:
       cdCommand("/".DirectoryPath, myaliases, db) == QuitSuccess
+    checkpoint "Trying to enter a non-existing directory"
+    check:
       cdCommand("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure
 
-  test "changeDirectory":
+  test "Testing changing the current directory of the shell":
+    checkpoint "Changing the current directory"
     check:
       changeDirectory("..".DirectoryPath, myaliases, db) == QuitSuccess
+    checkpoint "Changing the current directory to non-existing directory"
+    check:
       changeDirectory("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure
 
   suiteTeardown:
