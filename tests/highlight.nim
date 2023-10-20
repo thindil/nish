@@ -5,14 +5,16 @@ import unittest2
 
 suite "Unit tests for highlight module":
 
+  checkpoint "Initializing the tests"
   let db = startDb("test7.db".DirectoryPath)
-  assert db != nil, "Failed to initialize the database"
+  require:
+    db != nil
   var
     myaliases = newOrderedTable[LimitedString, int]()
     commands = newTable[string, CommandData]()
     inputString: UserInput = initLimitedString(4, "test")
 
-  test "hightlighOutput":
+  test "Highlighting the shell's output":
     highlightOutput(0, inputString, commands, myaliases, false, "",
         QuitSuccess.ResultCode, db, 0, true)
 
