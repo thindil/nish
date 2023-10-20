@@ -5,8 +5,12 @@ import norm/sqlite
 
 suite "Unit tests for commandslist module":
 
+  checkpoint "Initializing the tests"
   let db = startDb("test4.db".DirectoryPath)
-  assert db != nil, "Failed to initialized database."
+  unittest2.require:
+    db != nil
+
+  checkpoint "Adding testing aliases if needed"
   if db.count(Alias) == 0:
     var alias = newAlias(name = "tests", path = "/", recursive = true,
         commands = "ls -a", description = "Test alias.", output = "output")
@@ -27,36 +31,36 @@ suite "Unit tests for commandslist module":
     body:
       echo "test2"
 
-  test "addCommand":
+  test "Adding a new command":
+    checkpoint "Adding a new command"
     addCommand(name = initLimitedString(capacity = 4, text = "test"),
         command = testCommand, commands = commands)
     check:
       commands.len == 1
-    try:
+    checkpoint "Readding the same command"
+    expect CommandsListError:
       addCommand(name = initLimitedString(capacity = 4, text = "test"),
           command = testCommand, commands = commands)
-    except CommandsListError:
-      discard
     check:
       commands.len == 1
-    try:
+    checkpoint "Overwritting built-in command"
+    expect CommandsListError:
       addCommand(name = initLimitedString(capacity = 4, text = "exit"),
           command = testCommand, commands = commands)
-    except CommandsListError:
-      discard
     check:
       commands.len == 1
 
-  test "replaceCommand":
+  test "Replacing a command":
+    checkpoint "Replacing an existing command"
     replaceCommand(name = initLimitedString(capacity = 4, text = "test"),
         command = testCommand2, commands = commands)
-    try:
+    checkpoint "Replacing a built-in command"
+    expect CommandsListError:
       replaceCommand(name = initLimitedString(capacity = 4, text = "exit"),
           command = testCommand, commands = commands)
-    except CommandsListError:
-      discard
 
-  test "deleteCommand":
+  test "Deleting a command":
+    checkpoint "Deleting an exisiting command"
     deleteCommand(name = initLimitedString(capacity = 4, text = "test"),
         commands = commands)
     check:
@@ -65,11 +69,10 @@ suite "Unit tests for commandslist module":
         command = testCommand, commands = commands)
     unittest2.require:
       commands.len == 1
-    try:
+    checkpoint "Deleting a non-existing command"
+    expect CommandsListError:
       deleteCommand(name = initLimitedString(capacity = 4, text = "test"),
           commands = commands)
-    except CommandsListError:
-      discard
     check:
       commands.len == 1
 
