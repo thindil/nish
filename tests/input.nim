@@ -4,7 +4,7 @@ import unittest2
 
 suite "Unit tests for input module":
 
-  test "getArguments":
+  test "Getting the command's arguments":
     var
       userCommand: OptParser = initOptParser("ls -ab --foo --bar=20 file.txt")
       conjCommands: bool = true
@@ -13,17 +13,20 @@ suite "Unit tests for input module":
       arguments == initLimitedString(capacity = maxInputLength,
         text = "ls -ab --foo --bar=20 file.txt")
 
-  test "readInput":
+  test "Reading the user's input":
     echo "exit"
     check:
       readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
 
-  test "readChar":
+  test "Reading a character from the user's input":
+    checkpoint "Reading a lowercase character"
     check:
       readChar('c') == "c"
+    checkpoint "Reading a uppercase character"
+    check:
       readChar('H') == "H"
 
-  test "deleteChar":
+  test "Deleting a character":
     var
       inputString = initLimitedString(capacity = maxInputLength, text = "my text")
       cursorPosition: Natural = 1
@@ -32,7 +35,7 @@ suite "Unit tests for input module":
       inputString == "y text"
       cursorPosition == 0
 
-  test "moveCursor":
+  test "Moving the cursor":
     let inputString = initLimitedString(capacity = maxInputLength,
         text = "my text")
     var cursorPosition: Natural = 1
@@ -40,7 +43,7 @@ suite "Unit tests for input module":
     check:
       cursorPosition == 0
 
-  test "updateInput":
+  test "Updating the user's input":
     var
       inputString = initLimitedString(capacity = maxInputLength, text = "my text")
       cursorPosition: Natural = 7
