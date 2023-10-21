@@ -4,10 +4,10 @@ import unittest2
 
 suite "Unit tests for nish module":
 
-  test "showCommandLineHelp":
+  test "Showing the list of available options for the shell":
     showCommandLineHelp()
 
-  test "showProgramVersion":
+  test "Showing the shell's version":
     showProgramVersion()
 
   test "The database connection":
@@ -18,4 +18,3 @@ suite "Unit tests for nish module":
         historyIndex: int
         commands = newTable[string, CommandData]()
     historyIndex = initHistory(db, commands)
-    closeDb(QuitSuccess.ResultCode, db)
