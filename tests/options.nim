@@ -4,20 +4,25 @@ import unittest2
 
 suite "Unit tests for options module":
 
+  checkpoint "Initializing the tests"
   let db = startDb("test11.db".DirectoryPath)
-  assert db != nil, "Failed to initialize the database."
+  require:
+    db != nil
   var commands = newTable[string, CommandData]()
   discard initHistory(db, commands)
 
-  test "initOptions":
+  test "Initializiation of the shell's options":
     initOptions(commands)
     check:
       commands.len > 0
 
-  test "getOption":
+  test "Getting the value of an option":
+    checkpoint "Getting the value of an existing option"
     check:
       getOption(initLimitedString(capacity = 13, text = "historyLength"),
           db).len > 0
+    checkpoint "Getting the value of a non-existing option"
+    check:
       getOption(initLimitedString(capacity = 10, text = "werweewfwe"),
           db).len == 0
 
@@ -37,37 +42,37 @@ suite "Unit tests for options module":
       getOption(initLimitedString(capacity = 13, text = "historyLength"),
           db) == "100"
 
-  test "setOptions":
+  test "Setting the new value for an option":
     check:
       setOptions(initLimitedString(capacity = 22,
           text = "set historyLength 1000"), db) == QuitSuccess
       getOption(initLimitedString(capacity = 13, text = "historyLength"),
           db) == "1000"
 
-  test "resetOptions":
+  test "Resetting the shell's options":
     check:
       resetOptions(initLimitedString(capacity = 19,
           text = "reset historyLength"), db) == QuitSuccess
       getOption(initLimitedString(capacity = 13, text = "historyLength"),
           db) == "500"
 
-  test "showOptions":
+  test "Showing all options":
     check:
       showOptions(db) == QuitSuccess
 
-  test "newOption":
+  test "Initializing an object of Option type":
     check:
       newOption(name = "newOpt").option == "newOpt"
 
-  test "dbType":
+  test "Getting the type of the database field for ValueType":
     check:
       dbType(ValueType) == "TEXT"
 
-  test "dbValue":
+  test "Converting dbValue to ValueType":
     check:
       dbValue(text).s == "text"
 
-  test "to":
+  test "Converting ValueType to dbValue":
     check:
       to(text.dbValue, ValueType) == text
 
