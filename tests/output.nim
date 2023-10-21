@@ -3,17 +3,19 @@ import unittest2
 
 suite "Unit tests for output module":
 
+  checkpoint "Initializing the tests"
   let db = startDb("test12.db".DirectoryPath)
-  assert db != nil, "No connection to database."
+  require:
+    db != nil
 
-  test "showError":
+  test "Showing an error message":
     check:
       showError("test error") == QuitFailure
 
-  test "showFormHeader":
+  test "Drawing a form's header":
     showFormHeader(message = "test header", db = db)
 
-  test "showOutput":
+  test "Showing a normal output":
     showOutput("test output")
 
   suiteTeardown:
