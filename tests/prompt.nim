@@ -1,5 +1,5 @@
 import utils/utils
-import ../src/[directorypath, prompt, resultcode]
+import ../src/[db, directorypath, prompt, resultcode]
 import unittest2
 
 suite "Unit tests for prompt module":
@@ -13,3 +13,6 @@ suite "Unit tests for prompt module":
 
   test "Showing the shell's prompt":
     showPrompt(true, "ls -a", QuitSuccess.ResultCode, db)
+
+  suiteTeardown:
+    closeDb(QuitSuccess.ResultCode, db)
