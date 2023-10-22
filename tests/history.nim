@@ -1,13 +1,12 @@
 import std/tables
-import ../src/[commandslist, directorypath, db, history, lstring, resultcode]
+import utils/utils
+import ../src/[commandslist, db, history, lstring, resultcode]
 import unittest2
 
 suite "Unit tests for history module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test8.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test8.db")
   var commands = newTable[string, CommandData]()
 
   checkpoint "Initializing the shell's history"

@@ -1,14 +1,12 @@
 import std/tables
-import ../src/[db, directorypath, commandslist, highlight, lstring,
-    resultcode, constants]
+import utils/utils
+import ../src/[db, commandslist, highlight, lstring, resultcode, constants]
 import unittest2
 
 suite "Unit tests for highlight module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test7.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test7.db")
   var
     myaliases = newOrderedTable[LimitedString, int]()
     commands = newTable[string, CommandData]()

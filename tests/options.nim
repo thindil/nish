@@ -1,13 +1,12 @@
 import std/tables
-import ../src/[commandslist, db, directorypath, history, lstring, options, resultcode]
+import utils/utils
+import ../src/[commandslist, db, history, lstring, options, resultcode]
 import unittest2
 
 suite "Unit tests for options module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test11.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test11.db")
   var commands = newTable[string, CommandData]()
   discard initHistory(db, commands)
 

@@ -1,14 +1,13 @@
 import std/[strutils, tables]
-import ../src/[aliases, commandslist, constants, db, directorypath, lstring, resultcode]
+import utils/utils
+import ../src/[aliases, commandslist, constants, db, lstring, resultcode]
 import contracts, unittest2
 import norm/sqlite
 
 suite "Unit tests for commandslist module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test4.db".DirectoryPath)
-  unittest2.require:
-    db != nil
+  let db = initDb("test4.db")
 
   checkpoint "Adding testing aliases if needed"
   if db.count(Alias) == 0:

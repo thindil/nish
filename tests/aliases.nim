@@ -1,14 +1,13 @@
 import std/[os, strutils, tables]
 import ../src/[aliases, db, directorypath, commandslist, lstring, resultcode]
+import utils/utils
 import contracts, unittest2
 import norm/sqlite
 
 suite "Unit tests for aliases module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test2.db".DirectoryPath)
-  unittest2.require:
-    db != nil
+  let db = initDb("test2.db")
   var
     myaliases = newOrderedTable[LimitedString, int]()
     commands = newTable[string, CommandData]()

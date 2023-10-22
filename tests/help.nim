@@ -1,14 +1,13 @@
 import std/tables
-import ../src/[aliases, commandslist, db, directorypath, help, lstring, resultcode]
+import utils/utils
+import ../src/[aliases, commandslist, db, help, lstring, resultcode]
 import norm/sqlite
 import unittest2
 
 suite "Unit tests for help module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test6.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test6.db")
   var commands = newTable[string, CommandData]()
 
   test "Initializing the help system":

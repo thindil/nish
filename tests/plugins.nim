@@ -1,13 +1,12 @@
 import std/tables
-import ../src/[commandslist, db, directorypath, lstring, plugins, resultcode]
+import utils/utils
+import ../src/[commandslist, db, lstring, plugins, resultcode]
 import unittest2
 
 suite "Unit tests for plugins module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test13.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test13.db")
   var commands = newTable[string, CommandData]()
 
   test "Initialization of plugins":

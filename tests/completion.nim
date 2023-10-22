@@ -1,14 +1,13 @@
 import std/[os, strutils, tables]
-import ../src/[aliases, completion, commandslist, db, directorypath, lstring, resultcode]
+import utils/utils
+import ../src/[aliases, completion, commandslist, db, lstring, resultcode]
 import unittest2
 import norm/sqlite
 
 suite "Unit tests for completion module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test5.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test5.db")
   var
     myaliases = newOrderedTable[LimitedString, int]()
     commands = newTable[string, CommandData]()

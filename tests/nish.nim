@@ -1,5 +1,6 @@
 import std/tables
-import ../src/[commandslist, db ,directorypath, history, nish, resultcode]
+import utils/utils
+import ../src/[commandslist, history, nish]
 import unittest2
 
 suite "Unit tests for nish module":
@@ -11,9 +12,7 @@ suite "Unit tests for nish module":
     showProgramVersion()
 
   test "The database connection":
-    let db = startDb("test10.db".DirectoryPath)
-    require:
-      db != nil
+    let db = initDb("test10.db")
     var
         historyIndex: int
         commands = newTable[string, CommandData]()

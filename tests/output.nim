@@ -1,12 +1,11 @@
-import ../src/[db, directorypath, output, resultcode]
+import utils/utils
+import ../src/[db, output, resultcode]
 import unittest2
 
 suite "Unit tests for output module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test12.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test12.db")
 
   test "Showing an error message":
     check:

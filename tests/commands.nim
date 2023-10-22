@@ -1,4 +1,5 @@
 import std/[strutils, tables]
+import utils/utils
 import ../src/[aliases, commands, db, directorypath, lstring, resultcode]
 import unittest2
 import norm/sqlite
@@ -6,9 +7,7 @@ import norm/sqlite
 suite "Unit tests for commands module":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test3.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test3.db")
 
   checkpoint "Adding testing aliases if needed"
   if db.count(Alias) == 0:
