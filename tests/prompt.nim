@@ -3,12 +3,14 @@ import unittest2
 
 suite "Unit tests for prompt module":
 
+  checkpoint "Initializing the tests"
   let db = startDb("test14.db".DirectoryPath)
-  assert db != nil, "Failed to initialize the database."
+  require:
+    db != nil
 
-  test "getFormattedDir":
+  test "Getting formated directory name":
     check:
       getFormattedDir().len > 0
 
-  test "showPrompt":
+  test "Showing the shell's prompt":
     showPrompt(true, "ls -a", QuitSuccess.ResultCode, db)
