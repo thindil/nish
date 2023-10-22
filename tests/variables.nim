@@ -5,10 +5,14 @@ import unittest2
 
 suite "Unit tests for variable modules":
 
+  checkpoint "Initializing the tests"
   let db = startDb("test.db".DirectoryPath)
-  assert db != nil, "Failed to initialize the database."
+  require:
+    db != nil
   var commands = newTable[string, CommandData]()
+
   initVariables(db, commands)
+  checkpoint "Adding testing variables if needed"
   if db.count(Variable) == 0:
     var variable = newVariable(name = "TESTS", path = "/", recursive = true,
           value = "test_variable", description = "Test variable.")
@@ -22,57 +26,72 @@ suite "Unit tests for variable modules":
         value = "test_variable2", description = "Test variable 2.")
     db.insert(variable)
 
-  test "buildQuery":
+  test "Building a SQL query":
     check:
       buildQuery("/".DirectoryPath, "name") ==
       "SELECT name FROM variables WHERE path='/' ORDER BY id ASC"
 
-  test "setVariables":
+  test "Setting variables in the selected directory":
     setVariables("/home".DirectoryPath, db)
 
-  test "getEnv":
+  test "Getting an environment variable":
     check:
       getEnv("TESTS") == "test_variable"
 
-  test "existsEnv":
+  test "Checking do an environment variable exists":
     check:
       not existsEnv("TESTS2")
 
-  test "listVariables":
+  test "Showing environment variables":
+    checkpoint "Showing available environment variables"
     check:
       listVariables(initLimitedString(capacity = 4, text = "list"), db) ==
           QuitSuccess
+    checkpoint "Showing all environment variables"
+    check:
       listVariables(initLimitedString(capacity = 8, text = "list all"),
           db) == QuitSuccess
+    checkpoint "Showing environment variables with invalid subcommand"
+    check:
       listVariables(initLimitedString(capacity = 8, text = "werwerew"),
           db) == QuitSuccess
 
-  test "deleteVariable":
+  test "Deleting an environment variable":
+    checkpoint "Deleting a non-existing environment variable"
     check:
       deleteVariable(initLimitedString(capacity = 10, text = "delete 123"),
           db) == QuitFailure
+    checkpoint "Deleting a non-existing environment variable with invalid index"
+    check:
       deleteVariable(initLimitedString(capacity = 10, text = "delete sdf"),
           db) == QuitFailure
+    checkpoint "Deleting an existing environment variable"
+    check:
       deleteVariable(initLimitedString(capacity = 8, text = "delete 2"),
           db) == QuitSuccess
+    checkpoint "Deleting a previously deleted environment variable"
+    check:
       deleteVariable(initLimitedString(capacity = 8, text = "delete 2"),
           db) == QuitFailure
 
-  test "setCommand":
+  test "Setting an evironment variable":
     check:
       setCommand(initLimitedString(capacity = 13, text = "test=test_val")) ==
           QuitSuccess
       getEnv("test") == "test_val"
 
-  test "unsetCommand":
+  test "Unsetting an environment variable":
+    checkpoint "Unsetting an existing environment variable"
     check:
       unsetCommand(initLimitedString(capacity = 4, text = "test")) ==
           QuitSuccess
       getEnv("test") == ""
+    checkpoint "Unsetting an non-existing environment variable"
+    check:
       unsetCommand(initLimitedString(capacity = 4, text = "test")) ==
           QuitSuccess
 
-  test "newVariable":
+  test "Initializing an object of Variable type":
     let newVariable = newVariable(name = "ala")
     check:
       newVariable.name == "ala"
