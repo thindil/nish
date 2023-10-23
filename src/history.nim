@@ -311,7 +311,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       db.rawSelect(qry = "SELECT command, lastused, amount FROM history ORDER BY " &
           historyOrder & " LIMIT 0, ?", objs = entries, params = amount)
       for entry in entries:
-        table.add(parts = [entry.lastUsed.format(f = "yyyy-MM-dd HH:mm:ss"),
+        table.add(parts = [entry.lastUsed.local.format(f = "yyyy-MM-dd HH:mm:ss"),
             $entry.amount, entry.command])
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
