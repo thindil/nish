@@ -1,8 +1,7 @@
-import std/[os, strutils, tables]
+import std/[os, tables]
 import utils/utils
 import ../src/[aliases, completion, commandslist, db, lstring, resultcode]
 import unittest2
-import norm/sqlite
 
 suite "Unit tests for completion module":
 
@@ -14,13 +13,7 @@ suite "Unit tests for completion module":
     completions: seq[string]
 
   checkpoint "Adding testing aliases if needed"
-  if db.count(Alias) == 0:
-    var alias = newAlias(name = "tests", path = "/", recursive = true,
-        commands = "ls -a", description = "Test alias.", output = "output")
-    db.insert(alias)
-    var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
-        commands = "ls -a", description = "Test alias 2.", output = "output")
-    db.insert(testAlias2)
+  db.addAliases
   initAliases(db, myaliases, commands)
 
   test "Get completion for a file name":

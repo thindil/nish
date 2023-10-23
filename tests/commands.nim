@@ -1,8 +1,7 @@
-import std/[strutils, tables]
+import std/tables
 import utils/utils
-import ../src/[aliases, commands, db, directorypath, lstring, resultcode]
+import ../src/[commands, db, directorypath, lstring, resultcode]
 import unittest2
-import norm/sqlite
 
 suite "Unit tests for commands module":
 
@@ -10,13 +9,7 @@ suite "Unit tests for commands module":
   let db = initDb("test3.db")
 
   checkpoint "Adding testing aliases if needed"
-  if db.count(Alias) == 0:
-    var alias = newAlias(name = "tests", path = "/", recursive = true,
-        commands = "ls -a", description = "Test alias.", output = "output")
-    db.insert(alias)
-    var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
-        commands = "ls -a", description = "Test alias 2.", output = "output")
-    db.insert(testAlias2)
+  db.addAliases
   var myaliases = newOrderedTable[LimitedString, int]()
 
   test "Testing cd command":

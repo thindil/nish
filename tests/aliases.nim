@@ -1,4 +1,4 @@
-import std/[os, strutils, tables]
+import std/[os, tables]
 import ../src/[aliases, db, directorypath, commandslist, lstring, resultcode]
 import utils/utils
 import contracts, unittest2
@@ -13,13 +13,7 @@ suite "Unit tests for aliases module":
     commands = newTable[string, CommandData]()
 
   checkpoint "Adding testing aliases if needed"
-  if db.count(Alias) == 0:
-    var alias = newAlias(name = "tests", path = "/", recursive = true,
-          commands = "ls -a", description = "Test alias.", output = "output")
-    db.insert(alias)
-    var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
-        commands = "ls -a", description = "Test alias 2.", output = "output")
-    db.insert(testAlias2)
+  db.addAliases
 
   test "Initialization of the shell's aliases":
     initAliases(db, myaliases, commands)

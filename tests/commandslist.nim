@@ -1,6 +1,6 @@
-import std/[strutils, tables]
+import std/tables
 import utils/utils
-import ../src/[aliases, commandslist, constants, db, lstring, resultcode]
+import ../src/[commandslist, constants, db, lstring, resultcode]
 import contracts, unittest2
 import norm/sqlite
 
@@ -10,15 +10,8 @@ suite "Unit tests for commandslist module":
   let db = initDb("test4.db")
 
   checkpoint "Adding testing aliases if needed"
-  if db.count(Alias) == 0:
-    var alias = newAlias(name = "tests", path = "/", recursive = true,
-        commands = "ls -a", description = "Test alias.", output = "output")
-    db.insert(alias)
-    var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
-        commands = "ls -a", description = "Test alias 2.", output = "output")
-    db.insert(testAlias2)
-  var
-    commands = newTable[string, CommandData]()
+  db.addAliases
+  var commands = newTable[string, CommandData]()
 
   proc testCommand(arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
