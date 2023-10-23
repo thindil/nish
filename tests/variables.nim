@@ -1,4 +1,5 @@
 import std/[os, strutils, tables]
+import utils/utils
 import ../src/[commandslist, directorypath, db, lstring, resultcode, variables]
 import norm/sqlite
 import unittest2
@@ -6,9 +7,7 @@ import unittest2
 suite "Unit tests for variable modules":
 
   checkpoint "Initializing the tests"
-  let db = startDb("test.db".DirectoryPath)
-  require:
-    db != nil
+  let db = initDb("test.db")
   var commands = newTable[string, CommandData]()
 
   initVariables(db, commands)
