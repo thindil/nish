@@ -1,5 +1,5 @@
 import utils/utils
-import ../src/title
+import ../src/[db, resultcode, title]
 import unittest2
 
 suite "Unit tests for title module":
@@ -9,3 +9,6 @@ suite "Unit tests for title module":
 
   test "Set the terminal title":
     setTitle("test title", db)
+
+  suiteTeardown:
+    closeDb(QuitSuccess.ResultCode, db)
