@@ -43,7 +43,7 @@ suite "Unit tests for history module":
       clearHistory(db) == 0
       historyLength(db) == 0
 
-  test "Initializing an object of Alias type":
+  test "Initializing an object of HistoryEntry type":
     check:
       newHistoryEntry(command = "newCom").command == "newCom"
 
