@@ -148,7 +148,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
           return nil
-        if result.updateAliasesDb == QuitFailure:
+        if result.updateAliasesDb(dbVersion = dbVersion) == QuitFailure:
           return nil
         if result.createPluginsDb == QuitFailure:
           return nil
@@ -176,6 +176,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               valueType = options[i].optionType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 3:
+        discard
+      of 4:
         discard
       else:
         showError(message = "Invalid version of database.")

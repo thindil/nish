@@ -751,11 +751,12 @@ proc initAliases*(db; aliases: ref AliasesList;
       showError(message = "Can't initialize aliases. Reason: ",
           e = getCurrentException())
 
-proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Update the table aliases to the new version if needed
   ##
-  ## * db - the connection to the shell's database
+  ## * db        - the connection to the shell's database
+  ## * dbVersion - the version of the database schema from which upgrade is make
   ##
   ## Returns QuitSuccess if update was successfull, otherwise QuitFailure and
   ## show message what wrong
@@ -763,7 +764,10 @@ proc updateAliasesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
+      if dbVersion < 3:
+        db.exec(query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
+      if dbVersion < 4:
+        db.exec(query = sql(query = """ALTER TABLE history ADD id INTEGER"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
