@@ -766,8 +766,6 @@ proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, 
     try:
       if dbVersion < 3:
         db.exec(query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
-      if dbVersion < 4:
-        db.exec(query = sql(query = """ALTER TABLE aliases ADD id INTEGER"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
