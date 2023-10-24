@@ -383,11 +383,12 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             "' to its default value. Reason: ", e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc updateOptionsDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Update the table options to the new version if needed
   ##
-  ## * db - the connection to the shell's database
+  ## * db        - the connection to the shell's database
+  ## * dbVersion - the version of the database schema from which upgrade is make
   ##
   ## Returns QuitSuccess if update was successfull, otherwise QuitFailure and
   ## show message what wrong
@@ -395,7 +396,10 @@ proc updateOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
+      if dbVersion < 3:
+        db.exec(query = sql(query = """ALTER TABLE options ADD readonly BOOLEAN DEFAULT 0"""))
+      if dbVersion < 4:
+        db.exec(query = sql(query = """ALTER TABLE options ADD id INTEGER"""))
     except DbError:
       return showError(message = "Can't update table for the shell's options. Reason: ",
           e = getCurrentException())

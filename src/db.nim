@@ -144,7 +144,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           defaultValue = initLimitedString(capacity = 1, text = "0")))
       case dbVersion
       of 0 .. 1:
-        if result.updateOptionsDb == QuitFailure:
+        if result.updateOptionsDb(dbVersion = dbVersion) == QuitFailure:
           return nil
         if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
           return nil
