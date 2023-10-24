@@ -419,6 +419,8 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
               valueType = natural, defaultValue = "20", readOnly = false)]
         db.update(objs = updatedOptions)
         db.insert(objs = newOptions)
+      if dbVersion < 4:
+        db.exec(query = sql(query = """ALTER TABLE history ADD id INTEGER"""))
     except:
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException())
