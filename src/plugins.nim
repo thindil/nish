@@ -635,8 +635,8 @@ proc togglePlugin*(db; arguments; disable: bool = true;
       # Remove or add the plugin to the list of enabled plugins and clear
       # the plugin help when disabling it
       if disable:
-        sqlite.exec(db = db, query = sql(query = (
-            "DELETE FROM help WHERE plugin=?")), args = plugin.location)
+        db.exec(query = sql(query = ("DELETE FROM help WHERE plugin=?")),
+            args = plugin.location)
       elif checkPlugin(pluginPath = plugin.location, db = db,
           commands = commands).path.len == 0:
         return QuitFailure.ResultCode
@@ -876,10 +876,8 @@ proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      sqlite.exec(db = db, query = sql(
-          query = """ALTER TABLE plugins ADD precommand BOOLEAN NOT NULL DEFAULT 0"""))
-      sqlite.exec(db = db, query = sql(
-          query = """ALTER TABLE plugins ADD postcommand BOOLEAN NOT NULL DEFAULT 0"""))
+      db.exec(query = sql(query = """ALTER TABLE plugins ADD precommand BOOLEAN NOT NULL DEFAULT 0"""))
+      db.exec(query = sql(query = """ALTER TABLE plugins ADD postcommand BOOLEAN NOT NULL DEFAULT 0"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
           e = getCurrentException())
