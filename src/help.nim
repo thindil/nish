@@ -500,6 +500,26 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
 
+proc updateHelpDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
+  ## Update the table help to the new version if needed
+  ##
+  ## * db        - the connection to the shell's database
+  ## * dbVersion - the version of the database schema from which upgrade is make
+  ##
+  ## Returns QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  require:
+    db != nil
+  body:
+    try:
+      if dbVersion < 4:
+        db.exec(query = sql(query = """ALTER TABLE help ADD id INTEGER"""))
+    except DbError:
+      return showError(message = "Can't update table for the shell's help. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
+
 proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect, RootEffect],
     contractual.} =
