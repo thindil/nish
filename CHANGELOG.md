@@ -17,6 +17,9 @@ of the shell.
   the empty list
 - Better handling very long lines in the user's input
 - Using **unittest2** package for the project's unit tests
+- **BREAKING**: updated the shell's database schema and its code. This made
+  the old entries in the shell's history to lost their last used time. All the
+  new entries or updated entries will have set the time correctly
 
 ### Fixed
 - Compiling the shell with Nim 2.0
