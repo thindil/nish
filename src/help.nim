@@ -514,7 +514,8 @@ proc updateHelpDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, rai
   body:
     try:
       if dbVersion < 4:
-        db.exec(query = sql(query = """ALTER TABLE help ADD id INTEGER"""))
+        db.exec(query = sql(query = """ALTER TABLE help ADD id INTEGER NOT NULL DEFAULT 0"""))
+        db.exec(query = sql(query = """UPDATE help SET id=rowid"""))
     except DbError:
       return showError(message = "Can't update table for the shell's help. Reason: ",
           e = getCurrentException())

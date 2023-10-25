@@ -420,9 +420,10 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
         db.update(objs = updatedOptions)
         db.insert(objs = newOptions)
       if dbVersion < 4:
-        db.exec(query = sql(query = """ALTER TABLE history ADD id INTEGER"""))
+        db.exec(query = sql(query = """ALTER TABLE history ADD id INTEGER NOT NULL DEFAULT 0"""))
+        db.exec(query = sql(query = """UPDATE history SET id=rowid"""))
         db.exec(query = sql(query = """ALTER TABLE history DROP lastused"""))
-        db.exec(query = sql(query = """ALTER TABLE history ADD lastUsed FLOAT"""))
+        db.exec(query = sql(query = """ALTER TABLE history ADD lastUsed FLOAT NOT NULL DEFAULT 0"""))
     except:
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException())
