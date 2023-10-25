@@ -86,7 +86,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       description: string
       optionType: ValueType
       readOnly: bool
-    const options: array[8, Option] = [Option(name: "dbVersion", value: "3",
+    const options: array[8, Option] = [Option(name: "dbVersion", value: "4",
         description: "Version of the database schema (read only).",
         optionType: ValueType.natural, readOnly: true), Option(
         name: "promptCommand", value: "built-in",
