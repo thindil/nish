@@ -176,7 +176,17 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               valueType = options[i].optionType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 3:
-        discard
+        if result.updateOptionsDb(dbVersion = dbVersion) == QuitFailure:
+          return nil
+        if result.updateHelpDb(dbVersion = dbVersion) == QuitFailure:
+          return nil
+        if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
+          return nil
+        setOption(optionName = initLimitedString(capacity = 40,
+            text = options[0].name), value = initLimitedString(capacity = 40,
+            text = options[0].value), description = initLimitedString(
+            capacity = 256, text = options[0].description),
+            valueType = options[0].optionType, db = result, readOnly = 1)
       of 4:
         discard
       else:
