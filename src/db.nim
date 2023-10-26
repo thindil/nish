@@ -80,36 +80,30 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException())
       return nil
-    type Option = object
-      name: string
-      value: string
-      description: string
-      optionType: ValueType
-      readOnly: bool
-    const options: array[8, Option] = [Option(name: "dbVersion", value: "4",
-        description: "Version of the database schema (read only).",
-        optionType: ValueType.natural, readOnly: true), Option(
-        name: "promptCommand", value: "built-in",
-        description: "The command which output will be used as the prompt of shell.",
-        optionType: ValueType.command, readOnly: false), Option(
-        name: "setTitle", value: "true",
-        description: "Set a terminal title to currently running command.",
-        optionType: ValueType.boolean, readOnly: false), Option(
-        name: "colorSyntax", value: "true",
-        description: "Color the user input with info about invalid commands, quotes, etc.",
-        optionType: ValueType.boolean, readOnly: false), Option(
-        name: "completionAmount", value: "100",
-        description: "The amount of Tab completions to show.",
-        optionType: ValueType.natural, readOnly: false), Option(
-        name: "outputHeaders", value: "unicode",
-        description: "How to present the headers of commands.",
-        optionType: ValueType.header, readOnly: false), Option(
-        name: "helpColumns", value: "5",
-        description: "The amount of columns for help list command.",
-        optionType: ValueType.positive, readOnly: false), Option(
-        name: "completionColumns", value: "5",
-        description: "The amount of columns for Tab completion list.",
-        optionType: ValueType.positive, readOnly: false)]
+    let options: array[8, Option] = [newOption(name = "dbVersion", value = "4",
+        description = "Version of the database schema (read only).",
+        valueType = ValueType.natural, readOnly = true, defaultValue = "4"),
+        newOption(name = "promptCommand", value = "built-in",
+        description = "The command which output will be used as the prompt of shell.",
+        valueType = ValueType.command, readOnly = false,
+        defaultValue = "built-in"), newOption(name = "setTitle", value = "true",
+        description = "Set a terminal title to currently running command.",
+        valueType = ValueType.boolean, readOnly = false, defaultValue = "true"),
+        newOption(name = "colorSyntax", value = "true",
+        description = "Color the user input with info about invalid commands, quotes, etc.",
+        valueType = ValueType.boolean, readOnly = false, defaultValue = "true"),
+        newOption(name = "completionAmount", value = "100",
+        description = "The amount of Tab completions to show.",
+        valueType = ValueType.natural, readOnly = false, defaultValue = "100"),
+        newOption(name = "outputHeaders", value = "unicode",
+        description = "How to present the headers of commands.",
+        valueType = ValueType.header, readOnly = false,
+        defaultValue = "unicode"), newOption(name = "helpColumns", value = "5",
+        description = "The amount of columns for help list command.",
+        valueType = ValueType.positive, readOnly = false, defaultValue = "5"),
+        newOption(name = "completionColumns", value = "5",
+        description = "The amount of columns for Tab completion list.",
+        valueType = ValueType.positive, readOnly = false, defaultValue = "5")]
     # Create a new database if not exists
     if not dbExists:
       if result.createAliasesDb == QuitFailure:
@@ -127,10 +121,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       try:
         for option in options:
           setOption(optionName = initLimitedString(capacity = 40,
-              text = option.name), value = initLimitedString(capacity = 40,
+              text = option.option), value = initLimitedString(capacity = 40,
               text = option.value), description = initLimitedString(
               capacity = 256, text = option.description),
-              valueType = option.optionType, db = result, readOnly = (
+              valueType = option.valueType, db = result, readOnly = (
               if option.readOnly: 1 else: 0))
       except CapacityError:
         showError(message = "Can't set database schema. Reason: ",
@@ -156,10 +150,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         for option in options:
           setOption(optionName = initLimitedString(capacity = 40,
-              text = option.name), value = initLimitedString(capacity = 40,
+              text = option.option), value = initLimitedString(capacity = 40,
               text = option.value), description = initLimitedString(
               capacity = 256, text = option.description),
-              valueType = option.optionType, db = result, readOnly = (
+              valueType = option.valueType, db = result, readOnly = (
               if option.readOnly: 1 else: 0))
       of 2:
         if result.updatePluginsDb == QuitFailure:
@@ -170,10 +164,11 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           if i == 1:
             continue
           setOption(optionName = initLimitedString(capacity = 40,
-              text = options[i].name), value = initLimitedString(capacity = 40,
+              text = options[i].option), value = initLimitedString(
+              capacity = 40,
               text = options[i].value), description = initLimitedString(
               capacity = 256, text = options[i].description),
-              valueType = options[i].optionType, db = result, readOnly = (
+              valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 3:
         if result.updateOptionsDb(dbVersion = dbVersion) == QuitFailure:
@@ -183,10 +178,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
           return nil
         setOption(optionName = initLimitedString(capacity = 40,
-            text = options[0].name), value = initLimitedString(capacity = 40,
+            text = options[0].option), value = initLimitedString(capacity = 40,
             text = options[0].value), description = initLimitedString(
             capacity = 256, text = options[0].description),
-            valueType = options[0].optionType, db = result, readOnly = (
+            valueType = options[0].valueType, db = result, readOnly = (
             if options[0].readOnly: 1 else: 0))
       of 4:
         discard
