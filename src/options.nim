@@ -402,7 +402,6 @@ proc updateOptionsDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
       if dbVersion < 4:
         db.exec(query = sql(query = """ALTER TABLE options ADD id INTEGER NOT NULL DEFAULT 1"""))
         db.exec(query = sql(query = """UPDATE options SET id=rowid"""))
-        db.exec(query = sql(query = """UPDATE options SET value=4, defaultValue=4 WHERE option='dbVersion'"""))
     except DbError:
       return showError(message = "Can't update table for the shell's options. Reason: ",
           e = getCurrentException())
