@@ -149,10 +149,16 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount, db = db)
     # Show only aliases available in the current directory
     elif arguments[0 .. 3] == "list":
+      var index = 0
       for alias in aliases.values:
         try:
+          var dbAlias: LocalAlias = LocalAlias()
           db.rawSelect(qry = "SELECT id, name, description FROM aliases WHERE id=?",
-              objs = dbAliases, params = alias)
+              obj = dbAlias, params = alias)
+          if index == 0 and dbAlias.name.len > 0:
+            dbAliases = @[]
+          dbAliases.add(dbAlias)
+          index.inc
         except:
           return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException())
