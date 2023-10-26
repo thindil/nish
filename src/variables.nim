@@ -240,7 +240,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       variables: seq[Variable] = @[newVariable()]
     try:
       table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(
-          ss = "Value"), magenta(ss = "Description")])
+          ss = "Value")])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show variables list. Reason: ",
           e = getCurrentException())
@@ -252,8 +252,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "There are no defined shell's environment variables.")
           return QuitSuccess.ResultCode
         for variable in variables:
-          table.add(parts = [$variable.id, variable.name, variable.value,
-              variable.description])
+          table.add(parts = [$variable.id, variable.name, variable.value])
       except:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException())
@@ -271,8 +270,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "There are no defined shell's environment variables in this directory.")
           return QuitSuccess.ResultCode
         for variable in variables:
-          table.add(parts = [$variable.id, variable.name, variable.value,
-              variable.description])
+          table.add(parts = [$variable.id, variable.name, variable.value])
       except:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException())
