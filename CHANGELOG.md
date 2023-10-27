@@ -6,6 +6,10 @@ of the shell.
 
 ## [Unreleased]
 
+### Added
+- New subcommand `variable show` to show details about the selected shell's
+  environment variable
+
 ### Changed
 - Updated README.md
 - Updated contributing guide
@@ -20,7 +24,7 @@ of the shell.
 - **BREAKING**: updated the shell's database schema and its code. This made
   the old entries in the shell's history to lost their last used time. All the
   new entries or updated entries will have set the time correctly
-- Removed the shell's variables' description from command `variable list`.
+- Removed the shell's variables' description from command `variable list`
 
 ### Fixed
 - Compiling the shell with Nim 2.0
