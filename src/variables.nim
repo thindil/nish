@@ -589,6 +589,52 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
+proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
+  ## Show details about the selected variable, its ID, name, description and
+  ## its path
+  ##
+  ## * arguments - the user entered text with arguments for the showing variable
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns quitSuccess if the selected variable was properly show, otherwise
+  ## QuitFailure.
+  require:
+    arguments.len > 3
+    arguments.startsWith(prefix = "show")
+    db != nil
+  body:
+    if arguments.len < 6:
+      return showError(message = "Enter the ID of the variable to show.")
+    let id: DatabaseId = try:
+        parseInt(s = $arguments[5 .. ^1]).DatabaseId
+      except:
+        return showError(message = "The Id of the variable must be a positive number.")
+    var variable: Variable = newVariable()
+    try:
+      if not db.exists(T = Variable, cond = "id=?", params = $id):
+        return showError(message = "The variable with the ID: " & $id &
+          " doesn't exists.")
+      db.select(obj = variable, cond = "id=?", params = $id)
+    except:
+      return showError(message = "Can't read variable data from database. Reason: ",
+          e = getCurrentException())
+    var table: TerminalTable = TerminalTable()
+    try:
+      table.add(parts = [magenta(ss = "Id:"), $id])
+      table.add(parts = [magenta(ss = "Name:"), variable.name])
+      table.add(parts = [magenta(ss = "Value:"), variable.value])
+      table.add(parts = [magenta(ss = "Description:"), (
+          if variable.description.len > 0: variable.description else: "(none)")])
+      table.add(parts = [magenta(ss = "Path:"), variable.path & (
+          if variable.recursive: " (recursive)" else: "")])
+      table.echoTable
+    except:
+      return showError(message = "Can't show variable. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
+
 proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
