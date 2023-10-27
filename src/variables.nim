@@ -40,7 +40,7 @@ const
   variableNameLength*: Positive = maxNameLength
     ## The maximum length of the shell's environment variable name
 
-  variablesCommands*: array[4, string] = ["list", "delete", "add", "edit"]
+  variablesCommands*: array[5, string] = ["list", "delete", "add", "edit", "show"]
     ## The list of available subcommands for command variable
 
 type
@@ -702,6 +702,9 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
         # Edit an existing variable
         if arguments.startsWith(prefix = "edit"):
           return editVariable(arguments = arguments, db = db)
+        # Show an existing variable
+        if arguments.startsWith(prefix = "show"):
+          return showVariable(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 8, text = "variable"),
