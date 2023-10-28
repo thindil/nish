@@ -26,6 +26,7 @@ of the shell.
   new entries or updated entries will have set the time correctly
 - Removed the shell's variables' description from command `variable list`
 - Updated the shell's help entries
+- Look of various lists. Now they have more colors inside
 
 ### Fixed
 - Compiling the shell with Nim 2.0
