@@ -169,7 +169,8 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount, db = db)
     try:
       for dbResult in dbAliases:
-        table.add(parts = [$dbResult.id, dbResult.name, dbResult.description])
+        table.add(parts = [yellow(ss = dbResult.id), green(ss = dbResult.name),
+            dbResult.description])
     except:
       return showError(message = "Can't add an alias to the list. Reason:",
           e = getCurrentException())
@@ -624,7 +625,8 @@ proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
       else:
         alias.commands = alias.commands.replace(sub = alias.commands[
           argumentPosition..argumentPosition + 1], by = commandArguments.join(sep = " "))
-      argumentPosition = alias.commands.find(sub = '$', start = argumentPosition + 1)
+      argumentPosition = alias.commands.find(sub = '$',
+          start = argumentPosition + 1)
     # If output location is set to file, create or open the file
     let outputFile: File = try:
           (if alias.output notin ["stdout", "stderr"]: open(
@@ -757,8 +759,9 @@ proc initAliases*(db; aliases: ref AliasesList;
       showError(message = "Can't initialize aliases. Reason: ",
           e = getCurrentException())
 
-proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
+proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
+        contractual.} =
   ## Update the table aliases to the new version if needed
   ##
   ## * db        - the connection to the shell's database
