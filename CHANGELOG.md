@@ -25,6 +25,7 @@ of the shell.
   the old entries in the shell's history to lost their last used time. All the
   new entries or updated entries will have set the time correctly
 - Removed the shell's variables' description from command `variable list`
+- Updated the shell's help entries
 
 ### Fixed
 - Compiling the shell with Nim 2.0
