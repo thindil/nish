@@ -213,8 +213,8 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.rawSelect(qry = "SELECT * FROM options ORDER BY option ASC",
           objs = options)
       for option in options:
-        table.add(parts = [option.option, option.value, option.defaultValue,
-            $option.valueType, option.description])
+        table.add(parts = [yellow(ss = option.option), green(ss = option.value),
+            option.defaultValue, $option.valueType, option.description])
     except:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException())
