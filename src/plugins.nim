@@ -678,7 +678,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           showOutput(message = "There are no available shell's plugins.")
           return QuitSuccess.ResultCode
         for plugin in plugins:
-          table.add(parts = [$plugin.id, plugin.location, (
+          table.add(parts = [yellow(ss = plugin.id), plugin.location, (
               if plugin.enabled: "Yes" else: "No")])
       except:
         return showError(message = "Can't read info about plugin from database. Reason:",
@@ -702,7 +702,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           showOutput(message = "There are no enabled shell's plugins.")
           return QuitSuccess.ResultCode
         for plugin in plugins:
-          table.add(parts = [$plugin.id, plugin.location])
+          table.add(parts = [yellow(ss = plugin.id), plugin.location])
       except:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
             e = getCurrentException())
