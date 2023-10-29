@@ -175,7 +175,8 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
       if db.exists(T = Option, cond = "option=?", params = $optionName):
         db.select(obj = option, cond = "option=?", params = $optionName)
     except:
-      discard
+      showError(message = "Can't check existence of the option '" & optionName &
+          "'. Reason: ", e = getCurrentException())
     if value != "":
       option.value = $value
     if description != "":
@@ -186,6 +187,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
       if db.exists(T = Option, cond = "option=?", params = $optionName):
         db.update(obj = option)
       else:
+        option.defaultValue = option.value
         db.insert(obj = option)
     except:
       showError(message = "Can't set value for option '" & optionName &
