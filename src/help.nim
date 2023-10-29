@@ -145,11 +145,13 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           while argumentEnd > argumentStart:
             # The argument is required
             if helpEntry.usage[argumentStart] == '[':
-              argumentEnd = helpEntry.usage.find(sub = ']', start = argumentStart)
+              argumentEnd = helpEntry.usage.find(sub = ']',
+                  start = argumentStart)
               usage.add(cyan(ss = helpEntry.usage[argumentStart .. argumentEnd]))
             # The argument is optional
             else:
-              argumentEnd = helpEntry.usage.find(sub = '?', start = argumentStart + 1)
+              argumentEnd = helpEntry.usage.find(sub = '?',
+                  start = argumentStart + 1)
               usage.add(blue(ss = helpEntry.usage[argumentStart .. argumentEnd]))
             argumentEnd.inc
             if argumentEnd == helpEntry.usage.len:
@@ -205,8 +207,13 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         except IOError, Exception:
           showError(message = "Can't show the help entries list. Reason: ",
               e = getCurrentException())
-        showOutput(message = "\n\nTo see more information about the selected topic, type help [topic], for example: " &
-            yellow(ss = "help " & keys[0].value) & ".")
+        showOutput(message = "\n\nTo see more information about the selected topic, type " &
+            yellow(ss = "'help [topic]'") & ", for example: " & green(
+            ss = "`help " & keys[0].value) &
+            "`.\nInformation about usage of a command: if a parameter of a command is between " &
+            cyan(ss = "[]") &
+            " then the parameter is required. If a parameter of a command is between " &
+            blue(ss = "?") & " then the parameter is optional.")
 
     # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
