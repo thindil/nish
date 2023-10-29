@@ -145,8 +145,6 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       if dbAliases.len == 0:
         showOutput(message = "There are no defined shell's aliases.")
         return QuitSuccess.ResultCode
-      showFormHeader(message = "All available aliases are:",
-          width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount, db = db)
     # Show only aliases available in the current directory
     elif arguments[0 .. 3] == "list":
       var index: Natural = 0
@@ -165,8 +163,6 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       if dbAliases[0].name.len == 0:
         showOutput(message = "There are no defined shell's aliases in the current directory.")
         return QuitSuccess.ResultCode
-      showFormHeader(message = "Available aliases are:",
-          width = table.getColumnSizes(maxSize = int.high)[0].ColumnAmount, db = db)
     try:
       for dbResult in dbAliases:
         table.add(parts = [yellow(ss = dbResult.id), green(ss = dbResult.name),
@@ -175,6 +171,15 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't add an alias to the list. Reason:",
           e = getCurrentException())
     try:
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size + 2
+      if arguments == "list all":
+        showFormHeader(message = "All available aliases are:",
+            width = width.ColumnAmount, db = db)
+      else:
+        showFormHeader(message = "Available aliases are:",
+            width = width.ColumnAmount, db = db)
       table.echoTable
     except:
       return showError(message = "Can't show the list of aliases. Reason: ",
