@@ -132,9 +132,31 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       ##
       ## * helpEntry   - the help entry to show to the user
       body:
-        showOutput(message = "Usage: ", fgColor = fgYellow,
-            newLine = false)
-        showOutput(message = helpEntry.usage & "\n")
+        var
+          usage: string = ""
+          argumentStart: int = helpEntry.usage.find(chars = {'?', '['})
+        # The command doesn't have arguments
+        if argumentStart == -1:
+          usage = green(ss = helpEntry.usage)
+        # The command has arguments
+        else:
+          usage = green(ss = helpEntry.usage[0 .. argumentStart - 1])
+          var argumentEnd: int = argumentStart + 1
+          while argumentEnd > argumentStart:
+            # The argument is required
+            if helpEntry.usage[argumentStart] == '[':
+              argumentEnd = helpEntry.usage.find(sub = ']', start = argumentStart)
+              usage.add(cyan(ss = helpEntry.usage[argumentStart .. argumentEnd]))
+            # The argument is optional
+            else:
+              argumentEnd = helpEntry.usage.find(sub = '?', start = argumentStart + 1)
+              usage.add(blue(ss = helpEntry.usage[argumentStart .. argumentEnd]))
+            argumentEnd.inc
+            if argumentEnd == helpEntry.usage.len:
+              break
+            argumentStart = argumentEnd
+            argumentEnd.inc
+        showOutput(message = yellow(ss = "Usage: ") & usage & "\n")
         showOutput(message = helpEntry.content)
 
     type ShellOption = ref object
