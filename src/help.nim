@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[algorithm, os, parsecfg, strutils, streams, terminal]
 # External modules imports
-import ansiparse, contracts, nancy, nimalyzer
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
 import commandslist, helpcontent, constants, lstring, output, resultcode
@@ -183,8 +183,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         except IOError, Exception:
           showError(message = "Can't show the help entries list. Reason: ",
               e = getCurrentException())
-        showOutput(message = "\n\nTo see more information about the selected topic, type help [topic], for example: help " &
-            keys[0].value & ".")
+        showOutput(message = "\n\nTo see more information about the selected topic, type help [topic], for example: " &
+            yellow(ss = "help " & keys[0].value) & ".")
 
     # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
@@ -500,8 +500,9 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
 
-proc updateHelpDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
+proc updateHelpDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
+    raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
+        contractual.} =
   ## Update the table help to the new version if needed
   ##
   ## * db        - the connection to the shell's database
