@@ -152,6 +152,9 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             else:
               argumentEnd = helpEntry.usage.find(sub = '?',
                   start = argumentStart + 1)
+              if argumentEnd < argumentStart:
+                usage = green(ss = helpEntry.usage)
+                break
               usage.add(blue(ss = helpEntry.usage[argumentStart .. argumentEnd]))
             argumentEnd.inc
             if argumentEnd == helpEntry.usage.len:
