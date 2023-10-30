@@ -188,8 +188,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             # Underline, yellow color
             if helpEntry.content[markStart] == '_':
               markEnd = helpEntry.content.find(sub = '_', start = markStart + 1)
-              showOutput(message = helpEntry.content[markStart .. markEnd],
-                  fgColor = fgYellow, newLine = false)
+              showOutput(message = "'" & helpEntry.content[markStart + 1 ..
+                  markEnd - 1] & "'", fgColor = fgYellow, newLine = false)
             # Code, backticks, green
             if helpEntry.content[markStart] == '`':
               markEnd = helpEntry.content.find(sub = '`', start = markStart + 1)
