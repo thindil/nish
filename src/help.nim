@@ -175,6 +175,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             showOutput(message = helpEntry.content[markEnd .. ^1],
                 newLine = false)
             break
+          # Print the content between the previous mark and the next mark
           if markStart > markEnd and markEnd > 0:
             showOutput(message = helpEntry.content[markEnd .. markStart - 1],
                 newLine = false)
