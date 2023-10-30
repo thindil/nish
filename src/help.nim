@@ -183,12 +183,17 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           if helpEntry.content[markStart - 1] == ' ':
             # Underline, yellow color
             if helpEntry.content[markStart] == '_':
-              markEnd = markStart
-              while (markEnd < helpEntry.content.high and helpEntry.content[
-                  markEnd + 1] != ' ') or markEnd == helpEntry.content.high:
-                markEnd = helpEntry.usage.find(sub = '_', start = markEnd + 1)
-              showOutput(message = helpEntry.usage[markStart .. markEnd] & " ",
-                  fgColor = fgYellow, newLine = false)
+              markEnd = helpEntry.content.find(sub = '_', start = markStart + 1)
+              showOutput(message = helpEntry.content[markStart .. markEnd] &
+                  " ", fgColor = fgYellow, newLine = false)
+            # Code, backticks, green
+            if helpEntry.content[markStart] == '`':
+              markEnd = helpEntry.content.find(sub = '`', start = markStart + 1)
+              showOutput(message = helpEntry.content[markStart .. markEnd] &
+                  " ", fgColor = fgGreen, newLine = false)
+          markEnd.inc
+          if markEnd == helpEntry.content.len:
+            break
         showOutput(message = "\n")
 
     type ShellOption = ref object
