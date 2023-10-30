@@ -164,7 +164,32 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           if argumentEnd == helpEntry.usage.len:
             break
         showOutput(message = "\n")
-        showOutput(message = helpEntry.content)
+        # Show the command's help entry content
+        var markEnd: int = 0
+        while markEnd > -1:
+          let markStart: int = helpEntry.content.find(chars = {'_', '`'},
+              start = markEnd)
+          # If there is no text formatting marks, or the code reached the end
+          # of the help content, print the content
+          if markStart == -1:
+            showOutput(message = helpEntry.content[markEnd .. ^1],
+                newLine = false)
+            break
+          # There is a text formatting mark, print the content to the mark
+          if markEnd == 0:
+            showOutput(message = helpEntry.content[0 .. markStart - 1],
+                newLine = false)
+          # Be sure that we get only formatting mark, with trailing space
+          if helpEntry.content[markStart - 1] == ' ':
+            # Underline, yellow color
+            if helpEntry.content[markStart] == '_':
+              markEnd = markStart
+              while (markEnd < helpEntry.content.high and helpEntry.content[
+                  markEnd + 1] != ' ') or markEnd == helpEntry.content.high:
+                markEnd = helpEntry.usage.find(sub = '_', start = markEnd + 1)
+              showOutput(message = helpEntry.usage[markStart .. markEnd] & " ",
+                  fgColor = fgYellow, newLine = false)
+        showOutput(message = "\n")
 
     type ShellOption = ref object
       value: string = ""
