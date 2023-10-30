@@ -175,6 +175,9 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             showOutput(message = helpEntry.content[markEnd .. ^1],
                 newLine = false)
             break
+          if markStart > markEnd and markEnd > 0:
+            showOutput(message = helpEntry.content[markEnd .. markStart - 1],
+                newLine = false)
           # There is a text formatting mark, print the content to the mark
           if markEnd == 0:
             showOutput(message = helpEntry.content[0 .. markStart - 1],
@@ -184,17 +187,17 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             # Underline, yellow color
             if helpEntry.content[markStart] == '_':
               markEnd = helpEntry.content.find(sub = '_', start = markStart + 1)
-              showOutput(message = helpEntry.content[markStart .. markEnd] &
-                  " ", fgColor = fgYellow, newLine = false)
+              showOutput(message = helpEntry.content[markStart .. markEnd],
+                  fgColor = fgYellow, newLine = false)
             # Code, backticks, green
             if helpEntry.content[markStart] == '`':
               markEnd = helpEntry.content.find(sub = '`', start = markStart + 1)
-              showOutput(message = helpEntry.content[markStart .. markEnd] &
-                  " ", fgColor = fgGreen, newLine = false)
+              showOutput(message = helpEntry.content[markStart .. markEnd],
+                  fgColor = fgGreen, newLine = false)
           markEnd.inc
           if markEnd == helpEntry.content.len:
             break
-        showOutput(message = "\n")
+        showOutput(message = "\n", newLine = false)
 
     type ShellOption = ref object
       value: string = ""
