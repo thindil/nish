@@ -132,36 +132,38 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       ##
       ## * helpEntry   - the help entry to show to the user
       body:
-        var
-          usage: string = ""
-          argumentStart: int = helpEntry.usage.find(chars = {'?', '['})
-        # The command doesn't have arguments
-        if argumentStart == -1:
-          usage = green(ss = helpEntry.usage)
-        # The command has arguments
-        else:
-          usage = green(ss = helpEntry.usage[0 .. argumentStart - 1])
-          var argumentEnd: int = argumentStart + 1
-          while argumentEnd > argumentStart:
-            # The argument is required
-            if helpEntry.usage[argumentStart] == '[':
-              argumentEnd = helpEntry.usage.find(sub = ']',
-                  start = argumentStart)
-              usage.add(cyan(ss = helpEntry.usage[argumentStart .. argumentEnd]))
-            # The argument is optional
-            else:
-              argumentEnd = helpEntry.usage.find(sub = '?',
-                  start = argumentStart + 1)
-              if argumentEnd < argumentStart:
-                usage = green(ss = helpEntry.usage)
-                break
-              usage.add(blue(ss = helpEntry.usage[argumentStart .. argumentEnd]))
-            argumentEnd.inc
-            if argumentEnd == helpEntry.usage.len:
-              break
-            argumentStart = argumentEnd
-            argumentEnd.inc
-        showOutput(message = yellow(ss = "Usage: ") & usage & "\n")
+        # Show the command's usage information
+        showOutput(message = "Usage: ", fgColor = fgYellow, newLine = false)
+        var argumentEnd: int = 0
+        while argumentEnd > -1:
+          let argumentStart: int = helpEntry.usage.find(chars = {'?', '['},
+              start = argumentEnd)
+          # The command doesn't have arguments or the code reached the end of
+          # its arguments' list, print the command
+          if argumentStart == -1:
+            showOutput(message = helpEntry.usage[argumentEnd .. ^1],
+                fgColor = fgGreen, newLine = false)
+            break
+          # The command has an argument(s), print the command
+          if argumentEnd == 0:
+            showOutput(message = helpEntry.usage[0 .. argumentStart - 1],
+                fgColor = fgGreen, newLine = false)
+          # The argument is required, print the argument
+          if helpEntry.usage[argumentStart] == '[':
+            argumentEnd = helpEntry.usage.find(sub = ']',
+                start = argumentStart + 1)
+            showOutput(message = helpEntry.usage[argumentStart ..
+                argumentEnd] & " ", fgColor = fgCyan, newLine = false)
+          # The argument is optional, print the argument
+          else:
+            argumentEnd = helpEntry.usage.find(sub = '?',
+                start = argumentStart + 1)
+            showOutput(message = helpEntry.usage[argumentStart ..
+                argumentEnd] & " ", fgColor = fgBlue, newLine = false)
+          argumentEnd.inc
+          if argumentEnd == helpEntry.usage.len:
+            break
+        showOutput(message = "\n")
         showOutput(message = helpEntry.content)
 
     type ShellOption = ref object
