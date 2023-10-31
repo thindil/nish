@@ -167,7 +167,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         # Show the command's help entry content
         var markEnd: int = 0
         while markEnd > -1:
-          let markStart: int = helpEntry.content.find(chars = {'_', '`'},
+          let markStart: int = helpEntry.content.find(chars = {'_', '`', '?', '['},
               start = markEnd)
           # If there is no text formatting marks, or the code reached the end
           # of the help content, print the content
@@ -195,6 +195,16 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
               markEnd = helpEntry.content.find(sub = '`', start = markStart + 1)
               showOutput(message = helpEntry.content[markStart .. markEnd],
                   fgColor = fgGreen, newLine = false)
+            # An optional parameter blue
+            if helpEntry.content[markStart] == '?':
+              markEnd = helpEntry.content.find(sub = '?', start = markStart + 1)
+              showOutput(message = "'" & helpEntry.content[markStart + 1 ..
+                  markEnd - 1] & "'", fgColor = fgBlue, newLine = false)
+            # A required parameter cyan
+            if helpEntry.content[markStart] == '[':
+              markEnd = helpEntry.content.find(sub = ']', start = markStart + 1)
+              showOutput(message = "'" & helpEntry.content[markStart + 1 ..
+                  markEnd - 1] & "'", fgColor = fgCyan, newLine = false)
           markEnd.inc
           if markEnd == helpEntry.content.len:
             break
