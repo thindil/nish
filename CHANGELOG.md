@@ -27,6 +27,7 @@ of the shell.
 - Removed the shell's variables' description from command `variable list`
 - Updated the shell's help entries
 - Look of various lists. Now they have more colors inside
+- Updated the shell's help system, with some text formatting options
 
 ### Fixed
 - Compiling the shell with Nim 2.0
