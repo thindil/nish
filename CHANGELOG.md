@@ -36,7 +36,7 @@ of the shell.
 - Return the user's command's result as a shell's result
 - Crash when trying to edit an existing environment variable
 - Showing header during editing an alias after setting its recursiveness
-- Typo in README.md
+- Typos in README.md and CHANGELOG.md
 
 ## [0.5.0] - 2023-01-05
 
