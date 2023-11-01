@@ -304,6 +304,17 @@ following scheme:
     usage="The shell's command related to the help topic"
     content="The content of the help entry"
 
+The help system offers some basic text formatting features. Enclosing a text
+with some characters will change the color of the text. Most formatting
+works only in `content` setting.
+
+* `?` will change color to blue. Works in `usage` setting too. For
+  example: `?all?`
+* `[]` will change color to cyan. Works in `usage` setting too. For
+  example: `[name]`
+* `_` will change color to yellow. For example: `_true_`.
+* ```` will change color to green. For example: ``command``.
+
 #### Other features
 
 * Tab completion for the user's entered commands with names of files and
