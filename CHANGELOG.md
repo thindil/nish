@@ -67,7 +67,7 @@ of the shell.
 - Better syntax highlighting in the user's commands
 - Better handling the user's input in various forms, like adding variables,
   aliases, etc.
-- Better look of some commands output, like headers, word wrapping, etc
+- Better look of some commands output, like headers, word wrapping, etc.
 - **BREAKING**: Type of `historyAmount` option from natural to positive
 - **BREAKING**: Redesigned how the shell's converts the commands arguments.
   It should now properly handle arguments like `-jar`.
@@ -75,7 +75,7 @@ of the shell.
 ### Fixed
 - Clearing the plugin's table after failed adding the new plugin to the
   shell
-- The shell option `promptCommand` should be writeable by the user
+- The shell option `promptCommand` should be writable by the user
 - Style issues in README.md
 - Refreshing the user input when it is longer than a terminal width
 - Don't mark environment variable as invalid command
@@ -115,7 +115,7 @@ of the shell.
 ### Fixed
 - Typos in README.md
 - Crash when trying to enter a directory outside the user's home directory tree
-- Executing aliases which arguments contain whitespaces
+- Executing aliases which arguments contain whitespace
 - Backspace key during editing a command entered by the user
 
 ## [0.3.0] - 2022-07-29
@@ -182,7 +182,7 @@ of the shell.
 - Merging commands with || in aliases doesn't work properly
 - Information about unknown help topic
 - Parsing aliases arguments when the user input contains $ sign
-- Handling aliases arguments with whitespaces
+- Handling aliases arguments with whitespace
 
 ## [0.1.0] - 2022-02-23
 - Initial release
