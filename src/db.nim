@@ -80,7 +80,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException())
       return nil
-    let options: array[8, Option] = [newOption(name = "dbVersion", value = "4",
+    let options: array[9, Option] = [newOption(name = "dbVersion", value = "4",
         description = "Version of the database schema (read only).",
         valueType = ValueType.natural, readOnly = true, defaultValue = "4"),
         newOption(name = "promptCommand", value = "built-in",
@@ -103,7 +103,11 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         valueType = ValueType.positive, readOnly = false, defaultValue = "5"),
         newOption(name = "completionColumns", value = "5",
         description = "The amount of columns for Tab completion list.",
-        valueType = ValueType.positive, readOnly = false, defaultValue = "5")]
+        valueType = ValueType.positive, readOnly = false, defaultValue = "5"),
+        newOption(name = "completionCheckCase", value = "false",
+        description = "If true, Tab completion for directories and files is case-sensitive.",
+        valueType = ValueType.boolean, readOnly = false,
+        defaultValue = "false")]
     # Create a new database if not exists
     if not dbExists:
       if result.createAliasesDb == QuitFailure:
@@ -183,6 +187,12 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             capacity = 256, text = options[0].description),
             valueType = options[0].valueType, db = result, readOnly = (
             if options[0].readOnly: 1 else: 0))
+        setOption(optionName = initLimitedString(capacity = 40,
+            text = options[8].option), value = initLimitedString(capacity = 40,
+            text = options[8].value), description = initLimitedString(
+            capacity = 256, text = options[8].description),
+            valueType = options[8].valueType, db = result, readOnly = (
+            if options[8].readOnly: 1 else: 0))
       of 4:
         discard
       else:
