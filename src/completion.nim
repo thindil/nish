@@ -61,14 +61,35 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
     # Completion disabled
     if completionAmount == 0:
       return
+    let caseSensitive: bool = try:
+        parseBool(s = $getOption(optionName = initLimitedString(
+          capacity = 19, text = "completionCheckCase"), db = db,
+          defaultValue = initLimitedString(capacity = 5, text = "false")))
+      except ValueError, CapacityError:
+        true
     try:
-      for item in walkPattern(pattern = prefix & "*"):
-        if completions.len >= completionAmount:
-          return
-        let completion: string = (if dirExists(dir = item): item & DirSep else: item)
-        if completion notin completions:
-          completions.add(y = completion)
-    except OSError:
+      if caseSensitive:
+        for item in walkPattern(pattern = prefix & "*"):
+          if completions.len >= completionAmount:
+            return
+          let completion: string = (if dirExists(dir = item): item &
+              DirSep else: item)
+          if completion notin completions:
+            completions.add(y = completion)
+      else:
+        let
+          parentDir: string = (if prefix.parentDir == ".": "" else: prefix.parentDir & DirSep)
+          prefixInsensitive: string = prefix.lastPathPart.toLowerAscii
+        for item in walkDir(dir = getCurrentDirectory() & DirSep & parentDir,
+            relative = true):
+          if completions.len >= completionAmount:
+            return
+          var completion: string = (if dirExists(dir = item.path): item.path &
+              DirSep else: item.path)
+          if completion.toLowerAscii.startsWith(prefix = prefixInsensitive) and
+              completion notin completions:
+            completions.add(y = parentDir & completion)
+    except OSError, ValueError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
 
