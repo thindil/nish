@@ -77,12 +77,15 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
           if completion notin completions:
             completions.add(y = completion)
       else:
-        let
-          parentDir: string = (if prefix.parentDir ==
+        let prefixInsensitive: string = prefix.lastPathPart.toLowerAscii
+        var parentDir: string = (if prefix.parentDir ==
               ".": "" else: prefix.parentDir & DirSep)
-          prefixInsensitive: string = prefix.lastPathPart.toLowerAscii
-        for item in walkDir(dir = getCurrentDirectory() & DirSep & parentDir & (
-            if prefix.endsWith(suffix = DirSep): prefix else: ""),
+        if prefix.endsWith(suffix = DirSep):
+          parentDir.add(y = prefix)
+        if prefix.startsWith(prefix = ".."):
+          parentDir = prefix
+        echo "\nparent:", parentDir, " prefix:", prefix
+        for item in walkDir(dir = getCurrentDirectory() & DirSep & parentDir,
             relative = true):
           if completions.len >= completionAmount:
             return
@@ -90,8 +93,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
               DirSep else: item.path)
           if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
               prefix.endsWith(suffix = DirSep)) and completion notin completions:
-            completions.add(y = parentDir & (if prefix.endsWith(
-                suffix = DirSep): prefix else: "") & completion)
+            completions.add(y = parentDir & completion)
     except OSError, ValueError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException())
