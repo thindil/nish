@@ -78,16 +78,18 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
             completions.add(y = completion)
       else:
         let
-          parentDir: string = (if prefix.parentDir == ".": "" else: prefix.parentDir & DirSep)
+          parentDir: string = (if prefix.parentDir ==
+              ".": "" else: prefix.parentDir & DirSep)
           prefixInsensitive: string = prefix.lastPathPart.toLowerAscii
+        echo "\nprefix: ", prefix, " dir:", getCurrentDirectory() & DirSep & parentDir
         for item in walkDir(dir = getCurrentDirectory() & DirSep & parentDir,
             relative = true):
           if completions.len >= completionAmount:
             return
           var completion: string = (if dirExists(dir = item.path): item.path &
               DirSep else: item.path)
-          if completion.toLowerAscii.startsWith(prefix = prefixInsensitive) and
-              completion notin completions:
+          if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
+              prefix.endsWith(suffix = DirSep)) and completion notin completions:
             completions.add(y = parentDir & completion)
     except OSError, ValueError:
       showError(message = "Can't get completion. Reason: ",
