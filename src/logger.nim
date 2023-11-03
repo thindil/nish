@@ -35,8 +35,10 @@ when defined(debug):
 # Internal imports
   import output
 
+{.push ruleOff: "varUplevel".}
 when defined(debug):
-  var logger: FileLogger
+  var logger: FileLogger = nil
+{.pop ruleOff: "varUplevel".}
 
 proc log*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
@@ -49,18 +51,14 @@ proc log*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
       except:
         showError(message = "Can't write the message to a log file. Reason: ",
             e = getCurrentException())
-    else:
-      discard
 
 proc startLogging*() {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
   body:
     when defined(debug):
       try:
-        logger = newFileLogger("nish.log")
+        logger = newFileLogger(fileName = "nish.log")
       except:
         showError(message = "Can't start logging to a file. Reason: ",
             e = getCurrentException())
-      setLogFilter(lvlAll)
-    else:
-      discard
+      setLogFilter(lvl = lvlAll)
