@@ -33,8 +33,8 @@ import ansiparse, contracts, nancy, nimalyzer
 import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db, directorypath,
-    help, highlight, history, input, lstring, options, output, plugins, prompt,
-    resultcode, title, variables
+    help, highlight, history, input, logger, lstring, options, output, plugins,
+    prompt, resultcode, title, variables
 
 proc showCommandLineHelp*() {.gcsafe, sideEffect, raises: [], tags: [
     WriteIOEffect], contractual.} =
@@ -388,6 +388,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     ExecIOEffect, RootEffect], contractual.} =
   ## The main procedure of the shell
   body:
+    startLogging()
     var
       userInput: OptParser = initOptParser()
       commandName: string = ""
