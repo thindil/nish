@@ -9,6 +9,7 @@ of the shell.
 ### Added
 - New subcommand `variable show` to show details about the selected shell's
   environment variable
+- Option to set case-insentivity for Tab completion for directories and entries.
 
 ### Changed
 - Updated README.md
