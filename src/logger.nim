@@ -26,18 +26,31 @@
 ## This module contains code related to logging the shell debug messages to
 ## a file. The logging works only if the shell was build in the debug mode.
 
-# Standard library imports
-import std/logging
 # External modules imports
 import contracts
-# Internal imports
-when defined(debug):
-  import output
 
-export logging
+when defined(debug):
+# Standard library imports
+  import std/logging
+# Internal imports
+  import output
 
 when defined(debug):
   var logger: FileLogger
+
+proc log*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
+    RootEffect], contractual.} =
+  require:
+    message.len > 0
+  body:
+    when defined(debug):
+      try:
+        logger.log(level = lvlDebug, args = message)
+      except:
+        showError(message = "Can't write the message to a log file. Reason: ",
+            e = getCurrentException())
+    else:
+      discard
 
 proc startLogging*() {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
