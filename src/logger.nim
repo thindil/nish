@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## This module contains code related to logging the shell debug messages to
-## a file. The logging works only if the shell was build in the debug mode.
+## a file. The logging works only if the shell was build in debug mode.
 
 # External modules imports
 import contracts
@@ -42,6 +42,10 @@ when defined(debug):
 
 proc log*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
+  ## Log the selected message into a file. This procedure works only when
+  ## the shell is compiled in debug mode.
+  ##
+  ## * message - the text which will be logged to a file
   require:
     message.len > 0
   body:
@@ -54,6 +58,8 @@ proc log*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
 
 proc startLogging*() {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
+  ## Start the logging system of the shell. This procedure works only when
+  ## the shell is compiled in debug mode.
   body:
     when defined(debug):
       try:
