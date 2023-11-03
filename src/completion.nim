@@ -81,13 +81,8 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
         var parentDir: string = (if prefix.parentDir ==
               ".": "" else: prefix.parentDir & DirSep)
         if prefix.endsWith(suffix = DirSep):
-          parentDir.add(y = prefix)
-        if prefix.startsWith(prefix = ".."):
           parentDir = prefix
-        if prefix == "/":
-          parentDir = prefix.relativePath(base = getCurrentDirectory()) & DirSep
-        for item in walkDir(dir = getCurrentDirectory() & DirSep & parentDir,
-            relative = true):
+        for item in walkDir(dir = parentDir.absolutePath, relative = true):
           if completions.len >= completionAmount:
             return
           var completion: string = (if dirExists(dir = item.path): item.path &
