@@ -31,9 +31,11 @@ import contracts
 
 when defined(debug):
 # Standard library imports
-  import std/logging
+  import std/[logging, terminal]
 # Internal imports
-  import output
+  import constants
+# External modules imports
+  import nimalyzer
 
 {.push ruleOff: "varUplevel".}
 when defined(debug):
@@ -52,9 +54,16 @@ proc log*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
     when defined(debug):
       try:
         logger.log(level = lvlDebug, args = message)
-      except:
-        showError(message = "Can't write the message to a log file. Reason: ",
-            e = getCurrentException())
+      except Exception as e:
+        {.ruleOff: "namedParams".}
+        try:
+          stderr.styledWriteLine(fgRed, "Can't log the message to the file.")
+          stderr.styledWriteLine(fgRed, $e.name)
+          stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+          stderr.styledWrite(fgRed, getStackTrace(e = e))
+        except:
+          discard
+        {.ruleOn: "namedParams".}
 
 proc startLogging*() {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
@@ -63,8 +72,17 @@ proc startLogging*() {.sideEffect, raises: [], tags: [WriteIOEffect,
   body:
     when defined(debug):
       try:
-        logger = newFileLogger(fileName = "nish.log")
-      except:
-        showError(message = "Can't start logging to a file. Reason: ",
-            e = getCurrentException())
+        logger = newFileLogger(fileName = "nish.log",
+            fmtStr = "[$time] - $levelname: ")
+      except Exception as e:
+        {.ruleOff: "namedParams".}
+        try:
+          stderr.styledWriteLine(fgRed, "Can't start logging to the file.")
+          stderr.styledWriteLine(fgRed, $e.name)
+          stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+          stderr.styledWrite(fgRed, getStackTrace(e = e))
+        except:
+          discard
+        {.ruleOn: "namedParams".}
       setLogFilter(lvl = lvlAll)
+      log(message = "Starting shell, version " & version & " in debug mode.")
