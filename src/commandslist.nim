@@ -107,8 +107,8 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.gcsafe,
     commands.del(key = $name)
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = "") {.gcsafe, sideEffect,
-    raises: [CommandsListError], tags: [RootEffect], contractual.} =
+    commands: ref CommandsList; plugin: string = "") {.sideEffect, raises: [
+    CommandsListError], tags: [RootEffect], contractual.} =
   ## Replace the code of the selected command with the new procedure. If
   ## command argument is different than nil, it will be used as the command
   ## code, otherwise, the argument plugin must be supplied.

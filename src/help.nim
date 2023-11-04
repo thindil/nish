@@ -85,7 +85,7 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
           e = getCurrentException())
 
 proc showUnknownHelp*(subCommand, command,
-    helpType: UserInput): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    helpType: UserInput): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Show information about unknown help topic entered by the user
   ##
@@ -167,8 +167,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         # Show the command's help entry content
         var markEnd: int = 0
         while markEnd > -1:
-          let markStart: int = helpEntry.content.find(chars = {'_', '`', '?', '['},
-              start = markEnd)
+          let markStart: int = helpEntry.content.find(chars = {'_', '`', '?',
+              '['}, start = markEnd)
           # If there is no text formatting marks, or the code reached the end
           # of the help content, print the content
           if markStart == -1:
@@ -378,7 +378,7 @@ proc showHelpList*(command: string; subcommands: openArray[
     return QuitSuccess.ResultCode
 
 proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
-    isTemplate: bool; db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+    isTemplate: bool; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Add a new help entry to the help table in the shell's database
   ##
@@ -436,8 +436,8 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     var
       topic, usage, content, plugin: string = ""
       isTemplate: bool = false
-    proc addEntry(): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
-        ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
+    proc addEntry(): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
+        WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
       ## Add the selected help entry to the database and reset values of
       ## variables used to set it
       ##
@@ -578,9 +578,9 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException())
 
-proc updateHelpDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
-        contractual.} =
+proc updateHelpDb*(db; dbVersion: Natural): ResultCode {.sideEffect, raises: [],
+    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
+    contractual.} =
   ## Update the table help to the new version if needed
   ##
   ## * db        - the connection to the shell's database
@@ -621,8 +621,8 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     return readHelpFromFile(db = db)
 
-proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect],
+proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
   ## Delete the help entry from the help table in the shell's database
   ##
