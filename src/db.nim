@@ -32,12 +32,11 @@ import std/[os, strutils]
 import contracts
 import norm/sqlite
 # Internal imports
-import aliases, directorypath, help, history, lstring, options, output, plugins,
-    resultcode, variables
+import aliases, directorypath, help, history, logger, lstring, options, output,
+    plugins, resultcode, variables
 
-proc closeDb*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
-    raises: [], tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
-        RootEffect],
+proc closeDb*(returnCode: ResultCode; db: DbConn) {.sideEffect, raises: [],
+    tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Close the shell database and quit from the program with the selected return code
   ##
@@ -47,6 +46,7 @@ proc closeDb*(returnCode: ResultCode; db: DbConn) {.gcsafe, sideEffect,
     db != nil
   body:
     try:
+      log(message = "Stopping the shell in debug mode.")
       db.close
     except DbError:
       showError(message = "Can't close properly the shell database. Reason:",
