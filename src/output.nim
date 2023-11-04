@@ -32,7 +32,7 @@ import std/[strutils, terminal]
 import contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import constants, resultcode
+import constants, logger, resultcode
 
 type OutputMessage* = string
   ## Used to store message to show to the user
@@ -75,9 +75,8 @@ proc showOutput*(message; newLine: bool = true;
           discard
     stdout.flushFile
 
-proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, RootEffect], discardable,
-    contractual.} =
+proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.sideEffect,
+    raises: [], tags: [WriteIOEffect, RootEffect], discardable, contractual.} =
   ## Print the message to standard error and set the shell return
   ## code to error. If parameter e is also supplied, it show stack trace for
   ## the current exception in debug mode.
@@ -103,9 +102,12 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.gc
       else:
         {.ruleOff: "namedParams".}
         stderr.styledWriteLine(fgRed, $e.name)
+        log(message = $e.name)
         stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+        log(message = getCurrentExceptionMsg())
         when defined(debug):
-          stderr.styledWrite(fgRed, getStackTrace(e = e))
+          stderr.styledWrite(fgRed, e.getStackTrace)
+          log(message = e.getStackTrace)
         {.ruleOn: "namedParams".}
     except IOError, ValueError:
       try:
