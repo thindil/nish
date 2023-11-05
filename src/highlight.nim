@@ -36,9 +36,9 @@ import commandslist, constants, lstring, output, prompt, resultcode
 proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     commands: ref Table[string, CommandData]; aliases: ref AliasesList;
     oneTimeCommand: bool; commandName: string; returnCode: ResultCode;
-    db: DbConn; cursorPosition: Natural; enabled: bool) {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect,
-    RootEffect], contractual.} =
+    db: DbConn; cursorPosition: Natural; enabled: bool) {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect],
+    contractual.} =
   ## Refresh the user input, clear the old and show the new. Color the entered
   ## command on green if it is valid or red if invalid
   ##
@@ -75,7 +75,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
       # Show the prompt if enabled
-      if promptLength > 0 and promptLength + runeLen(s = $input) <= terminalWidth():
+      if promptLength > 0 and promptLength + runeLen(s = $input) <=
+          terminalWidth():
         showPrompt(promptEnabled = not oneTimeCommand,
             previousCommand = $commandName, resultCode = returnCode, db = db)
       # Erase the previous content if the new line is longer than the terminal's
@@ -165,4 +166,5 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         stdout.cursorBackward(count = runeLen(s = $input) - cursorPosition)
       inputString = input
     except ValueError, IOError, OSError:
-      showError(message = "Can't highlight input. Reason: ", e = getCurrentException())
+      showError(message = "Can't highlight input. Reason: ",
+          e = getCurrentException())

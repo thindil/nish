@@ -39,8 +39,8 @@ type
   CapacityError* = object of CatchableError
     ## Raised when the new value of string will be longer than allowed maximum
 
-proc `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
-    CapacityError], tags: [], contractual.} =
+proc `text=`*(s: var LimitedString; value: string) {.raises: [CapacityError],
+    tags: [], contractual.} =
   ## The setter for the text of LimitedString. Check if the new value isn't
   ## bigger than the capacity of the string and if not, assing the new value
   ## to it. Raise RangeDefect exception if the new value is longer than allowed
@@ -56,8 +56,7 @@ proc `text=`*(s: var LimitedString; value: string) {.gcsafe, raises: [
           message = "New value for string is longer than its capacity.")
     s.text = value
 
-proc `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [],
-    contractual.} =
+proc `$`*(s: LimitedString): string {.raises: [], tags: [], contractual.} =
   ## Convert LimitedString to string
   ##
   ## * s - The LimitedString which will be converted
@@ -66,8 +65,7 @@ proc `$`*(s: LimitedString): string {.gcsafe, raises: [], tags: [],
   body:
     result = s.text
 
-proc len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [],
-    contractual.} =
+proc len*(s: LimitedString): Natural {.raises: [], tags: [], contractual.} =
   ## Get the length of the selected LimitedString
   ##
   ## * s - the LimitedString which length will be get
@@ -76,8 +74,8 @@ proc len*(s: LimitedString): Natural {.gcsafe, raises: [], tags: [],
   body:
     result = s.text.len
 
-proc add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
-    tags: [], contractual.} =
+proc add*(s: var LimitedString; y: string) {.raises: [CapacityError], tags: [],
+    contractual.} =
   ## Add a string to the selected LimitedString. Check if the new value isn't
   ## bigger than the capacity of the LimitedString and if not, add the string
   ## to the field text of LimitedString. Raise RangeDefect exception if the
@@ -93,8 +91,8 @@ proc add*(s: var LimitedString; y: string) {.gcsafe, raises: [CapacityError],
           message = "New value for string will exceed its capacity.")
     s.text &= y
 
-proc add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
-    tags: [], contractual.} =
+proc add*(s: var LimitedString; y: char) {.raises: [CapacityError], tags: [],
+    contractual.} =
   ## Add a character to the selected LimitedString. Check if the new value
   ## isn't bigger than the capacity of the LimitedString and if not, add the
   ## character to the field text of LimitedString. Raise RangeDefect exception
@@ -111,8 +109,8 @@ proc add*(s: var LimitedString; y: char) {.gcsafe, raises: [CapacityError],
     s.text &= y
 
 proc initLimitedString*(capacity: Positive;
-    text: string): LimitedString {.gcsafe, raises: [CapacityError], tags: [],
-    contractual.} =
+    text: string): LimitedString {.raises: [CapacityError], tags: [],
+        contractual.} =
   ## Initialize the new LimitedString with the selected capacity and content.
   ## Raises RangeDefect if the selected text is longer than the selected
   ## capacity.
@@ -127,7 +125,7 @@ proc initLimitedString*(capacity: Positive;
           message = "New value for string will exceed its capacity.")
     return LimitedString(capacity: capacity, text: text)
 
-proc capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [],
+proc capacity*(s: LimitedString): Positive {.raises: [], tags: [],
     contractual.} =
   ## Get the maximum allowed capacity of the selected LimitedString
   ##
@@ -138,7 +136,7 @@ proc capacity*(s: LimitedString): Positive {.gcsafe, raises: [], tags: [],
     return s.capacity
 
 proc `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
-    U]): LimitedString {.gcsafe, raises: [], tags: [], contractual.} =
+    U]): LimitedString {.raises: [], tags: [], contractual.} =
   ## Get the slice of the selected LimitedString
   ##
   ## * s - The LimitedString which slice of text will be get
@@ -151,8 +149,8 @@ proc `[]`*[T, U: Ordinal](s: LimitedString; x: HSlice[T,
       length: Positive = (if newValue.len == 0: 1 else: newValue.len)
     return LimitedString(capacity: length, text: newValue)
 
-proc `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
-    tags: [], contractual.} =
+proc `[]`*(s: LimitedString; i: int): char {.raises: [], tags: [],
+    contractual.} =
   ## Get the nth character of the selected LimitedString.
   ##
   ## * s - The LimitedString which slice of text will be get
@@ -162,8 +160,8 @@ proc `[]`*(s: LimitedString; i: int): char {.gcsafe, raises: [],
   body:
     return s.text[i]
 
-proc `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
-    tags: [], contractual.} =
+proc `[]=`*(s: var LimitedString; i: int; val: char) {.raises: [], tags: [],
+    contractual.} =
   ## Replace the selected character in LimitedString
   ##
   ## * s   - The LimitedString in which the character will be replaced
@@ -174,7 +172,8 @@ proc `[]=`*(s: var LimitedString; i: int; val: char) {.gcsafe, raises: [],
   body:
     s.text[i] = val
 
-proc `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], contractual.} =
+proc `!=`*(x: LimitedString; y: string): bool {.raises: [], tags: [],
+    contractual.} =
   ## Compare the selected LimitedString and string
   ##
   ## * x - The LimitedString to compare
@@ -184,7 +183,8 @@ proc `!=`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], co
   body:
     return x.text != y
 
-proc `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], contractual.} =
+proc `==`*(x: LimitedString; y: string): bool {.raises: [], tags: [],
+    contractual.} =
   ## Compare the selected LimitedString and string
   ##
   ## * x - The LimitedString to compare
@@ -194,7 +194,8 @@ proc `==`*(x: LimitedString; y: string): bool {.gcsafe, raises: [], tags: [], co
   body:
     return x.text == y
 
-proc `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [], contractual.} =
+proc `&`*(x: string; y: LimitedString): string {.raises: [], tags: [],
+    contractual.} =
   ## Concatenates string and LimitedString into one string
   ##
   ## * x - The string to concatenate
@@ -204,7 +205,8 @@ proc `&`*(x: string; y: LimitedString): string {.gcsafe, raises: [], tags: [], c
   body:
     return x & y.text
 
-proc `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [], contractual.} =
+proc `&`*(x: LimitedString; y: string): string {.raises: [], tags: [],
+    contractual.} =
   ## Concatenates LimitedString and string into one string
   ##
   ## * x - The LimitedString which field text will be concatenate
@@ -216,7 +218,7 @@ proc `&`*(x: LimitedString; y: string): string {.gcsafe, raises: [], tags: [], c
 
 when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
   proc find*(s: LimitedString; sub: char; start: Natural = 0;
-      last = -1): int {.gcsafe, raises: [], tags: [], contractual.} =
+      last = -1): int {.raises: [], tags: [], contractual.} =
     ## Find the selected character in the selected LimitedString.
     ##
     ## * s     - The LimitedString which will be check for the selected character
@@ -232,7 +234,7 @@ when (NimMajor, NimMinor, NimPatch) >= (1, 7, 3):
       return s.text.find(sub = sub, start = start, last = last)
 else:
   proc find*(s: LimitedString; sub: char; start: Natural = 0;
-      last = 0): int {.gcsafe, raises: [], tags: [], contractual.} =
+      last = 0): int {.raises: [], tags: [], contractual.} =
     ## Find the selected character in the selected LimitedString.
     ##
     ## * s     - The LimitedString which will be check for the selected character
@@ -248,7 +250,7 @@ else:
       return s.text.find(sub = sub, start = start, last = last)
 
 proc rfind*(s: LimitedString; sub: char; start: Natural = 0;
-    last = -1): int {.gcsafe, raises: [], tags: [], contractual.} =
+    last = -1): int {.raises: [], tags: [], contractual.} =
   ## Reverse find the selected character in the selected LimitedString. Start
   ## looking from the end of the LimitedString.
   ##
@@ -264,8 +266,8 @@ proc rfind*(s: LimitedString; sub: char; start: Natural = 0;
   body:
     return s.text.rfind(sub = sub, start = start, last = last)
 
-proc insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
-    raises: [CapacityError], tags: [], contractual.} =
+proc insert*(x: var LimitedString; item: string; i: Natural = 0) {.raises: [
+    CapacityError], tags: [], contractual.} =
   ## Insert the selected string into LimitedString at the selected position
   ##
   ## * x    - The LimitedString to which the string will be inserted
@@ -282,8 +284,8 @@ proc insert*(x: var LimitedString; item: string; i: Natural = 0) {.gcsafe,
       raise newException(exceptn = CapacityError,
           message = "New value for string will exceed its capacity.")
 
-proc startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
-    tags: [], contractual.} =
+proc startsWith*(s: LimitedString; prefix: string): bool {.raises: [], tags: [],
+    contractual.} =
   ## Check if the selected LimitedString starts with the selected string
   ##
   ## * s      - The LimitedString which will be checked
@@ -294,8 +296,8 @@ proc startsWith*(s: LimitedString; prefix: string): bool {.gcsafe, raises: [],
   body:
     return s.text.startsWith(prefix = prefix)
 
-proc emptyLimitedString*(capacity: Positive = 1): LimitedString {.gcsafe,
-    raises: [], tags: [], contractual.} =
+proc emptyLimitedString*(capacity: Positive = 1): LimitedString {.raises: [],
+    tags: [], contractual.} =
   ## Create the new empty LimitedString with the the selected capacity.
   ##
   ## * capacity - The maximum length of the newly created empty LimitedString.

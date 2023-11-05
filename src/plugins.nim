@@ -84,7 +84,7 @@ proc newPlugin*(path: string = ""; enabled: bool = false;
     Plugin(location: path, enabled: enabled, preCommand: preCommand,
         postCommand: postCommand)
 
-proc createPluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc createPluginsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Create the table plugins
   ##
@@ -864,7 +864,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
       showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException())
 
-proc updatePluginsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc updatePluginsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Update the table plugins to the new version if needed
   ##

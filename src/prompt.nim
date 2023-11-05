@@ -34,7 +34,7 @@ import norm/sqlite
 # Internal imports
 import constants, directorypath, lstring, options, output, resultcode
 
-proc getFormattedDir*(): DirectoryPath {.gcsafe, sideEffect, raises: [], tags: [
+proc getFormattedDir*(): DirectoryPath {.sideEffect, raises: [], tags: [
     ReadIOEffect], contractual.} =
   ## Get the formatted current directory path, replace home directory with
   ## tilde, etc.
@@ -54,7 +54,7 @@ proc getFormattedDir*(): DirectoryPath {.gcsafe, sideEffect, raises: [], tags: [
           homeDirectory.len..^1]).DirectoryPath
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
-    resultCode: ResultCode; db: DbConn): Natural {.gcsafe, sideEffect, raises: [],
+    resultCode: ResultCode; db: DbConn): Natural {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect, RootEffect],
     discardable, contractual.} =
   ## Show the shell prompt if the shell wasn't started in one command mode
@@ -106,7 +106,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       let resultString: string = $exitStatusLikeShell(status = resultCode.cint)
       try:
         {.ruleOff: "namedParams".}
-        stdout.styledWrite(fgRed,  "[" & resultString & "]")
+        stdout.styledWrite(fgRed, "[" & resultString & "]")
         {.ruleOn: "namedParams".}
       except ValueError, IOError:
         try:

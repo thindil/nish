@@ -57,7 +57,7 @@ using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The arguments for a command entered by the user
 
-proc historyLength*(db): HistoryRange {.gcsafe, sideEffect, raises: [], tags: [
+proc historyLength*(db): HistoryRange {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Get the current length of the shell's commmands' history
@@ -91,8 +91,8 @@ proc newHistoryEntry*(command: string = ""; lastUsed: DateTime = now();
     return HistoryEntry(command: command, lastUsed: lastUsed, amount: amount, path: path)
 
 proc updateHistory*(commandToAdd: string; db;
-    returnCode: ResultCode = QuitSuccess.ResultCode): HistoryRange {.gcsafe,
-    sideEffect, raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
+    returnCode: ResultCode = QuitSuccess.ResultCode): HistoryRange {.sideEffect,
+    raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Add the selected command to the shell history and increase the current
   ## history index. If there is the command in the shell's history, only update
@@ -171,8 +171,8 @@ proc updateHistory*(commandToAdd: string; db;
 
 proc getHistory*(historyIndex: HistoryRange; db;
     searchFor: UserInput = emptyLimitedString(
-    capacity = maxInputLength)): string {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, ReadEnvEffect, WriteIOEffect, TimeEffect, RootEffect],
+    capacity = maxInputLength)): string {.sideEffect, raises: [], tags: [
+    ReadDbEffect, ReadEnvEffect, WriteIOEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Get the command with the selected index from the shell history
   ##
@@ -220,7 +220,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
           e = getCurrentException())
     return $searchFor
 
-proc clearHistory*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc clearHistory*(db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Clear the shell's history, don't add the command to the history
@@ -311,8 +311,8 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       db.rawSelect(qry = "SELECT command, lastused, amount FROM history ORDER BY " &
           historyOrder & " LIMIT 0, ?", objs = entries, params = amount)
       for entry in entries:
-        table.add(parts = [entry.lastUsed.local.format(f = "yyyy-MM-dd HH:mm:ss"),
-            $entry.amount, entry.command])
+        table.add(parts = [entry.lastUsed.local.format(
+            f = "yyyy-MM-dd HH:mm:ss"), $entry.amount, entry.command])
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
         width += size
@@ -379,7 +379,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException())
 
-proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
+proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
     raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Update the table history to the new version if needed

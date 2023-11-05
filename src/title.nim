@@ -34,8 +34,8 @@ import norm/sqlite
 # Internal imports
 import lstring, options
 
-proc setTitle*(title: string; db: DbConn) {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, RootEffect],
+proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
+    WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, RootEffect],
     contractual.} =
   ## Set the title of the terminal if the proper shell's option is enabled
   ##
