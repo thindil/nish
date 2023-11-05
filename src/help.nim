@@ -357,7 +357,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     return showError(message = "Unknown help topic: `" & topic & "`. For the list of available help topics, type `help`.")
 
 proc showHelpList*(command: string; subcommands: openArray[
-    string]): ResultCode {.gcsafe, sideEffect, raises: [], tags: [ReadDbEffect,
+    string]): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Show short help about available subcommands related to the selected command
@@ -621,8 +621,8 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     return readHelpFromFile(db = db)
 
-proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect],
+proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
+    ], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
   ## Delete the help entry from the help table in the shell's database
   ##

@@ -244,7 +244,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEff
     return resultString
 
 proc getArguments*(userInput: var OptParser;
-    conjCommands: var bool): UserInput {.gcsafe, sideEffect, raises: [], tags: [
+    conjCommands: var bool): UserInput {.sideEffect, raises: [], tags: [
     ReadIOEffect], contractual.} =
   ## Set the command arguments from the user input
   ##

@@ -40,9 +40,8 @@ type OutputMessage* = string
 using message: OutputMessage # The message to show to the user
 
 proc showOutput*(message; newLine: bool = true;
-    fgColor: ForegroundColor = fgDefault; centered: bool = false) {.gcsafe,
-    sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect],
-    contractual.} =
+    fgColor: ForegroundColor = fgDefault; centered: bool = false) {.sideEffect,
+    raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Show the selected message to the user. If newLine is true, add a new line
   ## after message.
   ##

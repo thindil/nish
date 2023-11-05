@@ -64,8 +64,8 @@ using
   arguments: UserInput # The string with arguments entered by the user for the command
 
 proc buildQuery*(directory: DirectoryPath; fields: string = "";
-    where: string = ""): string {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect], contractual.} =
+    where: string = ""): string {.sideEffect, raises: [], tags: [ReadDbEffect],
+    contractual.} =
   ## Build database query for get environment variables for the selected
   ## directory and its parents
   ##

@@ -62,9 +62,8 @@ type
     ## Raised when a problem with a command occurs
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = "") {.gcsafe, sideEffect,
-    raises: [CommandsListError], tags: [WriteIOEffect, RootEffect],
-    contractual.} =
+    commands: ref CommandsList; plugin: string = "") {.sideEffect, raises: [
+    CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Add a new command to the shell's commands' list. If command argument is
   ## different than nil, it will be used as the command code, otherwise, the
   ## argument plugin must be supplied.
@@ -89,8 +88,8 @@ proc addCommand*(name: UserInput; command: CommandProc;
           message = "Can't replace built-in commands.")
     commands[$name] = CommandData(command: command, plugin: plugin)
 
-proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.gcsafe,
-    sideEffect, raises: [CommandsListError], tags: [], contractual.} =
+proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.sideEffect,
+    raises: [CommandsListError], tags: [], contractual.} =
   ## Delete the selected command from the shell's commands' list
   ##
   ## * name     - the name of the new command to delete

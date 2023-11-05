@@ -32,12 +32,13 @@ import std/[os, osproc, parseopt, strutils, tables, terminal, unicode]
 import ansiparse, contracts, nancy, nimalyzer
 import norm/sqlite
 # Internal imports
-import aliases, commands, commandslist, completion, constants, db, directorypath,
-    help, highlight, history, input, logger, lstring, options, output, plugins,
+import aliases, commands, commandslist, completion, constants, db,
+    directorypath, help, highlight, history, input, logger, lstring, options,
+        output, plugins,
     prompt, resultcode, title, variables
 
-proc showCommandLineHelp*() {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect], contractual.} =
+proc showCommandLineHelp*() {.sideEffect, raises: [], tags: [WriteIOEffect],
+    contractual.} =
   ## Show the program arguments help
   ##
   ## Return QuitSuccess when the program's arguments help was shown, otherwise
@@ -56,8 +57,8 @@ proc showCommandLineHelp*() {.gcsafe, sideEffect, raises: [], tags: [
     when isMainModule:
       quit QuitSuccess
 
-proc showProgramVersion*() {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect], contractual.} =
+proc showProgramVersion*() {.sideEffect, raises: [], tags: [WriteIOEffect],
+    contractual.} =
   ## Show the program version
   ##
   ## Returns QuitSuccess when the program's arguments help was shown, otherwise
