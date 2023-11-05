@@ -134,7 +134,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
 
     proc showPluginOutput(options: seq[string]): bool {.closure, sideEffect,
         raises: [], tags: [WriteIOEffect, ReadIOEffect, RootEffect],
-        contractual.} =
+        contractual, gcsafe.} =
       ## Show the output from the plugin via shell's output system
       ##
       ## * options - The list of options from the API call. 0 - the text to
@@ -154,7 +154,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
         return true
 
     proc showPluginError(options: seq[string]): bool {.closure, sideEffect,
-        raises: [], tags: [WriteIOEffect, RootEffect], contractual.} =
+        raises: [], tags: [WriteIOEffect, RootEffect], contractual, gcsafe.} =
       ## Show the output from the plugin via shell's output system as an
       ## error message
       ##
@@ -163,12 +163,13 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## This procedure always returns true
       body:
-        showError(message = options.join(sep = " "))
+        {.cast(gcsafe).}:
+          discard showError(message = options.join(sep = " "))
         return true
 
     proc setPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
-        TimeEffect, RootEffect], contractual.} =
+        TimeEffect, RootEffect], contractual, gcsafe.} =
       ## Set the shell's option value, description or type. If the option
       ## doesn't exist, it is created.
       ##
@@ -179,25 +180,26 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the option was properly added or updated, otherwise false
       ## with information what happened
       body:
-        if options.len < 4:
-          showError(message = "Insufficient arguments for setOption.")
-          return false
-        try:
-          setOption(optionName = initLimitedString(capacity = maxNameLength,
-              text = options[0]), value = initLimitedString(
-              capacity = maxInputLength, text = options[1]),
-              description = initLimitedString(capacity = maxInputLength,
-              text = options[2]), valueType = parseEnum[ValueType](s = options[
-                  3]), db = db)
-        except CapacityError, ValueError:
-          showError(message = "Can't set option '" & options[0] & "'. Reason: ",
-              e = getCurrentException())
-          return false
-        return true
+        {.cast(gcsafe).}:
+          if options.len < 4:
+            showError(message = "Insufficient arguments for setOption.")
+            return false
+          try:
+            setOption(optionName = initLimitedString(capacity = maxNameLength,
+                text = options[0]), value = initLimitedString(
+                capacity = maxInputLength, text = options[1]),
+                description = initLimitedString(capacity = maxInputLength,
+                text = options[2]), valueType = parseEnum[ValueType](s = options[
+                    3]), db = db)
+          except CapacityError, ValueError:
+            showError(message = "Can't set option '" & options[0] & "'. Reason: ",
+                e = getCurrentException())
+            return false
+          return true
 
     proc removePluginOption(options: seq[string]): bool {.sideEffect, raises: [
         ], tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
-        contractual.} =
+        contractual, gcsafe.} =
       ## Remove the selected option from the shell
       ##
       ## * options - The list of options from the API call. 0 - the name of
@@ -206,23 +208,24 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the option was properly removed, otherwise false with
       ## information what happened
       body:
-        if options.len == 0:
-          showError(message = "Insufficient arguments for removeOption.")
-          return false
-        try:
-          if deleteOption(optionName = initLimitedString(
-              capacity = maxNameLength, text = options[0]), db = db) == QuitFailure:
-            showError(message = "Failed to remove option '" & options[0] & "'.")
+        {.cast(gcsafe).}:
+          if options.len == 0:
+            showError(message = "Insufficient arguments for removeOption.")
             return false
-        except CapacityError:
-          showError(message = "Can't remove option '" & options[0] &
-              "'. Reason: ", e = getCurrentException())
-          return false
-        return true
+          try:
+            if deleteOption(optionName = initLimitedString(
+                capacity = maxNameLength, text = options[0]), db = db) == QuitFailure:
+              showError(message = "Failed to remove option '" & options[0] & "'.")
+              return false
+          except CapacityError:
+            showError(message = "Can't remove option '" & options[0] &
+                "'. Reason: ", e = getCurrentException())
+            return false
+          return true
 
     proc getPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
-        RootEffect], contractual.} =
+        RootEffect], contractual, gcsafe.} =
       ## Get the value of the selected option and send it to the plugin
       ##
       ## * options - The list of options from the API call. 0 - the name of
@@ -231,21 +234,22 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the value of the option was properly sent to the plugin,
       ## otherwise false with information what happened
       body:
-        if options.len == 0:
-          showError(message = "Insufficient arguments for getOption.")
-          return false
-        try:
-          plugin.inputStream.write(args = $getOption(
-              optionName = initLimitedString(capacity = maxNameLength,
-              text = options[0]), db = db) & "\n")
-          plugin.inputStream.flush
-        except CapacityError, IOError, OSError:
-          showError(message = "Can't get the value of the selected option. Reason: ",
-              e = getCurrentException())
-        return true
+        {.cast(gcsafe).}:
+          if options.len == 0:
+            showError(message = "Insufficient arguments for getOption.")
+            return false
+          try:
+            plugin.inputStream.write(args = $getOption(
+                optionName = initLimitedString(capacity = maxNameLength,
+                text = options[0]), db = db) & "\n")
+            plugin.inputStream.flush
+          except CapacityError, IOError, OSError:
+            showError(message = "Can't get the value of the selected option. Reason: ",
+                e = getCurrentException())
+          return true
 
     proc addPluginCommand(options: seq[string]): bool {.sideEffect, raises: [],
-        tags: [WriteIOEffect, RootEffect], contractual.} =
+        tags: [WriteIOEffect, RootEffect], contractual, gcsafe.} =
       ## Add a new command to the shell
       ##
       ## * options - The list of options from the API call. 0 - the name of
@@ -254,21 +258,22 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the command was properly added, otherwise false with
       ## information what happened
       body:
-        if options.len == 0:
-          showError(message = "Insufficient arguments for addCommand.")
-          return false
-        try:
-          addCommand(name = initLimitedString(capacity = maxNameLength,
-              text = options[0]), command = nil, commands = commands,
-              plugin = pluginPath)
-        except CommandsListError, CapacityError:
-          showError(message = "Can't add command '" & options[0] &
-              "'. Reason: " & getCurrentExceptionMsg())
-          return false
-        return true
+        {.cast(gcsafe).}:
+          if options.len == 0:
+            showError(message = "Insufficient arguments for addCommand.")
+            return false
+          try:
+            addCommand(name = initLimitedString(capacity = maxNameLength,
+                text = options[0]), command = nil, commands = commands,
+                plugin = pluginPath)
+          except CommandsListError, CapacityError:
+            showError(message = "Can't add command '" & options[0] &
+                "'. Reason: " & getCurrentExceptionMsg())
+            return false
+          return true
 
     proc deletePluginCommand(options: seq[string]): bool {.sideEffect, raises: [
-        ], tags: [WriteIOEffect, RootEffect], contractual.} =
+        ], tags: [WriteIOEffect, RootEffect], contractual, gcsafe.} =
       ## Remove the command from the shell
       ##
       ## * options - The list of options from the API call. 0 - the name of
@@ -277,20 +282,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the command was properly deleted, otherwise false with
       ## information what happened
       body:
-        if options.len == 0:
-          showError(message = "Insufficient arguments for deleteCommand.")
-          return false
-        try:
-          deleteCommand(name = initLimitedString(capacity = maxNameLength,
-              text = options[0]), commands = commands)
-        except CommandsListError, CapacityError:
-          showError(message = "Can't delete command '" & options[0] &
-              "'. Reason: " & getCurrentExceptionMsg())
-          return false
-        return true
+        {.cast(gcsafe).}:
+          if options.len == 0:
+            showError(message = "Insufficient arguments for deleteCommand.")
+            return false
+          try:
+            deleteCommand(name = initLimitedString(capacity = maxNameLength,
+                text = options[0]), commands = commands)
+          except CommandsListError, CapacityError:
+            showError(message = "Can't delete command '" & options[0] &
+                "'. Reason: " & getCurrentExceptionMsg())
+            return false
+          return true
 
     proc replacePluginCommand(options: seq[string]): bool {.sideEffect,
-        raises: [], tags: [WriteIOEffect, RootEffect], contractual.} =
+        raises: [], tags: [WriteIOEffect, RootEffect], contractual, gcsafe.} =
       ## Replace the existing shell's command with the selected one
       ##
       ## * options - The list of options from the API call. 0 - the name of
@@ -299,22 +305,23 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the command was properly replaced, otherwise false with
       ## information what happened
       body:
-        if options.len == 0:
-          showError(message = "Insufficient arguments for replaceCommand.")
-          return false
-        try:
-          replaceCommand(name = initLimitedString(capacity = maxNameLength,
-              text = options[0]), command = nil, commands = commands,
-              plugin = pluginPath)
-        except CommandsListError, CapacityError:
-          showError(message = "Can't replace command '" & options[0] &
-              "'. Reason: " & getCurrentExceptionMsg())
-          return false
-        return true
+        {.cast(gcsafe).}:
+          if options.len == 0:
+            showError(message = "Insufficient arguments for replaceCommand.")
+            return false
+          try:
+            replaceCommand(name = initLimitedString(capacity = maxNameLength,
+                text = options[0]), command = nil, commands = commands,
+                plugin = pluginPath)
+          except CommandsListError, CapacityError:
+            showError(message = "Can't replace command '" & options[0] &
+                "'. Reason: " & getCurrentExceptionMsg())
+            return false
+          return true
 
     proc addPluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, ReadDbEffect, WriteDbEffect, RootEffect],
-        contractual.} =
+        contractual, gcsafe.} =
       ## Add a new help entry to the shell's help
       ##
       ## * options - The list of options from the API call. 0 - the topic of
@@ -324,25 +331,26 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the help entry was properly added, otherwise false with
       ## information what happened
       body:
-        if options.len < 3:
-          showError(message = "Insufficient arguments for addHelp.")
-          return false
-        try:
-          return addHelpEntry(topic = initLimitedString(
-              capacity = maxNameLength, text = options[0]),
-                  usage = initLimitedString(
-              capacity = maxInputLength, text = options[1]),
-              plugin = initLimitedString(capacity = maxInputLength,
-              text = pluginPath), content = options[2], isTemplate = false,
-              db = db) == QuitFailure
-        except CapacityError:
-          showError(message = "Can't add help entry '" & options[0] &
-              "'. Reason: ", e = getCurrentException())
-          return false
+        {.cast(gcsafe).}:
+          if options.len < 3:
+            showError(message = "Insufficient arguments for addHelp.")
+            return false
+          try:
+            return addHelpEntry(topic = initLimitedString(
+                capacity = maxNameLength, text = options[0]),
+                    usage = initLimitedString(
+                capacity = maxInputLength, text = options[1]),
+                plugin = initLimitedString(capacity = maxInputLength,
+                text = pluginPath), content = options[2], isTemplate = false,
+                db = db) == QuitFailure
+          except CapacityError:
+            showError(message = "Can't add help entry '" & options[0] &
+                "'. Reason: ", e = getCurrentException())
+            return false
 
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
-        contractual.} =
+        contractual, gcsafe.} =
       ## Remove the help entry from the shell's help
       ##
       ## * options - The list of options from the API call. 0 - the name of
@@ -351,20 +359,21 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the help entry was properly deleted, otherwise false with
       ## information what happened
       body:
-        if options.len == 0:
-          showError(message = "Insufficient arguments for deleteHelp.")
-          return false
-        try:
-          return deleteHelpEntry(topic = initLimitedString(
-              capacity = maxNameLength, text = options[0]), db = db) == QuitFailure
-        except CapacityError:
-          showError(message = "Can't remove help entry '" & options[0] &
-              "'. Reason: ", e = getCurrentException())
-          return false
+        {.cast(gcsafe).}:
+          if options.len == 0:
+            showError(message = "Insufficient arguments for deleteHelp.")
+            return false
+          try:
+            return deleteHelpEntry(topic = initLimitedString(
+                capacity = maxNameLength, text = options[0]), db = db) == QuitFailure
+          except CapacityError:
+            showError(message = "Can't remove help entry '" & options[0] &
+                "'. Reason: ", e = getCurrentException())
+            return false
 
     proc updatePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
-        contractual.} =
+        contractual, gcsafe.} =
       ## Update the existing help entry with the selected one
       ##
       ## * options - The list of options from the API call. 0 - the topic of
@@ -375,21 +384,22 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Returns true if the help entry was properly updated, otherwise false with
       ## information what happened
       body:
-        if options.len < 3:
-          showError(message = "Insufficient arguments for updateHelp.")
-          return false
-        try:
-          return updateHelpEntry(topic = initLimitedString(
-              capacity = maxNameLength, text = options[0]),
-              usage = initLimitedString(capacity = maxInputLength,
-              text = options[
-              1]), plugin = initLimitedString(capacity = maxInputLength,
-              text = pluginPath), content = options[2], isTemplate = false,
-              db = db) == QuitFailure
-        except CapacityError:
-          showError(message = "Can't update help entry '" & options[0] &
-              "'. Reason: ", e = getCurrentException())
-          return false
+        {.cast(gcsafe).}:
+          if options.len < 3:
+            showError(message = "Insufficient arguments for updateHelp.")
+            return false
+          try:
+            return updateHelpEntry(topic = initLimitedString(
+                capacity = maxNameLength, text = options[0]),
+                usage = initLimitedString(capacity = maxInputLength,
+                text = options[
+                1]), plugin = initLimitedString(capacity = maxInputLength,
+                text = pluginPath), content = options[2], isTemplate = false,
+                db = db) == QuitFailure
+          except CapacityError:
+            showError(message = "Can't update help entry '" & options[0] &
+                "'. Reason: ", e = getCurrentException())
+            return false
 
     let apiCalls: Table[string, proc(options: seq[string]): bool] = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
