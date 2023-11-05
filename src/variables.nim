@@ -176,9 +176,9 @@ proc setVariables*(newDirectory: DirectoryPath; db;
       showError(message = "Can't set environment variables for the new directory. Reason: ",
           e = getCurrentException())
 
-proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc setCommand*(arguments): ResultCode {.sideEffect, raises: [], tags: [
+    ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
   ## Build-in command to set the selected environment variable
   ##
   ## * arguments - the user entered text with arguments for set variable
@@ -200,9 +200,9 @@ proc setCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Can't set the environment variable '" &
           varValues[0] & "'. Reason:", e = getCurrentException())
 
-proc unsetCommand*(arguments): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect,
-    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc unsetCommand*(arguments): ResultCode {.sideEffect, raises: [], tags: [
+    ReadIOEffect, ReadDbEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
   ## Build-in command to unset the selected environment variable
   ##
   ## * arguments - the user entered text with arguments for unset variable
@@ -252,7 +252,8 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "There are no defined shell's environment variables.")
           return QuitSuccess.ResultCode
         for variable in variables:
-          table.add(parts = [yellow(ss = variable.id), green(ss = variable.name), variable.value])
+          table.add(parts = [yellow(ss = variable.id), green(
+              ss = variable.name), variable.value])
       except:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException())
@@ -270,7 +271,8 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "There are no defined shell's environment variables in this directory.")
           return QuitSuccess.ResultCode
         for variable in variables:
-          table.add(parts = [yellow(ss = variable.id), green(ss = variable.name), variable.value])
+          table.add(parts = [yellow(ss = variable.id), green(
+              ss = variable.name), variable.value])
       except:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException())
@@ -286,8 +288,8 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc deleteVariable*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [
-    ], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+proc deleteVariable*(arguments; db): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Delete the selected variable from the shell's database
   ##
@@ -635,9 +637,8 @@ proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc createVariablesDb*(db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
-    contractual.} =
+proc createVariablesDb*(db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Create the table variables
   ##
   ## * db - the connection to the shell's database

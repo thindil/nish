@@ -61,9 +61,10 @@ using
   aliases: ref AliasesList # The list of aliases available in the selected directory
   arguments: UserInput # The string with arguments entered by the user for the command
 
-proc setAliases*(aliases; directory: DirectoryPath; db) {.gcsafe, sideEffect,
-    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
-    RootEffect], contractual.} =
+proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [
+    ], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+        RootEffect],
+    contractual.} =
   ## Set the available aliases in the selected directory
   ##
   ## * aliases   - the list of aliases available in the selected directory
@@ -205,8 +206,8 @@ proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
     Alias(name: name, path: path, commands: commands, description: description,
         recursive: recursive, output: output)
 
-proc deleteAlias*(arguments; aliases; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+proc deleteAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Delete the selected alias from the shell's database
   ##
@@ -568,9 +569,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc execAlias*(arguments; aliasId: string; aliases; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-    WriteIOEffect, ExecIOEffect, RootEffect], contractual.} =
+proc execAlias*(arguments; aliasId: string; aliases;
+    db): ResultCode {.sideEffect, raises: [], tags: [ReadEnvEffect,
+    ReadIOEffect, ReadDbEffect, WriteIOEffect, ExecIOEffect, RootEffect],
+    contractual.} =
   ## Execute the selected by the user alias. If it is impossible due to lack
   ## of needed arguments or other errors, print information about it.
   ##
@@ -764,9 +766,9 @@ proc initAliases*(db; aliases: ref AliasesList;
       showError(message = "Can't initialize aliases. Reason: ",
           e = getCurrentException())
 
-proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
+proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
-        contractual.} =
+    contractual.} =
   ## Update the table aliases to the new version if needed
   ##
   ## * db        - the connection to the shell's database
@@ -785,9 +787,8 @@ proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc createAliasesDb*(db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
-        contractual.} =
+proc createAliasesDb*(db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Create the table aliases
   ##
   ## * db - the connection to the shell's database

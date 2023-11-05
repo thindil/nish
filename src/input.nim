@@ -36,8 +36,8 @@ import constants, lstring, output
 type MaxInputLength* = range[1..maxInputLength]
   ## Used to store maximum allowed length of the user input
 
-proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, ReadIOEffect, RootEffect], contractual.} =
+proc readChar*(inputChar: char): string {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, RootEffect], contractual.} =
   ## Read the Unicode character from the user's input
   ##
   ## * inputChar - the last printable character entered by the user
@@ -61,8 +61,8 @@ proc readChar*(inputChar: char): string {.gcsafe, sideEffect, raises: [],
           e = getCurrentException())
 
 proc deleteChar*(inputString: var UserInput;
-    cursorPosition: var Natural) {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect, RootEffect], contractual.} =
+    cursorPosition: var Natural) {.sideEffect, raises: [], tags: [WriteIOEffect,
+    RootEffect], contractual.} =
   ## Delete the Unicode character at the selected position from the user's input
   ##
   ## * inputString    - the string of characters entered by the user
@@ -79,8 +79,8 @@ proc deleteChar*(inputString: var UserInput;
       showError(message = "Entered input is too long.", e = getCurrentException())
 
 proc moveCursor*(inputChar: char; cursorPosition: var Natural;
-    inputString: UserInput) {.gcsafe, sideEffect, raises: [], tags: [
-    WriteIOEffect, RootEffect], contractual.} =
+    inputString: UserInput) {.sideEffect, raises: [], tags: [WriteIOEffect,
+    RootEffect], contractual.} =
   ## Move the cursor inside the user's input
   ##
   ## * inputChar      - the last ASCII character entered by the user
@@ -113,8 +113,8 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
           e = getCurrentException())
 
 proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
-    insertMode: bool; inputRune: string) {.gcsafe, sideEffect, raises: [],
-    tags: [WriteIOEffect, RootEffect], contractual.} =
+    insertMode: bool; inputRune: string) {.sideEffect, raises: [], tags: [
+    WriteIOEffect, RootEffect], contractual.} =
   ## Update the user's input with the new Unicode character
   ##
   ## * cursorPosition - the current position of cursor in the user's input
@@ -149,9 +149,8 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
     except CapacityError:
       showError(message = "Entered input is too long.", e = getCurrentException())
 
-proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.gcsafe,
-    sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect,
-        RootEffect],
+proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEffect,
+    raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
