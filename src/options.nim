@@ -100,8 +100,8 @@ proc to*(dbVal: DbValue, T: typedesc[ValueType]): T {.raises: [], tags: [],
       none
 
 proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
-    capacity = maxInputLength)): OptionValue {.gcsafe, sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
+    capacity = maxInputLength)): OptionValue {.sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
@@ -154,9 +154,8 @@ proc newOption*(name: string = ""; value: string = ""; description: string = "";
 proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
     capacity = maxInputLength); valueType: ValueType = none; db;
-    readOnly: BooleanInt = 0) {.gcsafe, sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
-        RootEffect],
+    readOnly: BooleanInt = 0) {.sideEffect, raises: [], tags: [ReadDbEffect,
+    WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Set the value and or description of the selected option. If the option
   ## doesn't exist, insert it to the database
@@ -227,9 +226,9 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
-    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
   ## Set the selected option's value
   ##
   ## * arguments - the user entered text with arguments for the variable, its
@@ -340,9 +339,9 @@ proc setOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
       return showError(message = "Can't set the value for the option '" &
           optionName & "'. Reason: ", e = getCurrentException())
 
-proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect,
-    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
   ##
@@ -385,7 +384,7 @@ proc resetOptions*(arguments; db): ResultCode {.gcsafe, sideEffect, raises: [],
             "' to its default value. Reason: ", e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc updateOptionsDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
+proc updateOptionsDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
     contractual.} =
   ## Update the table options to the new version if needed
@@ -409,7 +408,7 @@ proc updateOptionsDb*(db; dbVersion: Natural): ResultCode {.gcsafe, sideEffect,
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
+proc createOptionsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Create the table options
   ##
@@ -427,9 +426,8 @@ proc createOptionsDb*(db): ResultCode {.gcsafe, sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc deleteOption*(optionName; db): ResultCode {.gcsafe, sideEffect, raises: [],
-    tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
-    contractual.} =
+proc deleteOption*(optionName; db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Delete the selected option from the table
   ##
   ## * optionName - the name of the option which will be deleted

@@ -39,9 +39,9 @@ using
   aliases: ref AliasesList # The list of aliases available in the selected directory
   newDirectory: DirectoryPath # The directory to which the current directory will be changed
 
-proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
-    sideEffect, raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect,
-        WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc changeDirectory*(newDirectory; aliases; db): ResultCode {.sideEffect,
+    raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Change the current directory for the shell
   ##
   ## * newDirectory - the path to the new directory to which the current
@@ -63,7 +63,8 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
       if not dirExists(dir = $path):
         return showError(message = "Directory '" & path & "' doesn't exist.")
       path = expandFilename(filename = $path).DirectoryPath
-      setVariables(newDirectory = path, db = db, oldDirectory = getCurrentDirectory().DirectoryPath)
+      setVariables(newDirectory = path, db = db,
+          oldDirectory = getCurrentDirectory().DirectoryPath)
       setCurrentDir(newDir = $path)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess.ResultCode
@@ -71,8 +72,8 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.gcsafe,
       return showError(message = "Can't change directory. Reason: ",
           e = getCurrentException())
 
-proc cdCommand*(newDirectory; aliases; db): ResultCode {.gcsafe, sideEffect,
-    raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
+proc cdCommand*(newDirectory; aliases; db): ResultCode {.sideEffect, raises: [],
+    tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
     WriteDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Build-in command to enter the selected by the user directory
   ##
