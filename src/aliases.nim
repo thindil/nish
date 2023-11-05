@@ -617,7 +617,8 @@ proc execAlias*(arguments; aliasId: string; aliases;
     # input
     var
       argumentPosition: ExtendedNatural = alias.commands.find(sub = '$')
-    while argumentPosition > -1:
+    while argumentPosition > -1 and alias.commands[argumentPosition + 1] in {
+        '0' .. '9'}:
       var argumentNumber: Natural = try:
           parseInt(s = alias.commands[argumentPosition + 1] & "")
         except ValueError:
