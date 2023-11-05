@@ -138,6 +138,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
         return
       if alias.startsWith(prefix = prefix) and $alias notin completions:
         completions.add(y = $alias)
+    # Check for programs and commands in the system
     try:
       for path in getEnv(key = "PATH").split(sep = PathSep):
         for file in walkFiles(pattern = path & DirSep & prefix & "*"):
