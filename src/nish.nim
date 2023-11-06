@@ -535,6 +535,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           if returnCode != 130:
             returnCode = QuitSuccess.ResultCode
           continue
+        # User entered just the command to execute the previously entered command,
+        # replace it with the previous if exists
+        if inputString == "." and lastCommand.len > 0:
+          inputString.text = lastCommand
         userInput = initOptParser(cmdLine = $inputString)
         # Reset the return code of the program
         returnCode = QuitSuccess.ResultCode
