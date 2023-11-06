@@ -384,6 +384,46 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
     except IOError, OSError:
       discard
 
+proc executeCommand(commands: ref Table[string, CommandData];
+    commandName: string; arguments, inputString: UserInput; db: DbConn;
+    aliases: ref OrderedTable[AliasName, int];
+    cursorPosition: var Natural): ResultCode {.contractual.} =
+  body:
+    # Check if command is the shell's command, if yes, execute it
+    if commands.hasKey(key = commandName):
+      try:
+        # The shell's command from plugin
+        if commands[commandName].command == nil:
+          let returnValues: PluginResult = execPlugin(
+              pluginPath = commands[commandName].plugin, arguments = [
+                  commandName, $arguments],
+              db = db, commands = commands)
+          return returnValues.code
+        # Build-in shell's command
+        else:
+          return commands[commandName].command(
+              arguments = arguments, db = db, list = CommandLists(
+              aliases: aliases,
+              commands: commands))
+      except KeyError:
+        showError(message = "Can't execute command '" & commandName &
+            "'. Reason: ", e = getCurrentException())
+    else:
+      let commandToExecute: string = commandName & (if arguments.len >
+          0: " " & arguments else: "")
+      try:
+        # Check if command is an alias, if yes, execute it
+        if initLimitedString(capacity = maxInputLength,
+            text = commandName) in aliases:
+          result = execAlias(arguments = arguments,
+              aliasId = commandName, aliases = aliases, db = db)
+          cursorPosition = runeLen(s = $inputString)
+        else:
+          # Execute external command
+          return execCmd(command = commandToExecute).ResultCode
+      except CapacityError:
+        return QuitFailure.ResultCode
+
 {.push ruleOff: "complexity".}
 proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     ExecIOEffect, RootEffect], contractual.} =
@@ -405,6 +445,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           DirSep & "nish.db").DirectoryPath
       cursorPosition: Natural = 0
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
+      lastCommand: string = ""
 
     # Check the command line parameters entered by the user. Available options
     # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -534,43 +575,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           returnCode = unsetCommand(arguments = arguments)
         # Execute command (the shell's or external) or the shell's alias
         else:
-          # Check if command is the shell's command, if yes, execute it
-          if commands.hasKey(key = commandName):
-            try:
-              # The shell's command from plugin
-              if commands[commandName].command == nil:
-                let returnValues: PluginResult = execPlugin(
-                    pluginPath = commands[commandName].plugin, arguments = [
-                        commandName, $arguments],
-                    db = db, commands = commands)
-                returnCode = returnValues.code
-              # Build-in shell's command
-              else:
-                returnCode = commands[commandName].command(
-                    arguments = arguments, db = db, list = CommandLists(
-                    aliases: aliases,
-                    commands: commands))
-            except KeyError:
-              showError(message = "Can't execute command '" & commandName &
-                  "'. Reason: ", e = getCurrentException())
-          else:
-            let commandToExecute: string = commandName & (if arguments.len >
-                0: " " & arguments else: "")
-            try:
-              # Check if command is an alias, if yes, execute it
-              if initLimitedString(capacity = maxInputLength,
-                  text = commandName) in aliases:
-                returnCode = execAlias(arguments = arguments,
-                    aliasId = commandName, aliases = aliases, db = db)
-                cursorPosition = runeLen(s = $inputString)
-              else:
-                # Execute external command
-                returnCode = execCmd(command = commandToExecute).ResultCode
-            except CapacityError:
-              returnCode = QuitFailure.ResultCode
+          returnCode = executeCommand(commands = commands,
+              commandName = commandName, arguments = arguments,
+              inputString = inputString, db = db, aliases = aliases,
+              cursorPosition = cursorPosition)
         # Update the shell's history with info about the executed command
-        historyIndex = updateHistory(commandToAdd = commandName & (
-            if arguments.len > 0: " " & arguments else: ""), db = db,
+        lastCommand = commandName & (if arguments.len > 0: " " &
+            arguments else: "")
+        historyIndex = updateHistory(commandToAdd = lastCommand, db = db,
             returnCode = returnCode)
         # Restore the terminal title
         setTitle(title = $getFormattedDir(), db = db)
