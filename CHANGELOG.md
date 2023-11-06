@@ -40,6 +40,7 @@ of the shell.
 - Crash when trying to edit an existing environment variable
 - Showing header during editing an alias after setting its recursiveness
 - Typos in README.md and CHANGELOG.md
+- Using environment variables in the shell's aliases
 
 ## [0.5.0] - 2023-01-05
 
