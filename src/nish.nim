@@ -390,6 +390,19 @@ proc executeCommand(commands: ref Table[string, CommandData];
     cursorPosition: var Natural): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect, ReadEnvEffect,
     ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
+  ## Execute the command entered by the user
+  ##
+  ## * commands       - the list of the shell's commands
+  ## * commandName    - the name of the command entered by the user
+  ## * arguments      - the arguments of the command entered by the user
+  ## * inputString    - the full text (command and arguments) entered by the
+  ##                    user
+  ## * db             - the connection to the shell's database
+  ## * aliases        - the list of the shell's aliase
+  ## * cursorPosition - the current position of the curson on the screen
+  ##
+  ## Returns the shell's code returned by the executed command and the new
+  ## position of the cursor on the screen
   body:
     # Check if command is the shell's command, if yes, execute it
     if commands.hasKey(key = commandName):
