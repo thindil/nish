@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[os, osproc, parseopt, strutils, tables, terminal, unicode]
 # External modules imports
-import ansiparse, contracts, nancy, nimalyzer
+import ansiparse, contracts, nancy
 import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db,
@@ -439,7 +439,6 @@ proc executeCommand(commands: ref Table[string, CommandData];
       except CapacityError:
         return QuitFailure.ResultCode
 
-{.push ruleOff: "complexity".}
 proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     ExecIOEffect, RootEffect], contractual.} =
   ## The main procedure of the shell
@@ -626,7 +625,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       except:
         showError(message = "Internal shell error. Additional details: ",
             e = getCurrentException())
-{.pop ruleOff: "complexity".}
 
 when isMainModule:
   main()
