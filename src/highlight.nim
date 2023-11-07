@@ -126,7 +126,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           fgGreen
       if color == fgRed:
         # Built-in commands
-        if $command in ["exit", "cd", "set", "unset"]:
+        if $command in ["exit", "cd", "set", "unset", "."]:
           color = fgGreen
         # The shell's commands
         elif commands.hasKey(key = $command):
@@ -165,6 +165,6 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       if cursorPosition < runeLen(s = $input) - 1:
         stdout.cursorBackward(count = runeLen(s = $input) - cursorPosition)
       inputString = input
-    except ValueError, IOError, OSError:
+    except:
       showError(message = "Can't highlight input. Reason: ",
           e = getCurrentException())
