@@ -11,7 +11,8 @@ of the shell.
   environment variable
 - Option to set case-insentivity for Tab completion for directories and entries
 - Logging the shell's actions to the file when the shell is build in debug
-  mode.
+  mode
+- New command `.` to repeat the last command entered by the user
 
 ### Changed
 - Updated README.md
