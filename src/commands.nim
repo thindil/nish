@@ -27,12 +27,13 @@
 ## directory
 
 # Standard library imports
-import std/os
+import std/[os, osproc, tables, unicode]
 # External modules imports
 import contracts
 import norm/sqlite
 # Internal imports
-import aliases, constants, directorypath, output, resultcode, variables
+import aliases, constants, commandslist, directorypath, lstring, output,
+    plugins, resultcode, variables
 
 using
   db: DbConn # Connection to the shell's database
@@ -92,3 +93,58 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.sideEffect, raises: [],
           aliases = aliases, db = db)
     else:
       result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)
+
+proc executeCommand*(commands: ref Table[string, CommandData];
+    commandName: string; arguments, inputString: UserInput; db: DbConn;
+    aliases: ref OrderedTable[AliasName, int];
+    cursorPosition: var Natural): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect, ReadEnvEffect,
+    ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
+  ## Execute the command entered by the user
+  ##
+  ## * commands       - the list of the shell's commands
+  ## * commandName    - the name of the command entered by the user
+  ## * arguments      - the arguments of the command entered by the user
+  ## * inputString    - the full text (command and arguments) entered by the
+  ##                    user
+  ## * db             - the connection to the shell's database
+  ## * aliases        - the list of the shell's aliase
+  ## * cursorPosition - the current position of the curson on the screen
+  ##
+  ## Returns the shell's code returned by the executed command and the new
+  ## position of the cursor on the screen
+  body:
+    # Check if command is the shell's command, if yes, execute it
+    if commands.hasKey(key = commandName):
+      try:
+        # The shell's command from plugin
+        if commands[commandName].command == nil:
+          let returnValues: PluginResult = execPlugin(
+              pluginPath = commands[commandName].plugin, arguments = [
+                  commandName, $arguments],
+              db = db, commands = commands)
+          return returnValues.code
+        # Build-in shell's command
+        else:
+          return commands[commandName].command(
+              arguments = arguments, db = db, list = CommandLists(
+              aliases: aliases,
+              commands: commands))
+      except KeyError:
+        showError(message = "Can't execute command '" & commandName &
+            "'. Reason: ", e = getCurrentException())
+    else:
+      let commandToExecute: string = commandName & (if arguments.len >
+          0: " " & arguments else: "")
+      try:
+        # Check if command is an alias, if yes, execute it
+        if initLimitedString(capacity = maxInputLength,
+            text = commandName) in aliases:
+          result = execAlias(arguments = arguments,
+              aliasId = commandName, aliases = aliases, db = db)
+          cursorPosition = runeLen(s = $inputString)
+        else:
+          # Execute external command
+          return execCmd(command = commandToExecute).ResultCode
+      except CapacityError:
+        return QuitFailure.ResultCode
