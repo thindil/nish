@@ -384,7 +384,7 @@ proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
     except IOError, OSError:
       discard
 
-proc executeCommand(commands: ref Table[string, CommandData];
+proc executeCommand*(commands: ref Table[string, CommandData];
     commandName: string; arguments, inputString: UserInput; db: DbConn;
     aliases: ref OrderedTable[AliasName, int];
     cursorPosition: var Natural): ResultCode {.sideEffect, raises: [], tags: [
