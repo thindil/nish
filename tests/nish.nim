@@ -24,4 +24,5 @@ suite "Unit tests for nish module":
       rCode = QuitSuccess.ResultCode
       hIndex: HistoryRange = 1
       cPosition: Natural = 1
-    readUserInput(iString, false, db, cName, rCode, hIndex, cPosition, myaliases, commands)
+    readUserInput(iString, false, db, cName, rCode, hIndex, cPosition,
+        myaliases, commands)
