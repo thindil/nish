@@ -76,7 +76,7 @@ proc showProgramVersion*() {.sideEffect, raises: [], tags: [WriteIOEffect],
     when isMainModule:
       quit QuitSuccess
 
-proc readUserInput(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
+proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
     commandName: var string; returnCode: var ResultCode;
     historyIndex: var HistoryRange; cursorPosition: var Natural;
     aliases: ref OrderedTable[AliasName, int]; commands: ref Table[string,
