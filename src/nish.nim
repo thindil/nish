@@ -133,7 +133,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool; db: DbConn
       case inputChar.ord
       # Backspace pressed, delete the character before cursor from the user
       # input
-      of 127:
+      of 8, 127:
         keyWasArrow = false
         if cursorPosition == 0:
           continue
