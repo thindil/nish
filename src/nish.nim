@@ -27,15 +27,14 @@
 ## and stopping the shell and the main loop of the shell itself.
 
 # Standard library imports
-import std/[os, osproc, parseopt, strutils, tables, terminal, unicode]
+import std/[os, parseopt, strutils, tables, terminal, unicode]
 # External modules imports
 import ansiparse, contracts, nancy
 import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db,
     directorypath, help, highlight, history, input, logger, lstring, options,
-        output, plugins,
-    prompt, resultcode, title, variables
+    output, plugins, prompt, resultcode, title, variables
 
 proc showCommandLineHelp*() {.sideEffect, raises: [], tags: [WriteIOEffect],
     contractual.} =
