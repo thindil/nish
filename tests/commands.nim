@@ -1,6 +1,6 @@
 import std/tables
 import utils/utils
-import ../src/[commands, db, directorypath, lstring, resultcode]
+import ../src/[commands, commandslist, db, directorypath, lstring, resultcode]
 import unittest2
 
 suite "Unit tests for commands module":
@@ -27,6 +27,15 @@ suite "Unit tests for commands module":
     checkpoint "Changing the current directory to non-existing directory"
     check:
       changeDirectory("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure
+
+  test "Executing a command":
+    var
+      cursorPosition: Natural = 1
+      commands = newTable[string, CommandData]()
+    check:
+      executeCommand(commands, "ls", initLimitedString(capacity = 4,
+          text = "-a ."), initLimitedString(capacity = 7, text = "ls -a ."), db,
+          myaliases, cursorPosition) == QuitSuccess
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
