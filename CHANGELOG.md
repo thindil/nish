@@ -42,6 +42,7 @@ of the shell.
 - Showing header during editing an alias after setting its recursiveness
 - Typos in README.md and CHANGELOG.md
 - Using environment variables in the shell's aliases
+- Backspace key doesn't work in some terminal emulators
 
 ## [0.5.0] - 2023-01-05
 
