@@ -295,6 +295,19 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool; db: DbConn
             of '2':
               if getch() == '~':
                 insertMode = not insertMode
+            # Delete key pressed
+            of '3':
+              if getch() == '~':
+                if cursorPosition == runeLen(s = $inputString):
+                  continue
+                cursorPosition.inc
+                deleteChar(inputString = inputString,
+                    cursorPosition = cursorPosition)
+                highlightOutput(promptLength = promptLength,
+                    inputString = inputString, commands = commands,
+                    aliases = aliases, oneTimeCommand = oneTimeCommand,
+                    commandName = $commandName, returnCode = returnCode, db = db,
+                    cursorPosition = cursorPosition, enabled = highlightEnabled)
             # Move cursor if the proper key was pressed (arrows, home, end)
             # if not in completion mode
             else:
