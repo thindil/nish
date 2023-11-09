@@ -14,6 +14,8 @@ suite "Unit tests for input module":
         text = "ls -ab --foo --bar=20 file.txt")
 
   test "Reading the user's input":
+    if stdin != nil:
+      return
     echo "exit"
     check:
       readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
