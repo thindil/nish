@@ -212,16 +212,30 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEff
         # Escape key pressed, return "exit" as input value
         if inputChar.ord == 27:
           return exitString
-        # Cursor movement keys pressed
+        # Cursor movement keys or delete key pressed
         elif inputChar in ['[', 'O']:
           try:
             inputChar = getch()
-          except IOError:
+            # Delete key pressed
+            if inputChar == '3':
+              if getch() == '~':
+                stdout.cursorBackward(count = cursorPosition)
+                stdout.write(s = repeat(c = ' ', count = runeLen(s = $resultString)))
+                stdout.cursorBackward(count = runeLen(s = $resultString))
+                cursorPosition.inc
+                deleteChar(inputString = resultString,
+                    cursorPosition = cursorPosition)
+                stdout.write(s = $resultString)
+                if cursorPosition < runeLen(s = $resultString):
+                  stdout.cursorBackward(count = runeLen(s = $resultString) - cursorPosition)
+            # Cursor movement key pressed
+            else:
+              moveCursor(inputChar = inputChar, cursorPosition = cursorPosition,
+                  inputString = resultString)
+          except:
             showError(message = "Can't get the next character after Escape. Reason: ",
                 e = getCurrentException())
             return exitString
-          moveCursor(inputChar = inputChar, cursorPosition = cursorPosition,
-              inputString = resultString)
         else:
           continue
       # Visible character, add it to the user input string and show it in the
