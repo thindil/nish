@@ -184,7 +184,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEff
             e = getCurrentException())
         return exitString
       # Backspace pressed, delete the last character from the user input
-      if inputChar.ord == 127:
+      if inputChar.ord in {8, 127}:
         # Input is empty or cursor is at first position, do nothing
         if cursorPosition == 0:
           continue
