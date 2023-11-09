@@ -13,6 +13,7 @@ of the shell.
 - Logging the shell's actions to the file when the shell is build in debug
   mode
 - New command `.` to repeat the last command entered by the user
+- Support for Delete key in the user's input
 
 ### Changed
 - Updated README.md
