@@ -58,7 +58,7 @@ proc fillSuggestionsList*(aliases: ref AliasesList;
           suggestions.add(y = fileName)
 
 proc suggestCommand*(invalidName: string;
-    start: var Natural): string {.contractual.} =
+    start: var Natural): string {.raises: [], tags: [], contractual.} =
   require:
     invalidName.len > 0
   body:
