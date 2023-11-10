@@ -55,7 +55,6 @@ proc fillSuggestionsList*(aliases: ref AliasesList;
         let fileName: string = file.extractFilename
         if fileName notin suggestions:
           suggestions.add(y = fileName)
-    echo suggestions
 
 proc suggestCommand*(invalidName: string;
     start: var Natural): string {.contractual.} =
