@@ -27,7 +27,7 @@
 ## entered by the user.
 
 # Standard library imports
-import std/[os, strutils, tables]
+import std/[editdistance, os, strutils, tables]
 # External modules imports
 import contracts
 # Internal imports
@@ -35,7 +35,9 @@ import commandslist, constants
 
 var suggestions: seq[string] = @[]
 
-proc fillSuggestionsList*(aliases: ref AliasesList; commands: ref CommandsList) {.raises: [], tags: [ReadEnvEffect, ReadDirEffect], contractual.} =
+proc fillSuggestionsList*(aliases: ref AliasesList;
+    commands: ref CommandsList) {.raises: [], tags: [ReadEnvEffect,
+    ReadDirEffect], contractual.} =
   body:
     # if suggestions list is not empty, quit
     if suggestions.len > 0:
@@ -60,4 +62,8 @@ proc suggestCommand*(invalidName: string;
   require:
     invalidName.len > 0
   body:
-    return
+    for i in start .. suggestions.high:
+      if editDistanceAscii(a = invalidName, b = suggestions[i]) == 1:
+        start = i
+        return suggestions[i]
+    return ""
