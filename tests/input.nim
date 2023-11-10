@@ -15,6 +15,7 @@ suite "Unit tests for input module":
 
   test "Reading the user's input":
     if stdin != nil:
+      echo "INPUT"
       return
     echo "exit"
     check:
