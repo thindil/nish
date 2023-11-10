@@ -35,8 +35,7 @@ import commandslist, constants
 
 var suggestions: seq[string] = @[]
 
-proc fillSuggestionsList*(aliases: ref AliasesList;
-    commands: ref CommandsList) {.contractual.} =
+proc fillSuggestionsList*(aliases: ref AliasesList; commands: ref CommandsList) {.raises: [], tags: [ReadEnvEffect, ReadDirEffect], contractual.} =
   body:
     # if suggestions list is not empty, quit
     if suggestions.len > 0:
