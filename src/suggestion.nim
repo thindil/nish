@@ -62,8 +62,10 @@ proc suggestCommand*(invalidName: string;
   require:
     invalidName.len > 0
   body:
+    if start >= suggestions.len:
+      return ""
     for i in start .. suggestions.high:
       if editDistanceAscii(a = invalidName, b = suggestions[i]) == 1:
-        start = i
+        start = i + 1
         return suggestions[i]
     return ""
