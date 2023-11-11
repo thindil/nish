@@ -34,7 +34,7 @@ import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db,
     directorypath, help, highlight, history, input, logger, lstring, options,
-    output, plugins, prompt, resultcode, title, variables
+    output, plugins, prompt, resultcode, suggestion, title, variables
 
 proc showCommandLineHelp*() {.sideEffect, raises: [], tags: [WriteIOEffect],
     contractual.} =
@@ -76,8 +76,8 @@ proc showProgramVersion*() {.sideEffect, raises: [], tags: [WriteIOEffect],
     when isMainModule:
       quit QuitSuccess
 
-proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool; db: DbConn;
-    commandName: var string; returnCode: var ResultCode;
+proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
+    db: DbConn; commandName: var string; returnCode: var ResultCode;
     historyIndex: var HistoryRange; cursorPosition: var Natural;
     aliases: ref OrderedTable[AliasName, int]; commands: ref Table[string,
     CommandData]) {.raises: [], tags: [WriteIOEffect, ReadEnvEffect,
@@ -306,7 +306,8 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool; db: DbConn
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
                     aliases = aliases, oneTimeCommand = oneTimeCommand,
-                    commandName = $commandName, returnCode = returnCode, db = db,
+                    commandName = $commandName, returnCode = returnCode,
+                    db = db,
                     cursorPosition = cursorPosition, enabled = highlightEnabled)
             # Move cursor if the proper key was pressed (arrows, home, end)
             # if not in completion mode
@@ -554,6 +555,33 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               commandName = commandName, arguments = arguments,
               inputString = inputString, db = db, aliases = aliases,
               cursorPosition = cursorPosition)
+        # If the command returned 0 (unknown command), suggest other command
+        log(message = "returnCode = " & $returnCode)
+        if returnCode == 127:
+          fillSuggestionsList(aliases = aliases, commands = commands)
+          var start: Natural = 0
+          while true:
+            let newCommand: string = suggestCommand(
+                invalidName = $commandName, start = start)
+            if newCommand.len == 0:
+              break
+            showError(message = "Command '" & commandName &
+                "' not found. Did you mean: '" & newCommand & "'? [Y]es/[N]ext/[A]bort")
+            case getch()
+            of 'Y', 'y':
+              commandName = newCommand
+              returnCode = executeCommand(commands = commands,
+                  commandName = commandName, arguments = arguments,
+                  inputString = inputString, db = db, aliases = aliases,
+                  cursorPosition = cursorPosition)
+              if returnCode != 127:
+                break
+              else:
+                start = 0
+            of 'A', 'a':
+              break
+            else:
+              discard
         # Update the shell's history with info about the executed command
         lastCommand = commandName & (if arguments.len > 0: " " &
             arguments else: "")
