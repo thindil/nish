@@ -34,10 +34,17 @@ import contracts
 import commandslist, constants
 
 var suggestions: seq[string] = @[]
+  ## the list of all available commands to the user, used in the suggestions
+  ## system
 
 proc fillSuggestionsList*(aliases: ref AliasesList;
     commands: ref CommandsList) {.raises: [], tags: [ReadEnvEffect,
     ReadDirEffect], contractual.} =
+  ## Fill the list of suggestions with commands. Do nothing if the list is
+  ## filled already
+  ##
+  ## * aliases  - the list of the shell's aliases
+  ## * commands - the list of the shell's commands
   body:
     # if suggestions list is not empty, quit
     if suggestions.len > 0:
@@ -59,6 +66,15 @@ proc fillSuggestionsList*(aliases: ref AliasesList;
 
 proc suggestCommand*(invalidName: string;
     start: var Natural): string {.raises: [], tags: [], contractual.} =
+  ## Get the command suggestion, based on Levenshtein distance algorithm
+  ##
+  ## * invalidName - the name of the invalid command for which the suggestion
+  ##                 will be looked for
+  ## * start       - the index for suggestions list from which start looking
+  ##                 for the suggestion
+  ##
+  ## Returns the name of the suggested command and the modified parameter
+  ## start. If no suggestion found, returns an empty string.
   require:
     invalidName.len > 0
   body:
