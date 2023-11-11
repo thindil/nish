@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[os, parseopt, strutils, tables, terminal, unicode]
 # External modules imports
-import ansiparse, contracts, nancy
+import ansiparse, contracts, nancy, termstyle
 import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db,
@@ -565,8 +565,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 invalidName = $commandName, start = start)
             if newCommand.len == 0:
               break
-            showError(message = "Command '" & commandName &
-                "' not found. Did you mean: '" & newCommand & "'? [Y]es/[N]ext/[A]bort")
+            showOutput(message = "Command '" & cyan(ss = commandName) &
+                "' not found. Did you mean: '" & yellow(ss = newCommand) &
+                "'? [" & green(ss = "Y") & "]es/[" & blue(ss = "N") & "]ext/[" &
+                red(ss = "A") & "]bort")
             case getch()
             of 'Y', 'y':
               commandName = newCommand
