@@ -576,10 +576,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                   commandName = commandName, arguments = arguments,
                   inputString = inputString, db = db, aliases = aliases,
                   cursorPosition = cursorPosition)
-              if returnCode != 127:
-                break
-              else:
+              if returnCode == 127:
                 start = 0
+              else:
+                break
             of 'A', 'a':
               break
             else:
