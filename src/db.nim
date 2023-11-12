@@ -80,7 +80,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException())
       return nil
-    let options: array[9, Option] = [newOption(name = "dbVersion", value = "4",
+    let options: array[10, Option] = [newOption(name = "dbVersion", value = "4",
         description = "Version of the database schema (read only).",
         valueType = ValueType.natural, readOnly = true, defaultValue = "4"),
         newOption(name = "promptCommand", value = "built-in",
@@ -107,7 +107,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         newOption(name = "completionCheckCase", value = "false",
         description = "If true, Tab completion for directories and files is case-sensitive.",
         valueType = ValueType.boolean, readOnly = false,
-        defaultValue = "false")]
+        defaultValue = "false"),
+        newOption(name = "suggestionPrecision", value = "1",
+        description = "How precise is the commands' suggestion system.",
+        valueType = ValueType.natural, readOnly = false, defaultValue = "1")]
     # Create a new database if not exists
     if not dbExists:
       if result.createAliasesDb == QuitFailure:
@@ -193,6 +196,12 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             capacity = 256, text = options[8].description),
             valueType = options[8].valueType, db = result, readOnly = (
             if options[8].readOnly: 1 else: 0))
+        setOption(optionName = initLimitedString(capacity = 40,
+            text = options[9].option), value = initLimitedString(capacity = 40,
+            text = options[9].value), description = initLimitedString(
+            capacity = 256, text = options[8].description),
+            valueType = options[9].valueType, db = result, readOnly = (
+            if options[9].readOnly: 1 else: 0))
       of 4:
         discard
       else:
