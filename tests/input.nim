@@ -14,9 +14,12 @@ suite "Unit tests for input module":
         text = "ls -ab --foo --bar=20 file.txt")
 
   test "Reading the user's input":
-    echo "exit"
-    check:
-      readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
+    when not defined(testInput):
+      skip()
+    else:
+      echo "exit"
+      check:
+        readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
 
   test "Reading a character from the user's input":
     checkpoint "Reading a lowercase character"
