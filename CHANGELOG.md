@@ -14,6 +14,7 @@ of the shell.
   mode
 - New command `.` to repeat the last command entered by the user
 - Support for Delete key in the user's input
+- Suggestions for commands when the user enters an unknown command
 
 ### Changed
 - Updated README.md
