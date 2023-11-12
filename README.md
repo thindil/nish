@@ -326,6 +326,9 @@ works only in `content` setting.
   invalid, separated colors for environment variables and commands' arguments
   which contains quotes or double quotes. Can be enabled or disabled in the
   shell's options.
+* Suggestions for commands when the user entered an unknown command. It is
+  possible to set the precision of the suggestions with the shell's option. The
+  feature can be disabled either.
 * Setting the terminal title, can be enabled or disabled in the shell's options.
 
 ### How to install
