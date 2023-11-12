@@ -561,8 +561,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           fillSuggestionsList(aliases = aliases, commands = commands)
           var start: Natural = 0
           while true:
-            let newCommand: string = suggestCommand(
-                invalidName = $commandName, start = start)
+            let newCommand: string = suggestCommand(invalidName = $commandName,
+                start = start, db = db)
             if newCommand.len == 0:
               break
             showOutput(message = "Command '" & cyan(ss = commandName) &

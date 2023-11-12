@@ -30,8 +30,9 @@
 import std/[editdistance, os, strutils, tables]
 # External modules imports
 import contracts
+import norm/sqlite
 # Internal imports
-import commandslist, constants
+import commandslist, constants, lstring, options
 
 var suggestions: seq[string] = @[]
   ## the list of all available commands to the user, used in the suggestions
@@ -64,14 +65,16 @@ proc fillSuggestionsList*(aliases: ref AliasesList;
         if fileName notin suggestions:
           suggestions.add(y = fileName)
 
-proc suggestCommand*(invalidName: string;
-    start: var Natural): string {.raises: [], tags: [], contractual.} =
+proc suggestCommand*(invalidName: string; start: var Natural;
+    db: DbConn): string {.raises: [], tags: [ReadDbEffect, WriteIOEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Get the command suggestion, based on Levenshtein distance algorithm
   ##
   ## * invalidName - the name of the invalid command for which the suggestion
   ##                 will be looked for
   ## * start       - the index for suggestions list from which start looking
   ##                 for the suggestion
+  ## * db          - the connection to the shell's database
   ##
   ## Returns the name of the suggested command and the modified parameter
   ## start. If no suggestion found, returns an empty string.
@@ -80,8 +83,17 @@ proc suggestCommand*(invalidName: string;
   body:
     if start >= suggestions.len:
       return ""
+    let distance: Natural =
+      try:
+        parseInt(s = $getOption(optionName = initLimitedString(capacity = 19,
+            text = "suggestionPrecision"), db = db))
+      except:
+        1
+    # The suggestion system is disabled, quit
+    if distance == 0:
+      return
     for i in start .. suggestions.high:
-      if editDistanceAscii(a = invalidName, b = suggestions[i]) == 1:
+      if editDistanceAscii(a = invalidName, b = suggestions[i]) == distance:
         start = i + 1
         return suggestions[i]
     return ""
