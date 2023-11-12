@@ -18,9 +18,6 @@ suite "Unit tests for nish module":
     showProgramVersion()
 
   test "Read the user's input":
-    if stdin == nil:
-      echo "NO INPUT"
-      return
     var
       iString = initLimitedString(capacity = 100, text = "")
       cName = "ls"
