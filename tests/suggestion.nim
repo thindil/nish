@@ -20,4 +20,4 @@ suite "Unit tests for aliases module":
   test "Get suggestion for a command":
     var start: Natural = 0
     check:
-      suggestCommand("la", start) == "ln"
+      suggestCommand("la", start, db) == "ln"
