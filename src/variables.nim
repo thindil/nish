@@ -44,7 +44,8 @@ const
     ## The list of available subcommands for command variable
 
 type
-  VariableName = LimitedString # Used to store variables names in the database.
+  VariableName = LimitedString
+    ## Used to store variables names in the database.
   Variable* {.tableName: "variables".} = ref object of Model
     ## Data structure for the shell's environment variable
     ##
