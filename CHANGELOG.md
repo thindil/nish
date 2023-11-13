@@ -34,6 +34,8 @@ of the shell.
 - Updated the shell's help entries
 - Look of various lists. Now they have more colors inside
 - Updated the shell's help system, with some text formatting options
+- Setting a terminal's title shows also the command's arguments not just the
+  command
 
 ### Fixed
 - Compiling the shell with Nim 2.0
