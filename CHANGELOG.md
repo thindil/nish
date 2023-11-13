@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 Tag **BREAKING** means the change break compatibility with a previous version
 of the shell.
 
-## [Unreleased]
+## [0.6.0] - 2023-11-13
 
 ### Added
 - New subcommand `variable show` to show details about the selected shell's
