@@ -29,7 +29,7 @@ Body:
 If you want to talk/propose changes in any existing the program feature or
 mechanic, feel free to contact me via options available at [contact page](https://www.laeran.pl/repositories/nish/wiki?name=Contact).
 General rule about propositions is same as for bugs reports - please,
-try to write that much information as possible. This help us all better
+try to write that much information as possible. This helps us all better
 understand purpose of your changes.
 
 ## Code propositions
