@@ -43,7 +43,7 @@ const
     ## The list of the shell's built-in commands
   maxInputLength*: Positive = 4096
     ## The maximum length of the user input
-  version*: string = "0.6.0"
+  version*: string = "0.7.0"
     ## The version of the shell
 
 type
