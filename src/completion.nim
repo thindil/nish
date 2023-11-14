@@ -30,11 +30,60 @@
 import std/[os, strutils, tables]
 # External modules imports
 import contracts
-import norm/sqlite
+import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, lstring, options, output
 
+type
+  CompletionType = enum
+    ## Used to set the type of commands' completion
+    dirs, files, dirsfiles, commands, custom, none
+
+  Completion* {.tableName: "completions".} = ref object of Model
+    ## Data structure for the shell's commands' completion
+    ##
+    ## * command - the command for which the completion is set
+    ## * cType   - the type of completion for the command
+    ## * values  - the proper values of completion if the completion's type is
+    ##             set to the custom type
+    command* {.unique.}: string
+    cType*: CompletionType
+    values*: string
+
 using db: DbConn # Connection to the shell's database
+
+proc dbType*(T: typedesc[CompletionType]): string {.raises: [], tags: [],
+    contractual.} =
+  ## Set the type of field in the database
+  ##
+  ## * T - the type for which the field will be set
+  ##
+  ## Returns the type of the field in the database
+  body:
+    "TEXT"
+
+proc dbValue*(val: CompletionType): DbValue {.raises: [], tags: [], contractual.} =
+  ## Convert the type of the option's value to database field
+  ##
+  ## * val - the value to convert
+  ##
+  ## Returns the converted val parameter
+  body:
+    dbValue(v = $val)
+
+proc to*(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
+    contractual.} =
+  ## Convert the value from the database to enumeration
+  ##
+  ## * dbVal - the value to convert
+  ## * T     - the type to which the value will be converted
+  ##
+  ## Returns the converted dbVal parameter
+  body:
+    try:
+      parseEnum[ValueType](s = dbVal.s)
+    except:
+      none
 
 proc getDirCompletion*(prefix: string; completions: var seq[string];
     db) {.sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect,
