@@ -32,8 +32,7 @@ import std/[os, strutils]
 import contracts
 import norm/sqlite
 # Internal imports
-import aliases, directorypath, help, history, logger, lstring, options, output,
-    plugins, resultcode, variables
+import aliases, completion, directorypath, help, history, logger, lstring, options, output, plugins, resultcode, variables
 
 proc closeDb*(returnCode: ResultCode; db: DbConn) {.sideEffect, raises: [],
     tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
@@ -80,9 +79,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException())
       return nil
-    let options: array[10, Option] = [newOption(name = "dbVersion", value = "4",
+    let options: array[10, Option] = [newOption(name = "dbVersion", value = "5",
         description = "Version of the database schema (read only).",
-        valueType = ValueType.natural, readOnly = true, defaultValue = "4"),
+        valueType = ValueType.natural, readOnly = true, defaultValue = "5"),
         newOption(name = "promptCommand", value = "built-in",
         description = "The command which output will be used as the prompt of shell.",
         valueType = ValueType.command, readOnly = false,
@@ -125,6 +124,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
       if result.createHelpDb == QuitFailure:
         return nil
+      if result.createCompletionDb == QuitFailure:
+        return nil
       try:
         for option in options:
           setOption(optionName = initLimitedString(capacity = 40,
@@ -155,6 +156,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.createHelpDb == QuitFailure:
           return nil
+        if result.createCompletionDb == QuitFailure:
+          return nil
         for option in options:
           setOption(optionName = initLimitedString(capacity = 40,
               text = option.option), value = initLimitedString(capacity = 40,
@@ -166,6 +169,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.updatePluginsDb == QuitFailure:
           return nil
         if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
+          return nil
+        if result.createCompletionDb == QuitFailure:
           return nil
         for i in options.low..options.high:
           if i == 1:
@@ -183,6 +188,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.updateHelpDb(dbVersion = dbVersion) == QuitFailure:
           return nil
         if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
+          return nil
+        if result.createCompletionDb == QuitFailure:
           return nil
         setOption(optionName = initLimitedString(capacity = 40,
             text = options[0].option), value = initLimitedString(capacity = 40,
@@ -203,6 +210,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
             valueType = options[9].valueType, db = result, readOnly = (
             if options[9].readOnly: 1 else: 0))
       of 4:
+        if result.createCompletionDb == QuitFailure:
+          return nil
+      of 5:
         discard
       else:
         showError(message = "Invalid version of database.")
