@@ -130,7 +130,7 @@ proc setVariables*(newDirectory: DirectoryPath; db;
     newDirectory.len > 0
     db != nil
   body:
-    var skipped: seq[int] = @[]
+    var skipped: seq[int64] = @[]
 
     # Remove the old environment variables if needed
     if oldDirectory.len > 0:
