@@ -32,7 +32,7 @@ import std/[os, strutils, tables]
 import contracts
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import commandslist, constants, lstring, options, output
+import commandslist, constants, lstring, options, output, resultcode
 
 type
   CompletionType = enum
@@ -62,7 +62,8 @@ proc dbType*(T: typedesc[CompletionType]): string {.raises: [], tags: [],
   body:
     "TEXT"
 
-proc dbValue*(val: CompletionType): DbValue {.raises: [], tags: [], contractual.} =
+proc dbValue*(val: CompletionType): DbValue {.raises: [], tags: [],
+    contractual.} =
   ## Convert the type of the option's value to database field
   ##
   ## * val - the value to convert
@@ -84,6 +85,19 @@ proc to*(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
       parseEnum[ValueType](s = dbVal.s)
     except:
       none
+
+proc newCompletion*(command: string = ""; cType: CompletionType = none;
+    values: string = ""): Completion {.raises: [], tags: [], contractual.} =
+  ## Create a new data structure for the shell's completion option.
+  ##
+  ## * command - the name of the command for which the completion is
+  ## * cType   - the type of the completion
+  ## * values  - the values for the completion if the completion's type is custom
+  ##
+  ## Returns the new data structure for the selected shell's commmand's
+  ## completion.
+  body:
+    Completion(command: command, cType: cType, values: values)
 
 proc getDirCompletion*(prefix: string; completions: var seq[string];
     db) {.sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect,
@@ -198,4 +212,22 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
             completions.add(y = fileName)
     except OSError:
       return
+
+proc createCompletionsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
+  ## Create the table completions
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  require:
+    db != nil
+  body:
+    try:
+      db.createTables(obj = newCompletion())
+    except:
+      return showError(message = "Can't create 'variables' table. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
 
