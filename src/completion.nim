@@ -48,7 +48,7 @@ type
     ##             set to the custom type
     command* {.unique.}: string
     cType*: CompletionType
-    values*: string
+    cValues*: string
 
 using db: DbConn # Connection to the shell's database
 
@@ -82,22 +82,22 @@ proc to*(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
   ## Returns the converted dbVal parameter
   body:
     try:
-      parseEnum[ValueType](s = dbVal.s)
+      parseEnum[CompletionType](s = dbVal.s)
     except:
       none
 
 proc newCompletion*(command: string = ""; cType: CompletionType = none;
-    values: string = ""): Completion {.raises: [], tags: [], contractual.} =
+    cValues: string = ""): Completion {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's completion option.
   ##
   ## * command - the name of the command for which the completion is
   ## * cType   - the type of the completion
-  ## * values  - the values for the completion if the completion's type is custom
+  ## * cValues - the values for the completion if the completion's type is custom
   ##
   ## Returns the new data structure for the selected shell's commmand's
   ## completion.
   body:
-    Completion(command: command, cType: cType, values: values)
+    Completion(command: command, cType: cType, cValues: cValues)
 
 proc getDirCompletion*(prefix: string; completions: var seq[string];
     db) {.sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect,
@@ -213,7 +213,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
     except OSError:
       return
 
-proc createCompletionsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
+proc createCompletionDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Create the table completions
   ##
@@ -227,7 +227,7 @@ proc createCompletionsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     try:
       db.createTables(obj = newCompletion())
     except:
-      return showError(message = "Can't create 'variables' table. Reason: ",
+      return showError(message = "Can't create 'completions' table. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
