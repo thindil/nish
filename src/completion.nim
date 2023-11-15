@@ -50,6 +50,9 @@ type
     cType*: CompletionType
     cValues*: string
 
+const completionCommands*: array[5, string] = ["list", "delete", "show", "add", "edit"]
+  ## The list of available subcommands for command completion
+
 using db: DbConn # Connection to the shell's database
 
 proc dbType*(T: typedesc[CompletionType]): string {.raises: [], tags: [],
@@ -231,3 +234,63 @@ proc createCompletionDb*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
+proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
+    tags: [WriteIOEffect, RootEffect], contractual.} =
+  ## Initialize the shell's completion system. Set help related to the
+  ## completion
+  ##
+  ## * db       - the connection to the shell's database
+  ## * commands - the list of the shell's commands
+  ##
+  ## Returns the updated list of the shell's commands.
+  require:
+    db != nil
+  body:
+    # Add commands related to the shell's completion's system
+    proc completionCommand(arguments: UserInput; db;
+        list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
+        WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
+        RootEffect], contractual.} =
+      ## The code of the shell's command "alias" and its subcommands
+      ##
+      ## * arguments - the arguments entered by the user for the command
+      ## * db        - the connection to the shell's database
+      ## * list      - the additional data for the command, like id of alias, etc
+      ##
+      ## Returns QuitSuccess if the selected command was successfully executed,
+      ## otherwise QuitFailure.
+      body:
+        return QuitSuccess.ResultCode
+        # No subcommand entered, show available options
+      #        if arguments.len == 0:
+      #          return showHelpList(command = "completion",
+      #              subcommands = aliasesCommands)
+      #        # Show the list of available aliases
+      #        if arguments.startsWith(prefix = "list"):
+      #          return listCompletion(arguments = arguments, aliases = aliases, db = db)
+      #        # Delete the selected alias
+      #        if arguments.startsWith(prefix = "delete"):
+      #          return deleteCompletion(arguments = arguments, aliases = aliases, db = db)
+      #        # Show the selected alias
+      #        if arguments.startsWith(prefix = "show"):
+      #          return showCompletion(arguments = arguments, db = db)
+      #        # Add a new alias
+      #        if arguments.startsWith(prefix = "add"):
+      #          return addCompletion(aliases = aliases, db = db)
+      #        # Edit the selected alias
+      #        if arguments.startsWith(prefix = "edit"):
+      #          return editCompletion(arguments = arguments, aliases = aliases, db = db)
+      #        try:
+      #          return showUnknownHelp(subCommand = arguments,
+      #              command = initLimitedString(capacity = 10, text = "completion"),
+      #                  helpType = initLimitedString(capacity = 7,
+      #                      text = "aliases"))
+      #        except CapacityError:
+      #          return QuitFailure.ResultCode
+
+    try:
+      addCommand(name = initLimitedString(capacity = 10, text = "completion"),
+          command = completionCommand, commands = commands)
+    except CapacityError, CommandsListError:
+      showError(message = "Can't add commands related to the shell's completion system. Reason: ",
+          e = getCurrentException())
