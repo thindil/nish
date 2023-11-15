@@ -469,6 +469,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     # Set the shell's help
     initHelp(db = db, commands = commands)
 
+    # Initialize the shell's commands' completion system
+    initCompletion(db = db, commands = commands)
+
     # Initialize the shell's plugins system
     initPlugins(db = db, commands = commands)
 

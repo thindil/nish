@@ -32,7 +32,7 @@ import std/[os, strutils, tables]
 import contracts
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import commandslist, constants, lstring, options, output, resultcode
+import commandslist, constants, help, lstring, options, output, resultcode
 
 type
   CompletionType = enum
@@ -50,7 +50,8 @@ type
     cType*: CompletionType
     cValues*: string
 
-const completionCommands*: array[5, string] = ["list", "delete", "show", "add", "edit"]
+const completionCommands*: array[7, string] = ["list", "delete", "show", "add",
+    "edit", "import", "export"]
   ## The list of available subcommands for command completion
 
 using db: DbConn # Connection to the shell's database
@@ -260,33 +261,32 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
       ## Returns QuitSuccess if the selected command was successfully executed,
       ## otherwise QuitFailure.
       body:
-        return QuitSuccess.ResultCode
         # No subcommand entered, show available options
-      #        if arguments.len == 0:
-      #          return showHelpList(command = "completion",
-      #              subcommands = aliasesCommands)
-      #        # Show the list of available aliases
+        if arguments.len == 0:
+          return showHelpList(command = "completion",
+              subcommands = completionCommands)
+      #        # Show the list of available completions
       #        if arguments.startsWith(prefix = "list"):
       #          return listCompletion(arguments = arguments, aliases = aliases, db = db)
-      #        # Delete the selected alias
+      #        # Delete the selected completion
       #        if arguments.startsWith(prefix = "delete"):
       #          return deleteCompletion(arguments = arguments, aliases = aliases, db = db)
-      #        # Show the selected alias
+      #        # Show the selected completion
       #        if arguments.startsWith(prefix = "show"):
       #          return showCompletion(arguments = arguments, db = db)
-      #        # Add a new alias
+      #        # Add a new completion
       #        if arguments.startsWith(prefix = "add"):
       #          return addCompletion(aliases = aliases, db = db)
-      #        # Edit the selected alias
+      #        # Edit the selected completion
       #        if arguments.startsWith(prefix = "edit"):
       #          return editCompletion(arguments = arguments, aliases = aliases, db = db)
-      #        try:
-      #          return showUnknownHelp(subCommand = arguments,
-      #              command = initLimitedString(capacity = 10, text = "completion"),
-      #                  helpType = initLimitedString(capacity = 7,
-      #                      text = "aliases"))
-      #        except CapacityError:
-      #          return QuitFailure.ResultCode
+        try:
+          return showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 10, text = "completion"),
+                  helpType = initLimitedString(capacity = 11,
+                      text = "completions"))
+        except CapacityError:
+          return QuitFailure.ResultCode
 
     try:
       addCommand(name = initLimitedString(capacity = 10, text = "completion"),
