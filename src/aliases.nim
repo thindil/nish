@@ -702,14 +702,12 @@ proc initAliases*(db; aliases: ref AliasesList;
   ## Initialize the shell's aliases. Set help related to the aliases and
   ## load aliases available in the current directory
   ##
-  ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
   ## * aliases     - the list of aliases available in the current directory
   ## * commands    - the list of the shell's commands
   ##
-  ## Returns the updated list of available aliases in the current directory,
-  ## the updated helpContent with the help for the commands related to the
-  ## shell's aliases and the updated list of the shell's commands.
+  ## Returns the updated list of available aliases in the current directory
+  ## and the updated list of the shell's commands.
   require:
     db != nil
   body:
