@@ -248,7 +248,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     db != nil
   body:
     showOutput(message = "You can cancel adding a new completion at any time by double press Escape key or enter word 'exit' as an answer.")
-    # Set the name for the alias
+    # Set the command for the completion
     showFormHeader(message = "(1/2 or 3) Command", db = db)
     showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. For example: 'ls'. Can't be empty:")
     showOutput(message = "Command: ", newLine = false)
@@ -261,93 +261,58 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         showOutput(message = "Command: ", newLine = false)
     if command == "exit":
       return showError(message = "Adding a new completion cancelled.")
-    # Set the description for the alias
+    # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
     showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. Possible values are: ")
     showOutput(message = "d) Directories only")
+    showOutput(message = "f) Files only")
+    showOutput(message = "a) Directories and files")
+    showOutput(message = "c) Commands")
+    showOutput(message = "u) Custom")
+    showOutput(message = "n) Completion for the selected command should be disabled")
+    showOutput(message = "q) Stop adding the completion")
     showOutput(message = "Description: ", newLine = false)
-    let description: UserInput = readInput()
-    if description == "exit":
+    showOutput(message = "Type(d/f/a/c/u/N/q): ", newLine = false)
+    var typeChar: char = try:
+        getch()
+      except IOError:
+        'n'
+    while typeChar.toLowerAscii notin {'d', 'f', 'a', 'c', 'u', 'n', 'q'}:
+      typeChar = try:
+        getch()
+      except IOError:
+        'n'
+    if typeChar == 'q':
       return showError(message = "Adding a new completion cancelled.")
-#    # Set the working directory for the alias
-#    showFormHeader(message = "(3/6) Working directory", db = db)
-#    showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
-#    showOutput(message = "Path: ", newLine = false)
-#    var path: DirectoryPath = "".DirectoryPath
-#    while path.len == 0:
-#      path = ($readInput()).DirectoryPath
-#      if path.len == 0:
-#        showError(message = "Please enter a path for the alias.")
-#      elif not dirExists(dir = $path) and path != "exit":
-#        path = "".DirectoryPath
-#        showError(message = "Please enter a path to the existing directory")
-#      if path.len == 0:
-#        showOutput(message = "Path: ", newLine = false)
-#    if path == "exit":
-#      return showError(message = "Adding a new alias cancelled.")
-#    # Set the recursiveness for the alias
-#    showFormHeader(message = "(4/6) Recursiveness", db = db)
-#    showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
-#    showOutput(message = "Recursive(y/n): ", newLine = false)
-#    var inputChar: char = try:
-#        getch()
-#      except IOError:
-#        'y'
-#    while inputChar notin {'n', 'N', 'y', 'Y'}:
-#      inputChar = try:
-#        getch()
-#      except IOError:
-#        'y'
-#    showOutput(message = $inputChar)
-#    let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
-#    # Set the commands to execute for the alias
-#    showFormHeader(message = "(5/6) Commands", db = db)
-#    showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
-#    showOutput(message = "Command(s): ", newLine = false)
-#    var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
-#    while commands.len == 0:
-#      commands = readInput()
-#      if commands.len == 0:
-#        showError(message = "Please enter commands for the alias.")
-#        showOutput(message = "Command(s): ", newLine = false)
-#    if commands == "exit":
-#      return showError(message = "Adding a new alias cancelled.")
-#    # Set the destination for the alias' output
-#    showFormHeader(message = "(6/6) Output", db = db)
-#    showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.:")
-#    showOutput(message = "Output to: ", newLine = false)
-#    var output: UserInput = readInput()
-#    if output == "exit":
-#      return showError(message = "Adding a new alias cancelled.")
-#    elif output == "":
-#      try:
-#        output.text = "stdout"
-#      except CapacityError:
-#        return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
-#    var alias: Alias = newAlias(name = $name, path = $path,
-#        recursive = recursive == 1, commands = $commands,
-#        description = $description, output = $output)
-#    # Check if alias with the same parameters exists in the database
-#    try:
-#      if db.exists(T = Alias, cond = "name=?", params = alias.name):
-#        return showError(message = "There is an alias with the same name in the database.")
-#    except:
-#      return showError(message = "Can't check if the similar alias exists. Reason: ",
-#          e = getCurrentException())
-#    # Save the alias to the database
-#    try:
-#      db.insert(obj = alias)
-#    except:
-#      return showError(message = "Can't add the alias to the database. Reason: ",
-#          e = getCurrentException())
-#    # Refresh the list of available aliases
-#    try:
-#      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
-#    except OSError:
-#      return showError(message = "Can't set aliases for the current directory. Reason: ",
-#          e = getCurrentException())
-    showOutput(message = "The new completion for the command '" & command & "' added.",
-        fgColor = fgGreen)
+    var values: UserInput = emptyLimitedString(capacity = maxInputLength)
+    # Set the values for the completion if the user selected custom type of completion
+    if typeChar == 'c':
+      showFormHeader(message = "(3/3) Values", db = db)
+      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. Can't be empty.:")
+      showOutput(message = "Value(s): ", newLine = false)
+      while values.len == 0:
+        values = readInput()
+        if values.len == 0:
+          showError(message = "Please enter values for the completion.")
+          showOutput(message = "Value(s): ", newLine = false)
+      if values == "exit":
+        return showError(message = "Adding a new completion cancelled.")
+    var completion: Completion = newCompletion(command = $command)
+    # Check if alias with the same parameters exists in the database
+    try:
+      if db.exists(T = Completion, cond = "command=?", params = completion.command):
+        return showError(message = "There is a completion for the same command in the database.")
+    except:
+      return showError(message = "Can't check if the similar completion exists. Reason: ",
+          e = getCurrentException())
+    # Save the alias to the database
+    try:
+      db.insert(obj = completion)
+    except:
+      return showError(message = "Can't add the completion to the database. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "The new completion for the command '" & command &
+        "' added.", fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
@@ -380,7 +345,7 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         if arguments.len == 0:
           return showHelpList(command = "completion",
               subcommands = completionCommands)
-           # Add a new completion
+            # Add a new completion
         if arguments.startsWith(prefix = "add"):
           return addCompletion(db = db)
       #        # Show the list of available completions
