@@ -216,7 +216,7 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
   ## * db        - the connection to the shell's database
   ##
   ## Returns QuitSuccess if the selected alias was properly deleted, otherwise
-  ## QuitFailure. Also, updated paramete aliases
+  ## QuitFailure. Also, updated parameter aliases
   require:
     arguments.len > 5
     arguments.startsWith(prefix = "delete")
@@ -565,7 +565,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException())
-    showOutput(message = "The alias  with Id: '" & $id & "' edited.",
+    showOutput(message = "The alias with Id: '" & $id & "' edited.",
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
