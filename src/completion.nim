@@ -32,12 +32,12 @@ import std/[os, strutils, tables, terminal]
 import contracts
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import commandslist, constants, help, input, lstring, options, output, resultcode
+import commandslist, constants, databaseid, help, input, lstring, options, output, resultcode
 
 type
   CompletionType = enum
     ## Used to set the type of commands' completion
-    dirs, files, dirsfiles, commands, custom, none
+    dirs = "Directories only", files = "Files only", dirsfiles = "Directories and files", commands = "Commands", custom = "Custom", none = "Completion for the selected command should be disabled"
 
   Completion* {.tableName: "completions".} = ref object of Model
     ## Data structure for the shell's commands' completion
@@ -54,7 +54,9 @@ const completionCommands*: array[7, string] = ["list", "delete", "show", "add",
     "edit", "import", "export"]
   ## The list of available subcommands for command completion
 
-using db: DbConn # Connection to the shell's database
+using
+  db: DbConn # Connection to the shell's database
+  arguments: UserInput # The string with arguments entered by the user for the command
 
 proc dbType*(T: typedesc[CompletionType]): string {.raises: [], tags: [],
     contractual.} =
@@ -264,12 +266,12 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
     showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ")
-    showOutput(message = "d) Directories only")
-    showOutput(message = "f) Files only")
-    showOutput(message = "a) Directories and files")
-    showOutput(message = "c) Commands")
-    showOutput(message = "u) Custom")
-    showOutput(message = "n) Completion for the selected command should be disabled")
+    showOutput(message = "d) " & $dirs)
+    showOutput(message = "f) " & $files)
+    showOutput(message = "a) " & $dirsfiles)
+    showOutput(message = "c) " & $commands)
+    showOutput(message = "u) " & $custom)
+    showOutput(message = "n) " & $CompletionType.none)
     showOutput(message = "q) Stop adding the completion")
     showOutput(message = "Type (d/f/a/c/u/n/q): ")
     var typeChar: char = try:
@@ -328,6 +330,130 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         "' added.", fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
+proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+    tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+  ## Edit the selected alias
+  ##
+  ## * arguments - the user entered text with arguments for the editing alias
+  ## * aliases   - the list of aliases available in the current directory
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if the alias was properly edited, otherwise
+  ## QuitFailure. Also, updated parameter aliases.
+  require:
+    arguments.len > 3
+    db != nil
+  body:
+    var
+      completion: Completion = newCompletion()
+      id: DatabaseId = 0.DatabaseId
+    if arguments.len < 6:
+      return showError(message = "Enter the ID of the completion to edit.")
+    try:
+      id = parseInt(s = $arguments[5 .. ^1]).DatabaseId
+    except ValueError:
+      return showError(message = "The Id of the completion must be a positive number.")
+    try:
+      db.select(obj = completion, cond = "id=?", params = $id)
+    except:
+      return showError(message = "Can't check if the completion exists.")
+    if completion.command.len == 0:
+      return showError(message = "The completion with the Id: " & $id &
+        " doesn't exists.")
+    showOutput(message = "You can cancel editing the completion at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
+    # Set the command for the completion
+    showFormHeader(message = "(1/2 or 3) Command", db = db)
+    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. Current value: '", newLine = false)
+    showOutput(message = completion.command, newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'.")
+    showOutput(message = "Command: ", newLine = false)
+    var command: LimitedString = readInput(maxLength = maxInputLength)
+    if command == "exit":
+      return showError(message = "Editing the completion cancelled.")
+    elif command == "":
+      try:
+        command.text = completion.command
+      except CapacityError:
+        return showError(message = "Editing the completion cancelled. Reason: Can't set command for the completion")
+    # Set the type for the completion
+    showFormHeader(message = "(2/2 or 3) Type", db = db)
+    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '")
+    showOutput(message = $completion.cType, newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Possible values are:")
+    showOutput(message = "d) " & $dirs)
+    showOutput(message = "f) " & $files)
+    showOutput(message = "a) " & $dirsfiles)
+    showOutput(message = "c) " & $commands)
+    showOutput(message = "u) " & $custom)
+    showOutput(message = "n) " & $CompletionType.none)
+    showOutput(message = "q) Stop adding the completion")
+    showOutput(message = "Type (d/f/a/c/u/n/q): ")
+    var inputChar: char = try:
+        getch()
+      except IOError:
+        'n'
+    while inputChar.toLowerAscii notin {'d', 'f', 'a', 'c', 'u', 'n', 'q'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'n'
+    let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+    try:
+      stdout.writeLine(x = "")
+    except IOError:
+      discard
+    # Set the commands to execute for the alias
+    showFormHeader(message = "(5/6) Commands", db = db)
+    showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
+        newLine = false)
+    showOutput(message = alias.commands, newLine = false, fgColor = fgMagenta)
+    showOutput(message = "'. Commands can't contain a new line character.:")
+    showOutput(message = "Commands: ", newLine = false)
+    var commands: UserInput = readInput()
+    if commands == "exit":
+      return showError(message = "Editing the alias cancelled.")
+    elif commands == "":
+      try:
+        commands.text = alias.commands
+      except CapacityError:
+        return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
+    # Set the destination for the alias' output
+    showFormHeader(message = "(6/6) Output", db = db)
+    showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
+        newLine = false)
+    showOutput(message = alias.output, newLine = false, fgColor = fgMagenta)
+    showOutput(message = "':")
+    showOutput(message = "Output to: ", newLine = false)
+    var output: UserInput = readInput()
+    if output == "exit":
+      return showError(message = "Editing the alias cancelled.")
+    elif output == "":
+      try:
+        output.text = alias.output
+      except CapacityError:
+        return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
+    # Save the alias to the database
+    try:
+      alias.name = $name
+      alias.path = $path
+      alias.recursive = recursive == 1
+      alias.commands = $commands
+      alias.description = $description
+      alias.output = $output
+      db.update(obj = alias)
+    except:
+      return showError(message = "Can't update the alias. Reason: ",
+          e = getCurrentException())
+    # Refresh the list of available aliases
+    try:
+      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
+    except OSError:
+      return showError(message = "Can't set aliases for the current directory. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "The alias  with Id: '" & $id & "' edited.",
+        fgColor = fgGreen)
+    return QuitSuccess.ResultCode
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Initialize the shell's completion system. Set help related to the
@@ -358,9 +484,12 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         if arguments.len == 0:
           return showHelpList(command = "completion",
               subcommands = completionCommands)
-            # Add a new completion
+        # Add a new completion
         if arguments.startsWith(prefix = "add"):
           return addCompletion(db = db)
+        # Edit the selected completion
+        if arguments.startsWith(prefix = "edit"):
+          return editCompletion(arguments = arguments, db = db)
       #        # Show the list of available completions
       #        if arguments.startsWith(prefix = "list"):
       #          return listCompletion(arguments = arguments, aliases = aliases, db = db)
@@ -370,9 +499,6 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
       #        # Show the selected completion
       #        if arguments.startsWith(prefix = "show"):
       #          return showCompletion(arguments = arguments, db = db)
-      #        # Edit the selected completion
-      #        if arguments.startsWith(prefix = "edit"):
-      #          return editCompletion(arguments = arguments, aliases = aliases, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 10, text = "completion"),
