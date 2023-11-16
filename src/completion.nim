@@ -384,7 +384,8 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Editing the completion cancelled. Reason: Can't set command for the completion")
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
-    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '")
+    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '",
+        newLine = false)
     showOutput(message = $completion.cType, newLine = false,
         fgColor = fgMagenta)
     showOutput(message = "'. Possible values are:")
@@ -426,7 +427,8 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     # Set the values for the completion if the user selected custom type of completion
     if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
-      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. The current value is: '")
+      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. The current value is: '",
+          newLine = false)
       showOutput(message = completion.cValues, newLine = false,
           fgColor = fgMagenta)
       showOutput(message = "'.")
