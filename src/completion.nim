@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[os, strutils, tables, terminal]
 # External modules imports
-import contracts
+import contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, help, input, lstring, options,
@@ -304,18 +304,18 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Adding a new completion cancelled.")
     var completion: Completion = newCompletion(command = $command, cType = (
         case typeChar.toLowerAscii
-          of 'd':
-            dirs
-          of 'f':
-            files
-          of 'a':
-            dirsfiles
-          of 'c':
-            commands
-          of 'u':
-            custom
-          else:
-            none), cValues = $values)
+        of 'd':
+          dirs
+        of 'f':
+          files
+        of 'a':
+          dirsfiles
+        of 'c':
+          commands
+        of 'u':
+          custom
+        else:
+          none), cValues = $values)
     # Check if completion with the same parameters exists in the database
     try:
       if db.exists(T = Completion, cond = "command=?",
@@ -453,6 +453,55 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
+proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+  ## List all available commands' completions.
+  ##
+  ## * arguments - the user entered text with arguments for showing completions
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if the list of completion was shown, otherwise QuitFailure
+  require:
+    arguments.len > 3
+    arguments.startsWith(prefix = "list")
+    db != nil
+  body:
+    var table: TerminalTable = TerminalTable()
+    try:
+      table.add(parts = [magenta(ss = "ID"), magenta(ss = "Command"), magenta(
+          ss = "Type")])
+    except:
+      return showError(message = "Can't show commands list. Reason: ",
+          e = getCurrentException())
+    var dbCompletions: seq[Completion] = @[newCompletion()]
+    try:
+      db.selectAll(objs = dbCompletions)
+    except:
+      return showError(message = "Can't read info about alias from database. Reason:",
+          e = getCurrentException())
+    if dbCompletions.len == 0:
+      showOutput(message = "There are no defined commands' completions.")
+      return QuitSuccess.ResultCode
+    try:
+      for dbResult in dbCompletions:
+        table.add(parts = [yellow(ss = dbResult.id), green(
+            ss = dbResult.command), $dbResult.cType])
+    except:
+      return showError(message = "Can't add a completion to the list. Reason:",
+          e = getCurrentException())
+    try:
+      var width: int = 0
+      for size in table.getColumnSizes(maxSize = int.high):
+        width = width + size + 2
+      showFormHeader(message = "Available completions are:",
+          width = width.ColumnAmount, db = db)
+      table.echoTable
+    except:
+      return showError(message = "Can't show the list of aliases. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
+
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Initialize the shell's completion system. Set help related to the
@@ -489,9 +538,9 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         # Edit the selected completion
         if arguments.startsWith(prefix = "edit"):
           return editCompletion(arguments = arguments, db = db)
-      #        # Show the list of available completions
-      #        if arguments.startsWith(prefix = "list"):
-      #          return listCompletion(arguments = arguments, aliases = aliases, db = db)
+        # Show the list of available completions
+        if arguments.startsWith(prefix = "list"):
+          return listCompletion(arguments = arguments, db = db)
       #        # Delete the selected completion
       #        if arguments.startsWith(prefix = "delete"):
       #          return deleteCompletion(arguments = arguments, aliases = aliases, db = db)
