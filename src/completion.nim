@@ -263,7 +263,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Adding a new completion cancelled.")
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
-    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. Possible values are: ")
+    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ")
     showOutput(message = "d) Directories only")
     showOutput(message = "f) Files only")
     showOutput(message = "a) Directories and files")
@@ -271,8 +271,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "u) Custom")
     showOutput(message = "n) Completion for the selected command should be disabled")
     showOutput(message = "q) Stop adding the completion")
-    showOutput(message = "Description: ", newLine = false)
-    showOutput(message = "Type(d/f/a/c/u/N/q): ", newLine = false)
+    showOutput(message = "Type (d/f/a/c/u/n/q): ")
     var typeChar: char = try:
         getch()
       except IOError:
@@ -286,7 +285,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Adding a new completion cancelled.")
     var values: UserInput = emptyLimitedString(capacity = maxInputLength)
     # Set the values for the completion if the user selected custom type of completion
-    if typeChar == 'c':
+    if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
       showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. Can't be empty.:")
       showOutput(message = "Value(s): ", newLine = false)
@@ -297,15 +296,29 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
           showOutput(message = "Value(s): ", newLine = false)
       if values == "exit":
         return showError(message = "Adding a new completion cancelled.")
-    var completion: Completion = newCompletion(command = $command)
-    # Check if alias with the same parameters exists in the database
+    var completion: Completion = newCompletion(command = $command, cType = (
+        case typeChar.toLowerAscii
+          of 'd':
+            dirs
+          of 'f':
+            files
+          of 'a':
+            dirsfiles
+          of 'c':
+            commands
+          of 'u':
+            custom
+          else:
+            none), cValues = $values)
+    # Check if completion with the same parameters exists in the database
     try:
-      if db.exists(T = Completion, cond = "command=?", params = completion.command):
+      if db.exists(T = Completion, cond = "command=?",
+          params = completion.command):
         return showError(message = "There is a completion for the same command in the database.")
     except:
       return showError(message = "Can't check if the similar completion exists. Reason: ",
           e = getCurrentException())
-    # Save the alias to the database
+    # Save the completion to the database
     try:
       db.insert(obj = completion)
     except:
