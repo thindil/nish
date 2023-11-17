@@ -8,6 +8,7 @@ of the shell.
 
 ### Fixed
 - Cross-compiling the shell for Arm
+- Typo in the editing alias message
 
 ## [0.6.0] - 2023-11-13
 
