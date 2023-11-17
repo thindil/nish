@@ -638,6 +638,52 @@ proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         " to file: " & $fileName, fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
+proc importCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+        ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
+  ## Import a completion from the text file
+  ##
+  ## * arguments - the user entered text with arguments for exporting the completion
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns quitSuccess if the selected completion was properly imported to the
+  ## shell, otherwise QuitFailure.
+  require:
+    arguments.len > 5
+    arguments.startsWith(prefix = "import")
+    db != nil
+  body:
+    if arguments.len < 7:
+      return showError(message = "Enter the name of the file with the completion.")
+    let fileName: string = $arguments[7 .. ^1]
+    try:
+      var dict: Config = loadConfig(filename = fileName)
+ #     try:
+ #       if db.exists(T = Completion, cond = "command=?", params = $id):
+ #         return showError(message = "The completion for the command: " & $id &
+ #           " exists.")
+ #     except:
+ #       return showError(message = "Can't check completion in database. Reason: ",
+ #           e = getCurrentException())
+ #     var completion: Completion = newCompletion()
+ #     try:
+ #       dict.setSectionKey(section = "", key = "Command",
+ #           value = completion.command)
+ #       dict.setSectionKey(section = "", key = "Type", value = $completion.cType)
+ #       if completion.cValues.len > 0:
+ #         dict.setSectionKey(section = "", key = "Values",
+ #             value = completion.cValues)
+ #       dict.writeConfig(filename = fileName)
+ #     except:
+ #       return showError(message = "Can't create the completion export file. Reason: ",
+ #           e = getCurrentException())
+    except:
+      return showError(message = "Can't import the completion from the file. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "Imported the completion from file : " & fileName, fgColor = fgGreen)
+    return QuitSuccess.ResultCode
+
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Initialize the shell's completion system. Set help related to the
@@ -683,7 +729,9 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         # Show the selected completion
         if arguments.startsWith(prefix = "show"):
           return showCompletion(arguments = arguments, db = db)
-        # TODO: import command
+        # Import a completion from the file
+        if arguments.startsWith(prefix = "import"):
+          return importCompletion(arguments = arguments, db = db)
         # Export the selected completion to the file
         if arguments.startsWith(prefix = "export"):
           return exportCompletion(arguments = arguments, db = db)
