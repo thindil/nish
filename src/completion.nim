@@ -27,7 +27,7 @@
 ## input, like completing names of files, directories, commands, etc.
 
 # Standard library imports
-import std/[os, strutils, tables, terminal]
+import std/[os, parsecfg, strutils, tables, terminal]
 # External modules imports
 import contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -584,6 +584,43 @@ proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [], tags: 
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
+proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
+  ## Export the selected completion, to the text file
+  ##
+  ## * arguments - the user entered text with arguments for exporting the completion
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns quitSuccess if the selected completion was properly exported to the
+  ## file, otherwise QuitFailure.
+  require:
+    arguments.len > 5
+    arguments.startsWith(prefix = "export")
+    db != nil
+  body:
+    if arguments.len < 7:
+      return showError(message = "Enter the ID of the completion to export and the name of the file where it will be saved.")
+    let args = split(s = $arguments, sep = ' ')
+    if args.len < 3:
+      return showError(message = "Enter the ID of the completion to export and the name of the file where it will be saved.")
+    let
+      id: DatabaseId = try:
+          args[1].parseInt.DatabaseId
+        except:
+          return showError(message = "The Id of the completion must be a positive number.")
+      fileName: string = args[2 .. ^1].join(sep = " ")
+    var completion: Completion = newCompletion()
+    try:
+      if not db.exists(T = Completion, cond = "id=?", params = $id):
+        return showError(message = "The completion with the ID: " & $id &
+          " doesn't exists.")
+      db.select(obj = completion, cond = "id=?", params = $id)
+    except:
+      return showError(message = "Can't read completion data from database. Reason: ",
+          e = getCurrentException())
+    var dict: Config = newConfig()
+
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Initialize the shell's completion system. Set help related to the
@@ -630,7 +667,9 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         if arguments.startsWith(prefix = "show"):
           return showCompletion(arguments = arguments, db = db)
         # TODO: import command
-        # TODO: export command
+        # Export the selected completion to the file
+        if arguments.startsWith(prefix = "export"):
+          return exportCompletion(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 10, text = "completion"),
