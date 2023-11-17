@@ -537,11 +537,13 @@ proc deleteCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     except:
       return showError(message = "Can't delete completion from database. Reason: ",
           e = getCurrentException())
-    showOutput(message = "Deleted the completion with Id: " & $id, fgColor = fgGreen)
+    showOutput(message = "Deleted the completion with Id: " & $id,
+        fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
-proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+        ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Show details about the selected completion, its ID, command, type and
   ## values if the type is custon
@@ -584,8 +586,9 @@ proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [], tags: 
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+        ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Export the selected completion, to the text file
   ##
@@ -620,6 +623,20 @@ proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [], tags
       return showError(message = "Can't read completion data from database. Reason: ",
           e = getCurrentException())
     var dict: Config = newConfig()
+    try:
+      dict.setSectionKey(section = "", key = "Command",
+          value = completion.command)
+      dict.setSectionKey(section = "", key = "Type", value = $completion.cType)
+      if completion.cValues.len > 0:
+        dict.setSectionKey(section = "", key = "Values",
+            value = completion.cValues)
+      dict.writeConfig(filename = fileName)
+    except:
+      return showError(message = "Can't create the completion export file. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "Exported the completion with Id: " & $id &
+        " to file: " & $fileName, fgColor = fgGreen)
+    return QuitSuccess.ResultCode
 
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
