@@ -502,6 +502,44 @@ proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
+proc deleteCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+  ## Delete the selected completion from the shell's database
+  ##
+  ## * arguments - the user entered text with arguments for the deleting completion
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if the selected completion was properly deleted, otherwise
+  ## QuitFailure.
+  require:
+    arguments.len > 5
+    arguments.startsWith(prefix = "delete")
+    db != nil
+  body:
+    if arguments.len < 8:
+      return showError(message = "Enter the Id of the completion to delete.")
+    let id: DatabaseId = try:
+        parseInt(s = $arguments[7 .. ^1]).DatabaseId
+      except ValueError:
+        return showError(message = "The Id of the completion must be a positive number.")
+    try:
+      if not db.exists(T = Completion, cond = "id=?", params = $id):
+        return showError(message = "The completion with the Id: " & $id &
+          " doesn't exists.")
+    except:
+      return showError(message = "Can't find the completion in database. Reason: ",
+          e = getCurrentException())
+    try:
+      var completion: Completion = newCompletion()
+      db.select(obj = completion, cond = "id=?", params = $id)
+      db.delete(obj = completion)
+    except:
+      return showError(message = "Can't delete completion from database. Reason: ",
+          e = getCurrentException())
+    showOutput(message = "Deleted the completion with Id: " & $id, fgColor = fgGreen)
+    return QuitSuccess.ResultCode
+
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Initialize the shell's completion system. Set help related to the
@@ -541,12 +579,14 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         # Show the list of available completions
         if arguments.startsWith(prefix = "list"):
           return listCompletion(arguments = arguments, db = db)
-      #        # Delete the selected completion
-      #        if arguments.startsWith(prefix = "delete"):
-      #          return deleteCompletion(arguments = arguments, aliases = aliases, db = db)
-      #        # Show the selected completion
-      #        if arguments.startsWith(prefix = "show"):
-      #          return showCompletion(arguments = arguments, db = db)
+        # Delete the selected completion
+        if arguments.startsWith(prefix = "delete"):
+          return deleteCompletion(arguments = arguments, db = db)
+      #  # Show the selected completion
+      #  if arguments.startsWith(prefix = "show"):
+      #    return showCompletion(arguments = arguments, db = db)
+        # TODO: import command
+        # TODO: export command
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 10, text = "completion"),
