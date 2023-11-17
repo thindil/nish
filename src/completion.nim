@@ -540,6 +540,50 @@ proc deleteCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Deleted the completion with Id: " & $id, fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
+proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
+    TimeEffect, RootEffect], contractual.} =
+  ## Show details about the selected completion, its ID, command, type and
+  ## values if the type is custon
+  ##
+  ## * arguments - the user entered text with arguments for the showing completion
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns quitSuccess if the selected completion was properly show, otherwise
+  ## QuitFailure.
+  require:
+    arguments.len > 3
+    arguments.startsWith(prefix = "show")
+    db != nil
+  body:
+    if arguments.len < 6:
+      return showError(message = "Enter the ID of the completion to show.")
+    let id: DatabaseId = try:
+        parseInt(s = $arguments[5 .. ^1]).DatabaseId
+      except:
+        return showError(message = "The Id of the completion must be a positive number.")
+    var completion: Completion = newCompletion()
+    try:
+      if not db.exists(T = Completion, cond = "id=?", params = $id):
+        return showError(message = "The completion with the ID: " & $id &
+          " doesn't exists.")
+      db.select(obj = completion, cond = "id=?", params = $id)
+    except:
+      return showError(message = "Can't read completion data from database. Reason: ",
+          e = getCurrentException())
+    var table: TerminalTable = TerminalTable()
+    try:
+      table.add(parts = [magenta(ss = "Id:"), $id])
+      table.add(parts = [magenta(ss = "Command:"), completion.command])
+      table.add(parts = [magenta(ss = "Type:"), $completion.cType])
+      if completion.cType == custom:
+        table.add(parts = [magenta(ss = "Values:"), completion.cValues])
+      table.echoTable
+    except:
+      return showError(message = "Can't show completion. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
+
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Initialize the shell's completion system. Set help related to the
@@ -582,9 +626,9 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         # Delete the selected completion
         if arguments.startsWith(prefix = "delete"):
           return deleteCompletion(arguments = arguments, db = db)
-      #  # Show the selected completion
-      #  if arguments.startsWith(prefix = "show"):
-      #    return showCompletion(arguments = arguments, db = db)
+        # Show the selected completion
+        if arguments.startsWith(prefix = "show"):
+          return showCompletion(arguments = arguments, db = db)
         # TODO: import command
         # TODO: export command
         try:
