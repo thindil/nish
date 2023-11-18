@@ -228,6 +228,45 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
     except OSError:
       return
 
+proc getCompletion*(commandName, prefix: string; completions: var seq[string];
+    aliases: ref AliasesList; commands: ref CommandsList; db) {.sideEffect,
+    raises: [], tags: [ReadDirEffect, WriteIOEffect, ReadDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+  ## Get the completion for the selected command from the shell's completion
+  ## database, based on the selected prefix
+  ##
+  ## * commandName - the name of the command for which the completions will
+  ##                 be looked for
+  ## * prefix      - the prefix which will be looking for in the database
+  ## * completions - the list of completions for the current prefix
+  ## * aliases     - the list of available shell's aliases
+  ## * commands    - the list of the shell's commands
+  ##
+  ## Returns the updated completions parameter with additional entries for
+  ## completions, which match the parameter prefix. If prefix is empty, or
+  ## there is no matching entries, returns the same completion parameter.
+  body:
+    if prefix.len == 0:
+      return
+    let completionAmount: int = try:
+        parseInt(s = $getOption(optionName = initLimitedString(
+          capacity = 16, text = "completionAmount"), db = db,
+          defaultValue = initLimitedString(capacity = 2, text = "30")))
+      except ValueError, CapacityError:
+        30
+    # Completion disabled
+    if completionAmount == 0:
+      return
+    var completion: Completion = newCompletion()
+    # Get the completion for the selected command from database
+    try:
+      db.select(obj = completion, cond = "command=?", params = commandName)
+    except:
+      return
+    case completion.cType
+    else:
+      return
+
 proc createCompletionDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Create the table completions
