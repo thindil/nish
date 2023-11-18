@@ -658,30 +658,27 @@ proc importCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Enter the name of the file with the completion.")
     let fileName: string = $arguments[7 .. ^1]
     try:
-      var dict: Config = loadConfig(filename = fileName)
- #     try:
- #       if db.exists(T = Completion, cond = "command=?", params = $id):
- #         return showError(message = "The completion for the command: " & $id &
- #           " exists.")
- #     except:
- #       return showError(message = "Can't check completion in database. Reason: ",
- #           e = getCurrentException())
- #     var completion: Completion = newCompletion()
- #     try:
- #       dict.setSectionKey(section = "", key = "Command",
- #           value = completion.command)
- #       dict.setSectionKey(section = "", key = "Type", value = $completion.cType)
- #       if completion.cValues.len > 0:
- #         dict.setSectionKey(section = "", key = "Values",
- #             value = completion.cValues)
- #       dict.writeConfig(filename = fileName)
- #     except:
- #       return showError(message = "Can't create the completion export file. Reason: ",
- #           e = getCurrentException())
+      let
+        dict: Config = loadConfig(filename = fileName)
+        command: string = dict.getSectionValue(section = "", key = "Command")
+      try:
+        if db.exists(T = Completion, cond = "command=?", params = command):
+          return showError(message = "The completion for the command: " &
+            command &
+            " exists.")
+      except:
+        return showError(message = "Can't check completion in database. Reason: ",
+            e = getCurrentException())
+      var completion: Completion = newCompletion(command = dict.getSectionValue(
+          section = "", key = "Command"), cType = parseEnum[CompletionType](
+          s = dict.getSectionValue(section = "", key = "Type")),
+          cValues = dict.getSectionValue(section = "", key = "Values"))
+      db.insert(obj = completion)
     except:
       return showError(message = "Can't import the completion from the file. Reason: ",
           e = getCurrentException())
-    showOutput(message = "Imported the completion from file : " & fileName, fgColor = fgGreen)
+    showOutput(message = "Imported the completion from file : " & fileName,
+        fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
