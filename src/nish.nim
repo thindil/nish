@@ -565,7 +565,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           fillSuggestionsList(aliases = aliases, commands = commands)
           var start: Natural = 0
           while true:
-            let newCommand: string = suggestCommand(invalidName = $commandName,
+            let
+              oldStart = start
+              newCommand: string = suggestCommand(invalidName = $commandName,
                 start = start, db = db)
             if newCommand.len == 0:
               break
@@ -586,8 +588,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 break
             of 'A', 'a':
               break
+            of 'N', 'n':
+              continue
             else:
-              discard
+              start = oldStart
         # Update the shell's history with info about the executed command
         lastCommand = commandName & (if arguments.len > 0: " " &
             arguments else: "")
