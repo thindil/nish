@@ -604,7 +604,7 @@ proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
   body:
     if arguments.len < 7:
       return showError(message = "Enter the ID of the completion to export and the name of the file where it will be saved.")
-    let args = split(s = $arguments, sep = ' ')
+    let args: seq[string] = split(s = $arguments, sep = ' ')
     if args.len < 3:
       return showError(message = "Enter the ID of the completion to export and the name of the file where it will be saved.")
     let
