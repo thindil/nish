@@ -151,15 +151,20 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
             completions.add(y = completion)
       else:
         let prefixInsensitive: string = prefix.lastPathPart.toLowerAscii
-        var parentDir: string = (if prefix.parentDir ==
-              ".": "" else: prefix.parentDir & DirSep)
+        var parentDir: string = case prefix.parentDir
+          of ".":
+            ""
+          of "/":
+            "/"
+          else:
+            prefix.parentDir & DirSep
         if prefix.endsWith(suffix = DirSep):
           parentDir = prefix
         for item in walkDir(dir = parentDir.absolutePath, relative = true):
           if completions.len >= completionAmount:
             return
-          var completion: string = (if dirExists(dir = item.path): item.path &
-              DirSep else: item.path)
+          var completion: string = (if dirExists(dir = parentDir &
+              item.path): item.path & DirSep else: item.path)
           if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
               prefix.endsWith(suffix = DirSep)) and completion notin completions:
             completions.add(y = parentDir & completion)
