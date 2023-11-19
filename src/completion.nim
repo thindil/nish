@@ -280,8 +280,21 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
     except:
       return
     case completion.cType
-    else:
-      return
+    of dirs:
+      getDirCompletion(prefix = prefix, completions = completions, db = db, cType = dirs)
+    of files:
+      getDirCompletion(prefix = prefix, completions = completions, db = db, cType = files)
+    of dirsfiles:
+      getDirCompletion(prefix = prefix, completions = completions, db = db)
+    of commands:
+      getCommandCompletion(prefix = prefix, completions = completions,
+          aliases = aliases, commands = commands, db = db)
+    of custom:
+      for value in completion.cValues.split(sep = ';'):
+        if value.startsWith(prefix = prefix) and value notin completions:
+          completions.add(y = value)
+    of none:
+      completions = @[]
 
 proc createCompletionDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
@@ -375,7 +388,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         of 'u':
           custom
         else:
-      none), cValues = $values)
+          none), cValues = $values)
     # Check if completion with the same parameters exists in the database
     try:
       if db.exists(T = Completion, cond = "command=?",
