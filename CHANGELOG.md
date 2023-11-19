@@ -10,6 +10,7 @@ of the shell.
 - Cross-compiling the shell for Arm
 - Typo in the editing alias message
 - Getting completions for directories
+- Handling unknown key pressed when selecting a command's suggestion
 
 ## [0.6.0] - 2023-11-13
 
