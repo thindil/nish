@@ -117,6 +117,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
   ##
   ## * prefix      - the prefix which will be looking for in the current directory
   ## * completions - the list of completions for the current prefix
+  ## * db          - the connection to the shell's database
   ##
   ## Returns the updated completions parameter with additional entries of relative
   ## paths to the files or directories which match the parameter prefix. If
@@ -182,6 +183,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
   ## * completions - the list of completions for the current prefix
   ## * aliases     - the list of available shell's aliases
   ## * commands    - the list of the shell's commands
+  ## * db          - the connection to the shell's database
   ##
   ## Returns the updated completions parameter with additional entries of commands
   ## which match the parameter prefix. If prefix is empty, or there is no
@@ -241,6 +243,7 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
   ## * completions - the list of completions for the current prefix
   ## * aliases     - the list of available shell's aliases
   ## * commands    - the list of the shell's commands
+  ## * db          - the connection to the shell's database
   ##
   ## Returns the updated completions parameter with additional entries for
   ## completions, which match the parameter prefix. If prefix is empty, or
