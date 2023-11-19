@@ -279,6 +279,7 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
       db.select(obj = completion, cond = "command=?", params = commandName)
     except:
       return
+    completions = @[]
     case completion.cType
     of dirs:
       getDirCompletion(prefix = prefix, completions = completions, db = db, cType = dirs)
@@ -294,7 +295,7 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
         if value.startsWith(prefix = prefix) and value notin completions:
           completions.add(y = value)
     of none:
-      completions = @[]
+      discard
 
 proc createCompletionDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
