@@ -152,10 +152,13 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
               -1: $inputString else: $inputString[spaceIndex + 1..^1])
         completions = @[]
         getDirCompletion(prefix = prefix, completions = completions, db = db)
-        if inputString.startsWith(prefix = prefix) and (spaceIndex == - 1 or
+        if inputString.startsWith(prefix = prefix) and (spaceIndex == -1 or
             spaceIndex >= cursorPosition):
           getCommandCompletion(prefix = prefix, completions = completions,
               aliases = aliases, commands = commands, db = db)
+        elif spaceIndex > -1:
+          getCompletion(commandName = $inputString[0 .. spaceIndex - 1], prefix = prefix,
+              completions = completions, aliases = aliases, commands = commands, db = db)
         if completions.len == 0:
           continue
         elif completions.len == 1:
