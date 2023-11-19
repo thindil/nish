@@ -43,6 +43,10 @@ type
         custom = "Custom",
         none = "Completion for the selected command should be disabled"
 
+  DirCompletionType* = enum
+    ## Used to set the type of completion for directories and files
+    dirs, files, all
+
   Completion* {.tableName: "completions".} = ref object of Model
     ## Data structure for the shell's commands' completion
     ##
@@ -109,15 +113,18 @@ proc newCompletion*(command: string = ""; cType: CompletionType = none;
   body:
     Completion(command: command, cType: cType, cValues: cValues)
 
-proc getDirCompletion*(prefix: string; completions: var seq[string];
-    db) {.sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect,
-    ReadDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
+    cType: DirCompletionType = all) {.sideEffect, raises: [], tags: [
+    ReadDirEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
+    RootEffect], contractual.} =
   ## Get the relative path of file or directory, based on the selected prefix
   ## in the current directory.
   ##
   ## * prefix      - the prefix which will be looking for in the current directory
   ## * completions - the list of completions for the current prefix
   ## * db          - the connection to the shell's database
+  ## * cType       - what kind of items will be looking for. Default value is all,
+  ##                 files and directories
   ##
   ## Returns the updated completions parameter with additional entries of relative
   ## paths to the files or directories which match the parameter prefix. If
@@ -146,6 +153,9 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
         for item in walkPattern(pattern = prefix & "*"):
           if completions.len >= completionAmount:
             return
+          if (cType == files and not fileExists(filename = item)) or (cType ==
+              dirs and not dirExists(dir = item)):
+            continue
           let completion: string = (if dirExists(dir = item): item &
               DirSep else: item)
           if completion notin completions:
@@ -164,6 +174,9 @@ proc getDirCompletion*(prefix: string; completions: var seq[string];
         for item in walkDir(dir = parentDir.absolutePath, relative = true):
           if completions.len >= completionAmount:
             return
+          if (cType == files and not fileExists(filename = parentDir &
+              item.path)) or (cType == dirs and not dirExists(dir = parentDir & item.path)):
+            continue
           var completion: string = (if dirExists(dir = parentDir &
               item.path): item.path & DirSep else: item.path)
           if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
@@ -317,8 +330,8 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
     showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ")
-    showOutput(message = "d) " & $dirs)
-    showOutput(message = "f) " & $files)
+    showOutput(message = "d) " & $CompletionType.dirs)
+    showOutput(message = "f) " & $CompletionType.files)
     showOutput(message = "a) " & $dirsfiles)
     showOutput(message = "c) " & $commands)
     showOutput(message = "u) " & $custom)
@@ -352,9 +365,9 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     var completion: Completion = newCompletion(command = $command, cType = (
         case typeChar.toLowerAscii
         of 'd':
-          dirs
+          CompletionType.dirs
         of 'f':
-          files
+          CompletionType.files
         of 'a':
           dirsfiles
         of 'c':
@@ -362,7 +375,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         of 'u':
           custom
         else:
-          none), cValues = $values)
+      none), cValues = $values)
     # Check if completion with the same parameters exists in the database
     try:
       if db.exists(T = Completion, cond = "command=?",
@@ -436,8 +449,8 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = $completion.cType, newLine = false,
         fgColor = fgMagenta)
     showOutput(message = "'. Possible values are:")
-    showOutput(message = "d) " & $dirs)
-    showOutput(message = "f) " & $files)
+    showOutput(message = "d) " & $CompletionType.dirs)
+    showOutput(message = "f) " & $CompletionType.files)
     showOutput(message = "a) " & $dirsfiles)
     showOutput(message = "c) " & $commands)
     showOutput(message = "u) " & $custom)
