@@ -566,7 +566,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           var start: Natural = 0
           while true:
             let
-              oldStart = start
+              oldStart: Natural = start
               newCommand: string = suggestCommand(invalidName = $commandName,
                 start = start, db = db)
             if newCommand.len == 0:
