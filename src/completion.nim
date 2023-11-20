@@ -74,7 +74,7 @@ proc dbType*(T: typedesc[CompletionType]): string {.raises: [], tags: [],
   ##
   ## Returns the type of the field in the database
   body:
-    "TEXT"
+    "INTEGER"
 
 proc dbValue*(val: CompletionType): DbValue {.raises: [], tags: [],
     contractual.} =
@@ -84,7 +84,7 @@ proc dbValue*(val: CompletionType): DbValue {.raises: [], tags: [],
   ##
   ## Returns the converted val parameter
   body:
-    dbValue(v = $val)
+    dbValue(v = val.ord)
 
 proc to*(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
     contractual.} =
@@ -96,7 +96,7 @@ proc to*(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
   ## Returns the converted dbVal parameter
   body:
     try:
-      parseEnum[CompletionType](s = dbVal.s)
+      dbVal.i.CompletionType
     except:
       none
 
