@@ -52,28 +52,31 @@ type
   CommandData* = object
     ## The data structure for the shell command
     ##
-    ## * command - the shell's command procedure which will be executed
-    ## * plugin  - the name of the plugin to which the command belongs
+    ## * command     - the shell's command procedure which will be executed
+    ## * plugin      - the name of the plugin to which the command belongs
+    ## * subcommands - the list of subcommands available for the command
     command*: CommandProc
     plugin*: string
+    subcommands*: seq[string]
   CommandsList* = Table[string, CommandData]
     ## Used to store the shell's commands
   CommandsListError* = object of CatchableError
     ## Raised when a problem with a command occurs
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = "") {.sideEffect, raises: [
+    commands: ref CommandsList; plugin: string = ""; subCommands: seq[string] = @[]) {.sideEffect, raises: [
     CommandsListError], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Add a new command to the shell's commands' list. If command argument is
   ## different than nil, it will be used as the command code, otherwise, the
   ## argument plugin must be supplied.
   ##
-  ## * name     - the name of the new command to add
-  ## * command  - the pointer to the procedure which will be called when the
-  ##              command is invoked
-  ## * commands - the list of shell's commands
-  ## * plugin   - the full path to the plugin which contains the code for the
-  ##              command
+  ## * name        - the name of the new command to add
+  ## * command     - the pointer to the procedure which will be called when the
+  ##                 command is invoked
+  ## * commands    - the list of shell's commands
+  ## * plugin      - the full path to the plugin which contains the code for the
+  ##                 command
+  ## * subcommands - the list of the subcommands available for the command
   ##
   ## Returns the updated parameter commands with the list of available shell's commands
   require:
