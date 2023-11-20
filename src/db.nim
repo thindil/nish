@@ -212,6 +212,12 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       of 4:
         if result.createCompletionDb == QuitFailure:
           return nil
+        setOption(optionName = initLimitedString(capacity = 40,
+            text = options[0].option), value = initLimitedString(capacity = 40,
+            text = options[0].value), description = initLimitedString(
+            capacity = 256, text = options[0].description),
+            valueType = options[0].valueType, db = result, readOnly = (
+            if options[0].readOnly: 1 else: 0))
       of 5:
         discard
       else:
