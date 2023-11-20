@@ -278,6 +278,9 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
     try:
       db.select(obj = completion, cond = "command=?", params = commandName)
     except:
+      # Get the completion for the shell's built-in commands
+      if commands.hasKey(key = commandName):
+        discard
       return
     completions = @[]
     case completion.cType
