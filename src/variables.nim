@@ -40,7 +40,7 @@ const
   variableNameLength*: Positive = maxNameLength
     ## The maximum length of the shell's environment variable name
 
-  variablesCommands*: array[5, string] = ["list", "delete", "add", "edit", "show"]
+  variablesCommands*: seq[string] = @["list", "delete", "add", "edit", "show"]
     ## The list of available subcommands for command variable
 
 type

@@ -41,7 +41,7 @@ const
   ## The minimal version of the shell's plugins' API which plugins must support
   ## in order to work
 
-  pluginsCommands*: array[6, string] = ["list", "remove", "show", "add",
+  pluginsCommands*: seq[string] = @["list", "remove", "show", "add",
       "enable", "disable"]
     ## The list of available subcommands for command plugin
 

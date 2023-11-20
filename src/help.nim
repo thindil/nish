@@ -356,7 +356,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     # The user entered the help topic which doesn't exists
     return showError(message = "Unknown help topic: `" & topic & "`. For the list of available help topics, type `help`.")
 
-proc showHelpList*(command: string; subcommands: openArray[
+proc showHelpList*(command: string; subcommands: seq[
     string]): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
