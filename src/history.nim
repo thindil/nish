@@ -35,7 +35,7 @@ import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, help, lstring, output, options, resultcode
 
-const historyCommands*: array[3, string] = ["clear", "list", "find"]
+const historyCommands*: seq[string] = @["clear", "list", "find"]
   ## The list of available subcommands for command history
 
 type

@@ -58,7 +58,7 @@ type
     cType*: CompletionType
     cValues*: string
 
-const completionCommands*: array[7, string] = ["list", "delete", "show", "add",
+const completionCommands*: seq[string] = @["list", "delete", "show", "add",
     "edit", "import", "export"]
   ## The list of available subcommands for command completion
 
