@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright © 2022 Bartek Jasicki <thindil@laeran.pl>
+# Copyright © 2022 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
