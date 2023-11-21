@@ -253,7 +253,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## Add a new command to the shell
       ##
       ## * options - The list of options from the API call. 0 - the name of
-      ##             the command to add
+      ##             the command to add, any next value - the name of the
+      ##             subcommand for the command
       ##
       ## Returns true if the command was properly added, otherwise false with
       ## information what happened
@@ -263,9 +264,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for addCommand.")
             return false
           try:
-            addCommand(name = initLimitedString(capacity = maxNameLength,
-                text = options[0]), command = nil, commands = commands,
-                plugin = pluginPath)
+            if options.len > 1:
+              addCommand(name = initLimitedString(capacity = maxNameLength,
+                  text = options[0]), command = nil, commands = commands,
+                  plugin = pluginPath, subCommands = options[1 .. ^1])
+            else:
+              addCommand(name = initLimitedString(capacity = maxNameLength,
+                  text = options[0]), command = nil, commands = commands,
+                  plugin = pluginPath)
           except CommandsListError, CapacityError:
             showError(message = "Can't add command '" & options[0] &
                 "'. Reason: " & getCurrentExceptionMsg())
