@@ -40,7 +40,7 @@ const
   variableNameLength*: Positive = maxNameLength
     ## The maximum length of the shell's environment variable name
 
-  variablesCommands*: seq[string] = @["list", "delete", "add", "edit", "show"]
+  variablesCommands: seq[string] = @["list", "delete", "add", "edit", "show"]
     ## The list of available subcommands for command variable
 
 type
@@ -716,7 +716,8 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
 
     try:
       addCommand(name = initLimitedString(capacity = 8, text = "variable"),
-          command = variableCommand, commands = commands)
+          command = variableCommand, commands = commands,
+          subCommands = variablesCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's variables system. Reason: ",
           e = getCurrentException())

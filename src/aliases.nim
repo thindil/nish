@@ -53,7 +53,7 @@ type
     description*: string
     output*: string
 
-const aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
+const aliasesCommands: seq[string] = @["list", "delete", "show", "add", "edit"]
   ## The list of available subcommands for command alias
 
 using
@@ -754,7 +754,8 @@ proc initAliases*(db; aliases: ref AliasesList;
 
     try:
       addCommand(name = initLimitedString(capacity = 5, text = "alias"),
-          command = aliasCommand, commands = commands)
+          command = aliasCommand, commands = commands,
+          subCommands = aliasesCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's aliases. Reason: ",
           e = getCurrentException())

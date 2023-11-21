@@ -35,7 +35,7 @@ import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, help, lstring, output, options, resultcode
 
-const historyCommands*: seq[string] = @["clear", "list", "find"]
+const historyCommands: seq[string] = @["clear", "list", "find"]
   ## The list of available subcommands for command history
 
 type
@@ -521,7 +521,8 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
           return QuitFailure.ResultCode
     try:
       addCommand(name = initLimitedString(capacity = 8, text = "history"),
-          command = historyCommand, commands = commands)
+          command = historyCommand, commands = commands,
+          subCommands = historyCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's history. Reason: ",
           e = getCurrentException())

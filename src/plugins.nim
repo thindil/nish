@@ -41,7 +41,7 @@ const
   ## The minimal version of the shell's plugins' API which plugins must support
   ## in order to work
 
-  pluginsCommands*: seq[string] = @["list", "remove", "show", "add",
+  pluginsCommands: seq[string] = @["list", "remove", "show", "add",
       "enable", "disable"]
     ## The list of available subcommands for command plugin
 
@@ -189,11 +189,11 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
                 text = options[0]), value = initLimitedString(
                 capacity = maxInputLength, text = options[1]),
                 description = initLimitedString(capacity = maxInputLength,
-                text = options[2]), valueType = parseEnum[ValueType](s = options[
-                    3]), db = db)
+                text = options[2]), valueType = parseEnum[ValueType](
+                s = options[3]), db = db)
           except CapacityError, ValueError:
-            showError(message = "Can't set option '" & options[0] & "'. Reason: ",
-                e = getCurrentException())
+            showError(message = "Can't set option '" & options[0] &
+                "'. Reason: ", e = getCurrentException())
             return false
           return true
 
@@ -846,7 +846,8 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           return QuitFailure.ResultCode
     try:
       addCommand(name = initLimitedString(capacity = 6, text = "plugin"),
-          command = pluginCommand, commands = commands)
+          command = pluginCommand, commands = commands,
+          subCommands = pluginsCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's plugins. Reason: ",
           e = getCurrentException())

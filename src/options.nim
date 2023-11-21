@@ -34,7 +34,7 @@ import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, help, lstring, output, resultcode
 
-const optionsCommands*: seq[string] = @["list", "set", "reset"]
+const optionsCommands: seq[string] = @["list", "set", "reset"]
   ## The list of available subcommands for command options
 
 type
@@ -496,7 +496,8 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect,
 
     try:
       addCommand(name = initLimitedString(capacity = 7, text = "options"),
-          command = optionsCommand, commands = commands)
+          command = optionsCommand, commands = commands,
+          subCommands = optionsCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's options. Reason: ",
           e = getCurrentException())
