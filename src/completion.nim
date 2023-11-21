@@ -280,7 +280,13 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
     except:
       # Get the completion for the shell's built-in commands
       if commands.hasKey(key = commandName):
-        discard
+        completions = @[]
+        try:
+          for command in commands[commandName].subcommands:
+            if command.startsWith(prefix = prefix) and command notin completions:
+              completions.add(y = command)
+        except:
+          return
       return
     completions = @[]
     case completion.cType
