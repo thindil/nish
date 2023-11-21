@@ -58,7 +58,7 @@ type
     cType*: CompletionType
     cValues*: string
 
-const completionCommands*: seq[string] = @["list", "delete", "show", "add",
+const completionCommands: seq[string] = @["list", "delete", "show", "add",
     "edit", "import", "export"]
   ## The list of available subcommands for command completion
 
@@ -825,7 +825,8 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
 
     try:
       addCommand(name = initLimitedString(capacity = 10, text = "completion"),
-          command = completionCommand, commands = commands)
+          command = completionCommand, commands = commands,
+          subCommands = completionCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's completion system. Reason: ",
           e = getCurrentException())
