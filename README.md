@@ -271,11 +271,13 @@ Available API calls from plugins:
 * `getOption [option name]`: get the value of the selected shell's option.
 * `answer [text]`: set the answer for the shell. At this moment, used only in
   `info` call from the shell.
-* `addCommand [command name]`: add the new command to the shell. The name must
-  be unique. The command will not be added if there is registered the shell's
-  command with that name. If you want to replace an existing command, use call
-  `replaceCommand` (see below). Commands named *exit*, *set*, *unset* and *cd*
-  can't be added.
+* `addCommand [command name] ?subcommand? ?subcommand? ...`: add the new
+  command to the shell. The name must be unique. The command will not be added
+  if there is registered the shell's command with that name. If you want to
+  replace an existing command, use call `replaceCommand` (see below). Commands
+  named *exit*, *set*, *unset* and *cd* can't be added. Optional arguments subcommand
+  are names of the command's subcommands used in the commands' completion
+  system.
 * `deleteCommand [command name]`: remove the selected command from the shell.
   The name must be a name of an existing shell's command.
 * `replaceCommand [command name]`: replace the selected command with code from
