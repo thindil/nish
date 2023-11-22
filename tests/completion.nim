@@ -1,6 +1,7 @@
 import std/[os, tables]
 import utils/utils
 import ../src/[aliases, completion, commandslist, db, lstring, resultcode]
+import norm/sqlite
 import unittest2
 
 suite "Unit tests for completion module":
@@ -16,6 +17,11 @@ suite "Unit tests for completion module":
   db.addAliases
   initAliases(db, myaliases, commands)
 
+  checkpoint "Adding a test completion"
+  if db.count(Completion) == 0:
+    var completion = newCompletion(command = "ala", cType = custom, cValues = "something")
+    db.insert(completion)
+
   test "Get completion for a file name":
     open("sometest.txt", fmWrite).close
     getDirCompletion("somete", completions, db)
@@ -27,6 +33,16 @@ suite "Unit tests for completion module":
     getCommandCompletion("exi", completions, myaliases, commands, db)
     check:
       completions[1] == "exit"
+
+  test "Initializing an object of Completion type":
+    let newCompletion = newCompletion(command = "ala")
+    check:
+      newCompletion.command == "ala"
+
+  test "Get completion for a command's argument":
+    getCompletion("ala", "some", completions, myaliases, commands, db)
+    check:
+      completions[0] == "something"
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
