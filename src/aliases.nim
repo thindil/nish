@@ -53,7 +53,7 @@ type
     description*: string
     output*: string
 
-const aliasesCommands: seq[string] = @["list", "delete", "show", "add", "edit"]
+const aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
   ## The list of available subcommands for command alias
 
 using
