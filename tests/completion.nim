@@ -19,7 +19,8 @@ suite "Unit tests for completion module":
 
   checkpoint "Adding a test completion"
   if db.count(Completion) == 0:
-    var completion = newCompletion(command = "ala", cType = custom, cValues = "something")
+    var completion = newCompletion(command = "ala", cType = custom,
+        cValues = "something")
     db.insert(completion)
 
   test "Get completion for a file name":
@@ -43,6 +44,23 @@ suite "Unit tests for completion module":
     getCompletion("ala", "some", completions, myaliases, commands, db)
     check:
       completions[0] == "something"
+
+  test "Listing the defined commands' completions":
+    check:
+      listCompletion(initLimitedString(capacity = 4, text = "list"), db) == QuitSuccess
+
+  test "Deleting a commands' completion":
+    checkpoint "Deleting an existing completion"
+    check:
+      deleteCompletion(initLimitedString(capacity = 8, text = "delete 1"), db) == QuitSuccess
+      db.count(Completion) == 0
+    var completion = newCompletion(command = "ala", cType = custom,
+        cValues = "something")
+    db.insert(completion)
+    checkpoint "Deleting a non-existing completion"
+    check:
+      deleteCompletion(initLimitedString(capacity = 8, text = "delete 2"), db) == QuitFailure
+      db.count(Completion) == 1
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
