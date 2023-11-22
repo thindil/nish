@@ -36,7 +36,7 @@ import commandslist, constants, databaseid, help, input, lstring, options,
     output, resultcode
 
 type
-  CompletionType = enum
+  CompletionType* = enum
     ## Used to set the type of commands' completion
     dirs = "Directories only", files = "Files only",
         dirsfiles = "Directories and files", commands = "Commands",
