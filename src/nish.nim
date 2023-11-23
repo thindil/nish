@@ -563,7 +563,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               inputString = inputString, db = db, aliases = aliases,
               cursorPosition = cursorPosition)
         # If the command returned 0 (unknown command), suggest other command
-        log(message = "returnCode = " & $returnCode)
+        logToFile(message = "returnCode = " & $returnCode)
         if returnCode == 127:
           fillSuggestionsList(aliases = aliases, commands = commands)
           var start: Natural = 0

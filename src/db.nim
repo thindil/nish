@@ -45,7 +45,7 @@ proc closeDb*(returnCode: ResultCode; db: DbConn) {.sideEffect, raises: [],
     db != nil
   body:
     try:
-      log(message = "Stopping the shell in debug mode.")
+      logToFile(message = "Stopping the shell in debug mode.")
       db.close
     except DbError:
       showError(message = "Can't close properly the shell database. Reason:",

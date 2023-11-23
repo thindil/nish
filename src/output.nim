@@ -101,12 +101,12 @@ proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.si
       else:
         {.ruleOff: "namedParams".}
         stderr.styledWriteLine(fgRed, $e.name)
-        log(message = $e.name)
+        logToFile(message = $e.name)
         stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
-        log(message = getCurrentExceptionMsg())
+        logToFile(message = getCurrentExceptionMsg())
         when defined(debug):
           stderr.styledWrite(fgRed, e.getStackTrace)
-          log(message = e.getStackTrace)
+          logToFile(message = e.getStackTrace)
         {.ruleOn: "namedParams".}
     except IOError, ValueError:
       try:
