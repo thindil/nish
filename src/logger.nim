@@ -42,7 +42,7 @@ when defined(debug):
   var logger: FileLogger = nil
 {.pop ruleOff: "varUplevel".}
 
-proc log*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
+proc logToFile*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
   ## Log the selected message into a file. This procedure works only when
   ## the shell is compiled in debug mode.
@@ -85,4 +85,4 @@ proc startLogging*() {.sideEffect, raises: [], tags: [WriteIOEffect,
           discard
         {.ruleOn: "namedParams".}
       setLogFilter(lvl = lvlAll)
-      log(message = "Starting shell, version " & version & " in debug mode.")
+      logToFile(message = "Starting shell, version " & version & " in debug mode.")
