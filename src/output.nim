@@ -27,7 +27,7 @@
 ## like normal output, errors or formated tables headers.
 
 # Standard library imports
-import std/[strutils, terminal]
+import std/[strutils, tables, terminal]
 # External modules imports
 import contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
@@ -151,3 +151,23 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
     except DbError, IOError, Exception:
       showError(message = "Can't show form header. Reason: ",
           e = getCurrentException())
+
+proc selectOption*(options: Table[char, string];
+    default: char): char {.contractual.} =
+  require:
+    options.len > 0
+  body:
+    var keysList: seq[char] = @[]
+    for key, value in options:
+      showOutput(message = $key & ") " & value)
+      keysList.add(y = key)
+    showOutput(message = "Type (" & keysList.join("/") & "): ")
+    result = try:
+        getch()
+      except IOError:
+        'n'
+    while result.toLowerAscii notin keysList:
+      result = try:
+        getch()
+      except IOError:
+        'n'
