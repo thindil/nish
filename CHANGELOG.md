@@ -6,6 +6,10 @@ of the shell.
 
 ## [Unreleased]
 
+### Added
+- Completions for commands' arguments. It can be set manually or imported
+  from files, previously exported from the shell, into the shell's database
+
 ### Fixed
 - Cross-compiling the shell for Arm
 - Typo in the editing alias message
