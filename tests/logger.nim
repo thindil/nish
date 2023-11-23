@@ -12,4 +12,4 @@ suite "Unit tests for logger module":
         fileExists("nish.log")
 
   test "Writing a message to log":
-    log("test message")
+    logToFile("test message")
