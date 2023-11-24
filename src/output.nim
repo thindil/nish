@@ -173,9 +173,9 @@ proc selectOption*(options: Table[char, string];
     result = try:
         getch()
       except IOError:
-        'n'
+        default
     while result.toLowerAscii notin keysList:
       result = try:
         getch()
       except IOError:
-        'n'
+        default
