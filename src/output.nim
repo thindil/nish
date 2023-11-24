@@ -153,7 +153,8 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
           e = getCurrentException())
 
 proc selectOption*(options: Table[char, string];
-    default: char): char {.contractual.} =
+    default: char): char {.sideEffect, raises: [], tags: [ReadIOEffect,
+    WriteIOEffect, RootEffect], contractual.} =
   require:
     options.len > 0
   body:
