@@ -58,9 +58,14 @@ type
     cType*: CompletionType
     cValues*: string
 
-const completionCommands: seq[string] = @["list", "delete", "show", "add",
+const
+  completionCommands: seq[string] = @["list", "delete", "show", "add",
     "edit", "import", "export"]
-  ## The list of available subcommands for command completion
+    ## The list of available subcommands for command completion
+  completionOptions: Table[char, string] = {'d': $CompletionType.dirs,
+      'f': $CompletionType.files, 'a': $dirsfiles, 'c': $commands, 'u': $custom,
+      'n': $CompletionType.none, 'q': "Stop adding the completion"}.toTable
+    ## The list of available options when setting the type of a completion
 
 using
   db: DbConn # Connection to the shell's database
@@ -353,23 +358,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
     showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ")
-    showOutput(message = "d) " & $CompletionType.dirs)
-    showOutput(message = "f) " & $CompletionType.files)
-    showOutput(message = "a) " & $dirsfiles)
-    showOutput(message = "c) " & $commands)
-    showOutput(message = "u) " & $custom)
-    showOutput(message = "n) " & $CompletionType.none)
-    showOutput(message = "q) Stop adding the completion")
-    showOutput(message = "Type (d/f/a/c/u/n/q): ")
-    var typeChar: char = try:
-        getch()
-      except IOError:
-        'n'
-    while typeChar.toLowerAscii notin {'d', 'f', 'a', 'c', 'u', 'n', 'q'}:
-      typeChar = try:
-        getch()
-      except IOError:
-        'n'
+    let typeChar: char = selectOption(completionOptions, 'n')
     if typeChar == 'q':
       return showError(message = "Adding a new completion cancelled.")
     var values: UserInput = emptyLimitedString(capacity = maxInputLength)
@@ -472,36 +461,20 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = $completion.cType, newLine = false,
         fgColor = fgMagenta)
     showOutput(message = "'. Possible values are:")
-    showOutput(message = "d) " & $CompletionType.dirs)
-    showOutput(message = "f) " & $CompletionType.files)
-    showOutput(message = "a) " & $dirsfiles)
-    showOutput(message = "c) " & $commands)
-    showOutput(message = "u) " & $custom)
-    showOutput(message = "n) " & $CompletionType.none)
-    showOutput(message = "q) Stop adding the completion")
-    showOutput(message = "Type (d/f/a/c/u/n/q): ")
-    var typeChar: char = try:
-        getch()
-      except IOError:
-        'n'
-    while typeChar.toLowerAscii notin {'d', 'f', 'a', 'c', 'u', 'n', 'q'}:
-      typeChar = try:
-        getch()
-      except IOError:
-        'n'
+    let typeChar: char = selectOption(completionOptions, 'n')
     let completionType: CompletionType = case typeChar.toLowerAscii
-        of 'd':
-          dirs
-        of 'f':
-          files
-        of 'a':
-          dirsfiles
-        of 'c':
-          commands
-        of 'u':
-          custom
-        else:
-          none
+      of 'd':
+        dirs
+      of 'f':
+        files
+      of 'a':
+        dirsfiles
+      of 'c':
+        commands
+      of 'u':
+        custom
+      else:
+        none
     try:
       stdout.writeLine(x = "")
     except IOError:
