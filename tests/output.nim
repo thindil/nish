@@ -1,3 +1,5 @@
+when defined(testInput):
+  import std/tables
 import utils/utils
 import ../src/[db, output, resultcode]
 import unittest2
@@ -16,6 +18,13 @@ suite "Unit tests for output module":
 
   test "Showing a normal output":
     showOutput("test output")
+
+  test "Showing options to select":
+    when not defined(testInput):
+      skip()
+    else:
+      check:
+        selectOption({'a': "option1", 'b': "option2"}.toTable, 'a') == 'a'
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
