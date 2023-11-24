@@ -155,6 +155,13 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
 proc selectOption*(options: Table[char, string];
     default: char): char {.sideEffect, raises: [], tags: [ReadIOEffect,
     WriteIOEffect, RootEffect], contractual.} =
+  ## Show the list of options from which the user can select one value
+  ##
+  ## * options - the list of options from which the user can select one
+  ## * default - the default value for the list
+  ##
+  ## Returns the option selected by the user from the options list or the
+  ## default value if there was any error
   require:
     options.len > 0
   body:
