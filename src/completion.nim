@@ -64,7 +64,7 @@ const
     ## The list of available subcommands for command completion
   completionOptions: Table[char, string] = {'d': $CompletionType.dirs,
       'f': $CompletionType.files, 'a': $dirsfiles, 'c': $commands, 'u': $custom,
-      'n': $CompletionType.none, 'q': "Stop adding the completion"}.toTable
+      'n': $CompletionType.none, 'q': "quit"}.toTable
     ## The list of available options when setting the type of a completion
 
 using
