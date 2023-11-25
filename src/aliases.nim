@@ -479,7 +479,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         " doesn't exists.")
     showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
     # Set the name for the alias
-    showFormHeader(message = "(1/6) Name", db = db)
+    showFormHeader(message = "(1/6 or 7) Name", db = db)
     showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
         newLine = false)
     showOutput(message = alias.name, newLine = false, fgColor = fgMagenta)
@@ -497,7 +497,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
     # Set the description for the alias
-    showFormHeader(message = "(2/6) Description", db = db)
+    showFormHeader(message = "(2/6 or 7) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
         newLine = false)
     showOutput(message = alias.description, newLine = false,
@@ -513,11 +513,12 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
     # Set the working directory for the alias
-    showFormHeader(message = "(3/6) Working directory", db = db)
+    showFormHeader(message = "(3/6 or 7) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
         newLine = false)
     showOutput(message = alias.path, newLine = false, fgColor = fgMagenta)
     showOutput(message = "'. Must be a path to the existing directory.")
+    showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = ($readInput()).DirectoryPath
     while path.len > 0 and (path != "exit" and not dirExists(dir = $path)):
       showError(message = "Please enter a path to the existing directory")
@@ -527,7 +528,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     elif path == "":
       path = alias.path.DirectoryPath
     # Set the recursiveness for the alias
-    showFormHeader(message = "(4/6) Recursiveness", db = db)
+    showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
     showOutput(message = "Recursive(y/n): ", newLine = false)
     var inputChar: char = try:
@@ -545,7 +546,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     except IOError:
       discard
     # Set the commands to execute for the alias
-    showFormHeader(message = "(5/6) Commands", db = db)
+    showFormHeader(message = "(5/6 or 7) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
         newLine = false)
     showOutput(message = alias.commands, newLine = false, fgColor = fgMagenta)
@@ -560,20 +561,43 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       except CapacityError:
         return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
     # Set the destination for the alias' output
-    showFormHeader(message = "(6/6) Output", db = db)
+    showFormHeader(message = "(6/6 or 7) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
         newLine = false)
     showOutput(message = alias.output, newLine = false, fgColor = fgMagenta)
     showOutput(message = "':")
-    showOutput(message = "Output to: ", newLine = false)
-    var output: UserInput = readInput()
+    inputChar = selectOption(options = aliasesOptions, default = 's',
+        prompt = "Output")
+    var output: UserInput = emptyLimitedString(capacity = maxInputLength)
+    try:
+      case inputChar
+      of 'o':
+        output.text = "stdout"
+      of 'e':
+        output.text = "stderr"
+      of 'f':
+        output.text = "file"
+      of 'q':
+        output.text = "exit"
+      else:
+        discard
+    except CapacityError:
+      return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
     if output == "exit":
       return showError(message = "Editing the alias cancelled.")
-    elif output == "":
+    elif output == "file":
+      # Set the destination for the alias' output
+      showFormHeader(message = "(7/7) Output file", db = db)
+      showOutput(message = "Enter the path to the file to which output will be append:")
+      showOutput(message = "Path: ", newLine = false)
       try:
-        output.text = alias.output
+        output.text = ""
       except CapacityError:
-        return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
+        discard
+      while output.len == 0:
+        output = readInput()
+    if output == "exit":
+      return showError(message = "Editing the alias cancelled.")
     # Save the alias to the database
     try:
       alias.name = $name
