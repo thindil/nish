@@ -388,7 +388,8 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     # Set the destination for the alias' output
     showFormHeader(message = "(6/6 or 7) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. If you select the option file, you will be asked for the path to the file. Possible options:")
-    inputChar = selectOption(options = aliasesOptions, default = 's')
+    inputChar = selectOption(options = aliasesOptions, default = 's',
+        prompt = "Output")
     var output: UserInput = emptyLimitedString(capacity = maxInputLength)
     try:
       case inputChar

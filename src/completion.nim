@@ -358,7 +358,8 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
     showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ")
-    let typeChar: char = selectOption(options = completionOptions, default = 'n')
+    let typeChar: char = selectOption(options = completionOptions,
+        default = 'n', prompt = "Type")
     if typeChar == 'q':
       return showError(message = "Adding a new completion cancelled.")
     var values: UserInput = emptyLimitedString(capacity = maxInputLength)
@@ -461,7 +462,8 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = $completion.cType, newLine = false,
         fgColor = fgMagenta)
     showOutput(message = "'. Possible values are:")
-    let typeChar: char = selectOption(options = completionOptions, default = 'n')
+    let typeChar: char = selectOption(options = completionOptions,
+        default = 'n', prompt = "Type")
     let completionType: CompletionType = case typeChar.toLowerAscii
       of 'd':
         dirs
