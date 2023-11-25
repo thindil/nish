@@ -153,12 +153,13 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
           e = getCurrentException())
 
 proc selectOption*(options: Table[char, string];
-    default: char): char {.sideEffect, raises: [], tags: [ReadIOEffect,
+    default: char; prompt: string): char {.sideEffect, raises: [], tags: [ReadIOEffect,
     WriteIOEffect, RootEffect], contractual.} =
   ## Show the list of options from which the user can select one value
   ##
   ## * options - the list of options from which the user can select one
   ## * default - the default value for the list
+  ## * prompt  - the text displayed at the end of the list
   ##
   ## Returns the option selected by the user from the options list or the
   ## default value if there was any error
@@ -169,7 +170,7 @@ proc selectOption*(options: Table[char, string];
     for key, value in options:
       showOutput(message = $key & ") " & value)
       keysList.add(y = key)
-    showOutput(message = "Type (" & keysList.join(sep = "/") & "): ")
+    showOutput(message = prompt & " (" & keysList.join(sep = "/") & "): ")
     result = try:
         getch()
       except IOError:
