@@ -53,8 +53,12 @@ type
     description*: string
     output*: string
 
-const aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
-  ## The list of available subcommands for command alias
+const
+  aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
+    ## The list of available subcommands for command alias
+  aliasesOptions: Table[char, string] = {'o': "standard output",
+      'e': "standard error", 'f': "file", 'q': "quit"}.toTable
+    ## The list of available options when setting the output of an alias
 
 using
   db: DbConn # Connection to the shell's database
@@ -313,7 +317,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
   body:
     showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word 'exit' as an answer.")
     # Set the name for the alias
-    showFormHeader(message = "(1/6) Name", db = db)
+    showFormHeader(message = "(1/6 or 7) Name", db = db)
     showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:")
     showOutput(message = "Name: ", newLine = false)
     var name: AliasName = emptyLimitedString(capacity = aliasNameLength)
@@ -332,14 +336,14 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     if name == "exit":
       return showError(message = "Adding a new alias cancelled.")
     # Set the description for the alias
-    showFormHeader(message = "(2/6) Description", db = db)
+    showFormHeader(message = "(2/6 or 7) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
     showOutput(message = "Description: ", newLine = false)
     let description: UserInput = readInput()
     if description == "exit":
       return showError(message = "Adding a new alias cancelled.")
     # Set the working directory for the alias
-    showFormHeader(message = "(3/6) Working directory", db = db)
+    showFormHeader(message = "(3/6 or 7) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "".DirectoryPath
@@ -355,7 +359,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     if path == "exit":
       return showError(message = "Adding a new alias cancelled.")
     # Set the recursiveness for the alias
-    showFormHeader(message = "(4/6) Recursiveness", db = db)
+    showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
     showOutput(message = "Recursive(y/n): ", newLine = false)
     var inputChar: char = try:
@@ -370,7 +374,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = $inputChar)
     let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
     # Set the commands to execute for the alias
-    showFormHeader(message = "(5/6) Commands", db = db)
+    showFormHeader(message = "(5/6 or 7) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:")
     showOutput(message = "Command(s): ", newLine = false)
     var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
@@ -382,17 +386,39 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     if commands == "exit":
       return showError(message = "Adding a new alias cancelled.")
     # Set the destination for the alias' output
-    showFormHeader(message = "(6/6) Output", db = db)
-    showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. For example: 'output.txt'.:")
-    showOutput(message = "Output to: ", newLine = false)
-    var output: UserInput = readInput()
+    showFormHeader(message = "(6/6 or 7) Output", db = db)
+    showOutput(message = "Where should be redirected the alias output. If you select the option file, you will be asked for the path to the file. Possible options:")
+    inputChar = selectOption(options = aliasesOptions, default = 's')
+    var output: UserInput = emptyLimitedString(capacity = maxInputLength)
+    try:
+      case inputChar
+      of 'o':
+        output.text = "stdout"
+      of 'e':
+        output.text = "stderr"
+      of 'f':
+        output.text = "file"
+      of 'q':
+        output.text = "exit"
+      else:
+        discard
+    except CapacityError:
+      return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
     if output == "exit":
       return showError(message = "Adding a new alias cancelled.")
-    elif output == "":
+    elif output == "file":
+      # Set the destination for the alias' output
+      showFormHeader(message = "(7/7) Output file", db = db)
+      showOutput(message = "Enter the path to the file to which output will be append:")
+      showOutput(message = "Path: ", newLine = false)
       try:
-        output.text = "stdout"
+        output.text = ""
       except CapacityError:
-        return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
+        discard
+      while output.len == 0:
+        output = readInput()
+    if output == "exit":
+      return showError(message = "Adding a new alias cancelled.")
     var alias: Alias = newAlias(name = $name, path = $path,
         recursive = recursive == 1, commands = $commands,
         description = $description, output = $output)
