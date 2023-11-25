@@ -24,7 +24,7 @@ suite "Unit tests for output module":
       skip()
     else:
       check:
-        selectOption({'a': "option1", 'b': "option2"}.toTable, 'a') == 'a'
+        selectOption({'a': "option1", 'b': "option2"}.toTable, 'a', "Option") == 'a'
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
