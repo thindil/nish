@@ -15,6 +15,7 @@ of the shell.
 - Typo in the editing alias message
 - Getting completions for directories
 - Handling unknown key pressed when selecting a command's suggestion
+- Crash when setting a terminal's title
 
 ## [0.6.0] - 2023-11-13
 
