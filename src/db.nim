@@ -236,6 +236,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
 proc optimizeDb*(arguments: UserInput; db: DbConn): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect,
     RootEffect], contractual.} =
+  ## Optimize the shell's database
+  ##
+  ## * arguments - the user entered text with arguments for optimize database
+  ## * db        - the connection to the shell's database
   require:
     arguments.len > 7
     arguments.startsWith(prefix = "optimize")
