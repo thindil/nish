@@ -457,6 +457,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     if db == nil:
       quit QuitFailure
 
+    # Initialize the shell's database's commands
+    initDb(db = db, commands = commands)
+
     # Initialize the shell's commands history
     historyIndex = initHistory(db = db, commands = commands)
 

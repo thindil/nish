@@ -32,8 +32,12 @@ import std/[os, strutils, terminal]
 import contracts
 import norm/sqlite
 # Internal imports
-import aliases, constants, completion, directorypath, help, history, logger,
-    lstring, options, output, plugins, resultcode, variables
+import aliases, constants, commandslist, completion, directorypath, help,
+    history, logger, lstring, options, output, plugins, resultcode, variables
+
+const
+  dbCommands*: seq[string] = @["optimize"]
+    ## The list of available subcommands for command alias
 
 proc closeDb*(returnCode: ResultCode; db: DbConn) {.sideEffect, raises: [],
     tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
@@ -236,6 +240,61 @@ proc optimizeDb*(arguments: UserInput; db: DbConn): ResultCode {.sideEffect,
     arguments.startsWith(prefix = "optimize")
     db != nil
   body:
-    db.exec(query = "PRAGMA optimize;VACUUM;".SqlQuery)
-    showOutput(message = "The shell's database was optimized.", fgColor = fgGreen)
+    try:
+      db.exec(query = "PRAGMA optimize;VACUUM;".SqlQuery)
+      showOutput(message = "The shell's database was optimized.",
+          fgColor = fgGreen)
+    except:
+      return showError(message = "Can't optimize the shell's database. Reason: ",
+          e = getCurrentException())
     return QuitSuccess.ResultCode
+
+proc initDb*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+        WriteDbEffect,
+    ReadIOEffect, RootEffect], contractual.} =
+  ## Initialize the shell's database. Set database's related commands
+  ##
+  ## * db          - the connection to the shell's database
+  ## * commands    - the list of the shell's commands
+  ##
+  ## Returns the updated list of the shell's commands.
+  require:
+    db != nil
+  body:
+    # Add commands related to the shell's aliases
+    proc dbCommand(arguments: UserInput; db: DbConn;
+        list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
+        WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
+        RootEffect], contractual.} =
+      ## The code of the shell's command "nishdb" and its subcommands
+      ##
+      ## * arguments - the arguments entered by the user for the command
+      ## * db        - the connection to the shell's database
+      ## * list      - the additional data for the command, like id of alias, etc
+      ##
+      ## Returns QuitSuccess if the selected command was successfully executed,
+      ## otherwise QuitFailure.
+      body:
+        # No subcommand entered, show available options
+        if arguments.len == 0:
+          return showHelpList(command = "nishdb",
+              subcommands = dbCommands)
+        # Optimize the shell's database
+        if arguments.startsWith(prefix = "optimize"):
+          return optimizeDb(arguments = arguments, db = db)
+        try:
+          return showUnknownHelp(subCommand = arguments,
+              command = initLimitedString(capacity = 6, text = "nishdb"),
+                  helpType = initLimitedString(capacity = 6,
+                      text = "nishdb"))
+        except CapacityError:
+          return QuitFailure.ResultCode
+
+    try:
+      addCommand(name = initLimitedString(capacity = 6, text = "nishdb"),
+          command = dbCommand, commands = commands,
+          subCommands = dbCommands)
+    except CapacityError, CommandsListError:
+      showError(message = "Can't add commands related to the shell's database. Reason: ",
+          e = getCurrentException())
