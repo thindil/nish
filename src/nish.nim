@@ -524,7 +524,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               e = getCurrentException())
         # Set a terminal title to current command
         setTitle(title = commandName & " " & (if arguments.len <
-            20: $arguments else: $(arguments[0 .. 20]) & "..."), db = db)
+            21: $arguments else: $(arguments[0 .. 19]) & "..."), db = db)
         # Execute plugins with precommand hook
         try:
           var plugins: seq[Plugin] = @[newPlugin()]
