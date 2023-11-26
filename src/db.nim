@@ -234,7 +234,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       return nil
 
 proc optimizeDb*(arguments: UserInput; db: DbConn): ResultCode {.sideEffect,
-    contractual.} =
+    raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect,
+    RootEffect], contractual.} =
   require:
     arguments.len > 7
     arguments.startsWith(prefix = "optimize")
