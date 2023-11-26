@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[os, strutils, terminal]
 # External modules imports
-import contracts
+import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
 import aliases, constants, commandslist, completion, directorypath, help,
@@ -39,7 +39,11 @@ const
   dbCommands*: seq[string] = @["optimize"]
     ## The list of available subcommands for command alias
 
-proc closeDb*(returnCode: ResultCode; db: DbConn) {.sideEffect, raises: [],
+using
+  db: DbConn # Connection to the shell's database
+  arguments: UserInput # The string with arguments entered by the user for the command
+
+proc closeDb*(returnCode: ResultCode; db) {.sideEffect, raises: [],
     tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Close the shell database and quit from the program with the selected return code
@@ -233,7 +237,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           e = getCurrentException())
       return nil
 
-proc optimizeDb*(arguments: UserInput; db: DbConn): ResultCode {.sideEffect,
+proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect,
     RootEffect], contractual.} =
   ## Optimize the shell's database
@@ -254,9 +258,8 @@ proc optimizeDb*(arguments: UserInput; db: DbConn): ResultCode {.sideEffect,
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc initDb*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
-        WriteDbEffect,
+proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect,
     ReadIOEffect, RootEffect], contractual.} =
   ## Initialize the shell's database. Set database's related commands
   ##
@@ -268,10 +271,10 @@ proc initDb*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [],
     db != nil
   body:
     # Add commands related to the shell's aliases
-    proc dbCommand(arguments: UserInput; db: DbConn;
-        list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
-        WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect, ReadEnvEffect,
-        RootEffect], contractual.} =
+    proc dbCommand(arguments; db; list: CommandLists): ResultCode {.raises: [],
+        tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ReadDbEffect,
+        ReadIOEffect, ReadEnvEffect, RootEffect], ruleOff: "paramsUsed",
+        contractual.} =
       ## The code of the shell's command "nishdb" and its subcommands
       ##
       ## * arguments - the arguments entered by the user for the command
