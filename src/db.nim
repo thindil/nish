@@ -27,12 +27,13 @@
 ## the shell's database.
 
 # Standard library imports
-import std/[os, strutils]
+import std/[os, strutils, terminal]
 # External modules imports
 import contracts
 import norm/sqlite
 # Internal imports
-import aliases, completion, directorypath, help, history, logger, lstring, options, output, plugins, resultcode, variables
+import aliases, constants, completion, directorypath, help, history, logger,
+    lstring, options, output, plugins, resultcode, variables
 
 proc closeDb*(returnCode: ResultCode; db: DbConn) {.sideEffect, raises: [],
     tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
@@ -227,3 +228,14 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't update database. Reason: ",
           e = getCurrentException())
       return nil
+
+proc optimizeDb*(arguments: UserInput; db: DbConn): ResultCode {.sideEffect,
+    contractual.} =
+  require:
+    arguments.len > 7
+    arguments.startsWith(prefix = "optimize")
+    db != nil
+  body:
+    db.exec(query = "PRAGMA optimize;VACUUM;".SqlQuery)
+    showOutput(message = "The shell's database was optimized.", fgColor = fgGreen)
+    return QuitSuccess.ResultCode
