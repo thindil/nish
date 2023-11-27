@@ -27,7 +27,7 @@
 ## the shell's database.
 
 # Standard library imports
-import std/[os, strutils, terminal]
+import std/[os, osproc, strutils, terminal]
 # External modules imports
 import contracts, nimalyzer
 import norm/sqlite
@@ -36,12 +36,14 @@ import aliases, constants, commandslist, completion, directorypath, help,
     history, logger, lstring, options, output, plugins, resultcode, variables
 
 const
-  dbCommands*: seq[string] = @["optimize"]
+  dbCommands*: seq[string] = @["optimize", "backup"]
     ## The list of available subcommands for command alias
 
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
+
+var dbFile: DirectoryPath = "".DirectoryPath ## The full path to the shell's database
 
 proc closeDb*(returnCode: ResultCode; db) {.sideEffect, raises: [],
     tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
@@ -236,6 +238,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't update database. Reason: ",
           e = getCurrentException())
       return nil
+    dbFile = dbPath
 
 proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect,
@@ -255,6 +258,30 @@ proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
           fgColor = fgGreen)
     except:
       return showError(message = "Can't optimize the shell's database. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
+
+proc backupDb*(arguments; db): ResultCode {.sideEffect,
+    raises: [], contractual.} =
+  ## Create a SQL file with the shell's database.
+  ##
+  ## * arguments - the user entered text with arguments for optimize database
+  ## * db        - the connection to the shell's database
+  require:
+    arguments.len > 7
+    arguments.startsWith(prefix = "backup")
+    db != nil
+  body:
+    let args: seq[string] = split(s = $arguments, sep = ' ')
+    if args.len < 2:
+      return showError(message = "Enter the name of the file where the database will be saved.")
+    try:
+      args[1].writeFile(content = execCmdEx("sqlite3 " & dbFile &
+          " .dump").output)
+      showOutput(message = "The backup file: '" & $args[1] & "' created.",
+          fgColor = fgGreen)
+    except:
+      return showError(message = "Can't create the backup of the shell's database. Reason: ",
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
@@ -291,6 +318,9 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
         # Optimize the shell's database
         if arguments.startsWith(prefix = "optimize"):
           return optimizeDb(arguments = arguments, db = db)
+        # Backup the shell's database
+        if arguments.startsWith(prefix = "backup"):
+          return backupDb(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 6, text = "nishdb"),
