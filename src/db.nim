@@ -261,8 +261,8 @@ proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc backupDb*(arguments; db): ResultCode {.sideEffect,
-    raises: [], contractual.} =
+proc backupDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ExecIOEffect, ReadIOEffect, RootEffect], contractual.} =
   ## Create a SQL file with the shell's database.
   ##
   ## * arguments - the user entered text with arguments for optimize database
@@ -283,8 +283,9 @@ proc backupDb*(arguments; db): ResultCode {.sideEffect,
           return showError(message = "Unknown type of the shell's data to backup. Available types are: " &
               tablesNames.join(sep = ", "))
     try:
-      args[1].writeFile(content = execCmdEx("sqlite3 " & dbFile & " '.dump " & (
-          if args.len > 2: args[2 .. ^1].join(sep = " ") else: "") & "'").output)
+      args[1].writeFile(content = execCmdEx(command = "sqlite3 " & dbFile &
+          " '.dump " & (if args.len > 2: args[2 .. ^1].join(
+          sep = " ") else: "") & "'").output)
       showOutput(message = "The backup file: '" & $args[1] & "' created.",
           fgColor = fgGreen)
     except:
