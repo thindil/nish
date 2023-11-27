@@ -247,6 +247,9 @@ proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
   ##
   ## * arguments - the user entered text with arguments for optimize database
   ## * db        - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if the database was successfully optimized, otherwise
+  ## QuitFailure.
   require:
     arguments.len > 7
     arguments.startsWith(prefix = "optimize")
@@ -267,6 +270,9 @@ proc backupDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   ##
   ## * arguments - the user entered text with arguments for optimize database
   ## * db        - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if the data from the database was properly exported
+  ## to the file, otherwise QuitFailure.
   require:
     arguments.len > 7
     arguments.startsWith(prefix = "backup")
