@@ -272,12 +272,19 @@ proc backupDb*(arguments; db): ResultCode {.sideEffect,
     arguments.startsWith(prefix = "backup")
     db != nil
   body:
+    const tablesNames: array[6, string] = ["aliases", "completions", "history",
+        "options", "plugins", "variables"]
     let args: seq[string] = split(s = $arguments, sep = ' ')
     if args.len < 2:
       return showError(message = "Enter the name of the file where the database will be saved.")
+    if args.len > 2:
+      for argument in args[2 .. ^1]:
+        if argument notin tablesNames:
+          return showError(message = "Unknown type of the shell's data to backup. Available types are: " &
+              tablesNames.join(sep = ", "))
     try:
-      args[1].writeFile(content = execCmdEx("sqlite3 " & dbFile &
-          " .dump").output)
+      args[1].writeFile(content = execCmdEx("sqlite3 " & dbFile & " '.dump " & (
+          if args.len > 2: args[2 .. ^1].join(sep = " ") else: "") & "'").output)
       showOutput(message = "The backup file: '" & $args[1] & "' created.",
           fgColor = fgGreen)
     except:
