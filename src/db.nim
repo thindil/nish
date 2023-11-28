@@ -36,7 +36,7 @@ import aliases, constants, commandslist, completion, directorypath, help,
     history, logger, lstring, options, output, plugins, resultcode, variables
 
 const
-  dbCommands*: seq[string] = @["optimize", "backup", "import"]
+  dbCommands*: seq[string] = @["optimize", "export", "import"]
     ## The list of available subcommands for command alias
 
 using
@@ -264,7 +264,7 @@ proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc backupDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ExecIOEffect, ReadIOEffect, RootEffect], contractual.} =
   ## Create a SQL file with the shell's database.
   ##
@@ -275,7 +275,7 @@ proc backupDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   ## to the file, otherwise QuitFailure.
   require:
     arguments.len > 7
-    arguments.startsWith(prefix = "backup")
+    arguments.startsWith(prefix = "export")
     db != nil
   body:
     const tablesNames: array[6, string] = ["aliases", "completions", "history",
@@ -361,9 +361,9 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
         # Optimize the shell's database
         if arguments.startsWith(prefix = "optimize"):
           return optimizeDb(arguments = arguments, db = db)
-        # Backup the shell's database
-        if arguments.startsWith(prefix = "backup"):
-          return backupDb(arguments = arguments, db = db)
+        # Export to SQL file the shell's database
+        if arguments.startsWith(prefix = "export"):
+          return exportDb(arguments = arguments, db = db)
         # Import data into the shell's database
         if arguments.startsWith(prefix = "import"):
           return importDb(arguments = arguments, db = db)
