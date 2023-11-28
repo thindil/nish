@@ -299,8 +299,8 @@ proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
-proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [],
-    contractual.} =
+proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect]contractual.} =
   ## Import data from the SQL file into the shell's database
   ##
   ## * arguments - the user entered text with arguments for optimize database
@@ -317,7 +317,8 @@ proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [],
     if args.len < 2:
       return showError(message = "Enter the name of the file from which the data will be imported to the database.")
     try:
-      let res = execCmdEx(command = "sqlite3 " & dbFile & " '.read " & args[1] & "'")
+      let res: tuple[output: string; exitCode: int] = execCmdEx(
+          command = "sqlite3 " & dbFile & " '.read " & args[1] & "'")
       if res.exitCode == 0:
         showOutput(message = "The data from the file: '" & $args[1] &
             "' was imported to the database.", fgColor = fgGreen)
