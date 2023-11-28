@@ -274,7 +274,7 @@ proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   ## Returns QuitSuccess if the data from the database was properly exported
   ## to the file, otherwise QuitFailure.
   require:
-    arguments.len > 7
+    arguments.len > 5
     arguments.startsWith(prefix = "export")
     db != nil
   body:
@@ -309,7 +309,7 @@ proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [],
   ## Returns QuitSuccess if the data from the file was correctly imported into
   ## the database, otherwise QuitFailure.
   require:
-    arguments.len > 7
+    arguments.len > 5
     arguments.startsWith(prefix = "import")
     db != nil
   body:
