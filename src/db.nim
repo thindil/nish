@@ -36,7 +36,7 @@ import aliases, constants, commandslist, completion, directorypath, help,
     history, logger, lstring, options, output, plugins, resultcode, variables
 
 const
-  dbCommands*: seq[string] = @["optimize", "backup"]
+  dbCommands*: seq[string] = @["optimize", "backup", "import"]
     ## The list of available subcommands for command alias
 
 using
@@ -299,6 +299,35 @@ proc backupDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException())
     return QuitSuccess.ResultCode
 
+proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [],
+    contractual.} =
+  ## Import data from the SQL file into the shell's database
+  ##
+  ## * arguments - the user entered text with arguments for optimize database
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if the data from the file was correctly imported into
+  ## the database, otherwise QuitFailure.
+  require:
+    arguments.len > 7
+    arguments.startsWith(prefix = "import")
+    db != nil
+  body:
+    let args: seq[string] = split(s = $arguments, sep = ' ')
+    if args.len < 2:
+      return showError(message = "Enter the name of the file from which the data will be imported to the database.")
+    try:
+      let res = execCmdEx(command = "sqlite3 " & dbFile & " '.read " & args[1] & "'")
+      if res.exitCode == 0:
+        showOutput(message = "The data from the file: '" & $args[1] &
+            "' was imported to the database.", fgColor = fgGreen)
+      else:
+        return showError(message = "Can't import the data into the shell's database. Reason: " & res.output)
+    except:
+      return showError(message = "Can't import the data into the shell's database. Reason: ",
+          e = getCurrentException())
+    return QuitSuccess.ResultCode
+
 proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, WriteDbEffect,
     ReadIOEffect, RootEffect], contractual.} =
@@ -335,6 +364,9 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
         # Backup the shell's database
         if arguments.startsWith(prefix = "backup"):
           return backupDb(arguments = arguments, db = db)
+        # Import data into the shell's database
+        if arguments.startsWith(prefix = "import"):
+          return importDb(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 6, text = "nishdb"),
