@@ -90,7 +90,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException())
       return nil
-    let options: array[10, Option] = [newOption(name = "dbVersion", value = "5",
+    let options: array[11, Option] = [newOption(name = "dbVersion", value = "5",
         description = "Version of the database schema (read only).",
         valueType = ValueType.natural, readOnly = true, defaultValue = "5"),
         newOption(name = "promptCommand", value = "built-in",
@@ -120,7 +120,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         defaultValue = "false"),
         newOption(name = "suggestionPrecision", value = "1",
         description = "How precise is the commands' suggestion system.",
-        valueType = ValueType.natural, readOnly = false, defaultValue = "1")]
+        valueType = ValueType.natural, readOnly = false, defaultValue = "1"),
+        newOption(name = "titleWidth", value = "30",
+        description = "The maximum length of a terminal title which will be set.",
+        valueType = ValueType.positive, readOnly = false, defaultValue = "30")]
     # Create a new database if not exists
     if not dbExists:
       if result.createAliasesDb == QuitFailure:
@@ -202,33 +205,23 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.createCompletionDb == QuitFailure:
           return nil
-        setOption(optionName = initLimitedString(capacity = 40,
-            text = options[0].option), value = initLimitedString(capacity = 40,
-            text = options[0].value), description = initLimitedString(
-            capacity = 256, text = options[0].description),
-            valueType = options[0].valueType, db = result, readOnly = (
-            if options[0].readOnly: 1 else: 0))
-        setOption(optionName = initLimitedString(capacity = 40,
-            text = options[8].option), value = initLimitedString(capacity = 40,
-            text = options[8].value), description = initLimitedString(
-            capacity = 256, text = options[8].description),
-            valueType = options[8].valueType, db = result, readOnly = (
-            if options[8].readOnly: 1 else: 0))
-        setOption(optionName = initLimitedString(capacity = 40,
-            text = options[9].option), value = initLimitedString(capacity = 40,
-            text = options[9].value), description = initLimitedString(
-            capacity = 256, text = options[8].description),
-            valueType = options[9].valueType, db = result, readOnly = (
-            if options[9].readOnly: 1 else: 0))
+        for i in [0, 8, 9, 10]:
+          setOption(optionName = initLimitedString(capacity = 40,
+              text = options[i].option), value = initLimitedString(capacity = 40,
+              text = options[i].value), description = initLimitedString(
+              capacity = 256, text = options[i].description),
+              valueType = options[i].valueType, db = result, readOnly = (
+              if options[i].readOnly: 1 else: 0))
       of 4:
         if result.createCompletionDb == QuitFailure:
           return nil
-        setOption(optionName = initLimitedString(capacity = 40,
-            text = options[0].option), value = initLimitedString(capacity = 40,
-            text = options[0].value), description = initLimitedString(
-            capacity = 256, text = options[0].description),
-            valueType = options[0].valueType, db = result, readOnly = (
-            if options[0].readOnly: 1 else: 0))
+        for i in [0, 10]:
+          setOption(optionName = initLimitedString(capacity = 40,
+              text = options[i].option), value = initLimitedString(capacity = 40,
+              text = options[i].value), description = initLimitedString(
+              capacity = 256, text = options[i].description),
+              valueType = options[i].valueType, db = result, readOnly = (
+              if options[i].readOnly: 1 else: 0))
       of 5:
         discard
       else:
