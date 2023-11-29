@@ -10,6 +10,8 @@ of the shell.
 - Completions for commands' arguments. It can be set manually or imported
   from files, previously exported from the shell, into the shell's database
 - Commands to optimize, export or import the shell's database
+- Option to set the maximum length of a terminal's title which will be set
+  by the shell
 
 ### Fixed
 - Cross-compiling the shell for Arm
