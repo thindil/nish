@@ -27,7 +27,7 @@
 ## shell's setting and avaiablitity.
 
 # Standard library imports
-import std/[os, terminal]
+import std/[os, strutils, terminal]
 # External modules imports
 import contracts
 import norm/sqlite
@@ -54,8 +54,16 @@ proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
         return
     except CapacityError:
       return
+    let titleWidth: Positive = try:
+          ($getOption(optionName = initLimitedString(capacity = 10,
+              text = "titleWidth"), db = db, defaultValue = initLimitedString(
+              capacity = 4, text = "30"))).parseInt
+        except:
+          30
+    let newTitle: string = (if title.len <= titleWidth: title else: title[0 ..
+        titleWidth - 1] & "...")
     try:
-      stdout.write(s = "\e]2;" & title & "\a")
+      stdout.write(s = "\e]2;" & newTitle & "\a")
       stdout.flushFile
     except IOError:
       discard

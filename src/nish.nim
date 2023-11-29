@@ -526,8 +526,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           showError(message = "Entered input is too long.",
               e = getCurrentException())
         # Set a terminal title to current command
-        setTitle(title = commandName & " " & (if arguments.len <
-            21: $arguments else: $(arguments[0 .. 19]) & "..."), db = db)
+        setTitle(title = commandName & " " & $arguments, db = db)
         # Execute plugins with precommand hook
         try:
           var plugins: seq[Plugin] = @[newPlugin()]
