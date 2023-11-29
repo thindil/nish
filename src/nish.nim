@@ -27,7 +27,7 @@
 ## and stopping the shell and the main loop of the shell itself.
 
 # Standard library imports
-import std/[os, parseopt, strutils, tables, terminal, unicode]
+import std/[os, osproc, parseopt, strutils, tables, terminal, unicode]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/sqlite
@@ -157,8 +157,9 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           getCommandCompletion(prefix = prefix, completions = completions,
               aliases = aliases, commands = commands, db = db)
         elif spaceIndex > -1:
-          getCompletion(commandName = $inputString[0 .. spaceIndex - 1], prefix = prefix,
-              completions = completions, aliases = aliases, commands = commands, db = db)
+          getCompletion(commandName = $inputString[0 .. spaceIndex - 1],
+              prefix = prefix, completions = completions, aliases = aliases,
+                  commands = commands, db = db)
         if completions.len == 0:
           continue
         elif completions.len == 1:
@@ -421,6 +422,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       cursorPosition: Natural = 0
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
       lastCommand: string = ""
+
+    # On Unix systems, load various users' configurations for shells
+    when not defined(windows):
+      let profiles: array[2, string] = ["/etc/profile", getHomeDir() & ".profile"]
+      for fileName in profiles:
+        logToFile(message = "Loading profile: " & fileName)
+        if fileExists(fileName) and execCmd(command = "sh '" & fileName & "'") != 0:
+          showError(message = "Can't load the shells configuration file '" & fileName & "'.")
 
     # Check the command line parameters entered by the user. Available options
     # are "-c [command]" to run only one command, "-h" or "--help" to show
