@@ -1,0 +1,20 @@
+.\" Manpage for nish.
+.\" Contact thindil@laeran.pl.eu.org to correct errors or typos.
+.TH man 1 "30 Nov 2023" "0.7.0" "nish man page"
+.SH NAME
+nish \- non-POSIX, multiplatform command-line shell
+.SH SYNOPSIS
+nish [-h] [-v] [--db path] [-c command]
+.SH DESCRIPTION
+[README.md]
+.SH OPTIONS
+-h or --help      Show the available options for the shell
+-v or --version   Show the information about the shell version
+--db path         Set the database for the shell. If doesn't exists, it will be created
+-c command        Execute the selected command and quit from the shell
+.SH SEE ALSO
+sh(8), shells(5)
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Bartek thindil Jasicki
