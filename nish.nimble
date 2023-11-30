@@ -24,6 +24,13 @@ requires "unittest2"
 
 # Tasks
 
+task man, "create the UNIX man page for the shell":
+  let readme = readFile("README.md")
+  var man = readFile("tools" & DirSep & "nish.1.in")
+  man = man.replace("[README.md]", readme)
+  writeFile(binDir & DirSep & "nish.1", man)
+  echo "The Unix man page for the shell was created."
+
 task debug, "builds the shell in debug mode":
   exec "nimble install -d -y"
   exec "nimassets -d=help -o=" & srcDir & DirSep & "helpcontent.nim"
