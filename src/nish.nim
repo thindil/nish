@@ -428,8 +428,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       let profiles: array[2, string] = ["/etc/profile", getHomeDir() & ".profile"]
       for fileName in profiles:
         logToFile(message = "Loading profile: " & fileName)
-        if fileExists(fileName) and execCmd(command = "sh '" & fileName & "'") != 0:
-          showError(message = "Can't load the shells configuration file '" & fileName & "'.")
+        if fileExists(filename = fileName) and execCmd(command = "sh '" &
+            fileName & "'") != 0:
+          showError(message = "Can't load the shells configuration file '" &
+              fileName & "'.")
 
     # Check the command line parameters entered by the user. Available options
     # are "-c [command]" to run only one command, "-h" or "--help" to show
