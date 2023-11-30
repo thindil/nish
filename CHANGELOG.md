@@ -12,6 +12,7 @@ of the shell.
 - Commands to optimize, export or import the shell's database
 - Option to set the maximum length of a terminal's title which will be set
   by the shell
+- Loading shells' profiles on Unix systems
 
 ### Fixed
 - Cross-compiling the shell for Arm
