@@ -28,6 +28,7 @@ task man, "create the UNIX man page for the shell":
   let readme = readFile("README.md")
   var man = readFile("tools" & DirSep & "nish.1.in")
   man = man.replace("[README.md]", readme)
+  man = man.replace("[VERSION]", version)
   writeFile(binDir & DirSep & "nish.1", man)
   echo "The Unix man page for the shell was created."
 
