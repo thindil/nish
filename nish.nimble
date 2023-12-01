@@ -25,8 +25,10 @@ requires "unittest2"
 # Tasks
 
 task man, "create the UNIX man page for the shell":
-  let readme = readFile("README.md")
-  var man = readFile("tools" & DirSep & "nish.1.in")
+  var
+    readme = readFile("README.md")
+    man = readFile("tools" & DirSep & "nish.1.in")
+  readme = readme.replace("\n", "\n ")
   man = man.replace("[README.md]", readme)
   man = man.replace("[VERSION]", version)
   writeFile(binDir & DirSep & "nish.1", man)
