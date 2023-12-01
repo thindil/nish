@@ -13,6 +13,7 @@ of the shell.
 - Option to set the maximum length of a terminal's title which will be set
   by the shell
 - Loading shells' profiles on Unix systems
+- Creating the Unix man page for the shell
 
 ### Fixed
 - Cross-compiling the shell for Arm
