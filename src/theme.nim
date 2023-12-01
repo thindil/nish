@@ -40,9 +40,9 @@ type
   Color* {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
-    ## * name   - the name of the color
-    ## * cValue - the name of the color, in 8 colors pallete
-    command* {.unique.}: string
+    ## * name   - the name of the color in the shell's theme
+    ## * cValue - the name of the color, in 8 colors' terminal's pallete
+    name* {.unique.}: string
     cValue*: ColorName
 
 proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],
