@@ -9,3 +9,4 @@ Various tools related to the shell:
                    Nish.
 * testplugin.sh  - the test plugin for the shell, used to check if the shell's
                    plugins API works properly.
+* nish.1.in      - the template for creata the Unix man page for the shell.
