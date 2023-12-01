@@ -41,17 +41,17 @@ const historyCommands: seq[string] = @["clear", "list", "find"]
 type
   HistoryRange* = ExtendedNatural
     ## Used to store the amount of commands in the shell's history
-  HistoryEntry* {.tableName: "history".} = ref object of Model
+  HistoryEntry {.tableName: "history".} = ref object of Model
     ## Data structure for the shell's commands' history entry
     ##
     ## * command  - the command executed by the user
     ## * lastUsed - the time when the command was recently excute
     ## * amount   - how many times the user executed the command
     ## * path     - the full path in which the command was executed
-    command*: string
-    lastUsed*: DateTime
-    amount*: int
-    path*: string
+    command: string
+    lastUsed: DateTime
+    amount: int
+    path: string
 
 using
   db: DbConn # Connection to the shell's database

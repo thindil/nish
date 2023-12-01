@@ -36,7 +36,7 @@ import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables
 
 type
-  Alias* {.tableName: "aliases".} = ref object of Model
+  Alias {.tableName: "aliases".} = ref object of Model
     ## Data structure for the shell's alias
     ##
     ## * name        - the name of the alias, used to trigger it
@@ -46,12 +46,12 @@ type
     ## * description - the description of the alias, showed on the list of aliases
     ##                 or in the alias information
     ## * output      - where to redirect the output of the alias' commands
-    name* {.unique.}: string
-    path*: string
-    recursive*: bool
-    commands*: string
-    description*: string
-    output*: string
+    name {.unique.}: string
+    path: string
+    recursive: bool
+    commands: string
+    description: string
+    output: string
 
 const
   aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]

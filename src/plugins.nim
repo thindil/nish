@@ -60,9 +60,9 @@ type
     ## * preCommand  - if true, the plugin is executed before the user's command
     ## * postCommand - fi true, the plugin is executed after the user's command
     location*: string
-    enabled*: bool
-    preCommand*: bool
-    postCommand*: bool
+    enabled: bool
+    preCommand: bool
+    postCommand: bool
 
 using
   db: DbConn # Connection to the shell's database
