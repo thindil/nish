@@ -29,21 +29,29 @@
 # Standard library imports
 import std/strutils
 # External modules imports
-import contracts
+import contracts, nimalyzer
 import norm/[model, pragmas, sqlite]
 # Internal imports
 
 type
-  ColorName* = enum
+  ColorName = enum
     ## Used to set the colors' value
     black, red, green, yellow, blue, magenta, cyan, white, default
-  Color* {.tableName: "theme".} = ref object of Model
+  Color {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
-    ## * name   - the name of the color in the shell's theme
-    ## * cValue - the name of the color, in 8 colors' terminal's pallete
-    name* {.unique.}: string
-    cValue*: ColorName
+    ## * name        - the name of the color in the shell's theme
+    ## * cValue      - the name of the color, in 8 colors' terminal's pallete
+    ## * description - the color's description, show to the user
+    ## * bold        - if true, set the color with a bold font
+    ## * underline   - if true, add underline to the color
+    ## * italic      - if true, set the color with an italic font
+    name {.unique.}: string
+    cValue: ColorName
+    description: string
+    bold: bool
+    underline: bool
+    italic: bool
 
 proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],
     contractual.} =
@@ -65,6 +73,7 @@ proc dbValue*(val: ColorName): DbValue {.raises: [], tags: [],
   body:
     dbValue(v = $val)
 
+{.push ruleOff: "paramsUsed".}
 proc to*(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
     contractual.} =
   ## Convert the value from the database to enumeration
@@ -78,3 +87,22 @@ proc to*(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
       parseEnum[ColorName](s = dbVal.s)
     except:
       default
+{.pop ruleOff: "paramsUsed".}
+
+proc newColor*(name: string = ""; cValue: ColorName = default;
+    description: string = ""; bold: bool = false; underline: bool = false;
+    italic: bool = false): Color {.raises: [], tags: [], contractual.} =
+  ## Create a new data structure for the shell's theme's color.
+  ##
+  ## * name        - the name of the color in the shell's theme
+  ## * cValue      - the name of the color, in 8 colors' terminal's pallete
+  ## * description - the color's description, show to the user
+  ## * bold        - if true, set the color with a bold font
+  ## * underline   - if true, add underline to the color
+  ## * italic      - if true, set the color with an italic font
+  ##
+  ## Returns the new data structure for the selected shell's theme's color.
+  body:
+    Color(name: name, cValue: cValue, description: description, bold: bold,
+        underline: underline, italic: italic)
+
