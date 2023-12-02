@@ -61,7 +61,7 @@ proc closeDb*(returnCode: ResultCode; db) {.sideEffect, raises: [],
       db.close
     except DbError:
       showError(message = "Can't close properly the shell database. Reason:",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
       quit QuitFailure
     quit returnCode.int
 
@@ -82,14 +82,14 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       discard existsOrCreateDir(dir = parentDir(path = $dbPath))
     except OSError, IOError:
       showError(message = "Can't create directory for the shell's database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = nil)
       return nil
     let dbExists: bool = fileExists(filename = $dbPath)
     try:
       result = open(connection = $dbPath, user = "", password = "", database = "")
     except DbError:
       showError(message = "Can't open the shell's database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = nil)
       return nil
     let options: array[11, Option] = [newOption(name = "dbVersion", value = "5",
         description = "Version of the database schema (read only).",
@@ -153,7 +153,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               if option.readOnly: 1 else: 0))
       except CapacityError:
         showError(message = "Can't set database schema. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = nil)
         return nil
     # If database version is different than the newest, update database
     try:
@@ -236,11 +236,11 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       of 5:
         discard
       else:
-        showError(message = "Invalid version of database.")
+        showError(message = "Invalid version of database.", db = nil)
         return nil
     except CapacityError, DbError, ValueError:
       showError(message = "Can't update database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = nil)
       return nil
     dbFile = dbPath
 
@@ -265,7 +265,7 @@ proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
           fgColor = fgGreen)
     except:
       return showError(message = "Can't optimize the shell's database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
@@ -286,12 +286,12 @@ proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         "options", "plugins", "variables"]
     let args: seq[string] = split(s = $arguments, sep = ' ')
     if args.len < 2:
-      return showError(message = "Enter the name of the file where the database will be saved.")
+      return showError(message = "Enter the name of the file where the database will be saved.", db = db)
     if args.len > 2:
       for argument in args[2 .. ^1]:
         if argument notin tablesNames:
           return showError(message = "Unknown type of the shell's data to backup. Available types are: " &
-              tablesNames.join(sep = ", "))
+              tablesNames.join(sep = ", "), db = db)
     try:
       args[1].writeFile(content = execCmdEx(command = "sqlite3 " & dbFile &
           " '.dump " & (if args.len > 2: args[2 .. ^1].join(
@@ -300,7 +300,7 @@ proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           fgColor = fgGreen)
     except:
       return showError(message = "Can't create the backup of the shell's database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
@@ -319,7 +319,7 @@ proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     let args: seq[string] = split(s = $arguments, sep = ' ')
     if args.len < 2:
-      return showError(message = "Enter the name of the file from which the data will be imported to the database.")
+      return showError(message = "Enter the name of the file from which the data will be imported to the database.", db = db)
     try:
       let res: tuple[output: string; exitCode: int] = execCmdEx(
           command = "sqlite3 " & dbFile & " '.read " & args[1] & "'")
@@ -327,10 +327,10 @@ proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         showOutput(message = "The data from the file: '" & $args[1] &
             "' was imported to the database.", fgColor = fgGreen)
       else:
-        return showError(message = "Can't import the data into the shell's database. Reason: " & res.output)
+        return showError(message = "Can't import the data into the shell's database. Reason: " & res.output, db = db)
     except:
       return showError(message = "Can't import the data into the shell's database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
@@ -386,4 +386,4 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
           subCommands = dbCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)

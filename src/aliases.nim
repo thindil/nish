@@ -104,12 +104,12 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [
         let index: LimitedString = try:
             initLimitedString(capacity = maxInputLength, text = dbResult.name)
           except CapacityError:
-            showError(message = "Can't set index from " & dbResult.name)
+            showError(message = "Can't set index from " & dbResult.name, db = db)
             return
         aliases[index] = dbResult.id
     except:
       showError(message = "Can't set aliases for the current directory. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
@@ -133,7 +133,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           ss = "Description")])
     except:
       return showError(message = "Can't show aliases list. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     type LocalAlias = ref object
       id: Positive = 1
       name: string
@@ -146,7 +146,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
             objs = dbAliases)
       except:
         return showError(message = "Can't read info about alias from database. Reason:",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
       if dbAliases.len == 0:
         showOutput(message = "There are no defined shell's aliases.")
         return QuitSuccess.ResultCode
@@ -164,7 +164,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           index.inc
         except:
           return showError(message = "Can't read info about alias from database. Reason:",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
       if dbAliases[0].name.len == 0:
         showOutput(message = "There are no defined shell's aliases in the current directory.")
         return QuitSuccess.ResultCode
@@ -174,7 +174,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
             dbResult.description])
     except:
       return showError(message = "Can't add an alias to the list. Reason:",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     try:
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
@@ -188,7 +188,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       table.echoTable
     except:
       return showError(message = "Can't show the list of aliases. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
@@ -227,30 +227,30 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     db != nil
   body:
     if arguments.len < 8:
-      return showError(message = "Enter the Id of the alias to delete.")
+      return showError(message = "Enter the Id of the alias to delete.", db = db)
     let id: DatabaseId = try:
         parseInt(s = $arguments[7 .. ^1]).DatabaseId
       except ValueError:
-        return showError(message = "The Id of the alias must be a positive number.")
+        return showError(message = "The Id of the alias must be a positive number.", db = db)
     try:
       if not db.exists(T = Alias, cond = "id=?", params = $id):
         return showError(message = "The alias with the Id: " & $id &
-          " doesn't exists.")
+          " doesn't exists.", db = db)
     except:
       return showError(message = "Can't find the alias in database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     try:
       var alias: Alias = newAlias()
       db.select(obj = alias, cond = "id=?", params = $id)
       db.delete(obj = alias)
     except:
       return showError(message = "Can't delete alias from database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     try:
       aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       return showError(message = "Can't delete alias, setting a new aliases not work. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     showOutput(message = "Deleted the alias with Id: " & $id, fgColor = fgGreen)
     return QuitSuccess.ResultCode
 
@@ -271,20 +271,20 @@ proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     db != nil
   body:
     if arguments.len < 6:
-      return showError(message = "Enter the ID of the alias to show.")
+      return showError(message = "Enter the ID of the alias to show.", db = db)
     let id: DatabaseId = try:
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
       except:
-        return showError(message = "The Id of the alias must be a positive number.")
+        return showError(message = "The Id of the alias must be a positive number.", db = db)
     var alias: Alias = newAlias()
     try:
       if not db.exists(T = Alias, cond = "id=?", params = $id):
         return showError(message = "The alias with the ID: " & $id &
-          " doesn't exists.")
+          " doesn't exists.", db = db)
       db.select(obj = alias, cond = "id=?", params = $id)
     except:
       return showError(message = "Can't read alias data from database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
     try:
       table.add(parts = [magenta(ss = "Id:"), $id])
@@ -298,7 +298,7 @@ proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       table.echoTable
     except:
       return showError(message = "Can't show alias. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(),db = db)
     return QuitSuccess.ResultCode
 
 proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
@@ -324,24 +324,24 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     while name.len == 0:
       name = readInput(maxLength = aliasNameLength)
       if name.len == 0:
-        showError(message = "Please enter a name for the alias.")
+        showError(message = "Please enter a name for the alias.", db = db)
       elif not validIdentifier(s = $name):
         try:
           name.text = ""
-          showError(message = "Please enter a valid name for the alias.")
+          showError(message = "Please enter a valid name for the alias.", db = db)
         except CapacityError:
-          showError(message = "Can't set empty name for alias.")
+          showError(message = "Can't set empty name for alias.", db = db)
       if name.len == 0:
         showOutput(message = "Name: ", newLine = false)
     if name == "exit":
-      return showError(message = "Adding a new alias cancelled.")
+      return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the description for the alias
     showFormHeader(message = "(2/6 or 7) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
     showOutput(message = "Description: ", newLine = false)
     let description: UserInput = readInput()
     if description == "exit":
-      return showError(message = "Adding a new alias cancelled.")
+      return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the working directory for the alias
     showFormHeader(message = "(3/6 or 7) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
@@ -350,14 +350,14 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     while path.len == 0:
       path = ($readInput()).DirectoryPath
       if path.len == 0:
-        showError(message = "Please enter a path for the alias.")
+        showError(message = "Please enter a path for the alias.", db = db)
       elif not dirExists(dir = $path) and path != "exit":
         path = "".DirectoryPath
-        showError(message = "Please enter a path to the existing directory")
+        showError(message = "Please enter a path to the existing directory", db = db)
       if path.len == 0:
         showOutput(message = "Path: ", newLine = false)
     if path == "exit":
-      return showError(message = "Adding a new alias cancelled.")
+      return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
@@ -381,10 +381,10 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     while commands.len == 0:
       commands = readInput()
       if commands.len == 0:
-        showError(message = "Please enter commands for the alias.")
+        showError(message = "Please enter commands for the alias.", db = db)
         showOutput(message = "Command(s): ", newLine = false)
     if commands == "exit":
-      return showError(message = "Adding a new alias cancelled.")
+      return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the destination for the alias' output
     showFormHeader(message = "(6/6 or 7) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. If you select the option file, you will be asked for the path to the file. Possible options:")
@@ -404,9 +404,9 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       else:
         discard
     except CapacityError:
-      return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias")
+      return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias", db = db)
     if output == "exit":
-      return showError(message = "Adding a new alias cancelled.")
+      return showError(message = "Adding a new alias cancelled.", db = db)
     elif output == "file":
       # Set the destination for the alias' output
       showFormHeader(message = "(7/7) Output file", db = db)
@@ -419,29 +419,29 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       while output.len == 0:
         output = readInput()
     if output == "exit":
-      return showError(message = "Adding a new alias cancelled.")
+      return showError(message = "Adding a new alias cancelled.", db = db)
     var alias: Alias = newAlias(name = $name, path = $path,
         recursive = recursive == 1, commands = $commands,
         description = $description, output = $output)
     # Check if alias with the same parameters exists in the database
     try:
       if db.exists(T = Alias, cond = "name=?", params = alias.name):
-        return showError(message = "There is an alias with the same name in the database.")
+        return showError(message = "There is an alias with the same name in the database.", db = db)
     except:
       return showError(message = "Can't check if the similar alias exists. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     # Save the alias to the database
     try:
       db.insert(obj = alias)
     except:
       return showError(message = "Can't add the alias to the database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     # Refresh the list of available aliases
     try:
       aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     showOutput(message = "The new alias '" & name & "' added.",
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
@@ -465,18 +465,18 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       alias: Alias = newAlias()
       id: DatabaseId = 0.DatabaseId
     if arguments.len < 6:
-      return showError(message = "Enter the ID of the alias to edit.")
+      return showError(message = "Enter the ID of the alias to edit.", db = db)
     try:
       id = parseInt(s = $arguments[5 .. ^1]).DatabaseId
     except ValueError:
-      return showError(message = "The Id of the alias must be a positive number.")
+      return showError(message = "The Id of the alias must be a positive number.", db = db)
     try:
       db.select(obj = alias, cond = "id=?", params = $id)
     except:
-      return showError(message = "Can't check if the alias exists.")
+      return showError(message = "Can't check if the alias exists.", db = db)
     if alias.name.len == 0:
       return showError(message = "The alias with the Id: " & $id &
-        " doesn't exists.")
+        " doesn't exists.", db = db)
     showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
     # Set the name for the alias
     showFormHeader(message = "(1/6 or 7) Name", db = db)
@@ -487,15 +487,15 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Name: ", newLine = false)
     var name: AliasName = readInput(maxLength = aliasNameLength)
     while name.len > 0 and not validIdentifier(s = $name):
-      showError(message = "Please enter a valid name for the alias.")
+      showError(message = "Please enter a valid name for the alias.", db = db)
       name = readInput(maxLength = aliasNameLength)
     if name == "exit":
-      return showError(message = "Editing the alias cancelled.")
+      return showError(message = "Editing the alias cancelled.", db = db)
     elif name == "":
       try:
         name.text = alias.name
       except CapacityError:
-        return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias")
+        return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias", db = db)
     # Set the description for the alias
     showFormHeader(message = "(2/6 or 7) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
@@ -506,12 +506,12 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Description: ", newLine = false)
     var description: UserInput = readInput()
     if description == "exit":
-      return showError(message = "Editing the alias cancelled.")
+      return showError(message = "Editing the alias cancelled.", db = db)
     elif description == "":
       try:
         description.text = alias.description
       except CapacityError:
-        return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias")
+        return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias", db = db)
     # Set the working directory for the alias
     showFormHeader(message = "(3/6 or 7) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
@@ -521,10 +521,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = ($readInput()).DirectoryPath
     while path.len > 0 and (path != "exit" and not dirExists(dir = $path)):
-      showError(message = "Please enter a path to the existing directory")
+      showError(message = "Please enter a path to the existing directory", db = db)
       path = ($readInput()).DirectoryPath
     if path == "exit":
-      return showError(message = "Editing the alias cancelled.")
+      return showError(message = "Editing the alias cancelled.", db = db)
     elif path == "":
       path = alias.path.DirectoryPath
     # Set the recursiveness for the alias
@@ -554,12 +554,12 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Commands: ", newLine = false)
     var commands: UserInput = readInput()
     if commands == "exit":
-      return showError(message = "Editing the alias cancelled.")
+      return showError(message = "Editing the alias cancelled.", db = db)
     elif commands == "":
       try:
         commands.text = alias.commands
       except CapacityError:
-        return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias")
+        return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias", db = db)
     # Set the destination for the alias' output
     showFormHeader(message = "(6/6 or 7) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
@@ -582,9 +582,9 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       else:
         discard
     except CapacityError:
-      return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias")
+      return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias", db = db)
     if output == "exit":
-      return showError(message = "Editing the alias cancelled.")
+      return showError(message = "Editing the alias cancelled.", db = db)
     elif output == "file":
       # Set the destination for the alias' output
       showFormHeader(message = "(7/7) Output file", db = db)
@@ -597,7 +597,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       while output.len == 0:
         output = readInput()
     if output == "exit":
-      return showError(message = "Editing the alias cancelled.")
+      return showError(message = "Editing the alias cancelled.", db = db)
     # Save the alias to the database
     try:
       alias.name = $name
@@ -609,13 +609,13 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       db.update(obj = alias)
     except:
       return showError(message = "Can't update the alias. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     # Refresh the list of available aliases
     try:
       aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     showOutput(message = "The alias with Id: '" & $id & "' edited.",
         fgColor = fgGreen)
     return QuitSuccess.ResultCode
@@ -642,12 +642,12 @@ proc execAlias*(arguments; aliasId: string; aliases;
       aliasIndex: LimitedString = try:
           initLimitedString(capacity = maxInputLength, text = aliasId)
         except CapacityError:
-          return showError(message = "Can't set alias index for " & aliasId)
+          return showError(message = "Can't set alias index for " & aliasId, db = db)
       currentDirectory: DirectoryPath = try:
           getCurrentDirectory().DirectoryPath
       except OSError:
         return showError(message = "Can't get current directory. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
     type LocalAlias = ref object
       output: string
       commands: string
@@ -657,7 +657,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
           obj = alias, params = aliases[aliasIndex])
     except:
       return showError(message = "Can't get information about the alias from the database. Reason:",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     var commandArguments: seq[string] = (if arguments.len > 0: initOptParser(
           cmdline = $arguments).remainingArgs else: @[])
     # Add quotes to arguments which contains spaces
@@ -676,7 +676,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
           0
       # Not enough argument entered by the user, quit with error
       if argumentNumber > commandArguments.len:
-        return showError(message = "Not enough arguments entered")
+        return showError(message = "Not enough arguments entered", db = db)
       elif argumentNumber > 0:
         alias.commands = alias.commands.replace(sub = alias.commands[
           argumentPosition..argumentPosition + 1], by = commandArguments[
@@ -692,7 +692,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
               filename = alias.output, mode = fmWrite) else: nil)
         except IOError:
           return showError(message = "Can't open output file. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
     # Execute the selected alias
     var workingDir: string = ""
     while alias.commands.len > 0:
@@ -722,13 +722,13 @@ proc execAlias*(arguments; aliasId: string; aliases;
           if outputFile != nil:
             outputFile.write(s = resultOutput)
           else:
-            showError(message = resultOutput)
+            showError(message = resultOutput, db = db)
         result = returnCode.ResultCode
         if result != QuitSuccess and conjCommands:
           break
       except OSError, IOError, Exception:
         showError(message = "Can't execute the command of the alias. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
         break
       if not conjCommands:
         break
@@ -743,7 +743,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
         aliases.setAliases(directory = currentDirectory, db = db)
       except OSError:
         return showError(message = "Can't restore aliases and variables. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
     return result
 
 proc initAliases*(db; aliases: ref AliasesList;
@@ -809,13 +809,13 @@ proc initAliases*(db; aliases: ref AliasesList;
           subCommands = aliasesCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's aliases. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     # Set the shell's aliases for the current directory
     try:
       aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       showError(message = "Can't initialize aliases. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
@@ -835,7 +835,7 @@ proc updateAliasesDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
         db.exec(query = sql(query = """ALTER TABLE aliases ADD output TEXT NOT NULL"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc createAliasesDb*(db): ResultCode {.sideEffect, raises: [], tags: [
@@ -853,6 +853,6 @@ proc createAliasesDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.createTables(obj = newAlias())
     except DBError, ValueError, CapacityError:
       return showError(message = "Can't create 'aliases' table. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
