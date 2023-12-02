@@ -77,15 +77,15 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
       db.select(obj = entry, cond = "topic=?", params = $topic)
       if entry.topic.len == 0:
         return showError(message = "Can't update the help entry for topic '" &
-            topic & "' because there is no that topic.")
+            topic & "' because there is no that topic.", db = db)
       db.update(obj = entry)
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't update the help entry in the database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc showUnknownHelp*(subCommand, command,
-    helpType: UserInput): ResultCode {.sideEffect, raises: [], tags: [
+    helpType: UserInput; db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Show information about unknown help topic entered by the user
   ##
@@ -94,6 +94,7 @@ proc showUnknownHelp*(subCommand, command,
   ## * Command    - the command for which help was looking for enteted by the
   ##                user
   ## * helpType   - the type of help topic
+  ## * db         - the connection to the shell's database
   ##
   ## Always returns QuitFailure.
   require:
@@ -103,7 +104,7 @@ proc showUnknownHelp*(subCommand, command,
   body:
     return showError(message = "Unknown subcommand `" & subCommand &
                 "` for `" & command & "`. To see all available " & helpType &
-                " commands, type `" & command & "`.")
+                " commands, type `" & command & "`.", db = db)
 
 proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
@@ -234,7 +235,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           columnAmount = option.value.parseInt
         except:
           showError(message = "Can't get the shell's setting for amount of help list columns. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
         for key in keys:
           row = row & key.value & "\t"
           i.inc
@@ -243,7 +244,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
               table.tabbed(row = row)
             except UnknownEscapeError, InsufficientInputError, FinalByteError:
               showError(message = "Can't show the help entries list. Reason: ",
-                  e = getCurrentException())
+                  e = getCurrentException(), db = db)
             row = ""
             i = 1
         var width: int = 0
@@ -255,7 +256,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           table.echoTable(padding = 4)
         except IOError, Exception:
           showError(message = "Can't show the help entries list. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
         showOutput(message = "\n\nTo see more information about the selected topic, type " &
             yellow(ss = "'help [topic]'") & ", for example: " & green(
             ss = "`help " & keys[0].value) &
@@ -271,7 +272,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         db.rawSelect(qry = "SELECT topic FROM help", objs = keys)
       except:
         return showError(message = "Can't get help topics from database. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
       keys.sort(cmp = system.cmp)
       showHelpList(keys = keys)
       return QuitSuccess.ResultCode
@@ -282,11 +283,11 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           initLimitedString(capacity = maxInputLength, text = join(a = tokens[
               1 .. ^1], sep = " "))
         except CapacityError:
-          return showError(message = "Can't set arguments for help")
+          return showError(message = "Can't set arguments for help", db = db)
       command: UserInput = try:
           initLimitedString(capacity = maxInputLength, text = tokens[0])
         except CapacityError:
-          return showError(message = "Can't set command for help")
+          return showError(message = "Can't set command for help", db = db)
       key: string = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
     var dbHelp: seq[HelpEntry] = @[newHelpEntry()]
@@ -294,7 +295,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       db.select(objs = dbHelp, cond = "topic LIKE ?", params = key)
     except:
       return showError(message = "Can't read help content from database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     # It there are topic or topics which the user is looking for, show them
     if dbHelp.len > 0:
       # There is exactly one topic which the user is looking for, show it
@@ -332,7 +333,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             content = replace(s = content, sub = "$3", by = sortDirection)
           except:
             discard showError(message = "Can't set the shell's help. Reason: ",
-                e = getCurrentException())
+                e = getCurrentException(), db = db)
         # Show the help entry to the user
         showHelpEntry(helpEntry = HelpEntry(usage: dbHelp[0].usage,
             content: content))
@@ -349,12 +350,12 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       try:
         result = showUnknownHelp(subCommand = args, command = command,
             helpType = initLimitedString(capacity = maxInputLength, text = (
-                if command == "alias": "aliases" else: $command)))
+                if command == "alias": "aliases" else: $command)), db = db)
       except CapacityError:
-        return showError(message = "Can't show help for unknown command")
+        return showError(message = "Can't show help for unknown command", db = db)
       return QuitSuccess.ResultCode
     # The user entered the help topic which doesn't exists
-    return showError(message = "Unknown help topic: `" & topic & "`. For the list of available help topics, type `help`.")
+    return showError(message = "Unknown help topic: `" & topic & "`. For the list of available help topics, type `help`.", db = db)
 
 proc showHelpList*(command: string; subcommands: seq[
     string]): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
@@ -398,14 +399,14 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
   body:
     try:
       if db.exists(T = HelpEntry, cond = "topic=?", params = $topic):
-        return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.")
+        return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.", db = db)
       var newHelp: HelpEntry = newHelpEntry(topic = $topic, usage = $usage,
           content = content, plugin = $plugin, templ = isTemplate)
       db.insert(obj = newHelp)
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't add help entry to database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
@@ -424,7 +425,7 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
           newStringStream(s = getAsset(path = "help/help.cfg"))
         except ValueError, OSError, IOError, Exception:
           return showError(message = "Can't read help content. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
     {.ruleOff: "varDeclared".}
     var parser: CfgParser
     {.ruleOn: "varDeclared".}
@@ -432,7 +433,7 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       open(c = parser, input = file, filename = "helpContent")
     except OSError, IOError, Exception:
       return showError(message = "Can't read file with help entries. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     var
       topic, usage, content, plugin: string = ""
       isTemplate: bool = false
@@ -455,7 +456,7 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
                 text = plugin), content = content, isTemplate = isTemplate, db = db)
           except CapacityError:
             return showError(message = "Can't add help entry. Reason: ",
-                e = getCurrentException())
+                e = getCurrentException(), db = db)
           topic = ""
           usage = ""
           content = ""
@@ -488,15 +489,15 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
           else:
             discard
         of cfgError:
-          result = showError(message = "Can't read help entry from configuration file. Reason: " & entry.msg)
+          result = showError(message = "Can't read help entry from configuration file. Reason: " & entry.msg, db = db)
       except IOError, OSError, ValueError, CapacityError:
         return showError(message = "Can't get help entry from configuration file. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
     try:
       close(c = parser)
     except IOError, OSError, Exception:
       return showError(message = "Can't close file with help entries. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
@@ -513,7 +514,7 @@ proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
       db.exec(query = sql(query = "DELETE FROM help"))
     except DbError:
       return showError(message = "Can't clear the help content. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     result = readHelpFromFile(db = db)
     if result == QuitFailure:
       return
@@ -576,7 +577,7 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
           command = updateHelpCommand, commands = commands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's help. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc updateHelpDb*(db; dbVersion: Natural): ResultCode {.sideEffect, raises: [],
     tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
@@ -597,7 +598,7 @@ proc updateHelpDb*(db; dbVersion: Natural): ResultCode {.sideEffect, raises: [],
         db.exec(query = sql(query = """UPDATE help SET id=rowid"""))
     except DbError:
       return showError(message = "Can't update table for the shell's help. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
@@ -618,7 +619,7 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.createTables(obj = newHelpEntry())
     except DbError, CapacityError, ValueError:
       return showError(message = "Can't create 'help' table. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return readHelpFromFile(db = db)
 
 proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
@@ -638,11 +639,11 @@ proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     try:
       if not db.exists(T = HelpEntry, cond = "topic=?", params = $topic):
         return showError(message = "Can't delete the help entry for topic '" &
-            topic & "' because there is no that topic.")
+            topic & "' because there is no that topic.", db = db)
       var entry: HelpEntry = newHelpEntry(topic = $topic)
       db.select(obj = entry, cond = "topic=?", params = $topic)
       db.delete(obj = entry)
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't delete the help entry in the database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)

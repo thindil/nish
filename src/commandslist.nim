@@ -111,7 +111,7 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.sideEffect,
     commands.del(key = $name)
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = "") {.sideEffect, raises: [
+    commands: ref CommandsList; plugin: string = ""; db: DbConn) {.sideEffect, raises: [
     CommandsListError], tags: [RootEffect], contractual.} =
   ## Replace the code of the selected command with the new procedure. If
   ## command argument is different than nil, it will be used as the command
@@ -123,6 +123,7 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
   ## * commands - the list of shell's commands
   ## * plugin   - the full path to the plugin which contains the code for the
   ##              command
+  ## * db       - the connection to the shell's database
   ##
   ## Returns the updated parameter commands with the list of available shell's commands
   require:
@@ -138,4 +139,4 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
       commands[$name].plugin = plugin
     except KeyError:
       showError(message = "Can't replace command '" & name & "'. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)

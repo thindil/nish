@@ -167,4 +167,4 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       inputString = input
     except:
       showError(message = "Can't highlight input. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)

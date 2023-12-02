@@ -60,9 +60,9 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.sideEffect,
       var path: DirectoryPath = try:
           absolutePath(path = expandTilde(path = $newDirectory)).DirectoryPath
         except ValueError:
-          return showError(message = "Can't get absolute path to the new directory.")
+          return showError(message = "Can't get absolute path to the new directory.", db = db)
       if not dirExists(dir = $path):
-        return showError(message = "Directory '" & path & "' doesn't exist.")
+        return showError(message = "Directory '" & path & "' doesn't exist.", db = db)
       path = expandFilename(filename = $path).DirectoryPath
       setVariables(newDirectory = path, db = db,
           oldDirectory = getCurrentDirectory().DirectoryPath)
@@ -71,7 +71,7 @@ proc changeDirectory*(newDirectory; aliases; db): ResultCode {.sideEffect,
       return QuitSuccess.ResultCode
     except OSError:
       return showError(message = "Can't change directory. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc cdCommand*(newDirectory; aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
@@ -132,7 +132,7 @@ proc executeCommand*(commands: ref Table[string, CommandData];
               commands: commands))
       except KeyError:
         showError(message = "Can't execute command '" & commandName &
-            "'. Reason: ", e = getCurrentException())
+            "'. Reason: ", e = getCurrentException(), db = db)
     else:
       let commandToExecute: string = commandName & (if arguments.len >
           0: " " & arguments else: "")

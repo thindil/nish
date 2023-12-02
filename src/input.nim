@@ -30,17 +30,21 @@
 import std/[parseopt, strutils, terminal, unicode]
 # External modules imports
 import contracts, nimalyzer
+import norm/sqlite
 # Internal imports
 import constants, lstring, output
 
 type MaxInputLength* = range[1..maxInputLength]
   ## Used to store maximum allowed length of the user input
 
-proc readChar*(inputChar: char): string {.sideEffect, raises: [], tags: [
+using db: DbConn # Connection to the shell's database
+
+proc readChar*(inputChar: char; db): string {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, RootEffect], contractual.} =
   ## Read the Unicode character from the user's input
   ##
   ## * inputChar - the last printable character entered by the user
+  ## * db        - the connection to the shell's database
   ##
   ## Returns the string with full Unicode character entered by the user
   require:
@@ -58,15 +62,16 @@ proc readChar*(inputChar: char): string {.sideEffect, raises: [], tags: [
         result.add(y = getch())
     except IOError:
       showError(message = "Can't get the entered Unicode character. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc deleteChar*(inputString: var UserInput;
-    cursorPosition: var Natural) {.sideEffect, raises: [], tags: [WriteIOEffect,
+    cursorPosition: var Natural; db) {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
   ## Delete the Unicode character at the selected position from the user's input
   ##
   ## * inputString    - the string of characters entered by the user
   ## * cursorPosition - the position of the cursor in the string
+  ## * db             - the connection to the shell's database
   ##
   ## Returns modified inputString and the new cursor position as cursorPosition
   body:
@@ -76,16 +81,17 @@ proc deleteChar*(inputString: var UserInput;
     try:
       inputString.text = $runes
     except CapacityError:
-      showError(message = "Entered input is too long.", e = getCurrentException())
+      showError(message = "Entered input is too long.", e = getCurrentException(), db = db)
 
 proc moveCursor*(inputChar: char; cursorPosition: var Natural;
-    inputString: UserInput) {.sideEffect, raises: [], tags: [WriteIOEffect,
+    inputString: UserInput; db) {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
   ## Move the cursor inside the user's input
   ##
   ## * inputChar      - the last ASCII character entered by the user
   ## * cursorPosition - the current position of cursor in the user's input
   ## * inputString    - the user's input's content
+  ## * db             - the connection to the shell's database
   ##
   ## Returns the new position of the cursor as modified cursorPosition argument
   body:
@@ -110,10 +116,10 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
       {.ruleOn: "ifStatements".}
     except IOError, ValueError, OSError:
       showError(message = "Can't move the cursor. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
-    insertMode: bool; inputRune: string) {.sideEffect, raises: [], tags: [
+    insertMode: bool; inputRune: string; db) {.sideEffect, raises: [], tags: [
     WriteIOEffect, RootEffect], contractual.} =
   ## Update the user's input with the new Unicode character
   ##
@@ -121,6 +127,7 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
   ## * inputString    - the user's input's content
   ## * insertMode     - if true, the input is in the insert (replace) mode
   ## * inputRune      - the Unicode character to enter to the user's input
+  ## * db             - the connection to the shell's database
   ##
   ## Returns the new cursor position as modified cursorPosition and the modified user's
   ## input's content as inputString
@@ -132,7 +139,7 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
         inputString.text = $runes
       except CapacityError:
         showError(message = "Entered input is too long.",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
     else:
       var runes: seq[Rune] = toRunes(s = $inputString)
       runes.insert(item = inputRune.toRunes[0], i = cursorPosition)
@@ -141,15 +148,15 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
         cursorPosition.inc
       except CapacityError:
         showError(message = "Entered input is too long.",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
   else:
     try:
       inputString.add(y = inputRune)
       cursorPosition.inc
     except CapacityError:
-      showError(message = "Entered input is too long.", e = getCurrentException())
+      showError(message = "Entered input is too long.", e = getCurrentException(), db = db)
 
-proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEffect,
+proc readInput*(maxLength: MaxInputLength = maxInputLength; db): UserInput {.sideEffect,
     raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Read the user input. Used in adding a new or editing an existing alias
@@ -157,6 +164,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEff
   ##
   ## * maxLength - the maximum length of the user input to parse. Default value
   ##               is the constant maxInputLength
+  ## * db        - the connection to the shell's database
   ##
   ## Returns the user input text or "exit" if there was an error or the user pressed
   ## Escape key
@@ -181,7 +189,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEff
         inputChar = getch()
       except IOError:
         showError(message = "Can't get the next character. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
         return exitString
       # Backspace pressed, delete the last character from the user input
       if inputChar.ord in {8, 127}:
@@ -193,13 +201,13 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEff
           stdout.write(s = repeat(c = ' ', count = runeLen(s = $resultString)))
           stdout.cursorBackward(count = runeLen(s = $resultString))
           deleteChar(inputString = resultString,
-              cursorPosition = cursorPosition)
+              cursorPosition = cursorPosition, db = db)
           stdout.write(s = $resultString)
           if cursorPosition < runeLen(s = $resultString):
             stdout.cursorBackward(count = runeLen(s = $resultString) - cursorPosition)
         except IOError, ValueError, OSError:
           showError(message = "Can't delete character. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
           return exitString
       # Special key pressed (all starts like Escape key), check which one
       elif inputChar.ord == 27:
@@ -207,7 +215,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEff
           inputChar = getch()
         except IOError:
           showError(message = "Can't get the next character after Escape. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
           return exitString
         # Escape key pressed, return "exit" as input value
         if inputChar.ord == 27:
@@ -224,36 +232,36 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength): UserInput {.sideEff
                 stdout.cursorBackward(count = runeLen(s = $resultString))
                 cursorPosition.inc
                 deleteChar(inputString = resultString,
-                    cursorPosition = cursorPosition)
+                    cursorPosition = cursorPosition, db = db)
                 stdout.write(s = $resultString)
                 if cursorPosition < runeLen(s = $resultString):
                   stdout.cursorBackward(count = runeLen(s = $resultString) - cursorPosition)
             # Cursor movement key pressed
             else:
               moveCursor(inputChar = inputChar, cursorPosition = cursorPosition,
-                  inputString = resultString)
+                  inputString = resultString, db = db)
           except:
             showError(message = "Can't get the next character after Escape. Reason: ",
-                e = getCurrentException())
+                e = getCurrentException(), db = db)
             return exitString
         else:
           continue
       # Visible character, add it to the user input string and show it in the
       # console
       elif inputChar.ord > 31:
-        let inputRune: string = readChar(inputChar = inputChar)
+        let inputRune: string = readChar(inputChar = inputChar, db = db)
         try:
           stdout.write(s = inputRune)
         except IOError:
           showError(message = "Can't print entered character. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
         updateInput(cursorPosition = cursorPosition, inputString = resultString,
-            insertMode = false, inputRune = inputRune)
+            insertMode = false, inputRune = inputRune, db = db)
     try:
       stdout.writeLine(x = "")
     except IOError:
       showError(message = "Can't add a new line. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
       return exitString
     return resultString
 
