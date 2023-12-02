@@ -74,7 +74,7 @@ proc showOutput*(message; newLine: bool = true;
           discard
     stdout.flushFile
 
-proc showError*(message: OutputMessage; e: ref Exception = nil): ResultCode {.sideEffect,
+proc showError*(message: OutputMessage; db: DbConn; e: ref Exception = nil): ResultCode {.sideEffect,
     raises: [], tags: [WriteIOEffect, RootEffect], discardable, contractual.} =
   ## Print the message to standard error and set the shell return
   ## code to error. If parameter e is also supplied, it show stack trace for
@@ -150,7 +150,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
         discard
     except DbError, IOError, Exception:
       showError(message = "Can't show form header. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc selectOption*(options: Table[char, string];
     default: char; prompt: string): char {.sideEffect, raises: [], tags: [ReadIOEffect,

@@ -141,3 +141,12 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       except:
         discard
     return QuitSuccess.ResultCode
+
+proc getColor*(db; name: string): Color {.contractual.} =
+  require:
+    name.len > 0
+  body:
+    result = newColor(cValue = red)
+    if db == nil:
+      return
+    db.select(obj = result, "name=?", name)
