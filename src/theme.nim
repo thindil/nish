@@ -27,11 +27,12 @@
 ## them, changing and getting from the database
 
 # Standard library imports
-import std/strutils
+import std/[strutils, terminal]
 # External modules imports
 import contracts, nimalyzer
 import norm/[model, pragmas, sqlite]
 # Internal imports
+import logger, resultcode
 
 type
   ColorName = enum
@@ -52,6 +53,8 @@ type
     bold: bool
     underline: bool
     italic: bool
+
+using db: DbConn # Connection to the shell's database
 
 proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],
     contractual.} =
@@ -106,3 +109,35 @@ proc newColor*(name: string = ""; cValue: ColorName = default;
     Color(name: name, cValue: cValue, description: description, bold: bold,
         underline: underline, italic: italic)
 
+proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
+  ## Create the table theme
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if creation was successfull, otherwise QuitFailure and
+  ## show message what wrong
+  require:
+    db != nil
+  body:
+    try:
+      db.createTables(obj = newColor())
+      var color: Color = newColor(name = "errors", cValue = red, description = "Used to show error messages")
+      db.insert(obj = color)
+    except:
+      try:
+        let e: ref Exception = getCurrentException()
+        stderr.writeLine(x = "")
+        {.ruleOff: "namedParams".}
+        stderr.styledWrite(fgRed, "Can't create 'theme' table. Reason: ")
+        stderr.styledWriteLine(fgRed, $e.name)
+        logToFile(message = $e.name)
+        stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+        logToFile(message = getCurrentExceptionMsg())
+        when defined(debug):
+          stderr.styledWrite(fgRed, e.getStackTrace)
+          logToFile(message = e.getStackTrace)
+        {.ruleOn: "namedParams".}
+      except:
+        discard
+    return QuitSuccess.ResultCode

@@ -33,7 +33,8 @@ import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
 import aliases, constants, commandslist, completion, directorypath, help,
-    history, logger, lstring, options, output, plugins, resultcode, variables
+    history, logger, lstring, options, output, plugins, resultcode, theme,
+    variables
 
 const
   dbCommands*: seq[string] = @["optimize", "export", "import"]
@@ -140,6 +141,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
       if result.createCompletionDb == QuitFailure:
         return nil
+      if result.createThemeDb == QuitFailure:
+        return nil
       try:
         for option in options:
           setOption(optionName = initLimitedString(capacity = 40,
@@ -172,6 +175,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.createCompletionDb == QuitFailure:
           return nil
+        if result.createThemeDb == QuitFailure:
+          return nil
         for option in options:
           setOption(optionName = initLimitedString(capacity = 40,
               text = option.option), value = initLimitedString(capacity = 40,
@@ -185,6 +190,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
           return nil
         if result.createCompletionDb == QuitFailure:
+          return nil
+        if result.createThemeDb == QuitFailure:
           return nil
         for i in options.low..options.high:
           if i == 1:
@@ -205,6 +212,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.createCompletionDb == QuitFailure:
           return nil
+        if result.createThemeDb == QuitFailure:
+          return nil
         for i in [0, 8, 9, 10]:
           setOption(optionName = initLimitedString(capacity = 40,
               text = options[i].option), value = initLimitedString(capacity = 40,
@@ -214,6 +223,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               if options[i].readOnly: 1 else: 0))
       of 4:
         if result.createCompletionDb == QuitFailure:
+          return nil
+        if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 10]:
           setOption(optionName = initLimitedString(capacity = 40,
