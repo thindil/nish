@@ -81,6 +81,7 @@ proc showError*(message: OutputMessage; db: DbConn; e: ref Exception = nil): Res
   ## the current exception in debug mode.
   ##
   ## * message - the error message to show
+  ## * db      - the connection to the shell's database
   ## * e       - the reference to an exception which occured. Can be empty.
   ##             Default value is nil
   ##
