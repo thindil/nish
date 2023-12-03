@@ -46,7 +46,7 @@ const
 type
   VariableName = LimitedString
     ## Used to store variables names in the database.
-  Variable {.tableName: "variables".} = ref object of Model
+  Variable* {.tableName: "variables".} = ref object of Model
     ## Data structure for the shell's environment variable
     ##
     ## * name        - the name of the variable
@@ -54,7 +54,7 @@ type
     ## * recursive   - if true, the variable is available also in subdirectories
     ## * value       - the value of the variable
     ## * description - the description of the variable
-    name: string
+    name*: string
     path: string
     recursive: bool
     value: string
