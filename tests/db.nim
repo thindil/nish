@@ -26,6 +26,7 @@ suite "Unit tests for db module":
   test "Importing the shell's database":
     db.exec("DROP TABLE help".sql)
     db.exec("DROP TABLE options".sql)
+    db.exec("DROP TABLE theme".sql)
     check:
       importDb(initLimitedString(capacity = 15, text = "import test.txt"), db) == QuitSuccess
 

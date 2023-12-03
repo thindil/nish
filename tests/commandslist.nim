@@ -45,11 +45,11 @@ suite "Unit tests for commandslist module":
   test "Replacing a command":
     checkpoint "Replacing an existing command"
     replaceCommand(name = initLimitedString(capacity = 4, text = "test"),
-        command = testCommand2, commands = commands)
+        command = testCommand2, commands = commands, db = db)
     checkpoint "Replacing a built-in command"
     expect CommandsListError:
       replaceCommand(name = initLimitedString(capacity = 4, text = "exit"),
-          command = testCommand, commands = commands)
+          command = testCommand, commands = commands, db = db)
 
   test "Deleting a command":
     checkpoint "Deleting an exisiting command"

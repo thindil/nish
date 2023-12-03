@@ -81,8 +81,7 @@ suite "Unit tests for help module":
     check:
       showUnknownHelp(initLimitedString(capacity = 7, text = "command"),
           initLimitedString(capacity = 10, text = "subcommand"),
-              initLimitedString(
-          capacity = 8, text = "helptype")) == QuitFailure
+          initLimitedString(capacity = 8, text = "helptype"), db = db) == QuitFailure
 
   test "Updating a help entry":
     discard deleteHelpEntry(initLimitedString(capacity = 4, text = "test"), db)
