@@ -75,19 +75,19 @@ suite "Unit tests for variable modules":
 
   test "Setting an evironment variable":
     check:
-      setCommand(initLimitedString(capacity = 13, text = "test=test_val")) ==
+      setCommand(initLimitedString(capacity = 13, text = "test=test_val"), db = db) ==
           QuitSuccess
       getEnv("test") == "test_val"
 
   test "Unsetting an environment variable":
     checkpoint "Unsetting an existing environment variable"
     check:
-      unsetCommand(initLimitedString(capacity = 4, text = "test")) ==
+      unsetCommand(initLimitedString(capacity = 4, text = "test"), db = db) ==
           QuitSuccess
       getEnv("test") == ""
     checkpoint "Unsetting an non-existing environment variable"
     check:
-      unsetCommand(initLimitedString(capacity = 4, text = "test")) ==
+      unsetCommand(initLimitedString(capacity = 4, text = "test"), db = db) ==
           QuitSuccess
 
   test "Initializing an object of Variable type":
