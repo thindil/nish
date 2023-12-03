@@ -46,7 +46,7 @@ type
     ## * description - the description of the alias, showed on the list of aliases
     ##                 or in the alias information
     ## * output      - where to redirect the output of the alias' commands
-    name {.unique.}: string
+    name* {.unique.}: string
     path: string
     recursive: bool
     commands: string
