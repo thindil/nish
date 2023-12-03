@@ -36,7 +36,7 @@ import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, variables
 
 type
-  Alias {.tableName: "aliases".} = ref object of Model
+  Alias* {.tableName: "aliases".} = ref object of Model
     ## Data structure for the shell's alias
     ##
     ## * name        - the name of the alias, used to trigger it
