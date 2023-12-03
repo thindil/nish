@@ -138,7 +138,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         if cursorPosition == 0:
           continue
         deleteChar(inputString = inputString,
-            cursorPosition = cursorPosition)
+            cursorPosition = cursorPosition, db = db)
         highlightOutput(promptLength = promptLength,
             inputString = inputString, commands = commands,
             aliases = aliases, oneTimeCommand = oneTimeCommand,
@@ -173,10 +173,10 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
             discard
           except ValueError:
             showError(message = "Invalid value for character position.",
-                e = getCurrentException())
+                e = getCurrentException(), db = db)
           except CapacityError:
             showError(message = "Entered input is too long.",
-                e = getCurrentException())
+                e = getCurrentException(), db = db)
         else:
           try:
             let columnsAmount: int = try:
@@ -200,7 +200,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
                     table.add(parts = row)
                   except UnknownEscapeError, InsufficientInputError, FinalByteError:
                     showError(message = "Can't show Tab completion. Reason: ",
-                        e = getCurrentException())
+                        e = getCurrentException(), db = db)
                   row = @[]
                   amount = 0
                   line.inc
@@ -209,7 +209,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
                   table.add(parts = row)
                 except UnknownEscapeError, InsufficientInputError, FinalByteError:
                   showError(message = "Can't show Tab completion. Reason: ",
-                      e = getCurrentException())
+                      e = getCurrentException(), db = db)
                 line.inc
               completionWidth = @[]
               for column in table.getColumnSizes(maxSize = terminalWidth()):
@@ -218,7 +218,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
                 table.echoTable(padding = 4)
               except IOError, Exception:
                 showError(message = "Can't show Tab completion. Reason: ",
-                    e = getCurrentException())
+                    e = getCurrentException(), db = db)
               stdout.cursorUp(count = line)
               completionMode = true
               currentCompletion = 0
@@ -261,7 +261,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
                     if keyWasArrow: "" else: $inputString)))
               except CapacityError:
                 showError(message = "Entered input is too long.",
-                    e = getCurrentException())
+                    e = getCurrentException(), db = db)
               cursorPosition = runeLen(s = $inputString)
               highlightOutput(promptLength = promptLength,
                   inputString = inputString, commands = commands,
@@ -287,7 +287,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
                     if keyWasArrow: "" else: $inputString)))
               except CapacityError:
                 showError(message = "Entered input is too long.",
-                    e = getCurrentException())
+                    e = getCurrentException(), db = db)
               cursorPosition = runeLen(s = $inputString)
               highlightOutput(promptLength = promptLength,
                   inputString = inputString, commands = commands,
@@ -306,7 +306,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
                   continue
                 cursorPosition.inc
                 deleteChar(inputString = inputString,
-                    cursorPosition = cursorPosition)
+                    cursorPosition = cursorPosition, db = db)
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
                     aliases = aliases, oneTimeCommand = oneTimeCommand,
@@ -319,13 +319,13 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
               if not completionMode:
                 moveCursor(inputChar = inputChar,
                     cursorPosition = cursorPosition,
-                    inputString = inputString)
+                    inputString = inputString, db = db)
             keyWasArrow = true
         except IOError:
           discard
         except ValueError:
           showError(message = "Invalid value for moving cursor.",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
       # Ctrl-c pressed, cancel current command and return 130 result code
       of 3:
         completionMode = false
@@ -362,15 +362,15 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           discard
         except ValueError:
           showError(message = "Invalid value for character position.",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
         except CapacityError:
           showError(message = "Entered input is too long.",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
       # Any graphical character pressed, show it in the input field
       else:
         if inputChar.ord < 32:
           continue
-        let inputRune: string = readChar(inputChar = inputChar)
+        let inputRune: string = readChar(inputChar = inputChar, db = db)
         try:
           if promptLength + cursorPosition == terminalWidth() - 1:
             stdout.eraseLine
@@ -385,10 +385,10 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           discard
         except ValueError:
           showError(message = "Invalid value for terminal width.",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
         updateInput(cursorPosition = cursorPosition,
             inputString = inputString, insertMode = insertMode,
-            inputRune = inputRune)
+            inputRune = inputRune, db = db)
         highlightOutput(promptLength = promptLength,
             inputString = inputString, commands = commands,
             aliases = aliases, oneTimeCommand = oneTimeCommand,
@@ -431,7 +431,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         if fileExists(filename = fileName) and execCmd(command = "sh '" &
             fileName & "'") != 0:
           showError(message = "Can't load the shells configuration file '" &
-              fileName & "'.")
+              fileName & "'.", db = nil)
 
     # Check the command line parameters entered by the user. Available options
     # are "-c [command]" to run only one command, "-h" or "--help" to show
@@ -451,7 +451,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           try:
             inputString.text = options.key
           except CapacityError:
-            quit showError(message = "The entered command is too long.").int
+            quit showError(message = "The entered command is too long.", db = nil).int
         of "h", "help":
           showCommandLineHelp()
         of "v", "version":
@@ -475,7 +475,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     historyIndex = initHistory(db = db, commands = commands)
 
     # Initialize the shell's options system
-    initOptions(commands = commands)
+    initOptions(commands = commands, db = db)
 
     # Initialize the shell's aliases system
     initAliases(db = db, aliases = aliases, commands = commands)
@@ -535,7 +535,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           inputString.text = join(a = userInput.remainingArgs, sep = " ")
         except CapacityError:
           showError(message = "Entered input is too long.",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
         # Set a terminal title to current command
         setTitle(title = commandName & " " & $arguments, db = db)
         # Execute plugins with precommand hook
@@ -548,7 +548,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     commands = commands)
         except DbError:
           showError(message = "Can't execute preCommand hook for plugins. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
         # Parse commands
         case commandName
         # Quit from shell
@@ -565,10 +565,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
               aliases = aliases, db = db)
         # Set the environment variable
         of "set":
-          returnCode = setCommand(arguments = arguments)
+          returnCode = setCommand(arguments = arguments, db = db)
         # Delete environment variable
         of "unset":
-          returnCode = unsetCommand(arguments = arguments)
+          returnCode = unsetCommand(arguments = arguments, db = db)
         # Execute command (the shell's or external) or the shell's alias
         else:
           returnCode = executeCommand(commands = commands,
@@ -625,7 +625,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                     commands = commands)
         except DbError:
           showError(message = "Can't execute postCommand hook for plugins. Reason: ",
-              e = getCurrentException())
+              e = getCurrentException(), db = db)
         # If there is more commands to execute check if the next commands should
         # be executed. if the last command wasn't success and commands conjuncted
         # with && or the last command was success and command disjuncted, reset
@@ -639,7 +639,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         cursorPosition = runeLen(s = $inputString)
       except:
         showError(message = "Internal shell error. Additional details: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
 
 when isMainModule:
   main()

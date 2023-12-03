@@ -348,7 +348,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Command: ", newLine = false)
     var command: LimitedString = emptyLimitedString(capacity = maxInputLength)
     while command.len == 0:
-      command = readInput(maxLength = maxInputLength)
+      command = readInput(maxLength = maxInputLength, db = db)
       if command.len == 0:
         showError(message = "Please enter a name for the command.", db = db)
       if command.len == 0:
@@ -369,7 +369,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
       showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. Can't be empty.:")
       showOutput(message = "Value(s): ", newLine = false)
       while values.len == 0:
-        values = readInput()
+        values = readInput(db = db)
         if values.len == 0:
           showError(message = "Please enter values for the completion.", db = db)
           showOutput(message = "Value(s): ", newLine = false)
@@ -447,7 +447,7 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         fgColor = fgMagenta)
     showOutput(message = "'.")
     showOutput(message = "Command: ", newLine = false)
-    var command: LimitedString = readInput(maxLength = maxInputLength)
+    var command: LimitedString = readInput(maxLength = maxInputLength, db = db)
     if command == "exit":
       return showError(message = "Editing the completion cancelled.", db = db)
     elif command == "":
@@ -492,7 +492,7 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       showOutput(message = "'.")
       showOutput(message = "Value(s): ", newLine = false)
       while values.len == 0:
-        values = readInput()
+        values = readInput(db = db)
         if values.len == 0:
           showError(message = "Please enter values for the completion.", db = db)
           showOutput(message = "Value(s): ", newLine = false)
@@ -793,7 +793,7 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 10, text = "completion"),
                   helpType = initLimitedString(capacity = 11,
-                      text = "completions"))
+                      text = "completions"), db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 

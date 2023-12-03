@@ -129,7 +129,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
           0: 1 else: option.value.len), text = option.value)
     except:
       showError(message = "Can't get value for option '" & optionName &
-          "' from database. Reason: ", e = getCurrentException())
+          "' from database. Reason: ", e = getCurrentException(), db = db)
       return defaultValue
     if result == "":
       result = defaultValue
@@ -175,7 +175,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
         db.select(obj = option, cond = "option=?", params = $optionName)
     except:
       showError(message = "Can't check existence of the option '" & optionName &
-          "'. Reason: ", e = getCurrentException())
+          "'. Reason: ", e = getCurrentException(), db = db)
     if value != "":
       option.value = $value
     if description != "":
@@ -190,7 +190,7 @@ proc setOption*(optionName; value: OptionValue = emptyLimitedString(
         db.insert(obj = option)
     except:
       showError(message = "Can't set value for option '" & optionName &
-          "'. Reason: ", e = getCurrentException())
+          "'. Reason: ", e = getCurrentException(), db = db)
 
 proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
@@ -207,7 +207,7 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           ss = "Default"), magenta(ss = "Type"), magenta(ss = "Description")])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show options list. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     showFormHeader(message = "Available options are:", db = db)
     try:
       var options: seq[Option] = @[newOption()]
@@ -218,12 +218,12 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
             option.defaultValue, $option.valueType, option.description])
     except:
       return showError(message = "Can't show the shell's options. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     try:
       table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show the list of shell's options. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
@@ -242,28 +242,28 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     let setting: seq[string] = ($arguments).split()
     if setting.len < 2:
-      return showError(message = "Please enter name of the option and its new value.")
+      return showError(message = "Please enter name of the option and its new value.", db = db)
     if setting.len < 3:
-      return showError(message = "Please enter a new value for the selected option.")
+      return showError(message = "Please enter a new value for the selected option.", db = db)
     let optionName: OptionName = try:
         initLimitedString(capacity = setting[1].len, text = setting[1])
       except CapacityError:
         return showError(message = "Can't get the option's name from command: '" &
-            arguments & "'.")
+            arguments & "'.", db = db)
     let stringValue: string = setting[2 .. ^1].join(sep = " ")
     var value: OptionValue = try:
         initLimitedString(capacity = stringValue.len, text = stringValue)
       except CapacityError:
         return showError(message = "Can't get the option's value from command: '" &
-            arguments & "'.")
+            arguments & "'.", db = db)
     try:
       if not db.exists(T = Option, cond = "option=?", params = $optionName):
         return showError(message = "Shell's option with name '" & optionName &
-          "' doesn't exists. Please use command 'options list' to see all available shell's options.")
+          "' doesn't exists. Please use command 'options list' to see all available shell's options.", db = db)
       var option: Option = newOption(name = $optionName)
       db.select(obj = option, cond = "option=?", params = $optionName)
       if option.readOnly:
-        return showError(message = "You can't set a new value for the selected option because it is read-only.")
+        return showError(message = "You can't set a new value for the selected option because it is read-only.", db = db)
       # Check correctness of the option's value
       case option.valueType
       of integer:
@@ -271,65 +271,65 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           discard ($value).parseInt
         except:
           return showError(message = "Value for option '" & optionName &
-              "' should be integer type.")
+              "' should be integer type.", db = db)
       of float:
         try:
           discard ($value).parseFloat
         except:
-          return showError(message = "Value for option '" & optionName & "' should be float type.")
+          return showError(message = "Value for option '" & optionName & "' should be float type.", db = db)
       of boolean:
         try:
           value.text = ($value).toLowerAscii
         except CapacityError:
           return showError(message = "Can't set a new value for option '" &
-              optionName & "'. Reason: ", e = getCurrentException())
+              optionName & "'. Reason: ", e = getCurrentException(), db = db)
         if value != "true" and value != "false":
-          return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).")
+          return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).", db = db)
       of historysort:
         try:
           value.text = ($value).toLowerAscii
         except CapacityError:
           return showError(message = "Can't set a new value for option '" &
-              optionName & "'. Reason: ", e = getCurrentException())
+              optionName & "'. Reason: ", e = getCurrentException(), db = db)
         if $value notin ["recent", "amount", "name", "recentamount"]:
-          return showError(message = "Value for option '" & optionName & "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)")
+          return showError(message = "Value for option '" & optionName & "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)", db = db)
       of natural:
         try:
           if ($value).parseInt < 0:
             return showError(message = "Value for option '" & optionName &
-                "' should be a natural integer, zero or more.")
+                "' should be a natural integer, zero or more.", db = db)
         except:
           return showError(message = "Value for option '" & optionName &
-              "' should be integer type.")
+              "' should be integer type.", db = db)
       of text:
         discard
       of command:
         try:
           let (_, exitCode) = execCmdEx(command = $value)
           if exitCode != QuitSuccess:
-            return showError(message = "Value for option '" & optionName & "' should be valid command.")
+            return showError(message = "Value for option '" & optionName & "' should be valid command.", db = db)
         except:
           return showError(message = "Can't check the existence of command '" &
-              value & "'. Reason: ", e = getCurrentException())
+              value & "'. Reason: ", e = getCurrentException(), db = db)
       of header:
         try:
           value.text = ($value).toLowerAscii
         except CapacityError:
           return showError(message = "Can't set a new value for option '" &
-              optionName & "'. Reason: ", e = getCurrentException())
+              optionName & "'. Reason: ", e = getCurrentException(), db = db)
         if $value notin ["unicode", "ascii", "none", "hidden"]:
-          return showError(message = "Value for option '" & optionName & "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)")
+          return showError(message = "Value for option '" & optionName & "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)", db = db)
       of positive:
         try:
           if ($value).parseInt < 1:
             return showError(message = "Value for option '" & optionName &
-                "' should be a positive integer, one or more.")
+                "' should be a positive integer, one or more.", db = db)
         except:
           return showError(message = "Value for option '" & optionName &
-              "' should be integer type.")
+              "' should be integer type.", db = db)
       of none:
         return showError(message = "Shell's option with name '" & optionName &
-          "' doesn't exists. Please use command 'options list' to see all available shell's options.")
+          "' doesn't exists. Please use command 'options list' to see all available shell's options.", db = db)
       # Set the option
       setOption(optionName = optionName, value = value, db = db)
       showOutput(message = "Value for option '" & optionName &
@@ -337,7 +337,7 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't set the value for the option '" &
-          optionName & "'. Reason: ", e = getCurrentException())
+          optionName & "'. Reason: ", e = getCurrentException(), db = db)
 
 proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
@@ -355,7 +355,7 @@ proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     db != nil
   body:
     if arguments.len < 7:
-      return showError(message = "Please enter name of the option to reset or 'all' to reset all options.")
+      return showError(message = "Please enter name of the option to reset or 'all' to reset all options.", db = db)
     let optionName: OptionName = arguments[6 .. ^1]
     # Reset all options
     if optionName == "all":
@@ -364,24 +364,24 @@ proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         showOutput(message = "All shell's options are reseted to their default values.")
       except DbError:
         return showError(message = "Can't reset the shell's options to their default values. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
     # Reset the selected option
     else:
       try:
         if not db.exists(T = Option, cond = "option=?", params = $optionName):
           return showError(message = "Shell's option with name '" & optionName &
-            "' doesn't exists. Please use command 'options list' to see all available shell's options.")
+            "' doesn't exists. Please use command 'options list' to see all available shell's options.", db = db)
         var option: Option = newOption(name = $optionName)
         db.select(obj = option, cond = "option=?", params = $optionName)
         if option.readOnly:
-          return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.")
+          return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.", db = db)
         option.value = option.defaultValue
         db.update(obj = option)
         showOutput(message = "The shell's option '" & optionName &
             "' reseted to its default value.", fgColor = fgGreen)
       except:
         return showError(message = "Can't reset option '" & optionName &
-            "' to its default value. Reason: ", e = getCurrentException())
+            "' to its default value. Reason: ", e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc updateOptionsDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
@@ -405,7 +405,7 @@ proc updateOptionsDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
         db.exec(query = sql(query = """UPDATE options SET id=rowid"""))
     except DbError:
       return showError(message = "Can't update table for the shell's options. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc createOptionsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
@@ -423,7 +423,7 @@ proc createOptionsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.createTables(obj = newOption())
     except:
       return showError(message = "Can't create 'options' table. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc deleteOption*(optionName; db): ResultCode {.sideEffect, raises: [], tags: [
@@ -442,22 +442,23 @@ proc deleteOption*(optionName; db): ResultCode {.sideEffect, raises: [], tags: [
     try:
       if not db.exists(T = Option, cond = "option=?", params = $optionName):
         return showError(message = "Can't delete the selected option '" &
-            optionName & "' because there is no that option.")
+            optionName & "' because there is no that option.", db = db)
       var option: Option = newOption(name = $optionName)
       db.select(obj = option, cond = "option=?", params = $optionName)
       db.delete(obj = option)
     except:
       return showError(message = "Can't delete the selected option. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc initOptions*(commands: ref CommandsList) {.sideEffect,
+proc initOptions*(commands: ref CommandsList; db) {.sideEffect,
     raises: [], tags: [WriteDbEffect, WriteIOEffect, ReadDbEffect, ReadIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Initialize the shell's options. At this moment only set the shell's commands
   ## related to the shell's options
   ##
-  ## * commands    - the list of the shell's commands
+  ## * commands - the list of the shell's commands
+  ## * db       - the connection to the shell's database
   body:
     # Add commands related to the shell's options
     proc optionsCommand(arguments: UserInput; db;
@@ -490,7 +491,7 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect,
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 7, text = "options"),
-              helpType = initLimitedString(capacity = 7, text = "options"))
+              helpType = initLimitedString(capacity = 7, text = "options"), db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 
@@ -500,4 +501,4 @@ proc initOptions*(commands: ref CommandsList) {.sideEffect,
           subCommands = optionsCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's options. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)

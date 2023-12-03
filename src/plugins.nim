@@ -99,7 +99,7 @@ proc createPluginsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.createTables(obj = newPlugin())
     except:
       return showError(message = "Can't create 'plugins' table. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
@@ -130,7 +130,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           startProcess(command = pluginPath, args = arguments)
         except OSError, Exception:
           return (showError(message = "Can't execute the plugin '" &
-              pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
+              pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
 
     proc showPluginOutput(options: seq[string]): bool {.closure, sideEffect,
         raises: [], tags: [WriteIOEffect, ReadIOEffect, RootEffect],
@@ -164,7 +164,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ## This procedure always returns true
       body:
         {.cast(gcsafe).}:
-          discard showError(message = options.join(sep = " "))
+          discard showError(message = options.join(sep = " "), db = db)
         return true
 
     proc setPluginOption(options: seq[string]): bool {.sideEffect, raises: [],
@@ -182,7 +182,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len < 4:
-            showError(message = "Insufficient arguments for setOption.")
+            showError(message = "Insufficient arguments for setOption.", db = db)
             return false
           try:
             setOption(optionName = initLimitedString(capacity = maxNameLength,
@@ -193,7 +193,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
                 s = options[3]), db = db)
           except CapacityError, ValueError:
             showError(message = "Can't set option '" & options[0] &
-                "'. Reason: ", e = getCurrentException())
+                "'. Reason: ", e = getCurrentException(), db = db)
             return false
           return true
 
@@ -210,16 +210,16 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len == 0:
-            showError(message = "Insufficient arguments for removeOption.")
+            showError(message = "Insufficient arguments for removeOption.", db = db)
             return false
           try:
             if deleteOption(optionName = initLimitedString(
                 capacity = maxNameLength, text = options[0]), db = db) == QuitFailure:
-              showError(message = "Failed to remove option '" & options[0] & "'.")
+              showError(message = "Failed to remove option '" & options[0] & "'.", db = db)
               return false
           except CapacityError:
             showError(message = "Can't remove option '" & options[0] &
-                "'. Reason: ", e = getCurrentException())
+                "'. Reason: ", e = getCurrentException(), db = db)
             return false
           return true
 
@@ -236,7 +236,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len == 0:
-            showError(message = "Insufficient arguments for getOption.")
+            showError(message = "Insufficient arguments for getOption.", db = db)
             return false
           try:
             plugin.inputStream.write(args = $getOption(
@@ -245,7 +245,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             plugin.inputStream.flush
           except CapacityError, IOError, OSError:
             showError(message = "Can't get the value of the selected option. Reason: ",
-                e = getCurrentException())
+                e = getCurrentException(), db = db)
           return true
 
     proc addPluginCommand(options: seq[string]): bool {.sideEffect, raises: [],
@@ -261,7 +261,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len == 0:
-            showError(message = "Insufficient arguments for addCommand.")
+            showError(message = "Insufficient arguments for addCommand.", db = db)
             return false
           try:
             if options.len > 1:
@@ -274,7 +274,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
                   plugin = pluginPath)
           except CommandsListError, CapacityError:
             showError(message = "Can't add command '" & options[0] &
-                "'. Reason: " & getCurrentExceptionMsg())
+                "'. Reason: " & getCurrentExceptionMsg(), db = db)
             return false
           return true
 
@@ -290,14 +290,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len == 0:
-            showError(message = "Insufficient arguments for deleteCommand.")
+            showError(message = "Insufficient arguments for deleteCommand.", db = db)
             return false
           try:
             deleteCommand(name = initLimitedString(capacity = maxNameLength,
                 text = options[0]), commands = commands)
           except CommandsListError, CapacityError:
             showError(message = "Can't delete command '" & options[0] &
-                "'. Reason: " & getCurrentExceptionMsg())
+                "'. Reason: " & getCurrentExceptionMsg(), db = db)
             return false
           return true
 
@@ -313,15 +313,15 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len == 0:
-            showError(message = "Insufficient arguments for replaceCommand.")
+            showError(message = "Insufficient arguments for replaceCommand.", db = db)
             return false
           try:
             replaceCommand(name = initLimitedString(capacity = maxNameLength,
                 text = options[0]), command = nil, commands = commands,
-                plugin = pluginPath)
+                plugin = pluginPath, db = db)
           except CommandsListError, CapacityError:
             showError(message = "Can't replace command '" & options[0] &
-                "'. Reason: " & getCurrentExceptionMsg())
+                "'. Reason: " & getCurrentExceptionMsg(), db = db)
             return false
           return true
 
@@ -339,7 +339,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len < 3:
-            showError(message = "Insufficient arguments for addHelp.")
+            showError(message = "Insufficient arguments for addHelp.", db = db)
             return false
           try:
             return addHelpEntry(topic = initLimitedString(
@@ -351,7 +351,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
                 db = db) == QuitFailure
           except CapacityError:
             showError(message = "Can't add help entry '" & options[0] &
-                "'. Reason: ", e = getCurrentException())
+                "'. Reason: ", e = getCurrentException(), db = db)
             return false
 
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
@@ -367,14 +367,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len == 0:
-            showError(message = "Insufficient arguments for deleteHelp.")
+            showError(message = "Insufficient arguments for deleteHelp.", db = db)
             return false
           try:
             return deleteHelpEntry(topic = initLimitedString(
                 capacity = maxNameLength, text = options[0]), db = db) == QuitFailure
           except CapacityError:
             showError(message = "Can't remove help entry '" & options[0] &
-                "'. Reason: ", e = getCurrentException())
+                "'. Reason: ", e = getCurrentException(), db = db)
             return false
 
     proc updatePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
@@ -392,7 +392,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       body:
         {.cast(gcsafe).}:
           if options.len < 3:
-            showError(message = "Insufficient arguments for updateHelp.")
+            showError(message = "Insufficient arguments for updateHelp.", db = db)
             return false
           try:
             return updateHelpEntry(topic = initLimitedString(
@@ -404,7 +404,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
                 db = db) == QuitFailure
           except CapacityError:
             showError(message = "Can't update help entry '" & options[0] &
-                "'. Reason: ", e = getCurrentException())
+                "'. Reason: ", e = getCurrentException(), db = db)
             return false
 
     let apiCalls: Table[string, proc(options: seq[string]): bool] = try:
@@ -420,7 +420,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               "updateHelp": updatePluginHelp}.toTable
         except ValueError:
           return (showError(message = "Can't set Api calls table. Reason: ",
-              e = getCurrentException()), emptyAnswer)
+              e = getCurrentException(), db = db), emptyAnswer)
     result.answer = emptyAnswer
     try:
       # Read the plugin response and act accordingly to it
@@ -437,31 +437,31 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           elif options.key == "answer":
             let remainingOptions: seq[string] = options.remainingArgs
             if remainingOptions.len == 0:
-              showError(message = "Insufficient arguments for answer.")
+              showError(message = "Insufficient arguments for answer.", db = db)
               break
             result.answer = initLimitedString(capacity = remainingOptions[
                 0].len, text = remainingOptions[0])
           # The plugin sent any unknown request or response, show error about it
           else:
             showError(message = "Unknown request or response from the plugin '" &
-                pluginPath & "'. Got: '" & options.key & "'")
+                pluginPath & "'. Got: '" & options.key & "'", db = db)
           break
     except OSError, IOError, Exception:
       return (showError(message = "Can't get the plugin '" & pluginPath &
-          "' output. Reason: ", e = getCurrentException()), emptyAnswer)
+          "' output. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
     try:
       if plugin.peekExitCode.ResultCode == 2:
         return (showError(message = "Plugin '" & pluginPath &
-            "' doesn't support API command '" & arguments[0] & "'"), emptyAnswer)
+            "' doesn't support API command '" & arguments[0] & "'", db = db), emptyAnswer)
       result.code = plugin.peekExitCode.ResultCode
     except OSError:
       return (showError(message = "Can't get exit code from plugin '" &
-          pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
+          pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
     try:
       plugin.close
     except OSError, IOError, Exception:
       return (showError(message = "Can't close process for the plugin '" &
-          pluginPath & "'. Reason: ", e = getCurrentException()), emptyAnswer)
+          pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
 
 proc checkPlugin*(pluginPath: string; db; commands): PluginData {.sideEffect,
     raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
@@ -511,23 +511,23 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
   body:
     # Check if the user entered path to the plugin
     if arguments.len < 5:
-      return showError(message = "Please enter the path to the plugin which will be added to the shell.")
+      return showError(message = "Please enter the path to the plugin which will be added to the shell.", db = db)
     let pluginPath: string = try:
         normalizedPath(path = getCurrentDirectory() & DirSep & $arguments[4..^1])
       except OSError:
         $arguments[4..^1]
     # Check if the file exists
     if not fileExists(filename = pluginPath):
-      return showError(message = "File '" & pluginPath & "' doesn't exist.")
+      return showError(message = "File '" & pluginPath & "' doesn't exist.", db = db)
     try:
       # Check if the plugin isn't added previously
       if db.exists(T = Plugin, cond = "location=?", params = pluginPath):
-        return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.")
+        return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.", db = db)
       # Check if the plugin can be added
       let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
       if newPlugin.path.len == 0:
-        return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.")
+        return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.", db = db)
       # Add the plugin to the shell database
       var plugin: Plugin = newPlugin(path = pluginPath, enabled = true,
           preCommand = "preCommand" in newPlugin.api,
@@ -538,16 +538,16 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
             db = db, commands = commands).code != QuitSuccess:
           db.delete(obj = plugin)
-          return showError(message = "Can't install plugin '" & pluginPath & "'.")
+          return showError(message = "Can't install plugin '" & pluginPath & "'.", db = db)
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
             db = db, commands = commands).code != QuitSuccess:
           db.delete(obj = plugin)
-          return showError(message = "Can't enable plugin '" & pluginPath & "'.")
+          return showError(message = "Can't enable plugin '" & pluginPath & "'.", db = db)
     except:
       return showError(message = "Can't add plugin to the shell. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     showOutput(message = "File '" & pluginPath &
         "' added as a plugin to the shell.", fgColor = fgGreen);
     return QuitSuccess.ResultCode
@@ -569,31 +569,31 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
   body:
     # Check if the user entered proper amount of arguments to the command
     if arguments.len < 8:
-      return showError(message = "Please enter the Id to the plugin which will be removed from the shell.")
+      return showError(message = "Please enter the Id to the plugin which will be removed from the shell.", db = db)
     let
       pluginId: DatabaseId = try:
           ($arguments[7 .. ^1]).parseInt.DatabaseId
         except ValueError:
-          return showError(message = "The Id of the plugin must be a positive number.")
+          return showError(message = "The Id of the plugin must be a positive number.", db = db)
     try:
       if not db.exists(T = Plugin, cond = "id=?", params = $pluginId):
         return showError(message = "The plugin with the Id: " & $pluginId &
-          " doesn't exist.")
+          " doesn't exist.", db = db)
       var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $pluginId)
       # Execute the disabling code of the plugin first
       if execPlugin(pluginPath = plugin.location, arguments = ["disable"],
           db = db, commands = commands).code != QuitSuccess:
-        return showError(message = "Can't disable plugin '" & plugin.location & "'.")
+        return showError(message = "Can't disable plugin '" & plugin.location & "'.", db = db)
       # Execute the uninstalling code of the plugin
       if execPlugin(pluginPath = plugin.location, arguments = ["uninstall"],
           db = db, commands = commands).code != QuitSuccess:
-        return showError(message = "Can't remove plugin '" & plugin.location & "'.")
+        return showError(message = "Can't remove plugin '" & plugin.location & "'.", db = db)
       # Remove the plugin from the base
       db.delete(obj = plugin)
     except:
       return showError(message = "Can't delete plugin from database. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     # Remove the plugin from the list of enabled plugins
     showOutput(message = "Deleted the plugin with Id: " & $pluginId,
         fgColor = fgGreen)
@@ -622,29 +622,29 @@ proc togglePlugin*(db; arguments; disable: bool = true;
     # Check if the user entered proper amount of arguments
     if arguments.len < (idStart + 1):
       return showError(message = "Please enter the Id to the plugin which will be " &
-          actionName & ".")
+          actionName & ".", db = db)
     let
       pluginId: DatabaseId = try:
           ($arguments[idStart .. ^1]).parseInt.DatabaseId
         except ValueError:
-          return showError(message = "The Id of the plugin must be a positive number.")
+          return showError(message = "The Id of the plugin must be a positive number.", db = db)
     try:
       # Check if plugin exists
       if not db.exists(T = Plugin, cond = "id=?", params = $pluginId):
-        return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.")
+        return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.", db = db)
       var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $pluginId)
       # Check if plugin can be enabled due to version of API
       let newPlugin: PluginData = checkPlugin(pluginPath = plugin.location,
           db = db, commands = commands)
       if newPlugin.path.len == 0 and not disable:
-        return showError(message = "Can't enable plugin with Id: " & $pluginId & " because its API version is incompatible with the shell's version.")
+        return showError(message = "Can't enable plugin with Id: " & $pluginId & " because its API version is incompatible with the shell's version.", db = db)
       # Execute the enabling or disabling code of the plugin
       if actionName in newPlugin.api:
         if execPlugin(pluginPath = plugin.location, arguments = [actionName],
             db = db, commands = commands).code != QuitSuccess:
           return showError(message = "Can't " & actionName & " plugin '" &
-              plugin.location & "'.")
+              plugin.location & "'.", db = db)
       # Update the state of the plugin
       plugin.enabled = not disable
       db.update(obj = plugin)
@@ -661,7 +661,7 @@ proc togglePlugin*(db; arguments; disable: bool = true;
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
@@ -686,7 +686,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
             ss = "Enabled")])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show all plugins list. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
       try:
         var plugins: seq[Plugin] = @[newPlugin()]
         db.selectAll(objs = plugins)
@@ -698,7 +698,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
               if plugin.enabled: "Yes" else: "No")])
       except:
         return showError(message = "Can't read info about plugin from database. Reason:",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
         width = width + size
@@ -710,7 +710,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         table.add(parts = [magenta(ss = "ID"), magenta(ss = "Path")])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show plugins list. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
       try:
         var plugins: seq[Plugin] = @[newPlugin()]
         db.select(objs = plugins, cond = "enabled=1")
@@ -721,7 +721,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           table.add(parts = [yellow(ss = plugin.id), plugin.location])
       except:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
-            e = getCurrentException())
+            e = getCurrentException(), db = db)
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
         width = width + size
@@ -731,7 +731,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
       table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show the list of plugins. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
@@ -753,15 +753,15 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     db != nil
   body:
     if arguments.len < 6:
-      return showError(message = "Enter the ID of the plugin to show.")
+      return showError(message = "Enter the ID of the plugin to show.", db = db)
     let id: DatabaseId = try:
         parseInt(s = $arguments[5 .. ^1]).DatabaseId
       except ValueError:
-        return showError(message = "The Id of the plugin must be a positive number.")
+        return showError(message = "The Id of the plugin must be a positive number.", db = db)
     try:
       if not db.exists(T = Plugin, cond = "id=?", params = $id):
         return showError(message = "The plugin with the ID: " & $id &
-          " doesn't exists.")
+          " doesn't exists.", db = db)
       var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $id)
       var table: TerminalTable = TerminalTable()
@@ -786,7 +786,7 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
       table.echoTable
     except:
       return showError(message = "Can't show the plugin's info. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
@@ -847,7 +847,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 6, text = "plugin"),
-              helpType = initLimitedString(capacity = 6, text = "plugin"))
+              helpType = initLimitedString(capacity = 6, text = "plugin"), db = db)
         except CapacityError:
           return QuitFailure.ResultCode
     try:
@@ -856,7 +856,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           subCommands = pluginsCommands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's plugins. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     # Load all enabled plugins and execute the initialization code of the plugin
     try:
       var plugins: seq[Plugin] = @[newPlugin()]
@@ -869,17 +869,17 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           if newPlugin.path.len == 0:
             plugin.enabled = false
             db.update(obj = plugin)
-            showError(message = "Plugin '" & plugin.location & "' isn't compatible with the current version of shell's API and will be disabled.")
+            showError(message = "Plugin '" & plugin.location & "' isn't compatible with the current version of shell's API and will be disabled.", db = db)
             continue
           if "init" in newPlugin.api:
             if execPlugin(pluginPath = plugin.location, arguments = ["init"],
                 db = db, commands = commands).code != QuitSuccess:
               showError(message = "Can't initialize plugin '" &
-                  plugin.location & "'.")
+                  plugin.location & "'.", db = db)
               continue
     except:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
 
 proc updatePluginsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
@@ -897,6 +897,6 @@ proc updatePluginsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.exec(query = sql(query = """ALTER TABLE plugins ADD postcommand BOOLEAN NOT NULL DEFAULT 0"""))
     except DbError:
       return showError(message = "Can't update table for the shell's aliases. Reason: ",
-          e = getCurrentException())
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
