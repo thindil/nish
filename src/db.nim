@@ -376,7 +376,7 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 6, text = "nishdb"),
                   helpType = initLimitedString(capacity = 6,
-                      text = "nishdb"))
+                      text = "nishdb"), db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 

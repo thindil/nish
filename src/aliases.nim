@@ -322,7 +322,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Name: ", newLine = false)
     var name: AliasName = emptyLimitedString(capacity = aliasNameLength)
     while name.len == 0:
-      name = readInput(maxLength = aliasNameLength)
+      name = readInput(maxLength = aliasNameLength, db = db)
       if name.len == 0:
         showError(message = "Please enter a name for the alias.", db = db)
       elif not validIdentifier(s = $name):
@@ -339,7 +339,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showFormHeader(message = "(2/6 or 7) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ")
     showOutput(message = "Description: ", newLine = false)
-    let description: UserInput = readInput()
+    let description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the working directory for the alias
@@ -348,7 +348,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Path: ", newLine = false)
     var path: DirectoryPath = "".DirectoryPath
     while path.len == 0:
-      path = ($readInput()).DirectoryPath
+      path = ($readInput(db = db)).DirectoryPath
       if path.len == 0:
         showError(message = "Please enter a path for the alias.", db = db)
       elif not dirExists(dir = $path) and path != "exit":
@@ -379,7 +379,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Command(s): ", newLine = false)
     var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
     while commands.len == 0:
-      commands = readInput()
+      commands = readInput(db = db)
       if commands.len == 0:
         showError(message = "Please enter commands for the alias.", db = db)
         showOutput(message = "Command(s): ", newLine = false)
@@ -417,7 +417,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       except CapacityError:
         discard
       while output.len == 0:
-        output = readInput()
+        output = readInput(db = db)
     if output == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     var alias: Alias = newAlias(name = $name, path = $path,
@@ -485,10 +485,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = alias.name, newLine = false, fgColor = fgMagenta)
     showOutput(message = "'. Can contains only letters, numbers and underscores.")
     showOutput(message = "Name: ", newLine = false)
-    var name: AliasName = readInput(maxLength = aliasNameLength)
+    var name: AliasName = readInput(maxLength = aliasNameLength, db = db)
     while name.len > 0 and not validIdentifier(s = $name):
       showError(message = "Please enter a valid name for the alias.", db = db)
-      name = readInput(maxLength = aliasNameLength)
+      name = readInput(maxLength = aliasNameLength, db = db)
     if name == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif name == "":
@@ -504,7 +504,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         fgColor = fgMagenta)
     showOutput(message = "'. Can't contains a new line character.: ")
     showOutput(message = "Description: ", newLine = false)
-    var description: UserInput = readInput()
+    var description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif description == "":
@@ -519,10 +519,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = alias.path, newLine = false, fgColor = fgMagenta)
     showOutput(message = "'. Must be a path to the existing directory.")
     showOutput(message = "Path: ", newLine = false)
-    var path: DirectoryPath = ($readInput()).DirectoryPath
+    var path: DirectoryPath = ($readInput(db = db)).DirectoryPath
     while path.len > 0 and (path != "exit" and not dirExists(dir = $path)):
       showError(message = "Please enter a path to the existing directory", db = db)
-      path = ($readInput()).DirectoryPath
+      path = ($readInput(db = db)).DirectoryPath
     if path == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif path == "":
@@ -552,7 +552,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = alias.commands, newLine = false, fgColor = fgMagenta)
     showOutput(message = "'. Commands can't contain a new line character.:")
     showOutput(message = "Commands: ", newLine = false)
-    var commands: UserInput = readInput()
+    var commands: UserInput = readInput(db = db)
     if commands == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif commands == "":
@@ -595,7 +595,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       except CapacityError:
         discard
       while output.len == 0:
-        output = readInput()
+        output = readInput(db = db)
     if output == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     # Save the alias to the database
@@ -799,7 +799,7 @@ proc initAliases*(db; aliases: ref AliasesList;
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 5, text = "alias"),
                   helpType = initLimitedString(capacity = 7,
-                      text = "aliases"))
+                      text = "aliases"), db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 
