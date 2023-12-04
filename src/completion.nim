@@ -36,7 +36,7 @@ import commandslist, constants, databaseid, help, input, lstring, options,
     output, resultcode
 
 type
-  CompletionType = enum
+  CompletionType* = enum
     ## Used to set the type of commands' completion
     dirs = "Directories only", files = "Files only",
         dirsfiles = "Directories and files", commands = "Commands",
@@ -54,7 +54,7 @@ type
     ## * cType   - the type of completion for the command
     ## * values  - the proper values of completion if the completion's type is
     ##             set to the custom type
-    command {.unique.}: string
+    command* {.unique.}: string
     cType: CompletionType
     cValues: string
 
