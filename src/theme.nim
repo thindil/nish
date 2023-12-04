@@ -111,6 +111,12 @@ proc newColor*(name: string = ""; cValue: ColorName = default;
 
 proc showThemeError(message: string; e: ref Exception) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
+  ## Show the information about the error related to the theme. The theme's
+  ## module uses the separated code, to avoid circular dependencies and eternal
+  ## errors.
+  ##
+  ## * message - the message to show to the user
+  ## * e       - the exception which happened
   require:
     message.len > 0
     e != nil
@@ -154,6 +160,12 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
 
 proc getColor*(db; name: string): string {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
+  ## Get the selected the shell's theme's color.
+  ##
+  ## * db   - the connection to the shell's database
+  ## * name - the name of the color to get
+  ##
+  ## Returns the terminal code related to the selected theme's color
   require:
     name.len > 0
   body:
@@ -161,7 +173,7 @@ proc getColor*(db; name: string): string {.sideEffect, raises: [], tags: [
     if db == nil:
       return termRed
     try:
-      db.select(obj = color, "name=?", name)
+      db.select(obj = color, cond = "name=?", params = name)
     except:
       showThemeError(message = "Can't get the shell's theme color: '" & name &
           "'. Reason: ", e = getCurrentException())
