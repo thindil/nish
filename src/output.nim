@@ -32,7 +32,7 @@ import std/[strutils, tables, terminal]
 import contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import constants, logger, resultcode
+import constants, logger, resultcode, theme
 
 type OutputMessage* = string
   ## Used to store message to show to the user
@@ -74,8 +74,9 @@ proc showOutput*(message; newLine: bool = true;
           discard
     stdout.flushFile
 
-proc showError*(message: OutputMessage; db: DbConn; e: ref Exception = nil): ResultCode {.sideEffect,
-    raises: [], tags: [WriteIOEffect, RootEffect], discardable, contractual.} =
+proc showError*(message: OutputMessage; db: DbConn;
+    e: ref Exception = nil): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, RootEffect], discardable, contractual.} =
   ## Print the message to standard error and set the shell return
   ## code to error. If parameter e is also supplied, it show stack trace for
   ## the current exception in debug mode.
@@ -94,22 +95,20 @@ proc showError*(message: OutputMessage; db: DbConn; e: ref Exception = nil): Res
     try:
       if e != nil:
         stderr.writeLine(x = "")
-      {.ruleOff: "namedParams".}
-      stderr.styledWrite(fgRed, message)
-      {.ruleOn: "namedParams".}
+      let color: string = getColor(db = db, name = "errors")
+      stderr.write(a = style(ss = message, style = color))
       if e == nil:
         stderr.writeLine(x = "")
       else:
-        {.ruleOff: "namedParams".}
-        stderr.styledWriteLine(fgRed, $e.name)
+        stderr.writeLine(x = style(ss = $e.name, style = color))
         logToFile(message = $e.name)
-        stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+        stderr.writeLine(x = style(ss = getCurrentExceptionMsg(),
+            style = color))
         logToFile(message = getCurrentExceptionMsg())
         when defined(debug):
-          stderr.styledWrite(fgRed, e.getStackTrace)
+          stderr.write(a = style(ss = e.getStackTrace, style = color))
           logToFile(message = e.getStackTrace)
-        {.ruleOn: "namedParams".}
-    except IOError, ValueError:
+    except:
       try:
         stderr.writeLine(x = message)
       except IOError:
