@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[strutils, terminal]
 # External modules imports
-import contracts, nimalyzer
+import contracts, nimalyzer, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import logger, resultcode
@@ -142,11 +142,36 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
         discard
     return QuitSuccess.ResultCode
 
-proc getColor*(db; name: string): Color {.contractual.} =
+proc getColor*(db; name: string): string {.contractual.} =
   require:
     name.len > 0
   body:
-    result = newColor(cValue = red)
+    var color: Color = newColor(cValue = red)
     if db == nil:
-      return
-    db.select(obj = result, "name=?", name)
+      return termRed
+    db.select(obj = color, "name=?", name)
+    case color.cValue
+    of black:
+      result = termBlack
+    of red:
+      result = termRed
+    of green:
+      result = termGreen
+    of yellow:
+      result = termYellow
+    of blue:
+      result = termBlue
+    of magenta:
+      result = termMagenta
+    of cyan:
+      result = termCyan
+    of white:
+      result = termWhite
+    of default:
+      result = termClear
+    if color.bold:
+      result &= termBold
+    if color.underline:
+      result &= termUnderline
+    if color.italic:
+      result &= termItalic
