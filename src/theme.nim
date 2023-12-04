@@ -109,6 +109,27 @@ proc newColor*(name: string = ""; cValue: ColorName = default;
     Color(name: name, cValue: cValue, description: description, bold: bold,
         underline: underline, italic: italic)
 
+proc showThemeError(message: string; e: ref Exception) {.sideEffect, raises: [],
+    tags: [WriteIOEffect, RootEffect], contractual.} =
+  require:
+    message.len > 0
+    e != nil
+  body:
+    try:
+      stderr.writeLine(x = "")
+      {.ruleOff: "namedParams".}
+      stderr.styledWrite(fgRed, message)
+      stderr.styledWriteLine(fgRed, $e.name)
+      logToFile(message = $e.name)
+      stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
+      logToFile(message = getCurrentExceptionMsg())
+      when defined(debug):
+        stderr.styledWrite(fgRed, e.getStackTrace)
+        logToFile(message = e.getStackTrace)
+      {.ruleOn: "namedParams".}
+    except:
+      discard
+
 proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Create the table theme
@@ -122,34 +143,28 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newColor())
-      var color: Color = newColor(name = "errors", cValue = red, description = "Used to show error messages")
+      var color: Color = newColor(name = "errors", cValue = red,
+          description = "Used to show error messages")
       db.insert(obj = color)
     except:
-      try:
-        let e: ref Exception = getCurrentException()
-        stderr.writeLine(x = "")
-        {.ruleOff: "namedParams".}
-        stderr.styledWrite(fgRed, "Can't create 'theme' table. Reason: ")
-        stderr.styledWriteLine(fgRed, $e.name)
-        logToFile(message = $e.name)
-        stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
-        logToFile(message = getCurrentExceptionMsg())
-        when defined(debug):
-          stderr.styledWrite(fgRed, e.getStackTrace)
-          logToFile(message = e.getStackTrace)
-        {.ruleOn: "namedParams".}
-      except:
-        discard
+      showThemeError(message = "Can't create 'theme' table. Reason: ",
+          e = getCurrentException())
+      return QuitFailure.ResultCode
     return QuitSuccess.ResultCode
 
-proc getColor*(db; name: string): string {.contractual.} =
+proc getColor*(db; name: string): string {.sideEffect, raises: [], tags: [
+    ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   require:
     name.len > 0
   body:
     var color: Color = newColor(cValue = red)
     if db == nil:
       return termRed
-    db.select(obj = color, "name=?", name)
+    try:
+      db.select(obj = color, "name=?", name)
+    except:
+      showThemeError(message = "Can't get the shell's theme color: '" & name &
+          "'. Reason: ", e = getCurrentException())
     case color.cValue
     of black:
       result = termBlack
