@@ -11,7 +11,7 @@ suite "Unit tests for options module":
   discard initHistory(db, commands)
 
   test "Initializiation of the shell's options":
-    initOptions(commands)
+    initOptions(commands, db = db)
     check:
       commands.len > 0
 

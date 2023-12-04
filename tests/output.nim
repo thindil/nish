@@ -11,7 +11,7 @@ suite "Unit tests for output module":
 
   test "Showing an error message":
     check:
-      showError("test error") == QuitFailure
+      showError("test error", db = db) == QuitFailure
 
   test "Drawing a form's header":
     showFormHeader(message = "test header", db = db)

@@ -1,8 +1,12 @@
 import std/parseopt
+import utils/utils
 import ../src/[constants, input, lstring]
 import unittest2
 
 suite "Unit tests for input module":
+
+  checkpoint "Initializing the tests"
+  let db = initDb("test8.db")
 
   test "Getting the command's arguments":
     var
@@ -24,16 +28,16 @@ suite "Unit tests for input module":
   test "Reading a character from the user's input":
     checkpoint "Reading a lowercase character"
     check:
-      readChar('c') == "c"
+      readChar('c', db) == "c"
     checkpoint "Reading a uppercase character"
     check:
-      readChar('H') == "H"
+      readChar('H', db) == "H"
 
   test "Deleting a character":
     var
       inputString = initLimitedString(capacity = maxInputLength, text = "my text")
       cursorPosition: Natural = 1
-    deleteChar(inputString, cursorPosition)
+    deleteChar(inputString, cursorPosition, db)
     check:
       inputString == "y text"
       cursorPosition == 0
@@ -42,7 +46,7 @@ suite "Unit tests for input module":
     let inputString = initLimitedString(capacity = maxInputLength,
         text = "my text")
     var cursorPosition: Natural = 1
-    moveCursor('D', cursorPosition, inputString)
+    moveCursor('D', cursorPosition, inputString, db)
     check:
       cursorPosition == 0
 
@@ -50,7 +54,7 @@ suite "Unit tests for input module":
     var
       inputString = initLimitedString(capacity = maxInputLength, text = "my text")
       cursorPosition: Natural = 7
-    updateInput(cursorPosition, inputString, false, "a")
+    updateInput(cursorPosition, inputString, false, "a", db)
     check:
       inputString == "my texta"
       cursorPosition == 8
