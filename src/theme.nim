@@ -38,6 +38,9 @@ type
   ColorName = enum
     ## Used to set the colors' value
     black, red, green, yellow, blue, magenta, cyan, white, default
+  ThemeColor* = enum
+    ## Used to set the colors' names
+    errors, output, input
   Color {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
@@ -47,7 +50,7 @@ type
     ## * bold        - if true, set the color with a bold font
     ## * underline   - if true, add underline to the color
     ## * italic      - if true, set the color with an italic font
-    name {.unique.}: string
+    name {.unique.}: ThemeColor
     cValue: ColorName
     description: string
     bold: bool
@@ -92,7 +95,43 @@ proc to*(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
       default
 {.pop ruleOff: "paramsUsed".}
 
-proc newColor*(name: string = ""; cValue: ColorName = default;
+proc dbType*(T: typedesc[ThemeColor]): string {.raises: [], tags: [],
+    contractual.} =
+  ## Set the type of field in the database
+  ##
+  ## * T - the type for which the field will be set
+  ##
+  ## Returns the type of the field in the database
+  body:
+    "TEXT"
+
+proc dbValue*(val: ThemeColor): DbValue {.raises: [], tags: [],
+    contractual.} =
+  ## Convert the type of the colors' value to database field
+  ##
+  ## * val - the value to convert
+  ##
+  ## Returns the converted val parameter
+  body:
+    dbValue(v = $val)
+
+{.push ruleOff: "paramsUsed".}
+proc to*(dbVal: DbValue, T: typedesc[ThemeColor]): T {.raises: [], tags: [],
+    contractual.} =
+  ## Convert the value from the database to enumeration
+  ##
+  ## * dbVal - the value to convert
+  ## * T     - the type to which the value will be converted
+  ##
+  ## Returns the converted dbVal parameter
+  body:
+    try:
+      parseEnum[ThemeColor](s = dbVal.s)
+    except:
+      errors
+{.pop ruleOff: "paramsUsed".}
+
+proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
     description: string = ""; bold: bool = false; underline: bool = false;
     italic: bool = false): Color {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's theme's color.
@@ -149,7 +188,7 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newColor())
-      var color: Color = newColor(name = "errors", cValue = red,
+      var color: Color = newColor(name = errors, cValue = red,
           description = "Used to show error messages")
       db.insert(obj = color)
     except:
@@ -158,7 +197,7 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       return QuitFailure.ResultCode
     return QuitSuccess.ResultCode
 
-proc getColor*(db; name: string): string {.sideEffect, raises: [], tags: [
+proc getColor*(db; name: ThemeColor): string {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Get the selected the shell's theme's color.
   ##
@@ -166,16 +205,14 @@ proc getColor*(db; name: string): string {.sideEffect, raises: [], tags: [
   ## * name - the name of the color to get
   ##
   ## Returns the terminal code related to the selected theme's color
-  require:
-    name.len > 0
   body:
     var color: Color = newColor(cValue = red)
     if db == nil:
       return termRed
     try:
-      db.select(obj = color, cond = "name=?", params = name)
+      db.select(obj = color, cond = "name=?", params = $name)
     except:
-      showThemeError(message = "Can't get the shell's theme color: '" & name &
+      showThemeError(message = "Can't get the shell's theme color: '" & $name &
           "'. Reason: ", e = getCurrentException())
     case color.cValue
     of black:
