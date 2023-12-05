@@ -37,7 +37,9 @@ import constants, logger, resultcode, theme
 type OutputMessage* = string
   ## Used to store message to show to the user
 
-using message: OutputMessage # The message to show to the user
+using
+  message: OutputMessage # The message to show to the user
+  db: DBConn # The connection to the shell's database
 
 proc showOutput*(message; newLine: bool = true;
     fgColor: ForegroundColor = fgDefault; centered: bool = false) {.sideEffect,
@@ -74,7 +76,7 @@ proc showOutput*(message; newLine: bool = true;
           discard
     stdout.flushFile
 
-proc showError*(message: OutputMessage; db: DbConn;
+proc showError*(message: OutputMessage; db;
     e: ref Exception = nil): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, RootEffect], discardable, contractual.} =
   ## Print the message to standard error and set the shell return
@@ -115,10 +117,9 @@ proc showError*(message: OutputMessage; db: DbConn;
         discard
     return QuitFailure.ResultCode
 
-proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
-    ).ColumnAmount except ValueError: 80.ColumnAmount);
-    db: DbConn) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
-        RootEffect], contractual.} =
+proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount);
+    db) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
+    RootEffect], contractual.} =
   ## Show form's header with the selected message
   ##
   ## * message - the text which will be shown in the header
