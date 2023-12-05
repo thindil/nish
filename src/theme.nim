@@ -191,6 +191,8 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       var color: Color = newColor(name = errors, cValue = red,
           description = "Used to show error messages")
       db.insert(obj = color)
+      color = newColor(name = output, cValue = default,
+          description = "Used to show commands output")
     except:
       showThemeError(message = "Can't create 'theme' table. Reason: ",
           e = getCurrentException())
