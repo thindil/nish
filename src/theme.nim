@@ -40,7 +40,7 @@ type
     black, red, green, yellow, blue, magenta, cyan, white, default
   ThemeColor* = enum
     ## Used to set the colors' names
-    errors, output, input
+    errors, default, headers, tableHeaders, ids, values, showHeaders
   Color {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
@@ -177,7 +177,7 @@ proc showThemeError(message: string; e: ref Exception) {.sideEffect, raises: [],
 
 proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
-  ## Create the table theme
+  ## Create the table theme and insert the default colors settings
   ##
   ## * db - the connection to the shell's database
   ##
@@ -191,8 +191,24 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       var color: Color = newColor(name = errors, cValue = red,
           description = "Used to show error messages")
       db.insert(obj = color)
-      color = newColor(name = output, cValue = default,
-          description = "Used to show commands output")
+      color = newColor(name = default, cValue = default,
+          description = "The default color of the shell's output")
+      db.insert(obj = color)
+      color = newColor(name = headers, cValue = yellow,
+          description = "Used to show headers of tables and forms")
+      db.insert(obj = color)
+      color = newColor(name = tableHeaders, cValue = magenta,
+          description = "Used to show tables headers")
+      db.insert(obj = color)
+      color = newColor(name = ids, cValue = yellow,
+          description = "Used to show indexes in tables")
+      db.insert(obj = color)
+      color = newColor(name = values, cValue = green,
+          description = "Used to show values in tables")
+      db.insert(obj = color)
+      color = newColor(name = showHeaders, cValue = magenta,
+          description = "Used in show subcommands for descriptions")
+      db.insert(obj = color)
     except:
       showThemeError(message = "Can't create 'theme' table. Reason: ",
           e = getCurrentException())
