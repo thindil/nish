@@ -95,7 +95,7 @@ proc showError*(message: OutputMessage; db: DbConn;
     try:
       if e != nil:
         stderr.writeLine(x = "")
-      let color: string = getColor(db = db, name = "errors")
+      let color: string = getColor(db = db, name = errors)
       stderr.write(a = style(ss = message, style = color))
       if e == nil:
         stderr.writeLine(x = "")
