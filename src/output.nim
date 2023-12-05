@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[strutils, tables, terminal]
 # External modules imports
-import contracts, nancy, nimalyzer, termstyle
+import contracts, nancy, termstyle
 import norm/sqlite
 # Internal imports
 import constants, logger, resultcode, theme
@@ -41,16 +41,17 @@ using
   message: OutputMessage # The message to show to the user
   db: DBConn # The connection to the shell's database
 
-proc showOutput*(message; newLine: bool = true;
-    fgColor: ForegroundColor = fgDefault; centered: bool = false) {.sideEffect,
+proc showOutput*(message; db; newLine: bool = true;
+    color: ThemeColor = default; centered: bool = false) {.sideEffect,
     raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Show the selected message to the user. If newLine is true, add a new line
   ## after message.
   ##
-  ## * message         - the message to show
-  ## * newLine         - if true, add a new line after the message
-  ## * fgColor         - the color of the text (foreground)
-  ## * centered        - if true, center the message on the screen
+  ## * message  - the message to show
+  ## * db       - the connection to the shell's database
+  ## * newLine  - if true, add a new line after the message
+  ## * fgColor  - the color of the text
+  ## * centered - if true, center the message on the screen
   body:
     if message != "":
       var newMessage: OutputMessage = if centered:
@@ -61,9 +62,7 @@ proc showOutput*(message; newLine: bool = true;
         else:
           message
       try:
-        {.ruleOff: "namedParams".}
-        stdout.styledWrite(fgColor, newMessage)
-        {.ruleOn: "namedParams".}
+        stdout.write(a = style(ss = newMessage, style = getColor(db = db, name = color)))
       except IOError, ValueError:
         try:
           stdout.write(s = newMessage)
@@ -154,13 +153,14 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().Column
           e = getCurrentException(), db = db)
 
 proc selectOption*(options: Table[char, string];
-    default: char; prompt: string): char {.sideEffect, raises: [], tags: [ReadIOEffect,
+    default: char; prompt: string; db): char {.sideEffect, raises: [], tags: [ReadIOEffect,
     WriteIOEffect, RootEffect], contractual.} =
   ## Show the list of options from which the user can select one value
   ##
   ## * options - the list of options from which the user can select one
   ## * default - the default value for the list
   ## * prompt  - the text displayed at the end of the list
+  ## * db      - the connection to the shell's database
   ##
   ## Returns the option selected by the user from the options list or the
   ## default value if there was any error
@@ -169,9 +169,9 @@ proc selectOption*(options: Table[char, string];
   body:
     var keysList: seq[char] = @[]
     for key, value in options:
-      showOutput(message = $key & ") " & value)
+      showOutput(message = $key & ") " & value, db = db)
       keysList.add(y = key)
-    showOutput(message = prompt & " (" & keysList.join(sep = "/") & "): ")
+    showOutput(message = prompt & " (" & keysList.join(sep = "/") & "): ", db = db)
     result = try:
         getch()
       except IOError:
