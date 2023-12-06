@@ -27,13 +27,13 @@
 ## input, like completing names of files, directories, commands, etc.
 
 # Standard library imports
-import std/[os, parsecfg, strutils, tables, terminal]
+import std/[os, parsecfg, strutils, tables]
 # External modules imports
 import contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, help, input, lstring, options,
-    output, resultcode
+    output, resultcode, theme
 
 type
   CompletionType* = enum
@@ -341,38 +341,38 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
   require:
     db != nil
   body:
-    showOutput(message = "You can cancel adding a new completion at any time by double press Escape key or enter word 'exit' as an answer.")
+    showOutput(message = "You can cancel adding a new completion at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     # Set the command for the completion
     showFormHeader(message = "(1/2 or 3) Command", db = db)
-    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. For example: 'ls'. Can't be empty:")
-    showOutput(message = "Command: ", newLine = false)
+    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. For example: 'ls'. Can't be empty:", db = db)
+    showOutput(message = "Command: ", newLine = false, db = db)
     var command: LimitedString = emptyLimitedString(capacity = maxInputLength)
     while command.len == 0:
       command = readInput(maxLength = maxInputLength, db = db)
       if command.len == 0:
         showError(message = "Please enter a name for the command.", db = db)
       if command.len == 0:
-        showOutput(message = "Command: ", newLine = false)
+        showOutput(message = "Command: ", newLine = false, db = db)
     if command == "exit":
       return showError(message = "Adding a new completion cancelled.", db = db)
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
-    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ")
+    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ", db = db)
     let typeChar: char = selectOption(options = completionOptions,
-        default = 'n', prompt = "Type")
+        default = 'n', prompt = "Type", db = db)
     if typeChar == 'q':
       return showError(message = "Adding a new completion cancelled.", db = db)
     var values: UserInput = emptyLimitedString(capacity = maxInputLength)
     # Set the values for the completion if the user selected custom type of completion
     if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
-      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. Can't be empty.:")
-      showOutput(message = "Value(s): ", newLine = false)
+      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. Can't be empty.:", db = db)
+      showOutput(message = "Value(s): ", newLine = false, db = db)
       while values.len == 0:
         values = readInput(db = db)
         if values.len == 0:
           showError(message = "Please enter values for the completion.", db = db)
-          showOutput(message = "Value(s): ", newLine = false)
+          showOutput(message = "Value(s): ", newLine = false, db = db)
       if values == "exit":
         return showError(message = "Adding a new completion cancelled.", db = db)
     var completion: Completion = newCompletion(command = $command, cType = (
@@ -404,7 +404,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't add the completion to the database. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "The new completion for the command '" & command &
-        "' added.", fgColor = fgGreen)
+        "' added.", color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
@@ -438,15 +438,14 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     if completion.command.len == 0:
       return showError(message = "The completion with the Id: " & $id &
         " doesn't exists.", db = db)
-    showOutput(message = "You can cancel editing the completion at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.")
+    showOutput(message = "You can cancel editing the completion at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
     # Set the command for the completion
     showFormHeader(message = "(1/2 or 3) Command", db = db)
-    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. Current value: '",
-        newLine = false)
+    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. Current value: '", newLine = false, db = db)
     showOutput(message = completion.command, newLine = false,
-        fgColor = fgMagenta)
-    showOutput(message = "'.")
-    showOutput(message = "Command: ", newLine = false)
+        color = values, db = db)
+    showOutput(message = "'.", db = db)
+    showOutput(message = "Command: ", newLine = false, db = db)
     var command: LimitedString = readInput(maxLength = maxInputLength, db = db)
     if command == "exit":
       return showError(message = "Editing the completion cancelled.", db = db)
@@ -457,13 +456,12 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Editing the completion cancelled. Reason: Can't set command for the completion", db = db)
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
-    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '",
-        newLine = false)
+    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '", newLine = false, db = db)
     showOutput(message = $completion.cType, newLine = false,
-        fgColor = fgMagenta)
-    showOutput(message = "'. Possible values are:")
+        color = values, db = db)
+    showOutput(message = "'. Possible values are:", db = db)
     let typeChar: char = selectOption(options = completionOptions,
-        default = 'n', prompt = "Type")
+        default = 'n', prompt = "Type", db = db)
     let completionType: CompletionType = case typeChar.toLowerAscii
       of 'd':
         dirs
@@ -485,17 +483,16 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     # Set the values for the completion if the user selected custom type of completion
     if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
-      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. The current value is: '",
-          newLine = false)
+      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. The current value is: '", newLine = false, db = db)
       showOutput(message = completion.cValues, newLine = false,
-          fgColor = fgMagenta)
-      showOutput(message = "'.")
-      showOutput(message = "Value(s): ", newLine = false)
+          color = ThemeColor.values, db = db)
+      showOutput(message = "'.", db = db)
+      showOutput(message = "Value(s): ", newLine = false, db = db)
       while values.len == 0:
         values = readInput(db = db)
         if values.len == 0:
           showError(message = "Please enter values for the completion.", db = db)
-          showOutput(message = "Value(s): ", newLine = false)
+          showOutput(message = "Value(s): ", newLine = false, db = db)
       if values == "exit":
         return showError(message = "Editing the existing completion cancelled.", db = db)
     # Save the completion to the database
@@ -508,7 +505,7 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't update the completion. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "The completion with Id: '" & $id & "' edited.",
-        fgColor = fgGreen)
+        color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
@@ -539,7 +536,7 @@ proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't read info about alias from database. Reason:",
           e = getCurrentException(), db = db)
     if dbCompletions.len == 0:
-      showOutput(message = "There are no defined commands' completions.")
+      showOutput(message = "There are no defined commands' completions.", db = db)
       return QuitSuccess.ResultCode
     try:
       for dbResult in dbCompletions:
@@ -596,7 +593,7 @@ proc deleteCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't delete completion from database. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Deleted the completion with Id: " & $id,
-        fgColor = fgGreen)
+        color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
@@ -693,7 +690,7 @@ proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't create the completion export file. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Exported the completion with Id: " & $id &
-        " to file: " & $fileName, fgColor = fgGreen)
+        " to file: " & $fileName, color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc importCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
@@ -735,7 +732,7 @@ proc importCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't import the completion from the file. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Imported the completion from file : " & fileName,
-        fgColor = fgGreen)
+        color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
