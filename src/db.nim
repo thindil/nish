@@ -27,7 +27,7 @@
 ## the shell's database.
 
 # Standard library imports
-import std/[os, osproc, strutils, terminal]
+import std/[os, osproc, strutils]
 # External modules imports
 import contracts, nimalyzer
 import norm/sqlite
@@ -262,7 +262,7 @@ proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
     try:
       db.exec(query = "PRAGMA optimize;VACUUM;".SqlQuery)
       showOutput(message = "The shell's database was optimized.",
-          fgColor = fgGreen)
+          color = success, db = db)
     except:
       return showError(message = "Can't optimize the shell's database. Reason: ",
           e = getCurrentException(), db = db)
@@ -297,7 +297,7 @@ proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           " '.dump " & (if args.len > 2: args[2 .. ^1].join(
           sep = " ") else: "") & "'").output)
       showOutput(message = "The backup file: '" & $args[1] & "' created.",
-          fgColor = fgGreen)
+          color = success, db = db)
     except:
       return showError(message = "Can't create the backup of the shell's database. Reason: ",
           e = getCurrentException(), db = db)
@@ -325,7 +325,7 @@ proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           command = "sqlite3 " & dbFile & " '.read " & args[1] & "'")
       if res.exitCode == 0:
         showOutput(message = "The data from the file: '" & $args[1] &
-            "' was imported to the database.", fgColor = fgGreen)
+            "' was imported to the database.", color = success, db = db)
       else:
         return showError(message = "Can't import the data into the shell's database. Reason: " & res.output, db = db)
     except:
