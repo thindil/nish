@@ -32,7 +32,7 @@ import std/[algorithm, os, parsecfg, strutils, streams, terminal]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import commandslist, helpcontent, constants, lstring, output, resultcode
+import commandslist, helpcontent, constants, lstring, output, resultcode, theme
 
 using db: DbConn # Connection to the shell's database
 
@@ -134,7 +134,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       ## * helpEntry   - the help entry to show to the user
       body:
         # Show the command's usage information
-        showOutput(message = "Usage: ", fgColor = fgYellow, newLine = false)
+        showOutput(message = "Usage: ", color = helpUsage, newLine = false, db = db)
         var argumentEnd: int = 0
         while argumentEnd > -1:
           let argumentStart: int = helpEntry.usage.find(chars = {'?', '['},
@@ -143,28 +143,28 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           # its arguments' list, print the command
           if argumentStart == -1:
             showOutput(message = helpEntry.usage[argumentEnd .. ^1],
-                fgColor = fgGreen, newLine = false)
+                color = helpCommand, newLine = false, db = db)
             break
           # The command has an argument(s), print the command
           if argumentEnd == 0:
             showOutput(message = helpEntry.usage[0 .. argumentStart - 1],
-                fgColor = fgGreen, newLine = false)
+                color = helpCommand, newLine = false, db = db)
           # The argument is required, print the argument
           if helpEntry.usage[argumentStart] == '[':
             argumentEnd = helpEntry.usage.find(sub = ']',
                 start = argumentStart + 1)
             showOutput(message = helpEntry.usage[argumentStart ..
-                argumentEnd] & " ", fgColor = fgCyan, newLine = false)
+                argumentEnd] & " ", color = helpReqParam, newLine = false, db = db)
           # The argument is optional, print the argument
           else:
             argumentEnd = helpEntry.usage.find(sub = '?',
                 start = argumentStart + 1)
             showOutput(message = helpEntry.usage[argumentStart ..
-                argumentEnd] & " ", fgColor = fgBlue, newLine = false)
+                argumentEnd] & " ", color = helpOptParam, newLine = false, db = db)
           argumentEnd.inc
           if argumentEnd == helpEntry.usage.len:
             break
-        showOutput(message = "\n")
+        showOutput(message = "\n", db = db)
         # Show the command's help entry content
         var markEnd: int = 0
         while markEnd > -1:
@@ -174,16 +174,16 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           # of the help content, print the content
           if markStart == -1:
             showOutput(message = helpEntry.content[markEnd .. ^1],
-                newLine = false)
+                newLine = false, db = db)
             break
           # Print the content between the previous mark and the next mark
           if markStart > markEnd and markEnd > 0:
             showOutput(message = helpEntry.content[markEnd .. markStart - 1],
-                newLine = false)
+                newLine = false, db = db)
           # There is a text formatting mark, print the content to the mark
           if markEnd == 0:
             showOutput(message = helpEntry.content[0 .. markStart - 1],
-                newLine = false)
+                newLine = false, db = db)
           # Be sure that we get only formatting mark, with trailing space
           if helpEntry.content[markStart - 1] == ' ':
             # Underline, yellow color
