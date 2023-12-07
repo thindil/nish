@@ -41,7 +41,8 @@ type
   ThemeColor* = enum
     ## Used to set the colors' names
     errors, default, headers, tableHeaders, ids, values, showHeaders, success,
-      helpUsage, helpCommand, helpReqParam, helpOptParam, helpUnderline, helpCode
+      helpUsage, helpCommand, helpReqParam, helpOptParam, helpUnderline, helpCode,
+      highlightValid, highlightInvalid, highlightVariable, highlightText
   Color {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
@@ -230,6 +231,18 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.insert(obj = color)
       color = newColor(name = helpCode, cValue = green,
           description = "Used to show code in help entries")
+      db.insert(obj = color)
+      color = newColor(name = highlightValid, cValue = green,
+          description = "Used to highlight valid values in user's input")
+      db.insert(obj = color)
+      color = newColor(name = highlightInvalid, cValue = red,
+          description = "Used to highlight invalid values in user's input")
+      db.insert(obj = color)
+      color = newColor(name = highlightVariable, cValue = cyan,
+          description = "Used to highlight environment variables in user's input")
+      db.insert(obj = color)
+      color = newColor(name = highlightText, cValue = yellow,
+          description = "Used to highlight text in quotes in user's input")
       db.insert(obj = color)
     except:
       showThemeError(message = "Can't create 'theme' table. Reason: ",
