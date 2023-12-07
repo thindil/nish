@@ -31,7 +31,7 @@ import std/[os, strutils, tables, terminal, unicode]
 import contracts
 import norm/sqlite
 # Internal imports
-import commandslist, constants, lstring, output, prompt, resultcode
+import commandslist, constants, lstring, output, prompt, resultcode, theme
 
 proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     commands: ref Table[string, CommandData]; aliases: ref AliasesList;
@@ -96,13 +96,13 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       # If command contains equal sign it must be an environment variable,
       # print the variable and get the next word
       while '=' in $command:
-        showOutput(message = $command, newLine = false, fgColor = fgCyan)
+        showOutput(message = $command, newLine = false, color = highlightVariable, db = db)
         var startIndex: int = input.find(sub = ' ', start = (if spaceIndex >
             -1: spaceIndex else: 0))
         if startIndex < 0:
           inputString = input
           return
-        showOutput(message = " ", newLine = false)
+        showOutput(message = " ", newLine = false, db = db)
         startIndex.inc
         spaceIndex = input.find(sub = ' ', start = startIndex)
         command = try:
@@ -117,24 +117,24 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
                 1: "" else: $input[spaceIndex..^1]))
           except CapacityError:
             emptyLimitedString(capacity = maxInputLength)
-      var color: ForegroundColor = try:
+      var color: ThemeColor = try:
           if findExe(exe = $command).len > 0:
-            fgGreen
+            highlightValid
           else:
-            fgRed
+            highlightInvalid
         except OSError:
-          fgGreen
-      if color == fgRed:
+          highlightValid
+      if color == highlightInvalid:
         # Built-in commands
         if $command in ["exit", "cd", "set", "unset", "."]:
-          color = fgGreen
+          color = highlightValid
         # The shell's commands
         elif commands.hasKey(key = $command):
-          color = fgGreen
+          color = highlightValid
         # Aliases
         elif aliases.contains(key = command):
-          color = fgGreen
-      showOutput(message = $command, newLine = false, fgColor = color)
+          color = highlightValid
+      showOutput(message = $command, newLine = false, color = color, db = db)
       # Check if command's arguments contains quotes
       var
         quotes: set[char] = {'\'', '"'}
@@ -142,26 +142,26 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         startPosition: int = 0
       # No quotes, print all
       if quotePosition == -1:
-        showOutput(message = $commandArguments, newLine = false)
+        showOutput(message = $commandArguments, newLine = false, db = db)
       # Color the text inside the quotes
       else:
-        color = fgDefault
+        color = default
         while quotePosition > -1:
           showOutput(message = $commandArguments[startPosition..quotePosition -
-              1], newLine = false, fgColor = color)
+              1], newLine = false, color = color, db = db)
           showOutput(message = $commandArguments[quotePosition],
-              newLine = false, fgColor = fgYellow)
+              newLine = false, color = highlightText, db = db)
           startPosition = quotePosition + 1
-          if color == fgDefault:
-            color = fgYellow
+          if color == default:
+            color = highlightText
             quotes = {commandArguments[quotePosition]}
           else:
-            color = fgDefault
+            color = default
             quotes = {'\'', '"'}
           quotePosition = find(s = $commandArguments, chars = quotes,
               start = startPosition)
         showOutput(message = $commandArguments[startPosition..^1],
-            newLine = false, fgColor = color)
+            newLine = false, color = color, db = db)
       if cursorPosition < runeLen(s = $input) - 1:
         stdout.cursorBackward(count = runeLen(s = $input) - cursorPosition)
       inputString = input
