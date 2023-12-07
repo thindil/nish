@@ -28,13 +28,13 @@
 ## plugins' API, please look at the testplugin.sh in the tools directory.
 
 # Standard library imports
-import std/[os, osproc, parseopt, streams, strutils, tables, terminal]
+import std/[os, osproc, parseopt, streams, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, help, lstring, options,
-    output, resultcode
+    output, resultcode, theme
 
 const
   minApiVersion: float = 0.2
@@ -143,14 +143,14 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       ##
       ## This procedure always returns true
       body:
-        let color: ForegroundColor = try:
+        let color: ThemeColor = try:
             if options.len == 1:
-              fgDefault
+              default
             else:
-              parseEnum[ForegroundColor](s = options[1])
+              parseEnum[ThemeColor](s = options[1])
           except ValueError:
-            fgDefault
-        showOutput(message = options[0], fgColor = color)
+            default
+        showOutput(message = options[0], color = color, db = db)
         return true
 
     proc showPluginError(options: seq[string]): bool {.closure, sideEffect,
@@ -549,7 +549,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
       return showError(message = "Can't add plugin to the shell. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "File '" & pluginPath &
-        "' added as a plugin to the shell.", fgColor = fgGreen);
+        "' added as a plugin to the shell.", color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
@@ -596,7 +596,7 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
           e = getCurrentException(), db = db)
     # Remove the plugin from the list of enabled plugins
     showOutput(message = "Deleted the plugin with Id: " & $pluginId,
-        fgColor = fgGreen)
+        color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc togglePlugin*(db; arguments; disable: bool = true;
@@ -657,7 +657,7 @@ proc togglePlugin*(db; arguments; disable: bool = true;
           commands = commands).path.len == 0:
         return QuitFailure.ResultCode
       showOutput(message = (if disable: "Disabled" else: "Enabled") &
-          " the plugin '" & $plugin.location & "'", fgColor = fgGreen)
+          " the plugin '" & $plugin.location & "'", color = success, db = db)
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
@@ -691,7 +691,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         var plugins: seq[Plugin] = @[newPlugin()]
         db.selectAll(objs = plugins)
         if plugins.len == 0:
-          showOutput(message = "There are no available shell's plugins.")
+          showOutput(message = "There are no available shell's plugins.", db = db)
           return QuitSuccess.ResultCode
         for plugin in plugins:
           table.add(parts = [yellow(ss = plugin.id), plugin.location, (
@@ -715,7 +715,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         var plugins: seq[Plugin] = @[newPlugin()]
         db.select(objs = plugins, cond = "enabled=1")
         if plugins.len == 0:
-          showOutput(message = "There are no enabled shell's plugins.")
+          showOutput(message = "There are no enabled shell's plugins.", db = db)
           return QuitSuccess.ResultCode
         for plugin in plugins:
           table.add(parts = [yellow(ss = plugin.id), plugin.location])
@@ -820,7 +820,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
       body:
         # No subcommand entered, show available options
         if arguments.len == 0:
-          return showHelpList(command = "plugin", subcommands = pluginsCommands)
+          return showHelpList(command = "plugin", subcommands = pluginsCommands, db = db)
         # Add a new plugin
         if arguments.startsWith(prefix = "add"):
           return addPlugin(arguments = arguments, db = db,

@@ -34,7 +34,7 @@ import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db,
     directorypath, help, highlight, history, input, logger, lstring, options,
-    output, plugins, prompt, resultcode, suggestion, title, variables
+    output, plugins, prompt, resultcode, suggestion, theme, title, variables
 
 proc showCommandLineHelp*() {.sideEffect, raises: [], tags: [WriteIOEffect],
     contractual.} =
@@ -587,10 +587,14 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 start = start, db = db)
             if newCommand.len == 0:
               break
-            showOutput(message = "Command '" & cyan(ss = commandName) &
-                "' not found. Did you mean: '" & yellow(ss = newCommand) &
-                "'? [" & green(ss = "Y") & "]es/[" & blue(ss = "N") & "]ext/[" &
-                red(ss = "A") & "]bort")
+            showOutput(message = "Command '" & style(ss = commandName,
+                style = getColor(db = db, name = suggestInvalid)) &
+                "' not found. Did you mean: '" & style(ss = newCommand,
+                style = getColor(db = db, name = suggestCommand)) & "'? [" &
+                style(ss = "Y", style = getColor(db = db, name = suggestYes)) &
+                "]es/[" & style(ss = "N", style = getColor(db = db,
+                name = suggestNext)) & "]ext/[" & style(ss = "A",
+                style = getColor(db = db, name = suggestAbort)) & "]bort", db = db)
             case getch()
             of 'Y', 'y':
               commandName = newCommand

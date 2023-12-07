@@ -27,12 +27,12 @@
 ## adding, removing, updating or showing the options.
 
 # Standard library imports
-import std/[os, osproc, strutils, terminal]
+import std/[os, osproc, strutils]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import commandslist, constants, help, lstring, output, resultcode
+import commandslist, constants, help, lstring, output, resultcode, theme
 
 const optionsCommands: seq[string] = @["list", "set", "reset"]
   ## The list of available subcommands for command options
@@ -333,7 +333,7 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       # Set the option
       setOption(optionName = optionName, value = value, db = db)
       showOutput(message = "Value for option '" & optionName &
-          "' was set to '" & value & "'", fgColor = fgGreen);
+          "' was set to '" & value & "'", color = success, db = db);
       return QuitSuccess.ResultCode
     except:
       return showError(message = "Can't set the value for the option '" &
@@ -361,7 +361,7 @@ proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if optionName == "all":
       try:
         db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
-        showOutput(message = "All shell's options are reseted to their default values.")
+        showOutput(message = "All shell's options are reseted to their default values.", db = db)
       except DbError:
         return showError(message = "Can't reset the shell's options to their default values. Reason: ",
             e = getCurrentException(), db = db)
@@ -378,7 +378,7 @@ proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         option.value = option.defaultValue
         db.update(obj = option)
         showOutput(message = "The shell's option '" & optionName &
-            "' reseted to its default value.", fgColor = fgGreen)
+            "' reseted to its default value.", color = success, db = db)
       except:
         return showError(message = "Can't reset option '" & optionName &
             "' to its default value. Reason: ", e = getCurrentException(), db = db)
@@ -478,7 +478,7 @@ proc initOptions*(commands: ref CommandsList; db) {.sideEffect,
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "options",
-              subcommands = optionsCommands)
+              subcommands = optionsCommands, db = db)
         # Show the list of available options
         if arguments == "list":
           return showOptions(db = db)
