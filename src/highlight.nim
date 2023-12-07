@@ -91,7 +91,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       # If syntax highlightning is disabled, show the user's input and quit
       if not enabled:
         inputString = input
-        showOutput(message = $inputString, newLine = false)
+        showOutput(message = $inputString, newLine = false, db = db)
         return
       # If command contains equal sign it must be an environment variable,
       # print the variable and get the next word

@@ -27,7 +27,7 @@
 ## the help content from file, searching for or printing it to the user.
 
 # Standard library imports
-import std/[algorithm, os, parsecfg, strutils, streams, terminal]
+import std/[algorithm, os, parsecfg, strutils, streams]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
@@ -112,9 +112,8 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
   ## Show the selected help section. If the user entered non-existing name of
   ## the help section, show info about it.
   ##
-  ## * topic       - the help's topic to show. If empty, show index of the
-  ##                 shell's help
-  ## * db          - the connection to the shell's database
+  ## * topic - the help's topic to show. If empty, show index of the shell's help
+  ## * db    - the connection to the shell's database
   ##
   ## RETURNS
   ##
@@ -186,30 +185,30 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
                 newLine = false, db = db)
           # Be sure that we get only formatting mark, with trailing space
           if helpEntry.content[markStart - 1] == ' ':
-            # Underline, yellow color
+            # Underline
             if helpEntry.content[markStart] == '_':
               markEnd = helpEntry.content.find(sub = '_', start = markStart + 1)
               showOutput(message = "'" & helpEntry.content[markStart + 1 ..
-                  markEnd - 1] & "'", fgColor = fgYellow, newLine = false)
-            # Code, backticks, green
+                  markEnd - 1] & "'", color = helpUnderline, newLine = false, db = db)
+            # Code, backticks
             if helpEntry.content[markStart] == '`':
               markEnd = helpEntry.content.find(sub = '`', start = markStart + 1)
               showOutput(message = helpEntry.content[markStart .. markEnd],
-                  fgColor = fgGreen, newLine = false)
-            # An optional parameter blue
+                  color = helpCode, newLine = false, db = db)
+            # An optional parameter
             if helpEntry.content[markStart] == '?':
               markEnd = helpEntry.content.find(sub = '?', start = markStart + 1)
               showOutput(message = "'" & helpEntry.content[markStart + 1 ..
-                  markEnd - 1] & "'", fgColor = fgBlue, newLine = false)
-            # A required parameter cyan
+                  markEnd - 1] & "'", color = helpOptParam, newLine = false, db = db)
+            # A required parameter
             if helpEntry.content[markStart] == '[':
               markEnd = helpEntry.content.find(sub = ']', start = markStart + 1)
               showOutput(message = "'" & helpEntry.content[markStart + 1 ..
-                  markEnd - 1] & "'", fgColor = fgCyan, newLine = false)
+                  markEnd - 1] & "'", color = helpReqParam, newLine = false, db = db)
           markEnd.inc
           if markEnd == helpEntry.content.len:
             break
-        showOutput(message = "\n", newLine = false)
+        showOutput(message = "\n", newLine = false, db = db)
 
     type ShellOption = ref object
       value: string = ""
@@ -258,12 +257,12 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           showError(message = "Can't show the help entries list. Reason: ",
               e = getCurrentException(), db = db)
         showOutput(message = "\n\nTo see more information about the selected topic, type " &
-            yellow(ss = "'help [topic]'") & ", for example: " & green(
-            ss = "`help " & keys[0].value) &
+            style(ss = "'help [topic]'", style = getColor(db = db, name = helpUsage)) & ", for example: " & style(
+            ss = "`help " & keys[0].value,  style = getColor(db = db, name = helpCode)) &
             "`.\nInformation about usage of a command: if a parameter of a command is between " &
-            cyan(ss = "[]") &
+            style(ss = "[]", style = getColor(db = db, name = helpReqParam)) &
             " then the parameter is required. If a parameter of a command is between " &
-            blue(ss = "?") & " then the parameter is optional.")
+            style(ss = "?", style = getColor(db = db, name = helpOptParam)) & " then the parameter is optional.", db = db)
 
     # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
@@ -358,7 +357,7 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     return showError(message = "Unknown help topic: `" & topic & "`. For the list of available help topics, type `help`.", db = db)
 
 proc showHelpList*(command: string; subcommands: seq[
-    string]): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
+    string], db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Show short help about available subcommands related to the selected command
@@ -366,16 +365,17 @@ proc showHelpList*(command: string; subcommands: seq[
   ## * command     - the selected command which subcommands' list will be
   ##                 displayed
   ## * subcommands - the list of subcommands available for the selected command
+  ## * db          - the connection to the shell's database
   ##
   ## This procedure always return QuitSuccess
   body:
     showOutput(message = "Available subcommands for '" & command & "' are: ",
-        fgColor = fgYellow)
-    showOutput(message = subcommands.join(sep = ", "))
-    showOutput(message = " ")
+        color = helpUsage, db = db)
+    showOutput(message = subcommands.join(sep = ", "), db = db)
+    showOutput(message = " ", db = db)
     showOutput(message = "To see more information about the subcommands, type 'help " &
         command & " [subcommand]', for example: 'help " & command & " " &
-        subcommands[0] & "'.")
+        subcommands[0] & "'.", db = db)
     return QuitSuccess.ResultCode
 
 proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
@@ -519,7 +519,7 @@ proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     if result == QuitFailure:
       return
     showOutput(message = "The shell's help content successfully updated.",
-        fgColor = fgGreen)
+        color = success, db = db)
 
 proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, ReadIOEffect,
