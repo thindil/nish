@@ -28,12 +28,12 @@
 ## in.
 
 # Standard library imports
-import std/[os, strutils, terminal, times]
+import std/[os, strutils, times]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import commandslist, constants, help, lstring, output, options, resultcode
+import commandslist, constants, help, lstring, output, options, resultcode, theme
 
 const historyCommands: seq[string] = @["clear", "list", "find"]
   ## The list of available subcommands for command history
@@ -237,7 +237,7 @@ proc clearHistory*(db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Can't clear the shell's commands history. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Shell's commands' history cleared.",
-        fgColor = fgGreen)
+        color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
@@ -365,7 +365,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
           break
       if result == QuitFailure:
         showOutput(message = "No commands found in the shell's history for '" &
-            searchTerm & "'")
+            searchTerm & "'", db = db)
         return
       try:
         showFormHeader(message = "The search results for '" & searchTerm &
@@ -502,7 +502,7 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "history",
-              subcommands = historyCommands)
+              subcommands = historyCommands, db = db)
         # Clear the shell's commands' history
         elif arguments == "clear":
           return clearHistory(db = db)
