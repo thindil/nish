@@ -43,7 +43,8 @@ type
     errors, default, headers, tableHeaders, ids, values, showHeaders, success,
       helpUsage, helpCommand, helpReqParam, helpOptParam, helpUnderline,
       helpCode, highlightValid, highlightInvalid, highlightVariable,
-      highlightText, suggestInvalid, suggestCommand, suggestYes, suggestNext, suggestAbort
+      highlightText, suggestInvalid, suggestCommand, suggestYes, suggestNext,
+      suggestAbort, promptColor, promptError
   Color {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
@@ -259,6 +260,12 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.insert(obj = color)
       color = newColor(name = suggestAbort, cValue = red,
           description = "Used to show abort shortcut in commands' suggestions")
+      db.insert(obj = color)
+      color = newColor(name = promptColor, cValue = blue,
+          description = "Used to show the shell's prompt")
+      db.insert(obj = color)
+      color = newColor(name = promptError, cValue = red,
+          description = "Used to show the last command's error code in the shell's prompt")
       db.insert(obj = color)
     except:
       showThemeError(message = "Can't create 'theme' table. Reason: ",
