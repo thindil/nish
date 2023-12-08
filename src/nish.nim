@@ -579,7 +579,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         logToFile(message = "returnCode = " & $returnCode)
         if returnCode == 127:
           fillSuggestionsList(aliases = aliases, commands = commands)
-          var start: Natural = 0
+          var
+            start: Natural = 0
+            inputChanged: bool = false
           while true:
             let
               oldStart: Natural = start
@@ -597,21 +599,17 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 style = getColor(db = db, name = suggestAbort)) & "]bort", db = db)
             case getch()
             of 'Y', 'y':
-              commandName = newCommand
-              returnCode = executeCommand(commands = commands,
-                  commandName = commandName, arguments = arguments,
-                  inputString = inputString, db = db, aliases = aliases,
-                  cursorPosition = cursorPosition)
-              if returnCode == 127:
-                start = 0
-              else:
-                break
+              inputString.text = newCommand & " " & arguments
+              inputChanged = true
+              break
             of 'A', 'a':
               break
             of 'N', 'n':
               continue
             else:
               start = oldStart
+          if inputChanged:
+            continue
         # Update the shell's history with info about the executed command
         lastCommand = commandName & (if arguments.len > 0: " " &
             arguments else: "")
