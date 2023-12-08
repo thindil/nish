@@ -345,7 +345,7 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
-    # Add commands related to the shell's aliases
+    # Add commands related to the shell's database
     proc dbCommand(arguments; db; list: CommandLists): ResultCode {.raises: [],
         tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ReadDbEffect,
         ReadIOEffect, ReadEnvEffect, RootEffect], ruleOff: "paramsUsed",
