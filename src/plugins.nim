@@ -150,7 +150,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
               parseEnum[ThemeColor](s = options[1])
           except ValueError:
             default
-        showOutput(message = options[0], color = color, db = db)
+        {.cast(gcsafe).}:
+          showOutput(message = options[0], color = color, db = db)
         return true
 
     proc showPluginError(options: seq[string]): bool {.closure, sideEffect,

@@ -779,7 +779,7 @@ proc initAliases*(db; aliases: ref AliasesList;
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "alias",
-              subcommands = aliasesCommands)
+              subcommands = aliasesCommands, db = db)
         # Show the list of available aliases
         if arguments.startsWith(prefix = "list"):
           return listAliases(arguments = arguments, aliases = aliases, db = db)

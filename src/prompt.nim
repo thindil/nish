@@ -27,12 +27,12 @@
 ## prompt or getting formatted directory name
 
 # Standard library imports
-import std/[os, osproc, strutils, terminal]
+import std/[os, osproc, strutils]
 # External modules imports
-import contracts, nimalyzer
+import contracts, termstyle
 import norm/sqlite
 # Internal imports
-import constants, directorypath, lstring, options, output, resultcode
+import constants, directorypath, lstring, options, output, resultcode, theme
 
 proc getFormattedDir*(): DirectoryPath {.sideEffect, raises: [], tags: [
     ReadIOEffect], contractual.} =
@@ -93,9 +93,8 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       return
     let currentDirectory: DirectoryPath = getFormattedDir()
     try:
-      {.ruleOff: "namedParams".}
-      stdout.styledWrite(fgBlue, $currentDirectory)
-      {.ruleOn: "namedParams".}
+      stdout.write(s = style(ss = $currentDirectory, style = getColor(db = db,
+          name = promptColor)))
     except ValueError, IOError:
       try:
         stdout.write(s = $currentDirectory)
@@ -105,9 +104,8 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     if previousCommand != "" and resultCode != QuitSuccess:
       let resultString: string = $exitStatusLikeShell(status = resultCode.cint)
       try:
-        {.ruleOff: "namedParams".}
-        stdout.styledWrite(fgRed, "[" & resultString & "]")
-        {.ruleOn: "namedParams".}
+        stdout.write(s = style(ss = "[" & resultString & "]", style = getColor(
+            db = db, name = promptError)))
       except ValueError, IOError:
         try:
           stdout.write(s = "[" & resultString & "]")
@@ -115,9 +113,8 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
           discard
       result = result + 2 + resultString.len
     try:
-      {.ruleOff: "namedParams".}
-      stdout.styledWrite(fgBlue, "# ")
-      {.ruleOn: "namedParams".}
+      stdout.write(s = style(ss = "# ", style = getColor(db = db,
+          name = promptColor)))
     except ValueError, IOError:
       try:
         stdout.write(s = "# ")

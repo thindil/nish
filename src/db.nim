@@ -362,7 +362,7 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "nishdb",
-              subcommands = dbCommands)
+              subcommands = dbCommands, db = db)
         # Optimize the shell's database
         if arguments.startsWith(prefix = "optimize"):
           return optimizeDb(arguments = arguments, db = db)

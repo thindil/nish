@@ -764,7 +764,7 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "completion",
-              subcommands = completionCommands)
+              subcommands = completionCommands, db = db)
         # Add a new completion
         if arguments.startsWith(prefix = "add"):
           return addCompletion(db = db)

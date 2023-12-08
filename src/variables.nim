@@ -34,7 +34,7 @@ import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
-    output, resultcode
+    output, resultcode, theme
 
 const
   variableNameLength*: Positive = maxNameLength
@@ -196,7 +196,7 @@ proc setCommand*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     try:
       putEnv(key = varValues[0], val = varValues[1])
       showOutput(message = "Environment variable '" & varValues[0] &
-          "' set to '" & varValues[1] & "'", fgColor = fgGreen)
+          "' set to '" & varValues[1] & "'", color = success, db = db)
       return QuitSuccess.ResultCode
     except OSError:
       return showError(message = "Can't set the environment variable '" &
@@ -218,7 +218,7 @@ proc unsetCommand*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     try:
       delEnv(key = $arguments)
       showOutput(message = "Environment variable '" & arguments & "' removed",
-          fgColor = fgGreen)
+          color = success, db = db)
       return QuitSuccess.ResultCode
     except OSError:
       return showError(message = "Can't unset the environment variable '" &
@@ -252,7 +252,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       try:
         db.selectAll(objs = variables)
         if variables.len == 0:
-          showOutput(message = "There are no defined shell's environment variables.")
+          showOutput(message = "There are no defined shell's environment variables.", db = db)
           return QuitSuccess.ResultCode
         for variable in variables:
           table.add(parts = [yellow(ss = variable.id), green(
@@ -271,7 +271,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         db.select(objs = variables, cond = buildQuery(
             directory = getCurrentDirectory().DirectoryPath))
         if variables.len == 0:
-          showOutput(message = "There are no defined shell's environment variables in this directory.")
+          showOutput(message = "There are no defined shell's environment variables in this directory.", db = db)
           return QuitSuccess.ResultCode
         for variable in variables:
           table.add(parts = [yellow(ss = variable.id), green(
@@ -328,7 +328,7 @@ proc deleteVariable*(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't set environment variables in the current directory. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Deleted the variable with Id: " & $varId,
-        fgColor = fgGreen)
+        color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
@@ -344,14 +344,14 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
   require:
     db != nil
   body:
-    showOutput(message = "You can cancel adding a new variable at any time by double press Escape key or enter word 'exit' as an answer.")
+    showOutput(message = "You can cancel adding a new variable at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     # Set the name for the variable
     showFormHeader(message = "(1/5) Name", db = db)
-    showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:")
+    showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:", db = db)
     var
       variable: Variable = newVariable()
       name: VariableName = emptyLimitedString(capacity = variableNameLength)
-    showOutput(message = "Name: ", newLine = false)
+    showOutput(message = "Name: ", newLine = false, db = db)
     while name.len == 0:
       name = readInput(maxLength = variableNameLength, db = db)
       if name.len == 0:
@@ -363,22 +363,22 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         except CapacityError:
           showError(message = "Can't set empty name for variable.", db = db)
       if name.len == 0:
-        showOutput(message = "Name: ", newLine = false)
+        showOutput(message = "Name: ", newLine = false, db = db)
     if name == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.name = $name
     # Set the description for the variable
     showFormHeader(message = "(2/5) Description", db = db)
-    showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ")
-    showOutput(message = "Description: ", newLine = false)
+    showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ", db = db)
+    showOutput(message = "Description: ", newLine = false, db = db)
     let description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.description = $description
     # Set the working directory for the variable
     showFormHeader(message = "(3/5) Working directory", db = db)
-    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ")
-    showOutput(message = "Path: ", newLine = false)
+    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ", db = db)
+    showOutput(message = "Path: ", newLine = false, db = db)
     var path: DirectoryPath = "".DirectoryPath
     while path.len == 0:
       path = ($readInput(db = db)).DirectoryPath
@@ -388,14 +388,14 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         path = "".DirectoryPath
         showError(message = "Please enter a path to the existing directory", db = db)
       if path.len == 0:
-        showOutput(message = "Path: ", newLine = false)
+        showOutput(message = "Path: ", newLine = false, db = db)
     if path == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.path = $path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness", db = db)
-    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
-    showOutput(message = "Recursive(y/n): ", newLine = false)
+    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
+    showOutput(message = "Recursive(y/n): ", newLine = false, db = db)
     var inputChar: char = try:
         getch()
       except IOError:
@@ -413,14 +413,14 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     variable.recursive = recursive == 1
     # Set the value for the variable
     showFormHeader(message = "(5/5) Value", db = db)
-    showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:")
-    showOutput(message = "Value: ", newLine = false)
+    showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:", db = db)
+    showOutput(message = "Value: ", newLine = false, db = db)
     var value: UserInput = emptyLimitedString(capacity = maxInputLength)
     while value.len == 0:
       value = readInput(db = db)
       if value.len == 0:
         showError(message = "Please enter value for the variable.", db = db)
-        showOutput(message = "Value: ", newLine = false)
+        showOutput(message = "Value: ", newLine = false, db = db)
     if value == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.value = $value
@@ -446,7 +446,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       return showError(message = "Can't set variables for the current directory. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "The new variable '" & name & "' added.",
-        fgColor = fgGreen)
+        color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
@@ -482,23 +482,23 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     except:
       return showError(message = "Can't get the selected variable from the database. Reason:",
           e = getCurrentException(), db = db)
-    showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by pressing Enter.")
+    showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by pressing Enter.", db = db)
     # Set the name for the variable
     showFormHeader(message = "(1/5) Name", db = db)
     showOutput(message = "The name of the variable. Current value: '",
-        newLine = false)
-    showOutput(message = variable.name, newLine = false, fgColor = fgMagenta)
-    showOutput(message = "'. Can contains only letters, numbers and underscores.:")
+        newLine = false, db = db)
+    showOutput(message = variable.name, newLine = false, color = values, db = db)
+    showOutput(message = "'. Can contains only letters, numbers and underscores.:", db = db)
     var name: VariableName = try:
         initLimitedString(capacity = variableNameLength, text = "exit")
       except CapacityError:
         return showError(message = "Can't set name of the variable", db = db)
-    showOutput(message = "Name: ", newLine = false)
+    showOutput(message = "Name: ", newLine = false, db = db)
     while name.len > 0:
       name = readInput(maxLength = variableNameLength, db = db)
       if name.len > 0 and not validIdentifier(s = $name):
         showError(message = "Please enter a valid name for the variable.", db = db)
-        showOutput(message = "Name: ", newLine = false)
+        showOutput(message = "Name: ", newLine = false, db = db)
       else:
         break
     if name == "exit":
@@ -512,10 +512,10 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Set the description for the variable
     showFormHeader(message = "(2/5) Description", db = db)
     showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '",
-        newLine = false)
+        newLine = false, db = db)
     showOutput(message = variable.description, newLine = false,
-        fgColor = fgMagenta)
-    showOutput(message = "'. Can't contains a new line character.: ")
+        color = values, db = db)
+    showOutput(message = "'. Can't contains a new line character.: ", db = db)
     var description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
@@ -528,16 +528,16 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Set the working directory for the variable
     showFormHeader(message = "(3/5) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '",
-        newLine = false)
-    showOutput(message = variable.path, newLine = false, fgColor = fgMagenta)
-    showOutput(message = "'. Must be a path to the existing directory.:")
-    showOutput(message = "Path: ", newLine = false)
+        newLine = false, db = db)
+    showOutput(message = variable.path, newLine = false, color = values, db = db)
+    showOutput(message = "'. Must be a path to the existing directory.:", db = db)
+    showOutput(message = "Path: ", newLine = false, db = db)
     var path: DirectoryPath = "exit".DirectoryPath
     while path.len > 0:
       path = ($readInput(db = db)).DirectoryPath
       if path.len > 0 and not dirExists(dir = $path) and path != "exit":
         showError(message = "Please enter a path to the existing directory", db = db)
-        showOutput(message = "Path: ", newLine = false)
+        showOutput(message = "Path: ", newLine = false, db = db)
       else:
         break
     if path == "exit":
@@ -547,7 +547,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     variable.path = $path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness", db = db)
-    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':")
+    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
     var inputChar: char = try:
         getch()
       except IOError:
@@ -566,9 +566,9 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Set the value for the variable
     showFormHeader(message = "(5/5) Value", db = db)
     showOutput(message = "The value of the variable. Current value: '",
-        newLine = false)
-    showOutput(message = variable.value, newLine = false, fgColor = fgMagenta)
-    showOutput(message = "'. Value can't contain a new line character.:")
+        newLine = false, db = db)
+    showOutput(message = variable.value, newLine = false, color = values, db = db)
+    showOutput(message = "'. Value can't contain a new line character.:", db = db)
     var value: UserInput = readInput(db = db)
     if value == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
@@ -591,7 +591,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Can't set variables for the current directory. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "The variable  with Id: '" & $varId & "' edited.",
-        fgColor = fgGreen)
+        color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
@@ -693,7 +693,7 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
         # No subcommand entered, show available options
         if arguments.len == 0:
           return showHelpList(command = "variable",
-              subcommands = variablesCommands)
+              subcommands = variablesCommands, db = db)
         # Show the list of declared environment variables
         if arguments.startsWith(prefix = "list"):
           return listVariables(arguments = arguments, db = db)
