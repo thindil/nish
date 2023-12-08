@@ -21,6 +21,7 @@ of the shell.
 - Getting completions for directories
 - Handling unknown key pressed when selecting a command's suggestion
 - Crash when setting a terminal's title
+- Commands' suggestions don't work with the built-in shell's commands
 
 ## [0.6.0] - 2023-11-13
 
