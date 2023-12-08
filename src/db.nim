@@ -304,7 +304,7 @@ proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     return QuitSuccess.ResultCode
 
 proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect]contractual.} =
+    WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Import data from the SQL file into the shell's database
   ##
   ## * arguments - the user entered text with arguments for optimize database
