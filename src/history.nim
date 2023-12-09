@@ -297,8 +297,9 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
           return showError(message = "Unknown type of history sort order", db = db)
     var table: TerminalTable = TerminalTable()
     try:
-      table.add(parts = [magenta(ss = "Last used"), magenta(ss = "Times"),
-          magenta(ss = "Command")])
+      let color: string = getColor(db = db, name = tableHeaders)
+      table.add(parts = [style(ss = "Last used", style = color), style(
+          ss = "Times", style = color), style(ss = "Command", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show history list. Reason: ",
           e = getCurrentException(), db = db)
