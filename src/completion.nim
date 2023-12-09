@@ -441,7 +441,8 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "You can cancel editing the completion at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
     # Set the command for the completion
     showFormHeader(message = "(1/2 or 3) Command", db = db)
-    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. Current value: '", newLine = false, db = db)
+    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. Current value: '",
+        newLine = false, db = db)
     showOutput(message = completion.command, newLine = false,
         color = values, db = db)
     showOutput(message = "'.", db = db)
@@ -456,7 +457,8 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Editing the completion cancelled. Reason: Can't set command for the completion", db = db)
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
-    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '", newLine = false, db = db)
+    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '",
+        newLine = false, db = db)
     showOutput(message = $completion.cType, newLine = false,
         color = values, db = db)
     showOutput(message = "'. Possible values are:", db = db)
@@ -483,7 +485,8 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     # Set the values for the completion if the user selected custom type of completion
     if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
-      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. The current value is: '", newLine = false, db = db)
+      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. The current value is: '",
+          newLine = false, db = db)
       showOutput(message = completion.cValues, newLine = false,
           color = ThemeColor.values, db = db)
       showOutput(message = "'.", db = db)
@@ -524,8 +527,9 @@ proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
   body:
     var table: TerminalTable = TerminalTable()
     try:
-      table.add(parts = [magenta(ss = "ID"), magenta(ss = "Command"), magenta(
-          ss = "Type")])
+      let color: string = getColor(db = db, name = tableHeaders)
+      table.add(parts = [style(ss = "ID", style = color), style(ss = "Command",
+          style = color), style(ss = "Type", style = color)])
     except:
       return showError(message = "Can't show commands list. Reason: ",
           e = getCurrentException(), db = db)
@@ -540,8 +544,9 @@ proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       return QuitSuccess.ResultCode
     try:
       for dbResult in dbCompletions:
-        table.add(parts = [yellow(ss = dbResult.id), green(
-            ss = dbResult.command), $dbResult.cType])
+        table.add(parts = [style(ss = dbResult.id, style = getColor(db = db,
+            name = ids)), style(ss = dbResult.command, style = getColor(db = db,
+            name = values)), $dbResult.cType])
     except:
       return showError(message = "Can't add a completion to the list. Reason:",
           e = getCurrentException(), db = db)
@@ -630,11 +635,12 @@ proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
     try:
-      table.add(parts = [magenta(ss = "Id:"), $id])
-      table.add(parts = [magenta(ss = "Command:"), completion.command])
-      table.add(parts = [magenta(ss = "Type:"), $completion.cType])
+      let color: string = getColor(db = db, name = showHeaders)
+      table.add(parts = [style(ss = "Id:", style = color), $id])
+      table.add(parts = [style(ss = "Command:", style = color), completion.command])
+      table.add(parts = [style(ss = "Type:", style = color), $completion.cType])
       if completion.cType == custom:
-        table.add(parts = [magenta(ss = "Values:"), completion.cValues])
+        table.add(parts = [style(ss = "Values:", style = color), completion.cValues])
       table.echoTable
     except:
       return showError(message = "Can't show completion. Reason: ",
