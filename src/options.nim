@@ -203,8 +203,11 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     var table: TerminalTable = TerminalTable()
     try:
-      table.add(parts = [magenta(ss = "Name"), magenta(ss = "Value"), magenta(
-          ss = "Default"), magenta(ss = "Type"), magenta(ss = "Description")])
+      let color: string = getColor(db = db, name = tableHeaders)
+      table.add(parts = [style(ss = "Name", style = color), style(ss = "Value",
+          style = color), style(ss = "Default", style = color), style(
+          ss = "Type", style = color), style(ss = "Description",
+          style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show options list. Reason: ",
           e = getCurrentException(), db = db)
@@ -214,8 +217,10 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.rawSelect(qry = "SELECT * FROM options ORDER BY option ASC",
           objs = options)
       for option in options:
-        table.add(parts = [yellow(ss = option.option), green(ss = option.value),
-            option.defaultValue, $option.valueType, option.description])
+        table.add(parts = [style(ss = option.option, style = getColor(db = db,
+            name = ids)), style(ss = option.value, style = getColor(db = db,
+            name = values)), option.defaultValue, $option.valueType,
+            option.description])
     except:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException(), db = db)
@@ -276,7 +281,8 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         try:
           discard ($value).parseFloat
         except:
-          return showError(message = "Value for option '" & optionName & "' should be float type.", db = db)
+          return showError(message = "Value for option '" & optionName &
+              "' should be float type.", db = db)
       of boolean:
         try:
           value.text = ($value).toLowerAscii
@@ -284,7 +290,8 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           return showError(message = "Can't set a new value for option '" &
               optionName & "'. Reason: ", e = getCurrentException(), db = db)
         if value != "true" and value != "false":
-          return showError(message = "Value for option '" & optionName & "' should be true or false (case insensitive).", db = db)
+          return showError(message = "Value for option '" & optionName &
+              "' should be true or false (case insensitive).", db = db)
       of historysort:
         try:
           value.text = ($value).toLowerAscii
@@ -292,7 +299,8 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           return showError(message = "Can't set a new value for option '" &
               optionName & "'. Reason: ", e = getCurrentException(), db = db)
         if $value notin ["recent", "amount", "name", "recentamount"]:
-          return showError(message = "Value for option '" & optionName & "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)", db = db)
+          return showError(message = "Value for option '" & optionName &
+              "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)", db = db)
       of natural:
         try:
           if ($value).parseInt < 0:
@@ -307,7 +315,8 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         try:
           let (_, exitCode) = execCmdEx(command = $value)
           if exitCode != QuitSuccess:
-            return showError(message = "Value for option '" & optionName & "' should be valid command.", db = db)
+            return showError(message = "Value for option '" & optionName &
+                "' should be valid command.", db = db)
         except:
           return showError(message = "Can't check the existence of command '" &
               value & "'. Reason: ", e = getCurrentException(), db = db)
@@ -318,7 +327,8 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           return showError(message = "Can't set a new value for option '" &
               optionName & "'. Reason: ", e = getCurrentException(), db = db)
         if $value notin ["unicode", "ascii", "none", "hidden"]:
-          return showError(message = "Value for option '" & optionName & "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)", db = db)
+          return showError(message = "Value for option '" & optionName &
+              "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)", db = db)
       of positive:
         try:
           if ($value).parseInt < 1:
@@ -374,7 +384,8 @@ proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         var option: Option = newOption(name = $optionName)
         db.select(obj = option, cond = "option=?", params = $optionName)
         if option.readOnly:
-          return showError(message = "You can't reset option '" & optionName & "' because it is read-only option.", db = db)
+          return showError(message = "You can't reset option '" & optionName &
+              "' because it is read-only option.", db = db)
         option.value = option.defaultValue
         db.update(obj = option)
         showOutput(message = "The shell's option '" & optionName &
