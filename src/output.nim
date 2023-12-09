@@ -62,7 +62,8 @@ proc showOutput*(message; db; newLine: bool = true;
         else:
           message
       try:
-        stdout.write(a = style(ss = newMessage, style = getColor(db = db, name = color)))
+        stdout.write(a = style(ss = newMessage, style = getColor(db = db,
+            name = color)))
       except IOError, ValueError:
         try:
           stdout.write(s = newMessage)
@@ -138,7 +139,8 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().Column
       if headerType == "hidden":
         return
       var table: TerminalTable = TerminalTable()
-      table.add(parts = yellow(ss = message.center(width = width.int)))
+      table.add(parts = style(ss = message.center(width = width.int),
+          style = getColor(db = db, name = headers)))
       case headerType
       of "unicode":
         table.echoTableSeps(seps = boxSeps)
