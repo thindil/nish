@@ -257,12 +257,14 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           showError(message = "Can't show the help entries list. Reason: ",
               e = getCurrentException(), db = db)
         showOutput(message = "\n\nTo see more information about the selected topic, type " &
-            style(ss = "'help [topic]'", style = getColor(db = db, name = helpUsage)) & ", for example: " & style(
-            ss = "`help " & keys[0].value,  style = getColor(db = db, name = helpCode)) &
+            style(ss = "'help [topic]'", style = getColor(db = db,
+            name = helpUsage)) & ", for example: " & style(ss = "`help " & keys[
+            0].value, style = getColor(db = db, name = helpCode)) &
             "`.\nInformation about usage of a command: if a parameter of a command is between " &
             style(ss = "[]", style = getColor(db = db, name = helpReqParam)) &
             " then the parameter is required. If a parameter of a command is between " &
-            style(ss = "?", style = getColor(db = db, name = helpOptParam)) & " then the parameter is optional.", db = db)
+            style(ss = "?", style = getColor(db = db, name = helpOptParam)) &
+            " then the parameter is optional.", db = db)
 
     # If no topic was selected by the user, show the list of the help's topics
     if topic.len == 0:
@@ -349,15 +351,16 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       try:
         result = showUnknownHelp(subCommand = args, command = command,
             helpType = initLimitedString(capacity = maxInputLength, text = (
-                if command == "alias": "aliases" else: $command)), db = db)
+            if command == "alias": "aliases" else: $command)), db = db)
       except CapacityError:
         return showError(message = "Can't show help for unknown command", db = db)
       return QuitSuccess.ResultCode
     # The user entered the help topic which doesn't exists
-    return showError(message = "Unknown help topic: `" & topic & "`. For the list of available help topics, type `help`.", db = db)
+    return showError(message = "Unknown help topic: `" & topic &
+        "`. For the list of available help topics, type `help`.", db = db)
 
 proc showHelpList*(command: string; subcommands: seq[
-    string], db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
+    string]; db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Show short help about available subcommands related to the selected command
@@ -371,11 +374,17 @@ proc showHelpList*(command: string; subcommands: seq[
   body:
     showOutput(message = "Available subcommands for '" & command & "' are: ",
         color = helpUsage, db = db)
-    showOutput(message = subcommands.join(sep = ", "), db = db)
+    var newSubcommands: seq[string] = @[]
+    let color: string = getColor(db = db, name = helpReqParam)
+    for subCommand in subcommands:
+      newSubcommands.add(y = style(ss = subCommand, style = color))
+    showOutput(message = newSubcommands.join(sep = ", "), db = db)
     showOutput(message = " ", db = db)
-    showOutput(message = "To see more information about the subcommands, type 'help " &
-        command & " [subcommand]', for example: 'help " & command & " " &
-        subcommands[0] & "'.", db = db)
+    showOutput(message = "To see more information about the subcommands, type " &
+        style(ss = "'help " & command & " [subcommand]'", style = getColor(
+        db = db, name = helpUsage)) & ", for example: " & style(ss = "`help " &
+        command & " " & subcommands[0] & "`", style = getColor(db = db,
+        name = helpCode)) & ".", db = db)
     return QuitSuccess.ResultCode
 
 proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
@@ -399,7 +408,8 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
   body:
     try:
       if db.exists(T = HelpEntry, cond = "topic=?", params = $topic):
-        return showError(message = "Can't add help entry for topic '" & topic & "' because there is one.", db = db)
+        return showError(message = "Can't add help entry for topic '" & topic &
+            "' because there is one.", db = db)
       var newHelp: HelpEntry = newHelpEntry(topic = $topic, usage = $usage,
           content = content, plugin = $plugin, templ = isTemplate)
       db.insert(obj = newHelp)
@@ -489,7 +499,8 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
           else:
             discard
         of cfgError:
-          result = showError(message = "Can't read help entry from configuration file. Reason: " & entry.msg, db = db)
+          result = showError(message = "Can't read help entry from configuration file. Reason: " &
+              entry.msg, db = db)
       except IOError, OSError, ValueError, CapacityError:
         return showError(message = "Can't get help entry from configuration file. Reason: ",
             e = getCurrentException(), db = db)
