@@ -17,7 +17,7 @@ suite "Unit tests for output module":
     showFormHeader(message = "test header", db = db)
 
   test "Showing a normal output":
-    showOutput("test output")
+    showOutput("test output", db = db)
 
   test "Showing options to select":
     when not defined(testInput):
