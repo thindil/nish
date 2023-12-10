@@ -666,7 +666,6 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
   ## Initialize enviroment variables. Set help related to the variables and
   ## load the local environment variables.
   ##
-  ## * helpContent - the HelpTable with help content of the shell
   ## * db          - the connection to the shell's database
   ## * commands    - the list of the shell's commands
   ##
