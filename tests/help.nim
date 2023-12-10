@@ -75,7 +75,7 @@ suite "Unit tests for help module":
 
   test "Showing list of help for a command":
     check:
-      showHelpList("alias", aliasesCommands) == QuitSuccess
+      showHelpList("alias", aliasesCommands, db = db) == QuitSuccess
 
   test "Showing the unknown help entry screen":
     check:
