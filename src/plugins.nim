@@ -683,8 +683,9 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     # Show the list of all installed plugins with information about their state
     if arguments == "list all":
       try:
-        table.add(parts = [magenta(ss = "ID"), magenta(ss = "Path"), magenta(
-            ss = "Enabled")])
+        let color: string = getColor(db = db, name = tableHeaders)
+        table.add(parts = [style(ss = "ID", style = color), style(ss = "Path", style = color), style(
+            ss = "Enabled", style = color)])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show all plugins list. Reason: ",
             e = getCurrentException(), db = db)
@@ -695,7 +696,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           showOutput(message = "There are no available shell's plugins.", db = db)
           return QuitSuccess.ResultCode
         for plugin in plugins:
-          table.add(parts = [yellow(ss = plugin.id), plugin.location, (
+          table.add(parts = [style(ss = plugin.id, style = getColor(db = db, name = ids)), plugin.location, (
               if plugin.enabled: "Yes" else: "No")])
       except:
         return showError(message = "Can't read info about plugin from database. Reason:",
@@ -708,7 +709,8 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     # Show the list of enabled plugins
     elif arguments[0..3] == "list":
       try:
-        table.add(parts = [magenta(ss = "ID"), magenta(ss = "Path")])
+        let color: string = getColor(db = db, name = tableHeaders)
+        table.add(parts = [style(ss = "ID", style = color), style(ss = "Path", style = color)])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show plugins list. Reason: ",
             e = getCurrentException(), db = db)
@@ -719,7 +721,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           showOutput(message = "There are no enabled shell's plugins.", db = db)
           return QuitSuccess.ResultCode
         for plugin in plugins:
-          table.add(parts = [yellow(ss = plugin.id), plugin.location])
+          table.add(parts = [style(ss = plugin.id, style = getColor(db = db, name = ids)), plugin.location])
       except:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
             e = getCurrentException(), db = db)
@@ -766,24 +768,25 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
       var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $id)
       var table: TerminalTable = TerminalTable()
-      table.add(parts = [magenta(ss = "Id:"), $id])
-      table.add(parts = [magenta(ss = "Path"), plugin.location])
-      table.add(parts = [magenta(ss = "Enabled:"), (
+      let color: string = getColor(db = db, name = showHeaders)
+      table.add(parts = [style(ss = "Id:", style = color), $id])
+      table.add(parts = [style(ss = "Path", style = color), plugin.location])
+      table.add(parts = [style(ss = "Enabled:", style = color), (
           if plugin.enabled: "Yes" else: "No")])
       let pluginData: PluginResult = execPlugin(pluginPath = plugin.location,
           arguments = ["info"], db = db, commands = commands)
       # If plugin contains any aditional information, show them
       if pluginData.code == QuitSuccess:
         let pluginInfo: seq[string] = ($pluginData.answer).split(sep = ";")
-        table.add(parts = [magenta(ss = "API version:"), (if pluginInfo.len >
+        table.add(parts = [style(ss = "API version:", style = color), (if pluginInfo.len >
             2: pluginInfo[2] else: "0.1")])
         if pluginInfo.len > 2:
-          table.add(parts = [magenta(ss = "API used:"), pluginInfo[3]])
-        table.add(parts = [magenta(ss = "Name:"), pluginInfo[0]])
+          table.add(parts = [style(ss = "API used:", style = color), pluginInfo[3]])
+        table.add(parts = [style(ss = "Name:", style = color), pluginInfo[0]])
         if pluginInfo.len > 1:
-          table.add(parts = [magenta(ss = "Descrition:"), pluginInfo[1]])
+          table.add(parts = [style(ss = "Descrition:", style = color), pluginInfo[1]])
       else:
-        table.add(parts = [magenta(ss = "API version:"), "0.1"])
+        table.add(parts = [style(ss = "API version:", style = color), "0.1"])
       table.echoTable
     except:
       return showError(message = "Can't show the plugin's info. Reason: ",
