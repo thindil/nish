@@ -63,6 +63,9 @@ type
 
 using db: DbConn # Connection to the shell's database
 
+const themeCommands*: seq[string] = @["show"]
+    ## The list of available subcommands for command theme
+
 proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],
     contractual.} =
   ## Set the type of field in the database
@@ -152,7 +155,7 @@ proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
     Color(name: name, cValue: cValue, description: description, bold: bold,
         underline: underline, italic: italic)
 
-proc showThemeError(message: string; e: ref Exception) {.sideEffect, raises: [],
+proc showThemeError*(message: string; e: ref Exception) {.sideEffect, raises: [],
     tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Show the information about the error related to the theme. The theme's
   ## module uses the separated code, to avoid circular dependencies and eternal

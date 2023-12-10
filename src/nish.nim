@@ -34,7 +34,8 @@ import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db,
     directorypath, help, highlight, history, input, logger, lstring, options,
-    output, plugins, prompt, resultcode, suggestion, theme, title, variables
+    output, plugins, prompt, resultcode, suggestion, theme, themeinit, title,
+    variables
 
 proc showCommandLineHelp*() {.sideEffect, raises: [], tags: [WriteIOEffect],
     contractual.} =
@@ -470,6 +471,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
 
     # Initialize the shell's database's commands
     initDb(db = db, commands = commands)
+
+    # Initialize the shell's theme
+    initTheme(db = db, commands = commands)
 
     # Initialize the shell's commands history
     historyIndex = initHistory(db = db, commands = commands)
