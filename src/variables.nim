@@ -242,8 +242,9 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       table: TerminalTable = TerminalTable()
       variables: seq[Variable] = @[newVariable()]
     try:
-      table.add(parts = [magenta(ss = "ID"), magenta(ss = "Name"), magenta(
-          ss = "Value")])
+      let color: string = getColor(db = db, name = tableHeaders)
+      table.add(parts = [style(ss = "ID", style = color), style(ss = "Name", style = color), style(
+          ss = "Value", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show variables list. Reason: ",
           e = getCurrentException(), db = db)
@@ -255,8 +256,8 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "There are no defined shell's environment variables.", db = db)
           return QuitSuccess.ResultCode
         for variable in variables:
-          table.add(parts = [yellow(ss = variable.id), green(
-              ss = variable.name), variable.value])
+          table.add(parts = [style(ss = variable.id, style = getColor(db = db, name = ids)), style(
+              ss = variable.name, style = getColor(db = db, name = values)), variable.value])
       except:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException(), db = db)
@@ -274,8 +275,8 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "There are no defined shell's environment variables in this directory.", db = db)
           return QuitSuccess.ResultCode
         for variable in variables:
-          table.add(parts = [yellow(ss = variable.id), green(
-              ss = variable.name), variable.value])
+          table.add(parts = [style(ss = variable.id, style = getColor(db = db, name = ids)), style(
+              ss = variable.name, style = getColor(db = db, name = values)), variable.value])
       except:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException(), db = db)
@@ -627,12 +628,13 @@ proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
     try:
-      table.add(parts = [magenta(ss = "Id:"), $id])
-      table.add(parts = [magenta(ss = "Name:"), variable.name])
-      table.add(parts = [magenta(ss = "Value:"), variable.value])
-      table.add(parts = [magenta(ss = "Description:"), (
+      let color: string = getColor(db = db, name = showHeaders)
+      table.add(parts = [style(ss = "Id:", style = color), $id])
+      table.add(parts = [style(ss = "Name:", style = color), variable.name])
+      table.add(parts = [style(ss = "Value:", style = color), variable.value])
+      table.add(parts = [style(ss = "Description:", style = color), (
           if variable.description.len > 0: variable.description else: "(none)")])
-      table.add(parts = [magenta(ss = "Path:"), variable.path & (
+      table.add(parts = [style(ss = "Path:", style = color), variable.path & (
           if variable.recursive: " (recursive)" else: "")])
       table.echoTable
     except:
