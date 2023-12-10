@@ -15,6 +15,9 @@ of the shell.
 - Loading shells' profiles on Unix systems
 - Creating the Unix man page for the shell
 
+### Changed
+- Updated look of list of available subcommands. Now there is more colors.
+
 ### Fixed
 - Cross-compiling the shell for Arm
 - Typo in the editing alias message
