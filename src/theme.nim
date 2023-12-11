@@ -44,7 +44,7 @@ type
       helpUsage, helpCommand, helpReqParam, helpOptParam, helpUnderline,
       helpCode, highlightValid, highlightInvalid, highlightVariable,
       highlightText, suggestInvalid, suggestCommand, suggestYes, suggestNext,
-      suggestAbort, promptColor, promptError
+      suggestAbort, promptColor, promptError, completionList
   Color {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
@@ -155,7 +155,7 @@ proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
     Color(name: name, cValue: cValue, description: description, bold: bold,
         underline: underline, italic: italic)
 
-let colors: array[25, Color] = [newColor(name = errors, cValue = red,
+let colors: array[26, Color] = [newColor(name = errors, cValue = red,
     description = "Used to show error messages"), newColor(name = default,
     cValue = default, description = "The default color of the shell's output"),
     newColor(name = headers, cValue = yellow,
@@ -202,7 +202,9 @@ let colors: array[25, Color] = [newColor(name = errors, cValue = red,
     newColor(name = promptColor, cValue = blue,
     description = "Used to show the shell's prompt"), newColor(
     name = promptError, cValue = red,
-    description = "Used to show the last command's error code in the shell's prompt")]
+    description = "Used to show the last command's error code in the shell's prompt"),
+    newColor(name = completionList, cValue = default,
+    description = "Used to show Tab completion's suggestions")]
   ## The list of available the shell's theme's colors
 
 proc showThemeError*(message: string; e: ref Exception) {.sideEffect, raises: [
