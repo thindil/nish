@@ -246,7 +246,7 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     try:
       db.createTables(obj = newColor())
       for color in colors:
-        var col = color
+        var col: Color = color
         db.insert(obj = col)
     except:
       showThemeError(message = "Can't create 'theme' table. Reason: ",
@@ -359,10 +359,10 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
       return QuitFailure.ResultCode
     showThemeFormHeader(message = "The shell's theme colors are:", db = db)
     try:
-      var colors: seq[Color] = @[newColor()]
+      var cols: seq[Color] = @[newColor()]
       db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
-          objs = colors)
-      for color in colors:
+          objs = cols)
+      for color in cols:
         table.add(parts = [style(ss = color.name, style = getColor(db = db,
             name = ids)), style(ss = color.cValue, style = getColor(db = db,
             name = values)), color.description])

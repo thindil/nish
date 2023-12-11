@@ -26,9 +26,8 @@
 ## This module contains initialization code of the shell's theme. It is in a
 ## separate module to avoid circular dependencies.
 
-# Standard library imports
 # External modules imports
-import contracts
+import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
 import commandslist, constants, help, lstring, resultcode, theme
@@ -51,7 +50,7 @@ proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: []
     proc themeCommand(arguments: UserInput; db: DbConn;
         list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
         WriteDbEffect, TimeEffect, ReadDbEffect, ReadIOEffect,
-        RootEffect], contractual.} =
+        RootEffect], ruleOff: "paramsUsed", contractual.} =
       ## The code of the shell's command "theme" and its subcommands
       ##
       ## * arguments - the arguments entered by the user for the command
