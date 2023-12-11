@@ -311,9 +311,12 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
       var entries: seq[LocalEntry] = @[LocalEntry()]
       db.rawSelect(qry = "SELECT command, lastused, amount FROM history ORDER BY " &
           historyOrder & " LIMIT 0, ?", objs = entries, params = amount)
+      let color: string = getColor(db = db, name = default)
       for entry in entries:
-        table.add(parts = [entry.lastUsed.local.format(
-            f = "yyyy-MM-dd HH:mm:ss"), $entry.amount, entry.command])
+        table.add(parts = [style(ss = entry.lastUsed.local.format(
+            f = "yyyy-MM-dd HH:mm:ss"), style = color), style(
+            ss = $entry.amount, style = color), style(ss = entry.command,
+            style = color)])
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
         width += size
@@ -359,7 +362,8 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
       db.rawSelect(qry = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC",
           objs = entries, params = "%" & searchFor & "%")
       for entry in entries:
-        table.add(parts = entry.command)
+        table.add(parts = style(ss = entry.command, style = getColor(db = db,
+            name = default)))
         result = QuitSuccess.ResultCode
         currentRow.inc
         if currentRow == maxRows:

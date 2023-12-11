@@ -378,7 +378,8 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
             break
         table.add(parts = [style(ss = color.name, style = getColor(db = db,
             name = ids)), style(ss = value, style = getColor(db = db,
-            name = values)), color.description])
+            name = values)), style(ss = color.description, style = getColor(
+            db = db, name = default))])
     except:
       showThemeError(message = "Can't show the shell's theme's colors. Reason: ",
           e = getCurrentException())

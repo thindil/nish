@@ -546,7 +546,8 @@ proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       for dbResult in dbCompletions:
         table.add(parts = [style(ss = dbResult.id, style = getColor(db = db,
             name = ids)), style(ss = dbResult.command, style = getColor(db = db,
-            name = values)), $dbResult.cType])
+            name = values)), style(ss = $dbResult.cType, style = getColor(
+            db = db, name = default))])
     except:
       return showError(message = "Can't add a completion to the list. Reason:",
           e = getCurrentException(), db = db)
@@ -635,12 +636,18 @@ proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = showHeaders)
-      table.add(parts = [style(ss = "Id:", style = color), $id])
-      table.add(parts = [style(ss = "Command:", style = color), completion.command])
-      table.add(parts = [style(ss = "Type:", style = color), $completion.cType])
+      let
+        color: string = getColor(db = db, name = showHeaders)
+        color2: string = getColor(db = db, name = default)
+      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id,
+          style = color2)])
+      table.add(parts = [style(ss = "Command:", style = color),
+          style(ss = completion.command, style = color2)])
+      table.add(parts = [style(ss = "Type:", style = color), style(
+          ss = $completion.cType, style = color2)])
       if completion.cType == custom:
-        table.add(parts = [style(ss = "Values:", style = color), completion.cValues])
+        table.add(parts = [style(ss = "Values:", style = color),
+            style(ss = completion.cValues, style = color2)])
       table.echoTable
     except:
       return showError(message = "Can't show completion. Reason: ",
