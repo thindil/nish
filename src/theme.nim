@@ -203,7 +203,7 @@ let colors: array[25, Color] = [newColor(name = errors, cValue = red,
     description = "Used to show the shell's prompt"), newColor(
     name = promptError, cValue = red,
     description = "Used to show the last command's error code in the shell's prompt")]
-      ## The list of available the shell's theme's colors
+  ## The list of available the shell's theme's colors
 
 proc showThemeError*(message: string; e: ref Exception) {.sideEffect, raises: [
     ], tags: [WriteIOEffect, RootEffect], contractual.} =
@@ -370,6 +370,12 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
           value &= ", bold"
         if color.italic:
           value &= ", italic"
+        for col in colors:
+          if col.name == color.name and (col.cValue != color.cValue or
+              col.underline != color.underline or col.bold != color.bold or
+              col.italic != color.italic):
+            value &= " (changed)"
+            break
         table.add(parts = [style(ss = color.name, style = getColor(db = db,
             name = ids)), style(ss = value, style = getColor(db = db,
             name = values)), color.description])
