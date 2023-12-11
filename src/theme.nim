@@ -363,8 +363,15 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
       db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
           objs = cols)
       for color in cols:
+        var value: string = $color.cValue
+        if color.underline:
+          value &= ", underlined"
+        if color.bold:
+          value &= ", bold"
+        if color.italic:
+          value &= ", italic"
         table.add(parts = [style(ss = color.name, style = getColor(db = db,
-            name = ids)), style(ss = color.cValue, style = getColor(db = db,
+            name = ids)), style(ss = value, style = getColor(db = db,
             name = values)), color.description])
     except:
       showThemeError(message = "Can't show the shell's theme's colors. Reason: ",
