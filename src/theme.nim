@@ -64,7 +64,7 @@ type
 using db: DbConn # Connection to the shell's database
 
 const themeCommands*: seq[string] = @["show"]
-    ## The list of available subcommands for command theme
+  ## The list of available subcommands for command theme
 
 proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],
     contractual.} =
@@ -155,8 +155,58 @@ proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
     Color(name: name, cValue: cValue, description: description, bold: bold,
         underline: underline, italic: italic)
 
-proc showThemeError*(message: string; e: ref Exception) {.sideEffect, raises: [],
-    tags: [WriteIOEffect, RootEffect], contractual.} =
+let colors: array[25, Color] = [newColor(name = errors, cValue = red,
+    description = "Used to show error messages"), newColor(name = default,
+    cValue = default, description = "The default color of the shell's output"),
+    newColor(name = headers, cValue = yellow,
+    description = "Used to show headers of tables and forms"), newColor(
+    name = tableHeaders, cValue = magenta,
+    description = "Used to show tables headers"), newColor(name = ids,
+    cValue = yellow, description = "Used to show indexes in tables"), newColor(
+    name = values, cValue = green,
+    description = "Used to show values in tables"), newColor(name = showHeaders,
+    cValue = magenta,
+    description = "Used in show subcommands for descriptions"), newColor(
+    name = success, cValue = green,
+    description = "Used to show success message of the shell's commands"),
+    newColor(name = helpUsage, cValue = yellow,
+    description = "Used to show command usage description in help entries"),
+    newColor(name = helpCommand, cValue = green,
+    description = "Used to show commands in help entries"), newColor(
+    name = helpReqParam, cValue = cyan,
+    description = "Used to show required parameters of commands in help entries"),
+    newColor(name = helpOptParam, cValue = blue,
+    description = "Used to show optional parameters of commands in help entries"),
+    newColor(name = helpUnderline, cValue = yellow, underline = true,
+    description = "Used to show underlined text help entries"), newColor(
+    name = helpCode, cValue = green,
+    description = "Used to show code in help entries"), newColor(
+    name = highlightValid, cValue = green,
+    description = "Used to highlight valid values in user's input"), newColor(
+    name = highlightInvalid, cValue = red,
+    description = "Used to highlight invalid values in user's input"), newColor(
+    name = highlightVariable, cValue = cyan,
+    description = "Used to highlight environment variables in user's input"),
+    newColor(name = highlightText, cValue = yellow,
+    description = "Used to highlight text in quotes in user's input"), newColor(
+    name = suggestInvalid, cValue = cyan,
+    description = "Used to show invalid command in commands' suggestions"),
+    newColor(name = suggestCommand, cValue = yellow,
+    description = "Used to show command suggestion in commands' suggestions"),
+    newColor(name = suggestYes, cValue = green,
+    description = "Used to show confirmation shortcut in commands' suggestions"),
+    newColor(name = suggestNext, cValue = blue,
+    description = "Used to show next shortcut in commands' suggestions"),
+    newColor(name = suggestAbort, cValue = red,
+    description = "Used to show abort shortcut in commands' suggestions"),
+    newColor(name = promptColor, cValue = blue,
+    description = "Used to show the shell's prompt"), newColor(
+    name = promptError, cValue = red,
+    description = "Used to show the last command's error code in the shell's prompt")]
+      ## The list of available the shell's theme's colors
+
+proc showThemeError*(message: string; e: ref Exception) {.sideEffect, raises: [
+    ], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Show the information about the error related to the theme. The theme's
   ## module uses the separated code, to avoid circular dependencies and eternal
   ## errors.
@@ -195,81 +245,9 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newColor())
-      var color: Color = newColor(name = errors, cValue = red,
-          description = "Used to show error messages")
-      db.insert(obj = color)
-      color = newColor(name = default, cValue = default,
-          description = "The default color of the shell's output")
-      db.insert(obj = color)
-      color = newColor(name = headers, cValue = yellow,
-          description = "Used to show headers of tables and forms")
-      db.insert(obj = color)
-      color = newColor(name = tableHeaders, cValue = magenta,
-          description = "Used to show tables headers")
-      db.insert(obj = color)
-      color = newColor(name = ids, cValue = yellow,
-          description = "Used to show indexes in tables")
-      db.insert(obj = color)
-      color = newColor(name = values, cValue = green,
-          description = "Used to show values in tables")
-      db.insert(obj = color)
-      color = newColor(name = showHeaders, cValue = magenta,
-          description = "Used in show subcommands for descriptions")
-      db.insert(obj = color)
-      color = newColor(name = success, cValue = green,
-          description = "Used to show success message of the shell's commands")
-      db.insert(obj = color)
-      color = newColor(name = helpUsage, cValue = yellow,
-          description = "Used to show command usage description in help entries")
-      db.insert(obj = color)
-      color = newColor(name = helpCommand, cValue = green,
-          description = "Used to show commands in help entries")
-      db.insert(obj = color)
-      color = newColor(name = helpReqParam, cValue = cyan,
-          description = "Used to show required parameters of commands in help entries")
-      db.insert(obj = color)
-      color = newColor(name = helpOptParam, cValue = blue,
-          description = "Used to show optional parameters of commands in help entries")
-      db.insert(obj = color)
-      color = newColor(name = helpUnderline, cValue = yellow, underline = true,
-          description = "Used to show underlined text help entries")
-      db.insert(obj = color)
-      color = newColor(name = helpCode, cValue = green,
-          description = "Used to show code in help entries")
-      db.insert(obj = color)
-      color = newColor(name = highlightValid, cValue = green,
-          description = "Used to highlight valid values in user's input")
-      db.insert(obj = color)
-      color = newColor(name = highlightInvalid, cValue = red,
-          description = "Used to highlight invalid values in user's input")
-      db.insert(obj = color)
-      color = newColor(name = highlightVariable, cValue = cyan,
-          description = "Used to highlight environment variables in user's input")
-      db.insert(obj = color)
-      color = newColor(name = highlightText, cValue = yellow,
-          description = "Used to highlight text in quotes in user's input")
-      db.insert(obj = color)
-      color = newColor(name = suggestInvalid, cValue = cyan,
-          description = "Used to show invalid command in commands' suggestions")
-      db.insert(obj = color)
-      color = newColor(name = suggestCommand, cValue = yellow,
-          description = "Used to show command suggestion in commands' suggestions")
-      db.insert(obj = color)
-      color = newColor(name = suggestYes, cValue = green,
-          description = "Used to show confirmation shortcut in commands' suggestions")
-      db.insert(obj = color)
-      color = newColor(name = suggestNext, cValue = blue,
-          description = "Used to show next shortcut in commands' suggestions")
-      db.insert(obj = color)
-      color = newColor(name = suggestAbort, cValue = red,
-          description = "Used to show abort shortcut in commands' suggestions")
-      db.insert(obj = color)
-      color = newColor(name = promptColor, cValue = blue,
-          description = "Used to show the shell's prompt")
-      db.insert(obj = color)
-      color = newColor(name = promptError, cValue = red,
-          description = "Used to show the last command's error code in the shell's prompt")
-      db.insert(obj = color)
+      for color in colors:
+        var col = color
+        db.insert(obj = col)
     except:
       showThemeError(message = "Can't create 'theme' table. Reason: ",
           e = getCurrentException())
