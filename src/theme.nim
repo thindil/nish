@@ -406,4 +406,9 @@ proc setColor*(db; arguments: UserInput): ResultCode {.sideEffect, raises: [], t
     db != nil
     arguments.len > 4
   body:
+    let setting: seq[string] = ($arguments).split()
+    if setting.len < 2:
+      return showThemeError(message = "Please enter name of the color and its new value.")
+    if setting.len < 3:
+      return showThemeError(message = "Please enter a new value for the selected color.")
     return QuitSuccess.ResultCode
