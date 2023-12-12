@@ -68,6 +68,9 @@ proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: []
         # Show the colors declared in the shell's theme
         if arguments.startsWith(prefix = "show"):
           return showTheme(db = db)
+        # Set the new value for the selected theme's color
+        if arguments.startsWith(prefix = "set"):
+          return setColor(db = db, arguments = arguments)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 5, text = "theme"),

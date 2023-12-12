@@ -32,7 +32,7 @@ import std/[strutils, terminal]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import constants, logger, resultcode
+import constants, logger, lstring, resultcode
 
 type
   ColorName = enum
@@ -63,7 +63,7 @@ type
 
 using db: DbConn # Connection to the shell's database
 
-const themeCommands*: seq[string] = @["show"]
+const themeCommands*: seq[string] = @["show", "set"]
   ## The list of available subcommands for command theme
 
 proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],
@@ -343,7 +343,7 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Show all the colors which can be set in the shell's theme
   ##
-  ## * db        - the connection to the shell's database
+  ## * db - the connection to the shell's database
   ##
   ## Returns QuitSuccess if the colors were correctly shown, otherwise
   ## QuitFailure.
@@ -392,4 +392,18 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
       showThemeError(message = "Can't show the list of shell's theme's colors. Reason: ",
           e = getCurrentException())
       return QuitFailure.ResultCode
+    return QuitSuccess.ResultCode
+
+proc setColor*(db; arguments: UserInput): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
+  ## Set the value for the theme's color
+  ##
+  ## * db        - the connection to the shell's database
+  ## * arguments - the arguments entered by the user for the command
+  ##
+  ## Returns QuitSuccess if the color was properly set, otherwise QuitFailure.
+  require:
+    db != nil
+    arguments.len > 4
+  body:
     return QuitSuccess.ResultCode
