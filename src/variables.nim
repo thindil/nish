@@ -243,8 +243,8 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       variables: seq[Variable] = @[newVariable()]
     try:
       let color: string = getColor(db = db, name = tableHeaders)
-      table.add(parts = [style(ss = "ID", style = color), style(ss = "Name", style = color), style(
-          ss = "Value", style = color)])
+      table.add(parts = [style(ss = "ID", style = color), style(ss = "Name",
+          style = color), style(ss = "Value", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show variables list. Reason: ",
           e = getCurrentException(), db = db)
@@ -256,8 +256,10 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "There are no defined shell's environment variables.", db = db)
           return QuitSuccess.ResultCode
         for variable in variables:
-          table.add(parts = [style(ss = variable.id, style = getColor(db = db, name = ids)), style(
-              ss = variable.name, style = getColor(db = db, name = values)), variable.value])
+          table.add(parts = [style(ss = variable.id, style = getColor(db = db,
+              name = ids)), style(ss = variable.name, style = getColor(db = db,
+              name = values)), style(ss = variable.value, style = getColor(
+              db = db, name = default))])
       except:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException(), db = db)
@@ -275,8 +277,10 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "There are no defined shell's environment variables in this directory.", db = db)
           return QuitSuccess.ResultCode
         for variable in variables:
-          table.add(parts = [style(ss = variable.id, style = getColor(db = db, name = ids)), style(
-              ss = variable.name, style = getColor(db = db, name = values)), variable.value])
+          table.add(parts = [style(ss = variable.id, style = getColor(db = db,
+              name = ids)), style(ss = variable.name, style = getColor(db = db,
+              name = values)), style(ss = variable.value, style = getColor(
+              db = db, name = default))])
       except:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException(), db = db)
@@ -473,7 +477,8 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         return showError(message = "The Id of the variable must be a positive number.", db = db)
     try:
       if not db.exists(T = Variable, cond = "id=?", params = $varId):
-        return showError(message = "The variable with the ID: " & $varId & " doesn't exists.", db = db)
+        return showError(message = "The variable with the ID: " & $varId &
+            " doesn't exists.", db = db)
     except:
       return showError(message = "Can't check if the selected variable exists. Reason:",
           e = getCurrentException(), db = db)
@@ -628,14 +633,16 @@ proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = showHeaders)
-      table.add(parts = [style(ss = "Id:", style = color), $id])
-      table.add(parts = [style(ss = "Name:", style = color), variable.name])
-      table.add(parts = [style(ss = "Value:", style = color), variable.value])
-      table.add(parts = [style(ss = "Description:", style = color), (
-          if variable.description.len > 0: variable.description else: "(none)")])
-      table.add(parts = [style(ss = "Path:", style = color), variable.path & (
-          if variable.recursive: " (recursive)" else: "")])
+      let
+        color: string = getColor(db = db, name = showHeaders)
+        color2: string = getColor(db = db, name = default)
+      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id, style = color2)])
+      table.add(parts = [style(ss = "Name:", style = color), style(ss = variable.name, style = color2)])
+      table.add(parts = [style(ss = "Value:", style = color), style(ss = variable.value, style = color2)])
+      table.add(parts = [style(ss = "Description:", style = color), style(ss = (
+          if variable.description.len > 0: variable.description else: "(none)"), style = color2)])
+      table.add(parts = [style(ss = "Path:", style = color), style(ss = variable.path & (
+          if variable.recursive: " (recursive)" else: ""), style = color2)])
       table.echoTable
     except:
       return showError(message = "Can't show variable. Reason: ",

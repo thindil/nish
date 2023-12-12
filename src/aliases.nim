@@ -173,7 +173,7 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       for dbResult in dbAliases:
         table.add(parts = [style(ss = dbResult.id, style = getColor(db = db,
             name = ids)), style(ss = dbResult.name, style = getColor(db = db,
-            name = ids)), dbResult.description])
+            name = ids)), style(ss = dbResult.description, style = getColor(db = db, name = default))])
     except:
       return showError(message = "Can't add an alias to the list. Reason:",
           e = getCurrentException(), db = db)
@@ -289,15 +289,17 @@ proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = showHeaders)
-      table.add(parts = [style(ss = "Id:", style = color), $id])
-      table.add(parts = [style(ss = "Name:", style = color), alias.name])
-      table.add(parts = [style(ss = "Description:", style = color), (
-          if alias.description.len > 0: alias.description else: "(none)")])
-      table.add(parts = [style(ss = "Path:", style = color), alias.path & (
-          if alias.recursive: " (recursive)" else: "")])
-      table.add(parts = [style(ss = "Command(s):", style = color), alias.commands])
-      table.add(parts = [style(ss = "Output to:", style = color), alias.output])
+      let
+        color: string = getColor(db = db, name = showHeaders)
+        color2: string = getColor(db = db, name = default)
+      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id, style = color2)])
+      table.add(parts = [style(ss = "Name:", style = color), style(ss = alias.name, style = color2)])
+      table.add(parts = [style(ss = "Description:", style = color), style(ss = (
+          if alias.description.len > 0: alias.description else: "(none)"), style = color2)])
+      table.add(parts = [style(ss = "Path:", style = color), style(ss = alias.path & (
+          if alias.recursive: " (recursive)" else: ""), style = color2)])
+      table.add(parts = [style(ss = "Command(s):", style = color), style(ss = alias.commands, style = color2)])
+      table.add(parts = [style(ss = "Output to:", style = color), style(ss = alias.output, style = color2)])
       table.echoTable
     except:
       return showError(message = "Can't show alias. Reason: ",

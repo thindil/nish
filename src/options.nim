@@ -216,11 +216,13 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
       var options: seq[Option] = @[newOption()]
       db.rawSelect(qry = "SELECT * FROM options ORDER BY option ASC",
           objs = options)
+      let color: string = getColor(db = db, name = default)
       for option in options:
         table.add(parts = [style(ss = option.option, style = getColor(db = db,
             name = ids)), style(ss = option.value, style = getColor(db = db,
-            name = values)), option.defaultValue, $option.valueType,
-            option.description])
+            name = values)), style(ss = option.defaultValue, style = color),
+            style(ss = $option.valueType, style = color), style(ss =
+            option.description, style = color)])
     except:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException(), db = db)

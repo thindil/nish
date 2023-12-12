@@ -216,7 +216,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           try:
             if deleteOption(optionName = initLimitedString(
                 capacity = maxNameLength, text = options[0]), db = db) == QuitFailure:
-              showError(message = "Failed to remove option '" & options[0] & "'.", db = db)
+              showError(message = "Failed to remove option '" & options[0] &
+                  "'.", db = db)
               return false
           except CapacityError:
             showError(message = "Can't remove option '" & options[0] &
@@ -523,12 +524,14 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
     try:
       # Check if the plugin isn't added previously
       if db.exists(T = Plugin, cond = "location=?", params = pluginPath):
-        return showError(message = "File '" & pluginPath & "' is already added as a plugin to the shell.", db = db)
+        return showError(message = "File '" & pluginPath &
+            "' is already added as a plugin to the shell.", db = db)
       # Check if the plugin can be added
       let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
       if newPlugin.path.len == 0:
-        return showError(message = "Can't add file '" & pluginPath & "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.", db = db)
+        return showError(message = "Can't add file '" & pluginPath &
+            "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.", db = db)
       # Add the plugin to the shell database
       var plugin: Plugin = newPlugin(path = pluginPath, enabled = true,
           preCommand = "preCommand" in newPlugin.api,
@@ -539,13 +542,15 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
             db = db, commands = commands).code != QuitSuccess:
           db.delete(obj = plugin)
-          return showError(message = "Can't install plugin '" & pluginPath & "'.", db = db)
+          return showError(message = "Can't install plugin '" & pluginPath &
+              "'.", db = db)
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
             db = db, commands = commands).code != QuitSuccess:
           db.delete(obj = plugin)
-          return showError(message = "Can't enable plugin '" & pluginPath & "'.", db = db)
+          return showError(message = "Can't enable plugin '" & pluginPath &
+              "'.", db = db)
     except:
       return showError(message = "Can't add plugin to the shell. Reason: ",
           e = getCurrentException(), db = db)
@@ -585,11 +590,13 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
       # Execute the disabling code of the plugin first
       if execPlugin(pluginPath = plugin.location, arguments = ["disable"],
           db = db, commands = commands).code != QuitSuccess:
-        return showError(message = "Can't disable plugin '" & plugin.location & "'.", db = db)
+        return showError(message = "Can't disable plugin '" & plugin.location &
+            "'.", db = db)
       # Execute the uninstalling code of the plugin
       if execPlugin(pluginPath = plugin.location, arguments = ["uninstall"],
           db = db, commands = commands).code != QuitSuccess:
-        return showError(message = "Can't remove plugin '" & plugin.location & "'.", db = db)
+        return showError(message = "Can't remove plugin '" & plugin.location &
+            "'.", db = db)
       # Remove the plugin from the base
       db.delete(obj = plugin)
     except:
@@ -632,14 +639,16 @@ proc togglePlugin*(db; arguments; disable: bool = true;
     try:
       # Check if plugin exists
       if not db.exists(T = Plugin, cond = "id=?", params = $pluginId):
-        return showError(message = "Plugin with Id: " & $pluginId & " doesn't exists.", db = db)
+        return showError(message = "Plugin with Id: " & $pluginId &
+            " doesn't exists.", db = db)
       var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $pluginId)
       # Check if plugin can be enabled due to version of API
       let newPlugin: PluginData = checkPlugin(pluginPath = plugin.location,
           db = db, commands = commands)
       if newPlugin.path.len == 0 and not disable:
-        return showError(message = "Can't enable plugin with Id: " & $pluginId & " because its API version is incompatible with the shell's version.", db = db)
+        return showError(message = "Can't enable plugin with Id: " & $pluginId &
+            " because its API version is incompatible with the shell's version.", db = db)
       # Execute the enabling or disabling code of the plugin
       if actionName in newPlugin.api:
         if execPlugin(pluginPath = plugin.location, arguments = [actionName],
@@ -684,8 +693,8 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     if arguments == "list all":
       try:
         let color: string = getColor(db = db, name = tableHeaders)
-        table.add(parts = [style(ss = "ID", style = color), style(ss = "Path", style = color), style(
-            ss = "Enabled", style = color)])
+        table.add(parts = [style(ss = "ID", style = color), style(ss = "Path",
+            style = color), style(ss = "Enabled", style = color)])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show all plugins list. Reason: ",
             e = getCurrentException(), db = db)
@@ -695,9 +704,11 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         if plugins.len == 0:
           showOutput(message = "There are no available shell's plugins.", db = db)
           return QuitSuccess.ResultCode
+        let color: string = getColor(db = db, name = default)
         for plugin in plugins:
-          table.add(parts = [style(ss = plugin.id, style = getColor(db = db, name = ids)), plugin.location, (
-              if plugin.enabled: "Yes" else: "No")])
+          table.add(parts = [style(ss = plugin.id, style = getColor(db = db,
+              name = ids)), style(ss = plugin.location, style = color), style(
+              ss = (if plugin.enabled: "Yes" else: "No"), style = color)])
       except:
         return showError(message = "Can't read info about plugin from database. Reason:",
             e = getCurrentException(), db = db)
@@ -710,7 +721,8 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
     elif arguments[0..3] == "list":
       try:
         let color: string = getColor(db = db, name = tableHeaders)
-        table.add(parts = [style(ss = "ID", style = color), style(ss = "Path", style = color)])
+        table.add(parts = [style(ss = "ID", style = color), style(ss = "Path",
+            style = color)])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
         return showError(message = "Can't show plugins list. Reason: ",
             e = getCurrentException(), db = db)
@@ -720,8 +732,10 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
         if plugins.len == 0:
           showOutput(message = "There are no enabled shell's plugins.", db = db)
           return QuitSuccess.ResultCode
+        let color: string = getColor(db = db, name = default)
         for plugin in plugins:
-          table.add(parts = [style(ss = plugin.id, style = getColor(db = db, name = ids)), plugin.location])
+          table.add(parts = [style(ss = plugin.id, style = getColor(db = db,
+              name = ids)), style(ss = plugin.location, style = color)])
       except:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
             e = getCurrentException(), db = db)
@@ -768,25 +782,28 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
       var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $id)
       var table: TerminalTable = TerminalTable()
-      let color: string = getColor(db = db, name = showHeaders)
-      table.add(parts = [style(ss = "Id:", style = color), $id])
-      table.add(parts = [style(ss = "Path", style = color), plugin.location])
-      table.add(parts = [style(ss = "Enabled:", style = color), (
-          if plugin.enabled: "Yes" else: "No")])
+      let
+        color: string = getColor(db = db, name = showHeaders)
+        color2: string = getColor(db = db, name = default)
+      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id, style = color2)])
+      table.add(parts = [style(ss = "Path", style = color), style(ss = plugin.location, style = color2)])
+      table.add(parts = [style(ss = "Enabled:", style = color), style(ss = (
+          if plugin.enabled: "Yes" else: "No"), style = color2)])
       let pluginData: PluginResult = execPlugin(pluginPath = plugin.location,
           arguments = ["info"], db = db, commands = commands)
       # If plugin contains any aditional information, show them
       if pluginData.code == QuitSuccess:
         let pluginInfo: seq[string] = ($pluginData.answer).split(sep = ";")
-        table.add(parts = [style(ss = "API version:", style = color), (if pluginInfo.len >
-            2: pluginInfo[2] else: "0.1")])
+        table.add(parts = [style(ss = "API version:", style = color), style(ss = (
+            if pluginInfo.len > 2: pluginInfo[2] else: "0.1"), style = color2)])
         if pluginInfo.len > 2:
-          table.add(parts = [style(ss = "API used:", style = color), pluginInfo[3]])
-        table.add(parts = [style(ss = "Name:", style = color), pluginInfo[0]])
+          table.add(parts = [style(ss = "API used:", style = color), style(ss = pluginInfo[3], style = color2)])
+        table.add(parts = [style(ss = "Name:", style = color), style(ss = pluginInfo[0], style = color2)])
         if pluginInfo.len > 1:
-          table.add(parts = [style(ss = "Descrition:", style = color), pluginInfo[1]])
+          table.add(parts = [style(ss = "Descrition:", style = color),
+              style(ss = pluginInfo[1], style = color2)])
       else:
-        table.add(parts = [style(ss = "API version:", style = color), "0.1"])
+        table.add(parts = [style(ss = "API version:", style = color), style(ss = "0.1", style = color2)])
       table.echoTable
     except:
       return showError(message = "Can't show the plugin's info. Reason: ",
@@ -873,7 +890,8 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           if newPlugin.path.len == 0:
             plugin.enabled = false
             db.update(obj = plugin)
-            showError(message = "Plugin '" & plugin.location & "' isn't compatible with the current version of shell's API and will be disabled.", db = db)
+            showError(message = "Plugin '" & plugin.location &
+                "' isn't compatible with the current version of shell's API and will be disabled.", db = db)
             continue
           if "init" in newPlugin.api:
             if execPlugin(pluginPath = plugin.location, arguments = ["init"],
