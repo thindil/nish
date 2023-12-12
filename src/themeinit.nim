@@ -26,8 +26,6 @@
 ## This module contains initialization code of the shell's theme. It is in a
 ## separate module to avoid circular dependencies.
 
-# Standard library imports
-import std/strutils
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
@@ -53,9 +51,8 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
       table.add(parts = [style(ss = "Name", style = color), style(ss = "Value",
           style = color), style(ss = "Description", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
-      showError(message = "Can't show the shell's theme's colors. Reason: ",
+      return showError(message = "Can't show the shell's theme's colors. Reason: ",
           e = getCurrentException(), db = db)
-      return QuitFailure.ResultCode
     showFormHeader(message = "The shell's theme colors are:", db = db)
     try:
       var cols: seq[Color] = @[newColor()]
@@ -80,37 +77,58 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
             name = values)), style(ss = color.description, style = getColor(
             db = db, name = default))])
     except:
-      showError(message = "Can't show the shell's theme's colors. Reason: ",
+      return showError(message = "Can't show the shell's theme's colors. Reason: ",
           e = getCurrentException(), db = db)
-      return QuitFailure.ResultCode
     try:
       table.echoTable
-    except IOError, Exception:
-      showError(message = "Can't show the list of shell's theme's colors. Reason: ",
+    except:
+      return showError(message = "Can't show the list of shell's theme's colors. Reason: ",
           e = getCurrentException(), db = db)
-      return QuitFailure.ResultCode
     return QuitSuccess.ResultCode
 
-proc setColor*(db; arguments: UserInput): ResultCode {.sideEffect, raises: [], tags: [
+proc setColor*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Set the value for the theme's color
   ##
   ## * db        - the connection to the shell's database
-  ## * arguments - the arguments entered by the user for the command
   ##
   ## Returns QuitSuccess if the color was properly set, otherwise QuitFailure.
   require:
     db != nil
   body:
-    let setting: seq[string] = ($arguments).split()
-    if setting.len < 2:
-      return showError(message = "Please enter name of the color and its new value.", db = db)
-    if setting.len < 3:
-      return showError(message = "Please enter a new value for the selected color.", db = db)
+    showOutput(message = "You can cancel editing a color at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
+    showFormHeader(message = "(1/2) Name:", db = db)
+    showOutput(message = "The name of the color. Select its Id from the list.", db = db)
+    var table: TerminalTable = TerminalTable()
+    try:
+      let color: string = getColor(db = db, name = tableHeaders)
+      table.add(parts = [style(ss = "Id", style = color), style(ss = "Name",
+          style = color)])
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      return showError(message = "Can't show the shell's theme's colors. Reason: ",
+          e = getCurrentException(), db = db)
+    try:
+      var cols: seq[Color] = @[newColor()]
+      db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
+          objs = cols)
+      for index, color in cols:
+        table.add(parts = [style(ss = (index + 1), style = getColor(db = db,
+            name = ids)), style(ss = color.name, style = getColor(db = db,
+            name = values))])
+    except:
+      return showError(message = "Can't show the shell's theme's colors. Reason: ",
+          e = getCurrentException(), db = db)
+    try:
+      table.echoTable
+    except:
+      return showError(message = "Can't show the list of shell's theme's colors. Reason: ",
+          e = getCurrentException(), db = db)
+    showOutput(message = "Name: ", newLine = false, db = db)
     return QuitSuccess.ResultCode
 
-proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect, RootEffect],
+proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
+    ], tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect,
+        RootEffect],
     contractual.} =
   ## Initialize the shell's theme. Set help related to the theme.
   ##
@@ -147,7 +165,7 @@ proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: []
           return showTheme(db = db)
         # Set the new value for the selected theme's color
         if arguments.startsWith(prefix = "set"):
-          return setColor(db = db, arguments = arguments)
+          return setColor(db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 5, text = "theme"),
