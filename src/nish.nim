@@ -189,12 +189,13 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
             # If Tab pressed the first time, show the list of completion
             if not completionMode:
               stdout.writeLine(x = "")
+              let color = getColor(db = db, name = completionList)
               var
                 table: TerminalTable = TerminalTable()
                 row: seq[string] = @[]
                 amount, line: Natural = 0
               for completion in completions:
-                row.add(y = completion)
+                row.add(y = style(ss = completion, style = color))
                 amount.inc
                 if amount == columnsAmount:
                   try:
