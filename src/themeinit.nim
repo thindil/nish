@@ -26,11 +26,88 @@
 ## This module contains initialization code of the shell's theme. It is in a
 ## separate module to avoid circular dependencies.
 
+# Standard library imports
+import std/strutils
 # External modules imports
-import contracts, nimalyzer
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import commandslist, constants, help, lstring, resultcode, theme
+import commandslist, constants, help, lstring, output, resultcode, theme
+
+using db: DbConn # Connection to the shell's database
+
+proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
+  ## Show all the colors which can be set in the shell's theme
+  ##
+  ## * db - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if the colors were correctly shown, otherwise
+  ## QuitFailure.
+  require:
+    db != nil
+  body:
+    var table: TerminalTable = TerminalTable()
+    try:
+      let color: string = getColor(db = db, name = tableHeaders)
+      table.add(parts = [style(ss = "Name", style = color), style(ss = "Value",
+          style = color), style(ss = "Description", style = color)])
+    except UnknownEscapeError, InsufficientInputError, FinalByteError:
+      showError(message = "Can't show the shell's theme's colors. Reason: ",
+          e = getCurrentException(), db = db)
+      return QuitFailure.ResultCode
+    showFormHeader(message = "The shell's theme colors are:", db = db)
+    try:
+      var cols: seq[Color] = @[newColor()]
+      db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
+          objs = cols)
+      for color in cols:
+        var value: string = $color.cValue
+        if color.underline:
+          value &= ", underlined"
+        if color.bold:
+          value &= ", bold"
+        if color.italic:
+          value &= ", italic"
+        for col in colors:
+          if col.name == color.name and (col.cValue != color.cValue or
+              col.underline != color.underline or col.bold != color.bold or
+              col.italic != color.italic):
+            value &= " (changed)"
+            break
+        table.add(parts = [style(ss = color.name, style = getColor(db = db,
+            name = ids)), style(ss = value, style = getColor(db = db,
+            name = values)), style(ss = color.description, style = getColor(
+            db = db, name = default))])
+    except:
+      showError(message = "Can't show the shell's theme's colors. Reason: ",
+          e = getCurrentException(), db = db)
+      return QuitFailure.ResultCode
+    try:
+      table.echoTable
+    except IOError, Exception:
+      showError(message = "Can't show the list of shell's theme's colors. Reason: ",
+          e = getCurrentException(), db = db)
+      return QuitFailure.ResultCode
+    return QuitSuccess.ResultCode
+
+proc setColor*(db; arguments: UserInput): ResultCode {.sideEffect, raises: [], tags: [
+    WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
+  ## Set the value for the theme's color
+  ##
+  ## * db        - the connection to the shell's database
+  ## * arguments - the arguments entered by the user for the command
+  ##
+  ## Returns QuitSuccess if the color was properly set, otherwise QuitFailure.
+  require:
+    db != nil
+  body:
+    let setting: seq[string] = ($arguments).split()
+    if setting.len < 2:
+      return showError(message = "Please enter name of the color and its new value.", db = db)
+    if setting.len < 3:
+      return showError(message = "Please enter a new value for the selected color.", db = db)
+    return QuitSuccess.ResultCode
 
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [],
     tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect, RootEffect],

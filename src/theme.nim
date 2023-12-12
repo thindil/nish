@@ -29,10 +29,10 @@
 # Standard library imports
 import std/[strutils, terminal]
 # External modules imports
-import ansiparse, contracts, nancy, nimalyzer, termstyle
+import contracts, nimalyzer, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import constants, logger, lstring, resultcode
+import logger, lstring, resultcode
 
 type
   ColorName = enum
@@ -45,7 +45,7 @@ type
       helpCode, highlightValid, highlightInvalid, highlightVariable,
       highlightText, suggestInvalid, suggestCommand, suggestYes, suggestNext,
       suggestAbort, promptColor, promptError, completionList
-  Color {.tableName: "theme".} = ref object of Model
+  Color* {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
     ## * name        - the name of the color in the shell's theme
@@ -54,12 +54,12 @@ type
     ## * bold        - if true, set the color with a bold font
     ## * underline   - if true, add underline to the color
     ## * italic      - if true, set the color with an italic font
-    name {.unique.}: ThemeColor
-    cValue: ColorName
-    description: string
-    bold: bool
-    underline: bool
-    italic: bool
+    name* {.unique.}: ThemeColor
+    cValue*: ColorName
+    description*: string
+    bold*: bool
+    underline*: bool
+    italic*: bool
 
 using db: DbConn # Connection to the shell's database
 
@@ -155,7 +155,7 @@ proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
     Color(name: name, cValue: cValue, description: description, bold: bold,
         underline: underline, italic: italic)
 
-let colors: array[26, Color] = [newColor(name = errors, cValue = red,
+let colors*: array[26, Color] = [newColor(name = errors, cValue = red,
     description = "Used to show error messages"), newColor(name = default,
     cValue = default, description = "The default color of the shell's output"),
     newColor(name = headers, cValue = yellow,
@@ -298,117 +298,3 @@ proc getColor*(db; name: ThemeColor): string {.sideEffect, raises: [], tags: [
       result &= termUnderline
     if color.italic:
       result &= termItalic
-
-proc showThemeFormHeader(message: string; width: ColumnAmount = (
-    try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount);
-        db) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
-    RootEffect], contractual.} =
-  ## Show form's header with the selected message.  The theme's
-  ## module uses the separated code, to avoid circular dependencies and eternal
-  ## errors.
-  ##
-  ## * message - the text which will be shown in the header
-  ## * width   - the width of the header. Default value is the current width
-  ##             of the terminal
-  ## * db      - the connection to the shell's database
-  require:
-    message.len > 0
-    db != nil
-  body:
-    type LocalOption = ref object
-      value: string
-    try:
-      var option: LocalOption = LocalOption()
-      db.rawSelect(qry = "SELECT value FROM options WHERE option='outputHeaders'", obj = option)
-      let headerType: string = option.value
-      if headerType == "hidden":
-        return
-      var table: TerminalTable = TerminalTable()
-      table.add(parts = style(ss = message.center(width = width.int),
-          style = getColor(db = db, name = headers)))
-      case headerType
-      of "unicode":
-        table.echoTableSeps(seps = boxSeps)
-      of "ascii":
-        table.echoTableSeps
-      of "none":
-        table.echoTable
-      else:
-        discard
-    except DbError, IOError, Exception:
-      showThemeError(message = "Can't show theme's form header. Reason: ",
-          e = getCurrentException())
-
-proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
-  ## Show all the colors which can be set in the shell's theme
-  ##
-  ## * db - the connection to the shell's database
-  ##
-  ## Returns QuitSuccess if the colors were correctly shown, otherwise
-  ## QuitFailure.
-  require:
-    db != nil
-  body:
-    var table: TerminalTable = TerminalTable()
-    try:
-      let color: string = getColor(db = db, name = tableHeaders)
-      table.add(parts = [style(ss = "Name", style = color), style(ss = "Value",
-          style = color), style(ss = "Description", style = color)])
-    except UnknownEscapeError, InsufficientInputError, FinalByteError:
-      showThemeError(message = "Can't show the shell's theme's colors. Reason: ",
-          e = getCurrentException())
-      return QuitFailure.ResultCode
-    showThemeFormHeader(message = "The shell's theme colors are:", db = db)
-    try:
-      var cols: seq[Color] = @[newColor()]
-      db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
-          objs = cols)
-      for color in cols:
-        var value: string = $color.cValue
-        if color.underline:
-          value &= ", underlined"
-        if color.bold:
-          value &= ", bold"
-        if color.italic:
-          value &= ", italic"
-        for col in colors:
-          if col.name == color.name and (col.cValue != color.cValue or
-              col.underline != color.underline or col.bold != color.bold or
-              col.italic != color.italic):
-            value &= " (changed)"
-            break
-        table.add(parts = [style(ss = color.name, style = getColor(db = db,
-            name = ids)), style(ss = value, style = getColor(db = db,
-            name = values)), style(ss = color.description, style = getColor(
-            db = db, name = default))])
-    except:
-      showThemeError(message = "Can't show the shell's theme's colors. Reason: ",
-          e = getCurrentException())
-      return QuitFailure.ResultCode
-    try:
-      table.echoTable
-    except IOError, Exception:
-      showThemeError(message = "Can't show the list of shell's theme's colors. Reason: ",
-          e = getCurrentException())
-      return QuitFailure.ResultCode
-    return QuitSuccess.ResultCode
-
-proc setColor*(db; arguments: UserInput): ResultCode {.sideEffect, raises: [], tags: [
-    WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
-  ## Set the value for the theme's color
-  ##
-  ## * db        - the connection to the shell's database
-  ## * arguments - the arguments entered by the user for the command
-  ##
-  ## Returns QuitSuccess if the color was properly set, otherwise QuitFailure.
-  require:
-    db != nil
-    arguments.len > 4
-  body:
-    let setting: seq[string] = ($arguments).split()
-    if setting.len < 2:
-      return showThemeError(message = "Please enter name of the color and its new value.")
-    if setting.len < 3:
-      return showThemeError(message = "Please enter a new value for the selected color.")
-    return QuitSuccess.ResultCode
