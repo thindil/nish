@@ -28,7 +28,7 @@
 ## possibility to use the theme's colors in its commands.
 
 # Standard library imports
-import std/strutils
+import std/[strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
@@ -137,10 +137,13 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     let color: Color = try:
         cols[parseInt(s = $id) - 1]
       except:
-        return showError(message = "Editing the theme cancelled, invalid color number: '" & id & "'", db = db)
-    showOutput(message = "Current values for the color ", db = db, newLine = false)
+        return showError(message = "Editing the theme cancelled, invalid color number: '" &
+            id & "'", db = db)
+    showOutput(message = "Current values for the color ", db = db,
+        newLine = false)
     showOutput(message = $color.name, db = db, newLine = false, color = ids)
-    showOutput(message = " " & color.description.toLowerAscii & " is: ", db = db, newLine = false)
+    showOutput(message = " " & color.description.toLowerAscii & " is: ",
+        db = db, newLine = false)
     var value: string = $color.cValue
     if color.underline:
       value &= ", underlined"
@@ -149,6 +152,37 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     if color.italic:
       value &= ", italic"
     showOutput(message = value, db = db, color = values)
+    const colorsOptions: Table[char, string] = {'b': "black", 'r': "red",
+        'g': "green", 'y': "yellow", 'l': "blue", 'm': "magenta", 'c': "cyan",
+        'w': "white", 'd': "default color", 'q': "quit"}.toTable
+    var inputChar = selectOption(options = colorsOptions, default = 'd',
+        prompt = "Color", db = db)
+    try:
+      case inputChar
+      of 'b':
+        color.cValue = black
+      of 'r':
+        color.cValue = red
+      of 'g':
+        color.cValue = green
+      of 'y':
+        color.cValue = yellow
+      of 'l':
+        color.cValue = blue
+      of 'm':
+        color.cValue = magenta
+      of 'c':
+        color.cValue = cyan
+      of 'w':
+        color.cValue = white
+      of 'd':
+        color.cValue = default
+      of 'q':
+        return showError(message = "Editing the theme cancelled.", db = db)
+      else:
+        discard
+    except CapacityError:
+      return showError(message = "Editing the alias cancelled. Reason: Can't set color value for the selected theme's color", db = db)
     return QuitSuccess.ResultCode
 
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
