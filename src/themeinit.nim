@@ -140,6 +140,15 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
         return showError(message = "Editing the theme cancelled, invalid color number: '" & id & "'", db = db)
     showOutput(message = "Current values for the color ", db = db, newLine = false)
     showOutput(message = $color.name, db = db, newLine = false, color = ids)
+    showOutput(message = " " & color.description.toLowerAscii & " is: ", db = db, newLine = false)
+    var value: string = $color.cValue
+    if color.underline:
+      value &= ", underlined"
+    if color.bold:
+      value &= ", bold"
+    if color.italic:
+      value &= ", italic"
+    showOutput(message = value, db = db, color = values)
     return QuitSuccess.ResultCode
 
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
