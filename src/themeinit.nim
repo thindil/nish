@@ -155,7 +155,7 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     const colorsOptions: Table[char, string] = {'b': "black", 'r': "red",
         'g': "green", 'y': "yellow", 'l': "blue", 'm': "magenta", 'c': "cyan",
         'w': "white", 'd': "default color", 'q': "quit"}.toTable
-    var inputChar = selectOption(options = colorsOptions, default = 'd',
+    var inputChar: char = selectOption(options = colorsOptions, default = 'd',
         prompt = "Color", db = db)
     try:
       case inputChar
