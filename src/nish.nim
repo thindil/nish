@@ -189,7 +189,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
             # If Tab pressed the first time, show the list of completion
             if not completionMode:
               stdout.writeLine(x = "")
-              let color = getColor(db = db, name = completionList)
+              let color: string = getColor(db = db, name = completionList)
               var
                 table: TerminalTable = TerminalTable()
                 row: seq[string] = @[]
