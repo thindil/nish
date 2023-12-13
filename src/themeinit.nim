@@ -23,14 +23,17 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-## This module contains initialization code of the shell's theme. It is in a
-## separate module to avoid circular dependencies.
+## This module contains initialization code and the commands related to the
+## shell's theme. It is in a separate module to avoid circular dependencies and
+## possibility to use the theme's colors in its commands.
 
+# Standard library imports
+import std/strutils
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import commandslist, constants, help, lstring, output, resultcode, theme
+import commandslist, constants, help, input, lstring, output, resultcode, theme
 
 using db: DbConn # Connection to the shell's database
 
@@ -86,7 +89,7 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc setColor*(db): ResultCode {.sideEffect, raises: [], tags: [
+proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Set the value for the theme's color
   ##
@@ -99,9 +102,10 @@ proc setColor*(db): ResultCode {.sideEffect, raises: [], tags: [
     showOutput(message = "You can cancel editing a color at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     showFormHeader(message = "(1/2) Name:", db = db)
     showOutput(message = "The name of the color. Select its Id from the list.", db = db)
-    var table: TerminalTable = TerminalTable()
+    var
+      table: TerminalTable = TerminalTable()
+      cols: seq[Color] = @[newColor()]
     try:
-      var cols: seq[Color] = @[newColor()]
       db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
           objs = cols)
       var
@@ -126,7 +130,16 @@ proc setColor*(db): ResultCode {.sideEffect, raises: [], tags: [
     except:
       return showError(message = "Can't show the list of shell's theme's colors. Reason: ",
           e = getCurrentException(), db = db)
-    showOutput(message = "Name: ", newLine = false, db = db)
+    showOutput(message = "Color number: ", newLine = false, db = db)
+    let id: UserInput = readInput(db = db)
+    if id == "exit":
+      return showError(message = "Editing the theme cancelled.", db = db)
+    let color: Color = try:
+        cols[parseInt(s = $id) - 1]
+      except:
+        return showError(message = "Editing the theme cancelled, invalid color number: '" & id & "'", db = db)
+    showOutput(message = "Current values for the color ", db = db, newLine = false)
+    showOutput(message = $color.name, db = db, newLine = false, color = ids)
     return QuitSuccess.ResultCode
 
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
@@ -166,9 +179,9 @@ proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
         # Show the colors declared in the shell's theme
         if arguments.startsWith(prefix = "show"):
           return showTheme(db = db)
-        # Set the new value for the selected theme's color
-        if arguments.startsWith(prefix = "set"):
-          return setColor(db = db)
+        # Set the new values for the theme's colors
+        if arguments.startsWith(prefix = "edit"):
+          return editTheme(db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 5, text = "theme"),
