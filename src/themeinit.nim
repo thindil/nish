@@ -101,20 +101,23 @@ proc setColor*(db): ResultCode {.sideEffect, raises: [], tags: [
     showOutput(message = "The name of the color. Select its Id from the list.", db = db)
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = tableHeaders)
-      table.add(parts = [style(ss = "Id", style = color), style(ss = "Name",
-          style = color)])
-    except UnknownEscapeError, InsufficientInputError, FinalByteError:
-      return showError(message = "Can't show the shell's theme's colors. Reason: ",
-          e = getCurrentException(), db = db)
-    try:
       var cols: seq[Color] = @[newColor()]
       db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
           objs = cols)
+      var
+        rowIndex: Natural = 0
+        row: array[4, string] = ["", "", "", ""]
       for index, color in cols:
-        table.add(parts = [style(ss = (index + 1), style = getColor(db = db,
-            name = ids)), style(ss = color.name, style = getColor(db = db,
-            name = values))])
+        row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
+            db = db, name = ids)) & style(ss = color.name, style = getColor(
+            db = db,
+            name = values))
+        rowIndex.inc
+        if rowIndex == 4:
+          table.add(parts = row)
+          row = ["", "", "", ""]
+          rowIndex = 0
+      table.add(parts = row)
     except:
       return showError(message = "Can't show the shell's theme's colors. Reason: ",
           e = getCurrentException(), db = db)
