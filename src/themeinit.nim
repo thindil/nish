@@ -28,7 +28,7 @@
 ## possibility to use the theme's colors in its commands.
 
 # Standard library imports
-import std/[strutils, tables]
+import std/[strutils, tables, terminal]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
@@ -99,8 +99,9 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
+    # Select the color to edit
     showOutput(message = "You can cancel editing a color at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
-    showFormHeader(message = "(1/2) Name:", db = db)
+    showFormHeader(message = "(1/5) Name:", db = db)
     showOutput(message = "The name of the color. Select its Id from the list.", db = db)
     var
       table: TerminalTable = TerminalTable()
@@ -152,6 +153,9 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     if color.italic:
       value &= ", italic"
     showOutput(message = value, db = db, color = values)
+    # Select the new color value for the selected color
+    showFormHeader(message = "(2/5) Color:", db = db)
+    showOutput(message = "The name of the color used for the selected theme color.", db = db)
     const colorsOptions: Table[char, string] = {'b': "black", 'r': "red",
         'g': "green", 'y': "yellow", 'l': "blue", 'm': "magenta", 'c': "cyan",
         'w': "white", 'd': "default color", 'q': "quit"}.toTable
@@ -182,7 +186,50 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
       else:
         discard
     except CapacityError:
-      return showError(message = "Editing the alias cancelled. Reason: Can't set color value for the selected theme's color", db = db)
+      return showError(message = "Editing the theme cancelled. Reason: Can't set color value for the selected theme's color", db = db)
+    # Select bold state of the selected color
+    showFormHeader(message = "(3/5) Bold:", db = db)
+    showOutput(message = "Select the color should be in bold font or not. Not all terminal emulators support the option.", db = db)
+    showOutput(message = "Bold(y/n): ", newLine = false, db = db)
+    inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    while inputChar notin {'n', 'N', 'y', 'Y'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    color.bold = inputChar == 'y' or inputChar == 'Y'
+    # Select underline state of the selected color
+    showFormHeader(message = "(4/5) Underlined:", db = db)
+    showOutput(message = "Select the color should have underline or not. Not all terminal emulators support the option.", db = db)
+    showOutput(message = "Underline(y/n): ", newLine = false, db = db)
+    inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    while inputChar notin {'n', 'N', 'y', 'Y'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    color.underline = inputChar == 'y' or inputChar == 'Y'
+    # Select italic state of the selected color
+    showFormHeader(message = "(5/5) Italic:", db = db)
+    showOutput(message = "Select the color should be in italic for or not. Not all terminal emulators support the option.", db = db)
+    showOutput(message = "Italic(y/n): ", newLine = false, db = db)
+    inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    while inputChar notin {'n', 'N', 'y', 'Y'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    color.italic = inputChar == 'y' or inputChar == 'Y'
+    # Save the color to the database
     return QuitSuccess.ResultCode
 
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
