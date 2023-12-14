@@ -168,6 +168,7 @@ proc selectOption*(options: Table[char, string];
   ## default value if there was any error
   require:
     options.len > 0
+    db != nil
   body:
     var keysList: seq[char] = @[]
     for key, value in options:
@@ -183,3 +184,23 @@ proc selectOption*(options: Table[char, string];
         getch()
       except IOError:
         default
+
+proc confirm*(prompt: string; db): bool {.contractual.} =
+  require:
+    db != nil
+  body:
+    showOutput(message = prompt & "(y/n): ", newLine = false, db = db)
+    var inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    while inputChar notin {'n', 'N', 'y', 'Y'}:
+      inputChar = try:
+        getch()
+      except IOError:
+        'y'
+    try:
+      stderr.writeLine(x = "")
+    except IOError:
+      discard
+    return inputChar in {'y', 'Y'}
