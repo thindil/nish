@@ -187,6 +187,14 @@ proc selectOption*(options: Table[char, string];
 
 proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
+  ## Ask the user for confirmation of something, waiting until the user press
+  ## key 'y' or 'n'
+  ##
+  ## * prompt - the text displayed as a temporary prompt
+  ## * db     - the connection to the shell's database
+  ##
+  ## Returns true if the user confirms an action (press the 'y' key) and
+  ## returns false if the user cancels an action (press the 'n' key).
   require:
     db != nil
   body:
