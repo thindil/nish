@@ -28,7 +28,7 @@
 ## possibility to use the theme's colors in its commands.
 
 # Standard library imports
-import std/[strutils, tables, terminal]
+import std/[strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
@@ -190,45 +190,15 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     # Select bold state of the selected color
     showFormHeader(message = "(3/5) Bold:", db = db)
     showOutput(message = "Select the color should be in bold font or not. Not all terminal emulators support the option.", db = db)
-    showOutput(message = "Bold(y/n): ", newLine = false, db = db)
-    inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    while inputChar notin {'n', 'N', 'y', 'Y'}:
-      inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    color.bold = inputChar == 'y' or inputChar == 'Y'
+    color.bold = confirm(prompt = "Bold", db = db)
     # Select underline state of the selected color
     showFormHeader(message = "(4/5) Underlined:", db = db)
     showOutput(message = "Select the color should have underline or not. Not all terminal emulators support the option.", db = db)
-    showOutput(message = "Underline(y/n): ", newLine = false, db = db)
-    inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    while inputChar notin {'n', 'N', 'y', 'Y'}:
-      inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    color.underline = inputChar == 'y' or inputChar == 'Y'
+    color.underline = confirm("Underlined", db = db)
     # Select italic state of the selected color
     showFormHeader(message = "(5/5) Italic:", db = db)
     showOutput(message = "Select the color should be in italic for or not. Not all terminal emulators support the option.", db = db)
-    showOutput(message = "Italic(y/n): ", newLine = false, db = db)
-    inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    while inputChar notin {'n', 'N', 'y', 'Y'}:
-      inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    color.italic = inputChar == 'y' or inputChar == 'Y'
+    color.italic = confirm(prompt = "Italic", db = db)
     # Save the color to the database
     return QuitSuccess.ResultCode
 
