@@ -199,7 +199,7 @@ proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
     db != nil
   body:
     showOutput(message = prompt & "(y/n): ", newLine = false, db = db)
-    var inputChar = try:
+    var inputChar: char = try:
         getch()
       except IOError:
         'y'

@@ -194,7 +194,7 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     # Select underline state of the selected color
     showFormHeader(message = "(4/5) Underlined:", db = db)
     showOutput(message = "Select the color should have underline or not. Not all terminal emulators support the option.", db = db)
-    color.underline = confirm("Underlined", db = db)
+    color.underline = confirm(prompt = "Underlined", db = db)
     # Select italic state of the selected color
     showFormHeader(message = "(5/5) Italic:", db = db)
     showOutput(message = "Select the color should be in italic for or not. Not all terminal emulators support the option.", db = db)
