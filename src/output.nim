@@ -185,7 +185,8 @@ proc selectOption*(options: Table[char, string];
       except IOError:
         default
 
-proc confirm*(prompt: string; db): bool {.contractual.} =
+proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   require:
     db != nil
   body:
