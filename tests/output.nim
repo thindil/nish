@@ -24,7 +24,14 @@ suite "Unit tests for output module":
       skip()
     else:
       check:
-        selectOption({'a': "option1", 'b': "option2"}.toTable, 'a', "Option") == 'a'
+        selectOption({'a': "option1", 'b': "option2"}.toTable, 'a', "Option", db) == 'a'
+
+  test "Showing confirmation prompt":
+    when not defined(testInput):
+      skip()
+    else:
+      check:
+        confirm("Confirm", db)
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
