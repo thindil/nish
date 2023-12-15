@@ -357,11 +357,11 @@ proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   ## Reset the selected option's value to default value. If name of the option
   ## is set to "all", reset all options to their default values
   ##
-  ## * arguments - the user entered text with arguments for the variable, its
+  ## * arguments - the user entered text with arguments for the command, its
   ##               name or all
   ## * db        - the connection to the shell's database
   ##
-  ## Returns QuitSuccess if the variable(s) correctly reseted, otherwise QuitFailure.
+  ## Returns QuitSuccess if the option(s) correctly reseted, otherwise QuitFailure.
   require:
     arguments.len > 0
     db != nil
