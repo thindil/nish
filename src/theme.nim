@@ -63,7 +63,7 @@ type
 
 using db: DbConn # Connection to the shell's database
 
-const themeCommands*: seq[string] = @["show", "edit"]
+const themeCommands*: seq[string] = @["show", "edit", "reset"]
   ## The list of available subcommands for command theme
 
 proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],

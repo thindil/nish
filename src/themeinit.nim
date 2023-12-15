@@ -207,6 +207,31 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
+proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, TimeEffect,
+    RootEffect], contractual.} =
+  ## Reset the selected theme's color's values to default values. If the optional
+  ## parameter "all" is set, reset all colors to their default values
+  ##
+  ## * arguments - the user entered text with arguments for the command, empty or
+  ##               "all"
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if the theme was correctly reseted, otherwise QuitFailure.
+  require:
+    arguments.len > 0
+    db != nil
+  body:
+    var colorName: string = ""
+    if arguments.len > 7 and arguments[6 .. ^1] == "all":
+      colorName = "all"
+    # Reset the whole theme
+    if colorName == "all":
+      echo "Reset all"
+    # Reset the selected color
+    else:
+      echo "Reset color"
+
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
     ], tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect,
         RootEffect],
@@ -247,6 +272,9 @@ proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
         # Set the new values for the theme's colors
         if arguments.startsWith(prefix = "edit"):
           return editTheme(db = db)
+        # Reset the theme's colors to their default values (all colors or one)
+        if arguments.startsWith(prefix = "reset"):
+          return resetTheme(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 5, text = "theme"),
