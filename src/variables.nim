@@ -28,7 +28,7 @@
 ## the standard environment variables.
 
 # Standard library imports
-import std/[os, strutils, terminal]
+import std/[os, strutils]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -400,17 +400,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
-    showOutput(message = "Recursive(y/n): ", newLine = false, db = db)
-    var inputChar: char = try:
-        getch()
-      except IOError:
-        'y'
-    while inputChar notin {'n', 'N', 'y', 'Y'}:
-      inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+    let recursive: BooleanInt = if confirm(prompt = "Recursive", db = db): 1 else: 0
     try:
       stdout.writeLine(x = "")
     except IOError:
@@ -554,16 +544,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
-    var inputChar: char = try:
-        getch()
-      except IOError:
-        'y'
-    while inputChar notin {'n', 'N', 'y', 'Y'}:
-      inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+    let recursive: BooleanInt = if confirm(prompt = "Recursive", db = db): 1 else: 0
     try:
       stdout.writeLine(x = "")
     except IOError:

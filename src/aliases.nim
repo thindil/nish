@@ -27,7 +27,7 @@
 ## setting them, deleting or executing.
 
 # Standard library imports
-import std/[os, osproc, parseopt, strutils, tables, terminal]
+import std/[os, osproc, parseopt, strutils, tables]
 # External modules imports
 import contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -366,18 +366,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
-    showOutput(message = "Recursive(y/n): ", newLine = false, db = db)
-    var inputChar: char = try:
-        getch()
-      except IOError:
-        'y'
-    while inputChar notin {'n', 'N', 'y', 'Y'}:
-      inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    showOutput(message = $inputChar, db = db)
-    let recursive: BooleanInt = if inputChar in {'n', 'N'}: 0 else: 1
+    let recursive: BooleanInt = if confirm(prompt = "Recursive", db = db): 1 else: 0
     # Set the commands to execute for the alias
     showFormHeader(message = "(5/6 or 7) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:", db = db)
@@ -393,7 +382,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     # Set the destination for the alias' output
     showFormHeader(message = "(6/6 or 7) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. If you select the option file, you will be asked for the path to the file. Possible options:", db = db)
-    inputChar = selectOption(options = aliasesOptions, default = 's',
+    var inputChar: char = selectOption(options = aliasesOptions, default = 's',
         prompt = "Output", db = db)
     var output: UserInput = emptyLimitedString(capacity = maxInputLength)
     try:
@@ -535,17 +524,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
-    showOutput(message = "Recursive(y/n): ", newLine = false, db = db)
-    var inputChar: char = try:
-        getch()
-      except IOError:
-        'y'
-    while inputChar notin {'n', 'N', 'y', 'Y'}:
-      inputChar = try:
-        getch()
-      except IOError:
-        'y'
-    let recursive: BooleanInt = if inputChar == 'n' or inputChar == 'N': 0 else: 1
+    let recursive: BooleanInt = if confirm(prompt = "Recursive", db = db): 1 else: 0
     try:
       stdout.writeLine(x = "")
     except IOError:
@@ -571,7 +550,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         newLine = false, db = db)
     showOutput(message = alias.output, newLine = false, color = values, db = db)
     showOutput(message = "':", db = db)
-    inputChar = selectOption(options = aliasesOptions, default = 's',
+    var inputChar: char = selectOption(options = aliasesOptions, default = 's',
         prompt = "Output", db = db)
     var output: UserInput = emptyLimitedString(capacity = maxInputLength)
     try:
