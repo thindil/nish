@@ -135,7 +135,7 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     let id: UserInput = readInput(db = db)
     if id == "exit":
       return showError(message = "Editing the theme cancelled.", db = db)
-    let color: Color = try:
+    var color: Color = try:
         cols[parseInt(s = $id) - 1]
       except:
         return showError(message = "Editing the theme cancelled, invalid color number: '" &
@@ -200,6 +200,11 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     showOutput(message = "Select the color should be in italic for or not. Not all terminal emulators support the option.", db = db)
     color.italic = confirm(prompt = "Italic", db = db)
     # Save the color to the database
+    try:
+      db.update(obj = color)
+    except:
+      return showError(message = "Can't save the edits of the theme to database. Reason: ",
+          e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
