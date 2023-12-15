@@ -209,7 +209,7 @@ proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
       except IOError:
         'y'
     try:
-      stderr.writeLine(x = "")
+      stderr.writeLine(x = $inputChar)
     except IOError:
       discard
     return inputChar in {'y', 'Y'}
