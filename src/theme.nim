@@ -155,7 +155,7 @@ proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
     Color(name: name, cValue: cValue, description: description, bold: bold,
         underline: underline, italic: italic)
 
-let colors*: array[26, Color] = [newColor(name = errors, cValue = red,
+var colors*: array[26, Color] = [newColor(name = errors, cValue = red,
     description = "Used to show error messages"), newColor(name = default,
     cValue = default, description = "The default color of the shell's output"),
     newColor(name = headers, cValue = yellow,

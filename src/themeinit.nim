@@ -222,15 +222,22 @@ proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 0
     db != nil
   body:
-    var colorName: string = ""
+    var resetAll: bool = false
     if arguments.len > 7 and arguments[6 .. ^1] == "all":
-      colorName = "all"
+      resetAll = true
     # Reset the whole theme
-    if colorName == "all":
-      echo "Reset all"
+    if resetAll:
+      try:
+        db.update(objs = colors)
+      except:
+        return showError(message = "Can't reset the whole theme. Reason: ",
+            e = getCurrentException(), db = db)
+      showOutput(message = "The shell's theme reseted to its default values.",
+          color = success, db = db)
     # Reset the selected color
     else:
       echo "Reset color"
+    return QuitSuccess.ResultCode
 
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
     ], tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect,
