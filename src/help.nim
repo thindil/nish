@@ -628,7 +628,7 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     # Create table help in the shell's database
     try:
       db.createTables(obj = newHelpEntry())
-    except DbError, CapacityError, ValueError:
+    except:
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException(), db = db)
     return readHelpFromFile(db = db)

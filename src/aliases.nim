@@ -835,7 +835,7 @@ proc createAliasesDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newAlias())
-    except DBError, ValueError, CapacityError:
+    except:
       return showError(message = "Can't create 'aliases' table. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode

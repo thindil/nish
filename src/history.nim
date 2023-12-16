@@ -71,7 +71,7 @@ proc historyLength*(db): HistoryRange {.sideEffect, raises: [], tags: [
   body:
     try:
       return db.count(T = HistoryEntry)
-    except DbError, ValueError:
+    except:
       showError(message = "Can't get the length of the shell's commands history. Reason: ",
           e = getCurrentException(), db = db)
       return HistoryRange.low
