@@ -89,6 +89,50 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
+proc askForColor(db; action: string): Color =
+  result = newColor()
+  showOutput(message = "The name of the color. Select its Id from the list.", db = db)
+  var
+    table: TerminalTable = TerminalTable()
+    cols: seq[Color] = @[newColor()]
+  try:
+    db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
+        objs = cols)
+    var
+      rowIndex: Natural = 0
+      row: array[4, string] = ["", "", "", ""]
+    for index, color in cols:
+      row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
+          db = db, name = ids)) & style(ss = color.name, style = getColor(
+          db = db,
+          name = values))
+      rowIndex.inc
+      if rowIndex == 4:
+        table.add(parts = row)
+        row = ["", "", "", ""]
+        rowIndex = 0
+    table.add(parts = row)
+  except:
+    showError(message = "Can't show the shell's theme's colors. Reason: ",
+        e = getCurrentException(), db = db)
+    return newColor()
+  try:
+    table.echoTable
+  except:
+    showError(message = "Can't show the list of shell's theme's colors. Reason: ",
+        e = getCurrentException(), db = db)
+    return newColor()
+  showOutput(message = "Color number: ", newLine = false, db = db)
+  let id: UserInput = readInput(db = db)
+  if id == "exit":
+    showError(message = action & " cancelled.", db = db)
+    return newColor()
+  try:
+    return cols[parseInt(s = $id) - 1]
+  except:
+    discard showError(message = action & " cancelled, invalid color number: '" & id & "'", db = db)
+    return newColor()
+
 proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Set the value for the theme's color
@@ -102,44 +146,9 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     # Select the color to edit
     showOutput(message = "You can cancel editing a color at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     showFormHeader(message = "(1/5) Name:", db = db)
-    showOutput(message = "The name of the color. Select its Id from the list.", db = db)
-    var
-      table: TerminalTable = TerminalTable()
-      cols: seq[Color] = @[newColor()]
-    try:
-      db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
-          objs = cols)
-      var
-        rowIndex: Natural = 0
-        row: array[4, string] = ["", "", "", ""]
-      for index, color in cols:
-        row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
-            db = db, name = ids)) & style(ss = color.name, style = getColor(
-            db = db,
-            name = values))
-        rowIndex.inc
-        if rowIndex == 4:
-          table.add(parts = row)
-          row = ["", "", "", ""]
-          rowIndex = 0
-      table.add(parts = row)
-    except:
-      return showError(message = "Can't show the shell's theme's colors. Reason: ",
-          e = getCurrentException(), db = db)
-    try:
-      table.echoTable
-    except:
-      return showError(message = "Can't show the list of shell's theme's colors. Reason: ",
-          e = getCurrentException(), db = db)
-    showOutput(message = "Color number: ", newLine = false, db = db)
-    let id: UserInput = readInput(db = db)
-    if id == "exit":
-      return showError(message = "Editing the theme cancelled.", db = db)
-    var color: Color = try:
-        cols[parseInt(s = $id) - 1]
-      except:
-        return showError(message = "Editing the theme cancelled, invalid color number: '" &
-            id & "'", db = db)
+    var color = askForColor(db = db, action = "Editing the theme")
+    if color.description.len == 0:
+      return QuitFailure.ResultCode
     showOutput(message = "Current values for the color ", db = db,
         newLine = false)
     showOutput(message = $color.name, db = db, newLine = false, color = ids)
@@ -246,44 +255,9 @@ proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
           color = success, db = db)
     # Reset the selected color
     else:
-      showOutput(message = "The name of the color. Select its Id from the list.", db = db)
-      var
-        table: TerminalTable = TerminalTable()
-        cols: seq[Color] = @[newColor()]
-      try:
-        db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
-            objs = cols)
-        var
-          rowIndex: Natural = 0
-          row: array[4, string] = ["", "", "", ""]
-        for index, color in cols:
-          row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
-              db = db, name = ids)) & style(ss = color.name, style = getColor(
-              db = db,
-              name = values))
-          rowIndex.inc
-          if rowIndex == 4:
-            table.add(parts = row)
-            row = ["", "", "", ""]
-            rowIndex = 0
-        table.add(parts = row)
-      except:
-        return showError(message = "Can't show the shell's theme's colors. Reason: ",
-            e = getCurrentException(), db = db)
-      try:
-        table.echoTable
-      except:
-        return showError(message = "Can't show the list of shell's theme's colors. Reason: ",
-            e = getCurrentException(), db = db)
-      showOutput(message = "Color number: ", newLine = false, db = db)
-      let id: UserInput = readInput(db = db)
-      if id == "exit":
-        return showError(message = "Reseting the color cancelled.", db = db)
-      var color: Color = try:
-          cols[parseInt(s = $id) - 1]
-        except:
-          return showError(message = "Reseting the color cancelled, invalid color number: '" &
-              id & "'", db = db)
+      var color = askForColor(db = db, action = "Reseting the color")
+      if color.description.len == 0:
+        return QuitFailure.ResultCode
       for col in colors:
         if col.name == color.name:
           color.cValue = col.cValue
@@ -296,8 +270,8 @@ proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
       except:
         return showError(message = "Can't update the shell's theme's color. Reason: ",
             e = getCurrentException(), db = db)
-      showOutput(message = "The shell's theme color '" & $color.name & "' reseted to its default value.",
-          color = success, db = db)
+      showOutput(message = "The shell's theme color '" & $color.name &
+          "' reseted to its default value.", color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
