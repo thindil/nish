@@ -228,7 +228,17 @@ proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
     # Reset the whole theme
     if resetAll:
       try:
-        db.update(objs = colors)
+        var cols: seq[Color] = @[newColor()]
+        db.selectAll(objs = cols)
+        for color in colors:
+          for index, col in cols.mpairs:
+            if col.name == color.name:
+              cols[index].cValue = color.cValue
+              cols[index].bold = color.bold
+              cols[index].underline = color.underline
+              cols[index].italic = color.italic
+              break
+        db.update(objs = cols)
       except:
         return showError(message = "Can't reset the whole theme. Reason: ",
             e = getCurrentException(), db = db)
