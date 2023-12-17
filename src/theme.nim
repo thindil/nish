@@ -35,7 +35,7 @@ import norm/[model, pragmas, sqlite]
 import logger, lstring, resultcode
 
 type
-  ColorName = enum
+  ColorName* = enum
     ## Used to set the colors' value
     black, red, green, yellow, blue, magenta, cyan, white, default
   ThemeColor* = enum
