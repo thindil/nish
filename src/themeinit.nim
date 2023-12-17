@@ -323,7 +323,7 @@ proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: []
           return showHelpList(command = "theme",
               subcommands = themeCommands, db = db)
         # Show the colors declared in the shell's theme
-        if arguments.startsWith(prefix = "show"):
+        if arguments.startsWith(prefix = "list"):
           return showTheme(db = db)
         # Set the new values for the theme's colors
         if arguments.startsWith(prefix = "edit"):
