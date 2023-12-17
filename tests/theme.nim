@@ -1,6 +1,6 @@
 import ../src/[db, resultcode, theme]
 import utils/utils
-import unittest2
+import unittest2, termstyle
 
 suite "Unit tests for theme module":
 
@@ -35,6 +35,14 @@ suite "Unit tests for theme module":
   test "Converting ThemeColor to dbValue":
     check:
       to(errors.dbValue, ThemeColor) == errors
+
+  test "Showing a theme's error message":
+    var e = newException(exceptn = CatchableError, message = "Test error")
+    showThemeError("test error", e)
+
+  test "Getting the selected color":
+    check:
+      getColor(db, default) == termClear
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
