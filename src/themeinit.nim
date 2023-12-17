@@ -289,9 +289,8 @@ proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
           "' reseted to its default value.", color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
-    ], tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect,
-        RootEffect],
+proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect, RootEffect],
     contractual.} =
   ## Initialize the shell's theme. Set help related to the theme.
   ##
