@@ -332,6 +332,9 @@ works only in `content` setting.
   possible to set the precision of the suggestions with the shell's option. The
   feature can be disabled either.
 * Setting the terminal title, can be enabled or disabled in the shell's options.
+* Theming system. It is possible to set the colors and style, like use
+  underline, bold or italic font (if the terminal emulator supports it) for
+  various of the shell's outputs (errors, help entries, etc.).
 
 ### How to install
 
