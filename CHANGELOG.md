@@ -14,6 +14,7 @@ of the shell.
   by the shell
 - Loading shells' profiles on Unix systems
 - Creating the Unix man page for the shell
+- Ability to set the shell's output's colors as the shell's theme system.
 
 ### Changed
 - Updated the shell's help entries
