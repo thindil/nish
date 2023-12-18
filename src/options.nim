@@ -205,9 +205,8 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     try:
       let color: string = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "Name", style = color), style(ss = "Value",
-          style = color), style(ss = "Default", style = color), style(
-          ss = "Type", style = color), style(ss = "Description",
-          style = color)])
+          style = color), style(ss = "Type", style = color), style(
+          ss = "Description", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
       return showError(message = "Can't show options list. Reason: ",
           e = getCurrentException(), db = db)
@@ -218,11 +217,13 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           objs = options)
       let color: string = getColor(db = db, name = default)
       for option in options:
+        var value: string = option.value
+        if value != option.defaultValue:
+          value &= " (changed)"
         table.add(parts = [style(ss = option.option, style = getColor(db = db,
-            name = ids)), style(ss = option.value, style = getColor(db = db,
-            name = values)), style(ss = option.defaultValue, style = color),
-            style(ss = $option.valueType, style = color), style(ss =
-            option.description, style = color)])
+            name = ids)), style(ss = value, style = getColor(db = db,
+            name = values)), style(ss = $option.valueType, style = color),
+            style(ss = option.description, style = color)])
     except:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException(), db = db)
