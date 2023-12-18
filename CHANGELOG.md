@@ -16,6 +16,7 @@ of the shell.
 - Creating the Unix man page for the shell
 
 ### Changed
+- Updated the shell's help entries
 - Updated look of list of available subcommands. Now there is more colors.
 
 ### Fixed
