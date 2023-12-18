@@ -216,11 +216,23 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           objs = options)
       let color: string = getColor(db = db, name = default)
       for option in options:
-        var value: string = option.value
-        if value != option.defaultValue:
-          value &= " (changed)"
+        var
+          value: string = option.value
+        let suffix: string = (if value ==
+            option.defaultValue: "" else: " (changed)")
+        case option.valueType
+        of boolean:
+          if value == "true":
+            value = "yes"
+          else:
+            value = "no"
+        of historysort:
+          if value == "recentamount":
+            value = "recent and amount"
+        else:
+          discard
         table.add(parts = [style(ss = option.option, style = getColor(db = db,
-            name = ids)), style(ss = value, style = getColor(db = db,
+            name = ids)), style(ss = value & suffix, style = getColor(db = db,
             name = values)), style(ss = option.description, style = color)])
     except:
       return showError(message = "Can't show the shell's options. Reason: ",
