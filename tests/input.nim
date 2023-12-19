@@ -58,3 +58,13 @@ suite "Unit tests for input module":
     check:
       inputString == "my texta"
       cursorPosition == 8
+
+  test "Asking user for a name from the list":
+    when not defined(testInput):
+      skip()
+    else:
+      import theme
+      var color = newColor()
+      check:
+        askForName(db, "Testing", "theme", "color", color) != newColor()
+

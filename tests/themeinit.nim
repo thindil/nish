@@ -18,12 +18,5 @@ suite "Unit tests for themeinit module":
     check:
       showTheme(db) == QuitSuccess
 
-  test "Asking user for a color":
-    when not defined(testInput):
-      skip()
-    else:
-      check:
-        askForColor(db, "Testing") != newColor()
-
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
