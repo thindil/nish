@@ -305,17 +305,18 @@ proc getArguments*(userInput: var OptParser;
     except CapacityError:
       return
 
-proc askForName*[T](db; action, tableName, namesType: string; name: var T) {.sideEffect, raises: [], tags: [
-    ReadDbEffect, TimeEffect, ReadIOEffect, WriteIOEffect, RootEffect],
-    contractual.} =
-  ## Ask the user for the shell's theme color and returns its value
+proc askForName*[T](db; action, tableName, namesType: string; name: var T) {.sideEffect, raises: [], tags: [ ReadDbEffect, TimeEffect, ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
+  ## Ask the user for the name of the type and returns its value
   ##
-  ## * db     - the connection to the shell's database
-  ## * action - the name of the action which will be performed, used to show
-  ##            error messages
+  ## * db        - the connection to the shell's database
+  ## * action    - the name of the action which will be performed, used to show
+  ##               error messages
+  ## * tableName - the name of the table from which the names will be get
+  ## * namesType - the name of types, like "color", "option", etc.
+  ## * name      - the value selected by the user from the list
   ##
-  ## Returns the selected shell's theme's color's value or empty color if there
-  ## was an error or the user cancelled the selection.
+  ## Returns the selected type value or empty value if there was an error or
+  ## the user cancelled the selection.
   require:
     db != nil
     action.len > 0
