@@ -156,8 +156,9 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
     except CapacityError:
       showError(message = "Entered input is too long.", e = getCurrentException(), db = db)
 
-proc readInput*(maxLength: MaxInputLength = maxInputLength; db): UserInput {.sideEffect,
-    raises: [], tags: [WriteIOEffect, ReadIOEffect, TimeEffect, RootEffect],
+proc readInput*(maxLength: MaxInputLength = maxInputLength;
+    db): UserInput {.sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect,
+        TimeEffect, RootEffect],
     contractual.} =
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
@@ -228,7 +229,8 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength; db): UserInput {.sid
             if inputChar == '3':
               if getch() == '~':
                 stdout.cursorBackward(count = cursorPosition)
-                stdout.write(s = repeat(c = ' ', count = runeLen(s = $resultString)))
+                stdout.write(s = repeat(c = ' ', count = runeLen(
+                    s = $resultString)))
                 stdout.cursorBackward(count = runeLen(s = $resultString))
                 cursorPosition.inc
                 deleteChar(inputString = resultString,
@@ -305,7 +307,9 @@ proc getArguments*(userInput: var OptParser;
     except CapacityError:
       return
 
-proc askForName*[T](db; action, tableName, namesType: string; name: var T) {.sideEffect, raises: [], tags: [ ReadDbEffect, TimeEffect, ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
+proc askForName*[T](db; action, tableName, namesType: string;
+    name: var T) {.sideEffect, raises: [], tags: [ReadDbEffect, TimeEffect,
+    ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Ask the user for the name of the type and returns its value
   ##
   ## * db        - the connection to the shell's database
@@ -321,7 +325,8 @@ proc askForName*[T](db; action, tableName, namesType: string; name: var T) {.sid
     db != nil
     action.len > 0
   body:
-    showOutput(message = "The name of the " & namesType & ". Select its Id from the list.", db = db)
+    showOutput(message = "The name of the " & namesType &
+        ". Select its Id from the list.", db = db)
     var
       table: TerminalTable = TerminalTable()
       names: seq[T] = @[name]
