@@ -2,6 +2,8 @@ import std/parseopt
 import utils/utils
 import ../src/[constants, input, lstring]
 import unittest2
+when defined(testInput):
+  import ../src/theme
 
 suite "Unit tests for input module":
 
@@ -23,7 +25,7 @@ suite "Unit tests for input module":
     else:
       echo "exit"
       check:
-        readInput() == initLimitedString(capacity = maxInputLength, text = "exit")
+        readInput(db = db) == initLimitedString(capacity = maxInputLength, text = "exit")
 
   test "Reading a character from the user's input":
     checkpoint "Reading a lowercase character"
@@ -35,7 +37,8 @@ suite "Unit tests for input module":
 
   test "Deleting a character":
     var
-      inputString = initLimitedString(capacity = maxInputLength, text = "my text")
+      inputString = initLimitedString(capacity = maxInputLength,
+          text = "my text")
       cursorPosition: Natural = 1
     deleteChar(inputString, cursorPosition, db)
     check:
@@ -52,7 +55,8 @@ suite "Unit tests for input module":
 
   test "Updating the user's input":
     var
-      inputString = initLimitedString(capacity = maxInputLength, text = "my text")
+      inputString = initLimitedString(capacity = maxInputLength,
+          text = "my text")
       cursorPosition: Natural = 7
     updateInput(cursorPosition, inputString, false, "a", db)
     check:
@@ -63,8 +67,8 @@ suite "Unit tests for input module":
     when not defined(testInput):
       skip()
     else:
-      import theme
       var color = newColor()
+      askForName[Color](db, action = "Testing", "theme", "color", color)
+      echo color.description
       check:
-        askForName(db, "Testing", "theme", "color", color) != newColor()
-
+        color != newColor()
