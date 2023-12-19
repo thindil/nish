@@ -89,65 +89,6 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc askForColor*(db; action: string): Color {.sideEffect, raises: [], tags: [
-    ReadDbEffect, TimeEffect, ReadIOEffect, WriteIOEffect, RootEffect],
-    contractual.} =
-  ## Ask the user for the shell's theme color and returns its value
-  ##
-  ## * db     - the connection to the shell's database
-  ## * action - the name of the action which will be performed, used to show
-  ##            error messages
-  ##
-  ## Returns the selected shell's theme's color's value or empty color if there
-  ## was an error or the user cancelled the selection.
-  require:
-    db != nil
-    action.len > 0
-  body:
-    result = newColor()
-    showOutput(message = "The name of the color. Select its Id from the list.", db = db)
-    var
-      table: TerminalTable = TerminalTable()
-      cols: seq[Color] = @[newColor()]
-    try:
-      db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
-          objs = cols)
-      var
-        rowIndex: Natural = 0
-        row: array[4, string] = ["", "", "", ""]
-      for index, color in cols:
-        row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
-            db = db, name = ids)) & style(ss = color.name, style = getColor(
-            db = db,
-            name = values))
-        rowIndex.inc
-        if rowIndex == 4:
-          table.add(parts = row)
-          row = ["", "", "", ""]
-          rowIndex = 0
-      table.add(parts = row)
-    except:
-      showError(message = "Can't show the shell's theme's colors. Reason: ",
-          e = getCurrentException(), db = db)
-      return newColor()
-    try:
-      table.echoTable
-    except:
-      showError(message = "Can't show the list of shell's theme's colors. Reason: ",
-          e = getCurrentException(), db = db)
-      return newColor()
-    showOutput(message = "Color number: ", newLine = false, db = db)
-    let id: UserInput = readInput(db = db)
-    if id == "exit":
-      showError(message = action & " cancelled.", db = db)
-      return newColor()
-    try:
-      return cols[parseInt(s = $id) - 1]
-    except:
-      discard showError(message = action &
-          " cancelled, invalid color number: '" & id & "'", db = db)
-      return newColor()
-
 proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Set the value for the theme's color
@@ -161,7 +102,9 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     # Select the color to edit
     showOutput(message = "You can cancel editing a color at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     showFormHeader(message = "(1/5) Name:", db = db)
-    var color: Color = askForColor(db = db, action = "Editing the theme")
+    var color: Color = newColor()
+    askForName[Color](db = db, action = "Editing the theme",
+        tableName = "theme", namesType = "color", name = color)
     if color.description.len == 0:
       return QuitFailure.ResultCode
     showOutput(message = "Current values for the color ", db = db,
@@ -270,7 +213,9 @@ proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
           color = success, db = db)
     # Reset the selected color
     else:
-      var color: Color = askForColor(db = db, action = "Reseting the color")
+      var color: Color = newColor()
+      askForName[Color](db = db, action = "Reseting the color",
+          tableName = "theme", namesType = "color", name = color)
       if color.description.len == 0:
         return QuitFailure.ResultCode
       for col in colors:
@@ -289,8 +234,9 @@ proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
           "' reseted to its default value.", color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect, RootEffect],
+proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
+    ], tags: [ReadDbEffect, WriteIOEffect, TimeEffect, WriteDbEffect,
+        RootEffect],
     contractual.} =
   ## Initialize the shell's theme. Set help related to the theme.
   ##

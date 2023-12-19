@@ -29,10 +29,10 @@
 # Standard library imports
 import std/[parseopt, strutils, terminal, unicode]
 # External modules imports
-import contracts, nimalyzer
+import contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import constants, lstring, output
+import constants, lstring, output, theme
 
 type MaxInputLength* = range[1..maxInputLength]
   ## Used to store maximum allowed length of the user input
@@ -304,3 +304,60 @@ proc getArguments*(userInput: var OptParser;
       result.text = strutils.strip(s = $result)
     except CapacityError:
       return
+
+proc askForName*[T](db; action, tableName, namesType: string; name: var T) {.sideEffect, raises: [], tags: [
+    ReadDbEffect, TimeEffect, ReadIOEffect, WriteIOEffect, RootEffect],
+    contractual.} =
+  ## Ask the user for the shell's theme color and returns its value
+  ##
+  ## * db     - the connection to the shell's database
+  ## * action - the name of the action which will be performed, used to show
+  ##            error messages
+  ##
+  ## Returns the selected shell's theme's color's value or empty color if there
+  ## was an error or the user cancelled the selection.
+  require:
+    db != nil
+    action.len > 0
+  body:
+    showOutput(message = "The name of the " & namesType & ". Select its Id from the list.", db = db)
+    var
+      table: TerminalTable = TerminalTable()
+      names: seq[T] = @[name]
+    try:
+      db.rawSelect(qry = "SELECT * FROM " & tableName & " ORDER BY name ASC",
+          objs = names)
+      var
+        rowIndex: Natural = 0
+        row: array[4, string] = ["", "", "", ""]
+      for index, name in names:
+        row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
+            db = db, name = ids)) & style(ss = name.name, style = getColor(
+            db = db,
+            name = values))
+        rowIndex.inc
+        if rowIndex == 4:
+          table.add(parts = row)
+          row = ["", "", "", ""]
+          rowIndex = 0
+      table.add(parts = row)
+    except:
+      showError(message = "Can't show the list of names. Reason: ",
+          e = getCurrentException(), db = db)
+      return
+    try:
+      table.echoTable
+    except:
+      showError(message = "Can't show the list of names. Reason: ",
+          e = getCurrentException(), db = db)
+      return
+    showOutput(message = namesType.capitalize() & "'s ID: ", newLine = false, db = db)
+    let id: UserInput = readInput(db = db)
+    if id == "exit":
+      showError(message = action & " cancelled.", db = db)
+      return
+    try:
+      name = names[parseInt(s = $id) - 1]
+    except:
+      discard showError(message = action &
+          " cancelled, invalid name number: '" & id & "'", db = db)
