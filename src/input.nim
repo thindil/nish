@@ -339,8 +339,13 @@ proc askForName*[T](db; action, tableName, namesType: string;
         rowIndex: Natural = 0
         row: array[4, string] = ["", "", "", ""]
       for index, name in names:
+        var itemName: string = ""
+        when names is seq[Color]:
+          itemName = $name.name
+        elif names is seq[Option]:
+          itemName = name.option
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
-            db = db, name = ids)) & style(ss = name.name, style = getColor(
+            db = db, name = ids)) & style(ss = itemName, style = getColor(
             db = db,
             name = values))
         rowIndex.inc
