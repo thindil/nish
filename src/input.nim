@@ -333,8 +333,12 @@ proc askForName*[T](db; action, tableName, namesType: string;
       table: TerminalTable = TerminalTable()
       names: seq[T] = @[name]
     try:
-      db.rawSelect(qry = "SELECT * FROM " & tableName & " ORDER BY name ASC",
-          objs = names)
+      when names is seq[Color]:
+        db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
+            objs = names)
+      elif names is seq[Option]:
+        db.rawSelect(qry = "SELECT * FROM options ORDER BY option ASC",
+            objs = names)
       var
         rowIndex: Natural = 0
         row: array[4, string] = ["", "", "", ""]
@@ -346,8 +350,7 @@ proc askForName*[T](db; action, tableName, namesType: string;
           itemName = name.option
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
             db = db, name = ids)) & style(ss = itemName, style = getColor(
-            db = db,
-            name = values))
+            db = db, name = values))
         rowIndex.inc
         if rowIndex == 4:
           table.add(parts = row)
