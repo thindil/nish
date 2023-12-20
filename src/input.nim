@@ -350,13 +350,13 @@ proc askForName*[T](db; action, tableName, namesType: string;
           rowIndex = 0
       table.add(parts = row)
     except:
-      showError(message = "Can't show the list of names. Reason: ",
+      showError(message = "Can't show the list of " & namesType & "s. Reason: ",
           e = getCurrentException(), db = db)
       return
     try:
       table.echoTable
     except:
-      showError(message = "Can't show the list of names. Reason: ",
+      showError(message = "Can't show the list of " & namesType & "s. Reason: ",
           e = getCurrentException(), db = db)
       return
     showOutput(message = namesType.capitalize() & "'s ID: ", newLine = false, db = db)
@@ -368,4 +368,4 @@ proc askForName*[T](db; action, tableName, namesType: string;
       name = names[parseInt(s = $id) - 1]
     except:
       discard showError(message = action &
-          " cancelled, invalid name number: '" & id & "'", db = db)
+          " cancelled, invalid " & namesType & "'s number: '" & id & "'", db = db)
