@@ -324,6 +324,8 @@ proc askForName*[T](db; action, tableName, namesType: string;
   require:
     db != nil
     action.len > 0
+    tableName.len > 0
+    namesType.len > 0
   body:
     showOutput(message = "The name of the " & namesType &
         ". Select its Id from the list.", db = db)
