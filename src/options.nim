@@ -30,7 +30,7 @@
 import std/[os, osproc, strutils]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
-import norm/[model, pragmas, sqlite]
+import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, help, lstring, output, resultcode, theme
 
@@ -42,25 +42,6 @@ type
     ## Used to store options names in the database.
   OptionValue* = LimitedString
     ## Used to set or get the option's values
-  ValueType* = enum
-    ## Used to set the type of option's value
-    integer, float, boolean, none, historysort, natural, text, command, header, positive
-  Option* {.tableName: "options".} = ref object of Model
-    ## Data structure for the shell's option
-    ##
-    ## * option       - the name of the option
-    ## * value        - the value of the option
-    ## * description  - the description of the option
-    ## * valueType    - the type of the option's value
-    ## * defaultValue - the default value for the option
-    ## * readOnly     - if true, the option can be only read by the user, not set
-    option*: string
-    value*: string
-    description*: string
-    valueType*: ValueType
-    defaultValue*: string
-    readOnly*: bool
-
 using
   db: DbConn # Connection to the shell's database
   optionName: OptionName # The name of option to get or set
