@@ -307,15 +307,14 @@ proc getArguments*(userInput: var OptParser;
     except CapacityError:
       return
 
-proc askForName*[T](db; action, tableName, namesType: string;
-    name: var T) {.sideEffect, raises: [], tags: [ReadDbEffect, TimeEffect,
-    ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
+proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
+    raises: [], tags: [ReadDbEffect, TimeEffect, ReadIOEffect, WriteIOEffect,
+    RootEffect], contractual.} =
   ## Ask the user for the name of the type and returns its value
   ##
   ## * db        - the connection to the shell's database
   ## * action    - the name of the action which will be performed, used to show
   ##               error messages
-  ## * tableName - the name of the table from which the names will be get
   ## * namesType - the name of types, like "color", "option", etc.
   ## * name      - the value selected by the user from the list
   ##
@@ -324,7 +323,6 @@ proc askForName*[T](db; action, tableName, namesType: string;
   require:
     db != nil
     action.len > 0
-    tableName.len > 0
     namesType.len > 0
   body:
     showOutput(message = "The name of the " & namesType &
