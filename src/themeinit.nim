@@ -104,7 +104,7 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     showFormHeader(message = "(1/5) Name:", db = db)
     var color: Color = newColor()
     askForName[Color](db = db, action = "Editing the theme",
-        tableName = "theme", namesType = "color", name = color)
+        namesType = "color", name = color)
     if color.description.len == 0:
       return QuitFailure.ResultCode
     showOutput(message = "Current values for the color ", db = db,
@@ -215,7 +215,7 @@ proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
     else:
       var color: Color = newColor()
       askForName[Color](db = db, action = "Reseting the color",
-          tableName = "theme", namesType = "color", name = color)
+          namesType = "color", name = color)
       if color.description.len == 0:
         return QuitFailure.ResultCode
       for col in colors:
