@@ -32,7 +32,7 @@ import std/[os, osproc, strutils]
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, help, lstring, output, resultcode, theme
+import commandslist, constants, help, input, lstring, output, resultcode, theme
 
 const optionsCommands: seq[string] = @["list", "set", "reset"]
   ## The list of available subcommands for command options
@@ -230,8 +230,7 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     TimeEffect, RootEffect], contractual.} =
   ## Set the selected option's value
   ##
-  ## * arguments - the user entered text with arguments for the variable, its
-  ##               name and a new value
+  ## * arguments - the user entered text with arguments for the option
   ## * db        - the connection to the shell's database
   ##
   ## Returns QuitSuccess if the variable was correctly set, otherwise QuitFailure.
@@ -239,109 +238,102 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.len > 0
     db != nil
   body:
-    let setting: seq[string] = ($arguments).split()
-    if setting.len < 2:
-      return showError(message = "Please enter name of the option and its new value.", db = db)
-    if setting.len < 3:
-      return showError(message = "Please enter a new value for the selected option.", db = db)
-    let optionName: OptionName = try:
-        initLimitedString(capacity = setting[1].len, text = setting[1])
-      except CapacityError:
-        return showError(message = "Can't get the option's name from command: '" &
-            arguments & "'.", db = db)
-    let stringValue: string = setting[2 .. ^1].join(sep = " ")
-    var value: OptionValue = try:
-        initLimitedString(capacity = stringValue.len, text = stringValue)
-      except CapacityError:
-        return showError(message = "Can't get the option's value from command: '" &
-            arguments & "'.", db = db)
-    try:
-      if not db.exists(T = Option, cond = "option=?", params = $optionName):
-        return showError(message = "Shell's option with name '" & optionName &
-          "' doesn't exists. Please use command 'options list' to see all available shell's options.", db = db)
-      var option: Option = newOption(name = $optionName)
-      db.select(obj = option, cond = "option=?", params = $optionName)
-      if option.readOnly:
-        return showError(message = "You can't set a new value for the selected option because it is read-only.", db = db)
-      # Check correctness of the option's value
-      case option.valueType
-      of integer:
-        try:
-          discard ($value).parseInt
-        except:
-          return showError(message = "Value for option '" & optionName &
-              "' should be integer type.", db = db)
-      of float:
-        try:
-          discard ($value).parseFloat
-        except:
-          return showError(message = "Value for option '" & optionName &
-              "' should be float type.", db = db)
-      of boolean:
-        try:
-          value.text = ($value).toLowerAscii
-        except CapacityError:
-          return showError(message = "Can't set a new value for option '" &
-              optionName & "'. Reason: ", e = getCurrentException(), db = db)
-        if value != "true" and value != "false":
-          return showError(message = "Value for option '" & optionName &
-              "' should be true or false (case insensitive).", db = db)
-      of historysort:
-        try:
-          value.text = ($value).toLowerAscii
-        except CapacityError:
-          return showError(message = "Can't set a new value for option '" &
-              optionName & "'. Reason: ", e = getCurrentException(), db = db)
-        if $value notin ["recent", "amount", "name", "recentamount"]:
-          return showError(message = "Value for option '" & optionName &
-              "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)", db = db)
-      of natural:
-        try:
-          if ($value).parseInt < 0:
-            return showError(message = "Value for option '" & optionName &
-                "' should be a natural integer, zero or more.", db = db)
-        except:
-          return showError(message = "Value for option '" & optionName &
-              "' should be integer type.", db = db)
-      of text:
-        discard
-      of command:
-        try:
-          let (_, exitCode) = execCmdEx(command = $value)
-          if exitCode != QuitSuccess:
-            return showError(message = "Value for option '" & optionName &
-                "' should be valid command.", db = db)
-        except:
-          return showError(message = "Can't check the existence of command '" &
-              value & "'. Reason: ", e = getCurrentException(), db = db)
-      of header:
-        try:
-          value.text = ($value).toLowerAscii
-        except CapacityError:
-          return showError(message = "Can't set a new value for option '" &
-              optionName & "'. Reason: ", e = getCurrentException(), db = db)
-        if $value notin ["unicode", "ascii", "none", "hidden"]:
-          return showError(message = "Value for option '" & optionName &
-              "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)", db = db)
-      of positive:
-        try:
-          if ($value).parseInt < 1:
-            return showError(message = "Value for option '" & optionName &
-                "' should be a positive integer, one or more.", db = db)
-        except:
-          return showError(message = "Value for option '" & optionName &
-              "' should be integer type.", db = db)
-      of none:
-        return showError(message = "Shell's option with name '" & optionName &
-          "' doesn't exists. Please use command 'options list' to see all available shell's options.", db = db)
-      # Set the option
-      setOption(optionName = optionName, value = value, db = db)
-      showOutput(message = "Value for option '" & optionName &
-          "' was set to '" & value & "'", color = success, db = db);
-      return QuitSuccess.ResultCode
-    except:
-      return showError(message = "Can't set the value for the option '" &
-          optionName & "'. Reason: ", e = getCurrentException(), db = db)
+    showOutput(message = "You can cancel editing an option at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
+    showFormHeader(message = "(1/2) Name:", db = db)
+    var option: Option = newOption()
+    askForName[Option](db = db, action = "Editing the option",
+          namesType = "option", name = option)
+    showFormHeader(message = "(2/2) Value:", db = db)
+    showOutput(message = "Value: ", newLine = false, db = db)
+    var value: OptionValue = emptyLimitedString(capacity = maxInputLength)
+    while value.len == 0:
+      value = readInput(maxLength = maxInputLength, db = db)
+      if value.len == 0:
+        showError(message = "Please enter a value for the option.", db = db)
+      if value.len == 0:
+        showOutput(message = "Value: ", newLine = false, db = db)
+    if value == "exit":
+      return showError(message = "Editing the option cancelled.", db = db)
+    return QuitSuccess.ResultCode
+#      # Check correctness of the option's value
+#      case option.valueType
+#      of integer:
+#        try:
+#          discard ($value).parseInt
+#        except:
+#          return showError(message = "Value for option '" & optionName &
+#              "' should be integer type.", db = db)
+#      of float:
+#        try:
+#          discard ($value).parseFloat
+#        except:
+#          return showError(message = "Value for option '" & optionName &
+#              "' should be float type.", db = db)
+#      of boolean:
+#        try:
+#          value.text = ($value).toLowerAscii
+#        except CapacityError:
+#          return showError(message = "Can't set a new value for option '" &
+#              optionName & "'. Reason: ", e = getCurrentException(), db = db)
+#        if value != "true" and value != "false":
+#          return showError(message = "Value for option '" & optionName &
+#              "' should be true or false (case insensitive).", db = db)
+#      of historysort:
+#        try:
+#          value.text = ($value).toLowerAscii
+#        except CapacityError:
+#          return showError(message = "Can't set a new value for option '" &
+#              optionName & "'. Reason: ", e = getCurrentException(), db = db)
+#        if $value notin ["recent", "amount", "name", "recentamount"]:
+#          return showError(message = "Value for option '" & optionName &
+#              "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)", db = db)
+#      of natural:
+#        try:
+#          if ($value).parseInt < 0:
+#            return showError(message = "Value for option '" & optionName &
+#                "' should be a natural integer, zero or more.", db = db)
+#        except:
+#          return showError(message = "Value for option '" & optionName &
+#              "' should be integer type.", db = db)
+#      of text:
+#        discard
+#      of command:
+#        try:
+#          let (_, exitCode) = execCmdEx(command = $value)
+#          if exitCode != QuitSuccess:
+#            return showError(message = "Value for option '" & optionName &
+#                "' should be valid command.", db = db)
+#        except:
+#          return showError(message = "Can't check the existence of command '" &
+#              value & "'. Reason: ", e = getCurrentException(), db = db)
+#      of header:
+#        try:
+#          value.text = ($value).toLowerAscii
+#        except CapacityError:
+#          return showError(message = "Can't set a new value for option '" &
+#              optionName & "'. Reason: ", e = getCurrentException(), db = db)
+#        if $value notin ["unicode", "ascii", "none", "hidden"]:
+#          return showError(message = "Value for option '" & optionName &
+#              "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)", db = db)
+#      of positive:
+#        try:
+#          if ($value).parseInt < 1:
+#            return showError(message = "Value for option '" & optionName &
+#                "' should be a positive integer, one or more.", db = db)
+#        except:
+#          return showError(message = "Value for option '" & optionName &
+#              "' should be integer type.", db = db)
+#      of none:
+#        return showError(message = "Shell's option with name '" & optionName &
+#          "' doesn't exists. Please use command 'options list' to see all available shell's options.", db = db)
+#      # Set the option
+#      setOption(optionName = optionName, value = value, db = db)
+#      showOutput(message = "Value for option '" & optionName &
+#          "' was set to '" & value & "'", color = success, db = db);
+#      return QuitSuccess.ResultCode
+#    except:
+#      return showError(message = "Can't set the value for the option '" &
+#          optionName & "'. Reason: ", e = getCurrentException(), db = db)
 
 proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
