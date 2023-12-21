@@ -335,7 +335,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
         db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
             objs = names)
       elif names is seq[Option]:
-        db.rawSelect(qry = "SELECT * FROM options ORDER BY option ASC",
+        db.rawSelect(qry = "SELECT * FROM options WHERE readonly=0 ORDER BY option ASC",
             objs = names)
       var
         rowIndex: Natural = 0
