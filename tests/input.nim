@@ -68,7 +68,7 @@ suite "Unit tests for input module":
       skip()
     else:
       var color = newColor()
-      askForName[Color](db, action = "Testing", "theme", "color", color)
+      askForName[Color](db, action = "Testing", "color", color)
       echo color.description
       check:
         color != newColor()
