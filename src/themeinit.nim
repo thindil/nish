@@ -102,6 +102,9 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
     # Select the color to edit
     showOutput(message = "You can cancel editing a color at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     showFormHeader(message = "(1/5) Name:", db = db)
+    showOutput(message = "You can get more information about each color with command ", db= db, newLine = false)
+    showOutput(message = "'theme list'", color = helpCommand, db = db, newLine = false)
+    showOutput(message = ".", db = db)
     var color: Color = newColor()
     askForName[Color](db = db, action = "Editing the theme",
         namesType = "color", name = color)
