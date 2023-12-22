@@ -240,8 +240,10 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     showOutput(message = "You can cancel editing an option at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     showFormHeader(message = "(1/2) Name:", db = db)
-    showOutput(message = "You can get more information about each option with command ", db= db, newLine = false)
-    showOutput(message = "'options list'", color = helpCommand, db = db, newLine = false)
+    showOutput(message = "You can get more information about each option with command ",
+        db = db, newLine = false)
+    showOutput(message = "'options list'", color = helpCommand, db = db,
+        newLine = false)
     showOutput(message = ".", db = db)
     var option: Option = newOption()
     askForName[Option](db = db, action = "Editing the option",
@@ -249,7 +251,19 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if option.description.len == 0:
       return QuitFailure.ResultCode
     showFormHeader(message = "(2/2) Value:", db = db)
-    showOutput(message = "Value: ", newLine = false, db = db)
+    if option.valueType in {boolean, historysort, header}:
+      showOutput(message = "Select a new value for the option ", db = db,
+          newLine = false)
+    else:
+      showOutput(message = "Enter a new value for the option ", db = db,
+          newLine = false)
+    showOutput(message = option.option, db = db, newLine = false, color = ids)
+    if option.valueType in {boolean, historysort, header}:
+      showOutput(message = " from the list.", db = db, newLine = false)
+    showOutput(message = " The current value is: ", db = db, newLine = false)
+    showOutput(message = $option.value, db = db, color = values)
+    showOutput(message = "New value: ", newLine = false, db = db,
+        color = promptColor)
     var value: OptionValue = emptyLimitedString(capacity = maxInputLength)
     while value.len == 0:
       value = readInput(maxLength = maxInputLength, db = db)
@@ -336,7 +350,8 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
               "' should be integer type.", db = db)
           value = emptyLimitedString(capacity = maxInputLength)
       if value.len == 0:
-        showOutput(message = "Value: ", newLine = false, db = db)
+        showOutput(message = "New value: ", newLine = false, db = db,
+            color = promptColor)
     # Set the option
     try:
       setOption(optionName = initLimitedString(capacity = option.option.len,
