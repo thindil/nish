@@ -358,6 +358,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
     except:
       showError(message = "Can't show the list of " & namesType & "s. Reason: ",
           e = getCurrentException(), db = db)
+      name.description = ""
       return
     try:
       table.echoTable
@@ -369,9 +370,11 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
     let id: UserInput = readInput(db = db)
     if id == "exit":
       showError(message = action & " cancelled.", db = db)
+      name.description = ""
       return
     try:
       name = names[parseInt(s = $id) - 1]
     except:
+      name.description = ""
       discard showError(message = action &
           " cancelled, invalid " & namesType & "'s number: '" & id & "'", db = db)
