@@ -27,7 +27,7 @@
 ## adding, removing, updating or showing the options.
 
 # Standard library imports
-import std/[os, osproc, strutils]
+import std/[os, osproc, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, sqlite]
@@ -262,96 +262,88 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       showOutput(message = " from the list.", db = db, newLine = false)
     showOutput(message = " The current value is: ", db = db, newLine = false)
     showOutput(message = $option.value, db = db, color = values)
-    showOutput(message = "New value: ", newLine = false, db = db,
-        color = promptColor)
     var value: OptionValue = emptyLimitedString(capacity = maxInputLength)
-    while value.len == 0:
-      value = readInput(maxLength = maxInputLength, db = db)
-      if value.len == 0:
-        showError(message = "Please enter a value for the option.", db = db)
-      if value == "exit":
+    if option.valueType in {boolean, historysort, header}:
+      let optionValues: Table[char, string] = case option.valueType
+        of boolean:
+          {'t': "true", 'f': "false", 'q': "quit"}.toTable
+        of historysort:
+          {'r': "recent", 'a': "amount", 'n': "name", 'm': "recent and amount",
+              'q': "quit"}.toTable
+        of header:
+          {'u': "unicode", 'a': "ascii", 'n': "none", 'h': "hidden",
+              'q': "quit"}.toTable
+        else:
+          {'q': "quit"}.toTable
+      var inputChar: char = selectOption(options = optionValues, default = 'q',
+          prompt = "New value", db = db)
+      try:
+        value.text = optionValues[inputChar]
+      except:
+        return showError(message = "Editing the option cancelled. Reason: ",
+            db = db, e = getCurrentException())
+      if value == "quit":
         return showError(message = "Editing the option cancelled.", db = db)
-      # Check correctness of the option's value
-      case option.valueType
-      of integer:
-        try:
-          discard ($value).parseInt
-        except:
-          showError(message = "Value for option '" & option.option &
-              "' should be integer type.", db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
-      of float:
-        try:
-          discard ($value).parseFloat
-        except:
-          showError(message = "Value for option '" & option.option &
-              "' should be float type.", db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
-      of boolean:
-        try:
-          value.text = ($value).toLowerAscii
-        except CapacityError:
-          return showError(message = "Can't set a new value for option '" &
-              option.option & "'. Reason: ", e = getCurrentException(), db = db)
-        if value != "true" and value != "false":
-          showError(message = "Value for option '" & option.option &
-              "' should be true or false (case insensitive).", db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
-      of historysort:
-        try:
-          value.text = ($value).toLowerAscii
-        except CapacityError:
-          return showError(message = "Can't set a new value for option '" &
-              option.option & "'. Reason: ", e = getCurrentException(), db = db)
-        if $value notin ["recent", "amount", "name", "recentamount"]:
-          showError(message = "Value for option '" & option.option &
-              "' should be 'recent', 'amount', 'name' or 'recentamount' (case insensitive)", db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
-      of natural:
-        try:
-          if ($value).parseInt < 0:
+    else:
+      showOutput(message = "New value: ", newLine = false, db = db,
+          color = promptColor)
+      while value.len == 0:
+        value = readInput(maxLength = maxInputLength, db = db)
+        if value.len == 0:
+          showError(message = "Please enter a value for the option.", db = db)
+        if value == "exit":
+          return showError(message = "Editing the option cancelled.", db = db)
+        # Check correctness of the option's value
+        case option.valueType
+        of integer:
+          try:
+            discard ($value).parseInt
+          except:
             showError(message = "Value for option '" & option.option &
-                "' should be a natural integer, zero or more.", db = db)
+                "' should be integer type.", db = db)
             value = emptyLimitedString(capacity = maxInputLength)
-        except:
-          showError(message = "Value for option '" & option.option &
-              "' should be integer type.", db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
-      of text, none:
-        discard
-      of command:
-        try:
-          let (_, exitCode) = execCmdEx(command = $value)
-          if exitCode != QuitSuccess:
+        of float:
+          try:
+            discard ($value).parseFloat
+          except:
             showError(message = "Value for option '" & option.option &
-                "' should be valid command.", db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
-        except:
-          return showError(message = "Can't check the existence of command '" &
-              value & "'. Reason: ", e = getCurrentException(), db = db)
-      of header:
-        try:
-          value.text = ($value).toLowerAscii
-        except CapacityError:
-          return showError(message = "Can't set a new value for option '" &
-              option.option & "'. Reason: ", e = getCurrentException(), db = db)
-        if $value notin ["unicode", "ascii", "none", "hidden"]:
-          showError(message = "Value for option '" & option.option &
-              "' should be 'unicode', 'ascii', 'none' or 'hidden' (case insensitive)", db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
-      of positive:
-        try:
-          if ($value).parseInt < 1:
-            showError(message = "Value for option '" & option.option &
-                "' should be a positive integer, one or more.", db = db)
+                "' should be float type.", db = db)
             value = emptyLimitedString(capacity = maxInputLength)
-        except:
-          showError(message = "Value for option '" & option.option &
-              "' should be integer type.", db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
-      if value.len == 0:
-        showOutput(message = "New value: ", newLine = false, db = db,
-            color = promptColor)
+        of natural:
+          try:
+            if ($value).parseInt < 0:
+              showError(message = "Value for option '" & option.option &
+                  "' should be a natural integer, zero or more.", db = db)
+              value = emptyLimitedString(capacity = maxInputLength)
+          except:
+            showError(message = "Value for option '" & option.option &
+                "' should be integer type.", db = db)
+            value = emptyLimitedString(capacity = maxInputLength)
+        of command:
+          try:
+            let (_, exitCode) = execCmdEx(command = $value)
+            if exitCode != QuitSuccess:
+              showError(message = "Value for option '" & option.option &
+                  "' should be valid command.", db = db)
+            value = emptyLimitedString(capacity = maxInputLength)
+          except:
+            return showError(message = "Can't check the existence of command '" &
+                value & "'. Reason: ", e = getCurrentException(), db = db)
+        of positive:
+          try:
+            if ($value).parseInt < 1:
+              showError(message = "Value for option '" & option.option &
+                  "' should be a positive integer, one or more.", db = db)
+              value = emptyLimitedString(capacity = maxInputLength)
+          except:
+            showError(message = "Value for option '" & option.option &
+                "' should be integer type.", db = db)
+            value = emptyLimitedString(capacity = maxInputLength)
+        else:
+          discard
+        if value.len == 0:
+          showOutput(message = "New value: ", newLine = false, db = db,
+              color = promptColor)
     # Set the option
     try:
       setOption(optionName = initLimitedString(capacity = option.option.len,
