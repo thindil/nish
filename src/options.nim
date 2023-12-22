@@ -240,9 +240,14 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     showOutput(message = "You can cancel editing an option at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     showFormHeader(message = "(1/2) Name:", db = db)
+    showOutput(message = "You can get more information about each option with command ", db= db, newLine = false)
+    showOutput(message = "'options list'", color = helpCommand, db = db, newLine = false)
+    showOutput(message = ".", db = db)
     var option: Option = newOption()
     askForName[Option](db = db, action = "Editing the option",
           namesType = "option", name = option)
+    if option.description.len == 0:
+      return QuitFailure.ResultCode
     showFormHeader(message = "(2/2) Value:", db = db)
     showOutput(message = "Value: ", newLine = false, db = db)
     var value: OptionValue = emptyLimitedString(capacity = maxInputLength)
@@ -332,15 +337,16 @@ proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           value = emptyLimitedString(capacity = maxInputLength)
       if value.len == 0:
         showOutput(message = "Value: ", newLine = false, db = db)
+    # Set the option
+    try:
+      setOption(optionName = initLimitedString(capacity = option.option.len,
+          text = option.option), value = value, db = db)
+    except CapacityError:
+      return showError(message = "Can't set the option '" & option.option &
+          "' in database. Reason: ", e = getCurrentException(), db = db)
+    showOutput(message = "Value for option '" & option.option &
+        "' was set to '" & value & "'", color = success, db = db);
     return QuitSuccess.ResultCode
-#      # Set the option
-#      setOption(optionName = optionName, value = value, db = db)
-#      showOutput(message = "Value for option '" & optionName &
-#          "' was set to '" & value & "'", color = success, db = db);
-#      return QuitSuccess.ResultCode
-#    except:
-#      return showError(message = "Can't set the value for the option '" &
-#          optionName & "'. Reason: ", e = getCurrentException(), db = db)
 
 proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
