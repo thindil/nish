@@ -174,7 +174,8 @@ proc selectOption*(options: Table[char, string];
     for key, value in options:
       showOutput(message = $key & ") " & value, db = db)
       keysList.add(y = key)
-    showOutput(message = prompt & " (" & keysList.join(sep = "/") & "): ", db = db)
+    showOutput(message = prompt & " (" & keysList.join(sep = "/") & "): ",
+        db = db, color = promptColor)
     result = try:
         getch()
       except IOError:
