@@ -366,7 +366,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       showError(message = "Can't show the list of " & namesType & "s. Reason: ",
           e = getCurrentException(), db = db)
       return
-    showOutput(message = namesType.capitalize() & "'s ID: ", newLine = false, db = db)
+    showOutput(message = namesType.capitalize() & "'s ID: ", newLine = false,
+        db = db, color = promptColor)
     let id: UserInput = readInput(db = db)
     if id == "exit":
       showError(message = action & " cancelled.", db = db)
