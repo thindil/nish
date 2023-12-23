@@ -225,17 +225,15 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc setOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Set the selected option's value
   ##
-  ## * arguments - the user entered text with arguments for the option
   ## * db        - the connection to the shell's database
   ##
   ## Returns QuitSuccess if the variable was correctly set, otherwise QuitFailure.
   require:
-    arguments.len > 0
     db != nil
   body:
     showOutput(message = "You can cancel editing an option at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
@@ -499,9 +497,11 @@ proc initOptions*(commands: ref CommandsList; db) {.sideEffect,
         # Show the list of available options
         if arguments == "list":
           return showOptions(db = db)
+        # Set the selected option
         if arguments.startsWith(prefix = "set"):
-          result = setOptions(arguments = arguments, db = db)
+          result = setOptions(db = db)
           return
+        # Reset the selected option or all options to their default values
         if arguments.startsWith(prefix = "reset"):
           result = resetOptions(arguments = arguments, db = db)
           return
