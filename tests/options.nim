@@ -52,8 +52,8 @@ suite "Unit tests for options module":
 
   test "Resetting the shell's options":
     check:
-      resetOptions(initLimitedString(capacity = 19,
-          text = "reset historyLength"), db) == QuitSuccess
+      resetOptions(initLimitedString(capacity = 9,
+          text = "reset all"), db) == QuitSuccess
       getOption(initLimitedString(capacity = 13, text = "historyLength"),
           db) == "500"
 
