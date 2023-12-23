@@ -18,10 +18,13 @@ of the shell.
 
 ### Changed
 - Updated the shell's help entries
-- Updated look of list of available subcommands. Now there is more colors.
+- Updated look of list of available subcommands. Now there are more colors.
 - Redesigned the look of the output of command `options list`. Removed
   information about types and default values for options and made information
   about their values more human-friendly
+- **BREAKING**: Redesigned the command `options set`. Instead of setting the
+  name and value of the option to set by its arguments, the command is now a
+  form similar to setting an alias or a variable.
 
 ### Fixed
 - Cross-compiling the shell for Arm
