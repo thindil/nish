@@ -356,11 +356,11 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
 proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
-  ## Reset the selected option's value to default value. If name of the option
-  ## is set to "all", reset all options to their default values
+  ## Reset the selected option's value to default value. If the argument is set
+  ## to "all", reset all options to their default values
   ##
-  ## * arguments - the user entered text with arguments for the command, its
-  ##               name or all
+  ## * arguments - the user entered text with arguments for the command, reset
+  ##               or reset all
   ## * db        - the connection to the shell's database
   ##
   ## Returns QuitSuccess if the option(s) correctly reseted, otherwise QuitFailure.
@@ -368,11 +368,8 @@ proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.len > 0
     db != nil
   body:
-    if arguments.len < 7:
-      return showError(message = "Please enter name of the option to reset or 'all' to reset all options.", db = db)
-    let optionName: OptionName = arguments[6 .. ^1]
     # Reset all options
-    if optionName == "all":
+    if arguments.len > 7 and arguments[6 .. ^1] == "all":
       try:
         db.exec(query = sql(query = "UPDATE options SET value=defaultvalue WHERE readonly=0"))
         showOutput(message = "All shell's options are reseted to their default values.", db = db)
@@ -381,22 +378,20 @@ proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
             e = getCurrentException(), db = db)
     # Reset the selected option
     else:
+      var option: Option = newOption()
+      showOutput(message = "You can cancel reseting an option at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
+      askForName[Option](db = db, action = "Reseting the option",
+            namesType = "option", name = option)
+      if option.description.len == 0:
+        return QuitFailure.ResultCode
+      option.value = option.defaultValue
       try:
-        if not db.exists(T = Option, cond = "option=?", params = $optionName):
-          return showError(message = "Shell's option with name '" & optionName &
-            "' doesn't exists. Please use command 'options list' to see all available shell's options.", db = db)
-        var option: Option = newOption(name = $optionName)
-        db.select(obj = option, cond = "option=?", params = $optionName)
-        if option.readOnly:
-          return showError(message = "You can't reset option '" & optionName &
-              "' because it is read-only option.", db = db)
-        option.value = option.defaultValue
         db.update(obj = option)
-        showOutput(message = "The shell's option '" & optionName &
-            "' reseted to its default value.", color = success, db = db)
       except:
-        return showError(message = "Can't reset option '" & optionName &
+        return showError(message = "Can't reset option '" & option.option &
             "' to its default value. Reason: ", e = getCurrentException(), db = db)
+      showOutput(message = "The shell's option '" & option.option &
+          "' reseted to its default value.", color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc updateOptionsDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
