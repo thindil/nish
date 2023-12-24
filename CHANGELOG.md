@@ -25,6 +25,10 @@ of the shell.
 - **BREAKING**: Redesigned the command `options set`. Instead of setting the
   name and value of the option to set by its arguments, the command is now a
   form similar to setting an alias or a variable.
+- **BREAKING**: Redesigned the command `options reset`. Same as above, instead of
+  setting the name of the option to reset by its argument, the command will
+  ask for the name after executing it. Resetting of all of options is done in
+  the same way as it was.
 
 ### Fixed
 - Cross-compiling the shell for Arm
