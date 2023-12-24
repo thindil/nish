@@ -73,7 +73,7 @@ proc startLogging*() {.sideEffect, raises: [], tags: [WriteIOEffect,
     when defined(debug):
       try:
         logger = newFileLogger(fileName = "nish.log",
-            fmtStr = "[$time] - $levelname: ")
+            fmtStr = "[$datetime] - $levelname: ")
       except Exception as e:
         {.ruleOff: "namedParams".}
         try:
