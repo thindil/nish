@@ -80,4 +80,5 @@ jobs:
           pkg install -y git nimble
         run: |
           export PATH=$PATH:$HOME/.nimble/bin:/usr/local/nim/bin
+          git config --global --add safe.directory /home/runner/work/nish/nish
           nimble -y release
