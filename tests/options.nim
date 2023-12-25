@@ -65,17 +65,17 @@ suite "Unit tests for options module":
     check:
       newOption(name = "newOpt").option == "newOpt"
 
-  test "Getting the type of the database field for ValueType":
+  test "Getting the type of the database field for OptionValType":
     check:
-      dbType(ValueType) == "TEXT"
+      dbType(OptionValType) == "TEXT"
 
-  test "Converting dbValue to ValueType":
+  test "Converting dbValue to OptionValType":
     check:
       dbValue(text).s == "text"
 
-  test "Converting ValueType to dbValue":
+  test "Converting OptionValType to dbValue":
     check:
-      to(text.dbValue, ValueType) == text
+      to(text.dbValue, OptionValType) == text
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
