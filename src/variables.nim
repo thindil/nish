@@ -46,6 +46,9 @@ const
 type
   VariableName = LimitedString
     ## Used to store variables names in the database.
+  VariableValType = enum
+    ## Used to set the type of variable's value
+    path, text, number
   Variable* {.tableName: "variables".} = ref object of Model
     ## Data structure for the shell's environment variable
     ##
@@ -58,11 +61,45 @@ type
     path: string
     recursive: bool
     value: string
+    varType: VariableValType
     description: string
 
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
+
+proc dbType*(T: typedesc[VariableValType]): string {.raises: [], tags: [],
+    contractual.} =
+  ## Set the type of field in the database
+  ##
+  ## * T - the type for which the field will be set
+  ##
+  ## Returns the type of the field in the database
+  body:
+    "TEXT"
+
+proc dbValue*(val: VariableValType): DbValue {.raises: [], tags: [], contractual.} =
+  ## Convert the type of the variable's value to database field
+  ##
+  ## * val - the value to convert
+  ##
+  ## Returns the converted val parameter
+  body:
+    dbValue(v = $val)
+
+proc to*(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [],
+    contractual.} =
+  ## Convert the value from the database to enumeration
+  ##
+  ## * dbVal - the value to convert
+  ## * T     - the type to which the value will be converted
+  ##
+  ## Returns the converted dbVal parameter
+  body:
+    try:
+      parseEnum[VariableValType](s = dbVal.s)
+    except:
+      text
 
 proc buildQuery*(directory: DirectoryPath; fields: string = "";
     where: string = ""): string {.sideEffect, raises: [], tags: [ReadDbEffect],
