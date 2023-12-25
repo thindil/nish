@@ -62,7 +62,7 @@ type
     content*: string
     plugin*: string
     `template`*: bool
-  ValueType* = enum
+  OptionValType* = enum
     ## Used to set the type of option's value
     integer, float, boolean, none, historysort, natural, text, command, header, positive
   Option* {.tableName: "options".} = ref object of Model
@@ -77,7 +77,7 @@ type
     option*: string
     value*: string
     description*: string
-    valueType*: ValueType
+    valueType*: OptionValType
     defaultValue*: string
     readOnly*: bool
   UserInput* = LimitedString
