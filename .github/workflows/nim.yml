@@ -64,7 +64,7 @@ jobs:
       run: nimble -y release
 
   build_freebsd:
-    #needs: tests
+    needs: tests
     runs-on: ubuntu-latest
 
     steps:
