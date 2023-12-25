@@ -47,7 +47,7 @@ using
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
-proc dbType*(T: typedesc[ValueType]): string {.raises: [], tags: [],
+proc dbType*(T: typedesc[OptionValType]): string {.raises: [], tags: [],
     contractual.} =
   ## Set the type of field in the database
   ##
@@ -57,7 +57,7 @@ proc dbType*(T: typedesc[ValueType]): string {.raises: [], tags: [],
   body:
     "TEXT"
 
-proc dbValue*(val: ValueType): DbValue {.raises: [], tags: [], contractual.} =
+proc dbValue*(val: OptionValType): DbValue {.raises: [], tags: [], contractual.} =
   ## Convert the type of the option's value to database field
   ##
   ## * val - the value to convert
@@ -66,7 +66,7 @@ proc dbValue*(val: ValueType): DbValue {.raises: [], tags: [], contractual.} =
   body:
     dbValue(v = $val)
 
-proc to*(dbVal: DbValue, T: typedesc[ValueType]): T {.raises: [], tags: [],
+proc to*(dbVal: DbValue, T: typedesc[OptionValType]): T {.raises: [], tags: [],
     contractual.} =
   ## Convert the value from the database to enumeration
   ##
@@ -76,7 +76,7 @@ proc to*(dbVal: DbValue, T: typedesc[ValueType]): T {.raises: [], tags: [],
   ## Returns the converted dbVal parameter
   body:
     try:
-      parseEnum[ValueType](s = dbVal.s)
+      parseEnum[OptionValType](s = dbVal.s)
     except:
       none
 
@@ -116,7 +116,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
       result = defaultValue
 
 proc newOption*(name: string = ""; value: string = ""; description: string = "";
-    valueType: ValueType = none; defaultValue: string = "";
+    valueType: OptionValType = none; defaultValue: string = "";
     readOnly: bool = false): Option {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's option.
   ##
@@ -134,7 +134,7 @@ proc newOption*(name: string = ""; value: string = ""; description: string = "";
 
 proc setOption*(optionName; value: OptionValue = emptyLimitedString(
     capacity = maxInputLength); description: UserInput = emptyLimitedString(
-    capacity = maxInputLength); valueType: ValueType = none; db;
+    capacity = maxInputLength); valueType: OptionValType = none; db;
     readOnly: BooleanInt = 0) {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
