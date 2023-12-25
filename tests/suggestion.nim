@@ -3,7 +3,7 @@ import ../src/[commandslist, lstring, suggestion]
 import utils/utils
 import unittest2
 
-suite "Unit tests for aliases module":
+suite "Unit tests for suggestion module":
 
   checkpoint "Initializing the tests"
   let db = initDb("test14.db")
