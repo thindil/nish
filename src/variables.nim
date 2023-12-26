@@ -28,7 +28,7 @@
 ## the standard environment variables.
 
 # Standard library imports
-import std/[os, strutils]
+import std/[os, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -39,9 +39,11 @@ import commandslist, constants, databaseid, directorypath, help, input, lstring,
 const
   variableNameLength*: Positive = maxNameLength
     ## The maximum length of the shell's environment variable name
-
   variablesCommands: seq[string] = @["list", "delete", "add", "edit", "show"]
     ## The list of available subcommands for command variable
+  variablesOptions: Table[char, string] = {'p': "path", 't': "text",
+      'n': "number", 'q': "quit"}.toTable
+    ## The list of available options when setting the type of a variable's value
 
 type
   VariableName = LimitedString
@@ -389,7 +391,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
   body:
     showOutput(message = "You can cancel adding a new variable at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     # Set the name for the variable
-    showFormHeader(message = "(1/5) Name", db = db)
+    showFormHeader(message = "(1/6) Name", db = db)
     showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:", db = db)
     var
       variable: Variable = newVariable()
@@ -411,7 +413,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.name = $name
     # Set the description for the variable
-    showFormHeader(message = "(2/5) Description", db = db)
+    showFormHeader(message = "(2/6) Description", db = db)
     showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ", db = db)
     showOutput(message = "Description: ", newLine = false, db = db)
     let description: UserInput = readInput(db = db)
@@ -419,7 +421,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.description = $description
     # Set the working directory for the variable
-    showFormHeader(message = "(3/5) Working directory", db = db)
+    showFormHeader(message = "(3/6) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ", db = db)
     showOutput(message = "Path: ", newLine = false, db = db)
     var path: DirectoryPath = "".DirectoryPath
@@ -436,7 +438,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.path = $path
     # Set the recursiveness for the variable
-    showFormHeader(message = "(4/5) Recursiveness", db = db)
+    showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
     let recursive: BooleanInt = if confirm(prompt = "Recursive",
         db = db): 1 else: 0
@@ -445,8 +447,27 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     except IOError:
       discard
     variable.recursive = recursive == 1
+    # Set the type of for the variable's value
+    showFormHeader(message = "(5/6) Value's type", db = db)
+    showOutput(message = "The type of the value of the variable. Used to check its correctness during adding or editing the variable.", db = db)
+    var inputChar: char = selectOption(options = variablesOptions,
+        default = 't', prompt = "Type", db = db)
+    try:
+      case inputChar
+      of 'p':
+        variable.varType = path
+      of 't':
+        variable.varType = text
+      of 'n':
+        variable.varType = number
+      of 'q':
+        return showError(message = "Adding a variable cancelled.", db = db)
+      else:
+        discard
+    except CapacityError:
+      return showError(message = "Adding a variable cancelled. Reason: Can't set type of the value for the selected variable", db = db)
     # Set the value for the variable
-    showFormHeader(message = "(5/5) Value", db = db)
+    showFormHeader(message = "(6/6) Value", db = db)
     showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:", db = db)
     showOutput(message = "Value: ", newLine = false, db = db)
     var value: UserInput = emptyLimitedString(capacity = maxInputLength)
@@ -455,6 +476,17 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       if value.len == 0:
         showError(message = "Please enter value for the variable.", db = db)
         showOutput(message = "Value: ", newLine = false, db = db)
+      if variable.varType == VariableValType.path and not dirExists(dir = $value):
+        showError(message = "Path '" & value & "' doesn't exist.", db = db)
+        showOutput(message = "Value: ", newLine = false, db = db)
+        value = emptyLimitedString(capacity = maxInputLength)
+      elif variable.varType == number:
+        try:
+          discard parseInt(s = $value)
+        except:
+          showError(message = "The selected value isn't a number.", db = db)
+          showOutput(message = "Value: ", newLine = false, db = db)
+          value = emptyLimitedString(capacity = maxInputLength)
     if value == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.value = $value
