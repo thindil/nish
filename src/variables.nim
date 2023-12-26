@@ -46,7 +46,7 @@ const
 type
   VariableName = LimitedString
     ## Used to store variables names in the database.
-  VariableValType = enum
+  VariableValType* = enum
     ## Used to set the type of variable's value
     path, text, number
   Variable* {.tableName: "variables".} = ref object of Model
