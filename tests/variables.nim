@@ -95,5 +95,17 @@ suite "Unit tests for variable modules":
     check:
       newVariable.name == "ala"
 
+  test "Getting the type of the database field for VariableValType":
+    check:
+      dbType(VariableValType) == "TEXT"
+
+  test "Converting dbValue to VariableValType":
+    check:
+      dbValue(text).s == "text"
+
+  test "Converting VariableValType to dbValue":
+    check:
+      to(text.dbValue, VariableValType) == text
+
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
