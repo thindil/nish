@@ -78,7 +78,8 @@ proc dbType*(T: typedesc[VariableValType]): string {.raises: [], tags: [],
   body:
     "TEXT"
 
-proc dbValue*(val: VariableValType): DbValue {.raises: [], tags: [], contractual.} =
+proc dbValue*(val: VariableValType): DbValue {.raises: [], tags: [],
+    contractual.} =
   ## Convert the type of the variable's value to database field
   ##
   ## * val - the value to convert
@@ -87,8 +88,8 @@ proc dbValue*(val: VariableValType): DbValue {.raises: [], tags: [], contractual
   body:
     dbValue(v = $val)
 
-proc to*(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [],
-    contractual.} =
+proc to*(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [
+    ], contractual.} =
   ## Convert the value from the database to enumeration
   ##
   ## * dbVal - the value to convert
@@ -437,7 +438,8 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
-    let recursive: BooleanInt = if confirm(prompt = "Recursive", db = db): 1 else: 0
+    let recursive: BooleanInt = if confirm(prompt = "Recursive",
+        db = db): 1 else: 0
     try:
       stdout.writeLine(x = "")
     except IOError:
@@ -581,7 +583,8 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/5) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
-    let recursive: BooleanInt = if confirm(prompt = "Recursive", db = db): 1 else: 0
+    let recursive: BooleanInt = if confirm(prompt = "Recursive",
+        db = db): 1 else: 0
     try:
       stdout.writeLine(x = "")
     except IOError:
@@ -654,13 +657,18 @@ proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       let
         color: string = getColor(db = db, name = showHeaders)
         color2: string = getColor(db = db, name = default)
-      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id, style = color2)])
-      table.add(parts = [style(ss = "Name:", style = color), style(ss = variable.name, style = color2)])
-      table.add(parts = [style(ss = "Value:", style = color), style(ss = variable.value, style = color2)])
+      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id,
+          style = color2)])
+      table.add(parts = [style(ss = "Name:", style = color), style(
+          ss = variable.name, style = color2)])
+      table.add(parts = [style(ss = "Value:", style = color), style(
+          ss = variable.value, style = color2)])
       table.add(parts = [style(ss = "Description:", style = color), style(ss = (
-          if variable.description.len > 0: variable.description else: "(none)"), style = color2)])
-      table.add(parts = [style(ss = "Path:", style = color), style(ss = variable.path & (
-          if variable.recursive: " (recursive)" else: ""), style = color2)])
+          if variable.description.len > 0: variable.description else: "(none)"),
+          style = color2)])
+      table.add(parts = [style(ss = "Path:", style = color), style(
+          ss = variable.path & (if variable.recursive: " (recursive)" else: ""),
+              style = color2)])
       table.echoTable
     except:
       return showError(message = "Can't show variable. Reason: ",
@@ -698,9 +706,9 @@ proc updateVariablesDb*(db): ResultCode {.sideEffect,
     db != nil
   body:
     try:
-      db.exec(query = sql(query = """ALTER TABLE variables ADD varType TEXT"""))
-    except DbError:
-      return showError(message = "Can't update table for the shell's options. Reason: ",
+      db.exec(query = sql(query = """ALTER TABLE variables ADD varType TEXT NOT NULL DEFAULT 'text'"""))
+    except:
+      return showError(message = "Can't update table for the shell's variables. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
