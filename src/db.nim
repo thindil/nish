@@ -91,9 +91,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
-    let options: array[11, Option] = [newOption(name = "dbVersion", value = "5",
+    let options: array[11, Option] = [newOption(name = "dbVersion", value = "6",
         description = "Version of the database schema (read only).",
-        valueType = OptionValType.natural, readOnly = true, defaultValue = "5"),
+        valueType = OptionValType.natural, readOnly = true, defaultValue = "6"),
         newOption(name = "promptCommand", value = "built-in",
         description = "The command which output will be used as the prompt of shell.",
         valueType = OptionValType.command, readOnly = false,
@@ -228,11 +228,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 4:
-        if result.updateVariablesDb == QuitFailure:
-          return nil
         if result.createCompletionDb == QuitFailure:
-          return nil
-        if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 10]:
           setOption(optionName = initLimitedString(capacity = 40,
@@ -242,6 +238,17 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 5:
+        if result.updateVariablesDb == QuitFailure:
+          return nil
+        if result.createThemeDb == QuitFailure:
+          return nil
+        setOption(optionName = initLimitedString(capacity = 40,
+            text = options[0].option), value = initLimitedString(capacity = 40,
+            text = options[0].value), description = initLimitedString(
+            capacity = 256, text = options[0].description),
+            valueType = options[0].valueType, db = result, readOnly = (
+            if options[0].readOnly: 1 else: 0))
+      of 6:
         discard
       else:
         showError(message = "Invalid version of database.", db = nil)
