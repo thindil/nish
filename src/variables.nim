@@ -685,6 +685,25 @@ proc createVariablesDb*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
+proc updateVariablesDb*(db): ResultCode {.sideEffect,
+    raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
+    contractual.} =
+  ## Update the table variables to the new version if needed
+  ##
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns QuitSuccess if update was successfull, otherwise QuitFailure and
+  ## show message what's wrong
+  require:
+    db != nil
+  body:
+    try:
+      db.exec(query = sql(query = """ALTER TABLE variables ADD varType TEXT"""))
+    except DbError:
+      return showError(message = "Can't update table for the shell's options. Reason: ",
+          e = getCurrentException(), db = db)
+    return QuitSuccess.ResultCode
+
 proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, WriteDbEffect, RootEffect], contractual.} =

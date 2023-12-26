@@ -169,6 +169,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.updateAliasesDb(dbVersion = dbVersion) == QuitFailure:
           return nil
+        if result.updateVariablesDb == QuitFailure:
+          return nil
         if result.createPluginsDb == QuitFailure:
           return nil
         if result.createHelpDb == QuitFailure:
@@ -188,6 +190,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.updatePluginsDb == QuitFailure:
           return nil
         if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
+          return nil
+        if result.updateVariablesDb == QuitFailure:
           return nil
         if result.createCompletionDb == QuitFailure:
           return nil
@@ -210,6 +214,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.updateHistoryDb(dbVersion = dbVersion) == QuitFailure:
           return nil
+        if result.updateVariablesDb == QuitFailure:
+          return nil
         if result.createCompletionDb == QuitFailure:
           return nil
         if result.createThemeDb == QuitFailure:
@@ -222,6 +228,8 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 4:
+        if result.updateVariablesDb == QuitFailure:
+          return nil
         if result.createCompletionDb == QuitFailure:
           return nil
         if result.createThemeDb == QuitFailure:
