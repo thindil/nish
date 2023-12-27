@@ -38,6 +38,7 @@ of the shell.
 - Handling unknown key pressed when selecting a command's suggestion
 - Crash when setting a terminal's title
 - Commands' suggestions don't work with the built-in shell's commands
+- Refreshing environment variables after adding a new one
 
 ## [0.6.0] - 2023-11-13
 
