@@ -91,6 +91,18 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       showError(message = "Can't get command for prompt. Reason: ",
           e = getCurrentException(), db = db)
       return
+    result = 0
+    if previousCommand != "" and resultCode != QuitSuccess:
+      let resultString: string = $exitStatusLikeShell(status = resultCode.cint)
+      try:
+        stdout.write(s = style(ss = "[" & resultString & "] ", style = getColor(
+            db = db, name = promptError)))
+      except ValueError, IOError:
+        try:
+          stdout.write(s = "[" & resultString & "] ")
+        except IOError:
+          discard
+      result = 3 + resultString.len
     let currentDirectory: DirectoryPath = getFormattedDir()
     try:
       stdout.write(s = style(ss = $currentDirectory, style = getColor(db = db,
@@ -100,18 +112,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         stdout.write(s = $currentDirectory)
       except IOError:
         discard
-    result = currentDirectory.len
-    if previousCommand != "" and resultCode != QuitSuccess:
-      let resultString: string = $exitStatusLikeShell(status = resultCode.cint)
-      try:
-        stdout.write(s = style(ss = "[" & resultString & "]", style = getColor(
-            db = db, name = promptError)))
-      except ValueError, IOError:
-        try:
-          stdout.write(s = "[" & resultString & "]")
-        except IOError:
-          discard
-      result = result + 2 + resultString.len
+    result += currentDirectory.len
     try:
       stdout.write(s = style(ss = "# ", style = getColor(db = db,
           name = promptColor)))
