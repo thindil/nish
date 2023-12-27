@@ -506,8 +506,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       return showError(message = "Can't add the variable to database. Reason: ",
           e = getCurrentException(), db = db)
     try:
-      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db,
-          oldDirectory = getCurrentDirectory().DirectoryPath)
+      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db)
     except OSError:
       return showError(message = "Can't set variables for the current directory. Reason: ",
           e = getCurrentException(), db = db)
