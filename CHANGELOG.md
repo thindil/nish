@@ -30,6 +30,8 @@ of the shell.
   setting the name of the option to reset by its argument, the command will
   ask for the name after executing it. Resetting of all of options is done in
   the same way as it was.
+- Moved information about the last command's error code before information
+  about the current directory in the shell's default prompt
 
 ### Fixed
 - Cross-compiling the shell for Arm
