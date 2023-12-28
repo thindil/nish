@@ -322,13 +322,44 @@ works only in `content` setting.
 * `_` will change color to yellow. For example: `_true_`.
 * ```` will change color to green. For example: ``command``.
 
+#### Tab completion
+
+The shell offers the Tab completion for the user's entered commands with names
+of files and directories relative to the current directory and with available
+commands. It also allows selecting a completion from the list if there is more
+than one completion available.
+
+It is possible to set the amount of the completions displayed on the list in
+the shell's options.
+
+Additionally, the shell offers the Tab completion for arguments of commands.
+By default, the completion offers only names of directories and files as the
+completion. Changing its setting is possible in two ways:
+
+1. Manually
+
+    By using command `completion add` to add a new completion or `completion edit [id]`
+to edit an existing one, where *ID* is an ID of the completion to edit. You will
+be asked for several things during setting, like the name of the command and
+type of its parameters. It is possible to limit parameters only to directories
+or even disable the completion completely. If you select *custom* type of the
+completion, you will be also asked for the accepted values for the completion.
+
+2. Importing from a file
+
+    It is possible to import a completion from a file, previously generated with
+the command `completion export [id] [filename]` where *filename* is the name of the
+file to which the completion will be exported and *ID* is an ID of the completion to
+export. To import that completion, use the command `completion import [filename]`
+where *filename* is the name of the file to import.
+
+Command `completion` allows managing the Tab completions for commands, like
+deleting them, previewing or listing all of them. For more information about
+the command and its subcommands, please look at the corresponding shell's help
+entries.
+
 #### Other features
 
-* Tab completion for the user's entered commands with names of files and
-  directories relative to the current directory and with available commands.
-  It also allows selecting a completion from the list if there is more than
-  one completion available. It is also possible to set the amount of the
-  completions displayed on the list.
 * Coloring the user entered command on green when it is valid or red when it is
   invalid, separated colors for environment variables and commands' arguments
   which contains quotes or double quotes. Can be enabled or disabled in the
