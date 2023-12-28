@@ -153,7 +153,7 @@ current version of the shell's database schema.
 #### Global and local environment variables
 
 Beside standard support for environment variables, with `set` and `unset`
-commands, the shell offers also ability to set environment variables only for
+commands, the shell also offers ability to set environment variables only for
 the selected directories, in the same way how aliases set. At this moment,
 available options for variables are:
 
