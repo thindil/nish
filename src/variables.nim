@@ -550,7 +550,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by pressing Enter.", db = db)
     # Set the name for the variable
-    showFormHeader(message = "(1/5) Name", db = db)
+    showFormHeader(message = "(1/6) Name", db = db)
     showOutput(message = "The name of the variable. Current value: '",
         newLine = false, db = db)
     showOutput(message = variable.name, newLine = false, color = values, db = db)
@@ -576,7 +576,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         return showError(message = "Editing the variable cancelled. Reason: can't set name for the variable.", db = db)
     variable.name = $name
     # Set the description for the variable
-    showFormHeader(message = "(2/5) Description", db = db)
+    showFormHeader(message = "(2/6) Description", db = db)
     showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '",
         newLine = false, db = db)
     showOutput(message = variable.description, newLine = false,
@@ -592,7 +592,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         return showError(message = "Editing the variable cancelled. Reason: can't set description for the variable.", db = db)
     variable.description = $description
     # Set the working directory for the variable
-    showFormHeader(message = "(3/5) Working directory", db = db)
+    showFormHeader(message = "(3/6) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '",
         newLine = false, db = db)
     showOutput(message = variable.path, newLine = false, color = values, db = db)
@@ -612,7 +612,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       path = variable.path.DirectoryPath
     variable.path = $path
     # Set the recursiveness for the variable
-    showFormHeader(message = "(4/5) Recursiveness", db = db)
+    showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
     let recursive: BooleanInt = if confirm(prompt = "Recursive",
         db = db): 1 else: 0
@@ -621,16 +621,61 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     except IOError:
       discard
     variable.recursive = recursive == 1
+    # Set the type of for the variable's value
+    showFormHeader(message = "(5/6) Value's type", db = db)
+    showOutput(message = "The type of the value of the variable. Used to check its correctness during adding or editing the variable. Current value: '", newLine = false, db = db)
+    showOutput(message = $variable.varType, newLine = false, color = values, db = db)
+    showOutput(message = "'.:", db = db)
+    var inputChar: char = selectOption(options = variablesOptions,
+        default = 't', prompt = "Type", db = db)
+    try:
+      case inputChar
+      of 'p':
+        variable.varType = path
+      of 't':
+        variable.varType = text
+      of 'n':
+        variable.varType = number
+      of 'q':
+        return showError(message = "Editing the variable cancelled.", db = db)
+      else:
+        discard
+    except CapacityError:
+      return showError(message = "Editing the variable cancelled. Reason: Can't set type of the value for the selected variable", db = db)
     # Set the value for the variable
-    showFormHeader(message = "(5/5) Value", db = db)
+    showFormHeader(message = "(6/6) Value", db = db)
     showOutput(message = "The value of the variable. Current value: '",
         newLine = false, db = db)
     showOutput(message = variable.value, newLine = false, color = values, db = db)
     showOutput(message = "'. Value can't contain a new line character.:", db = db)
-    var value: UserInput = readInput(db = db)
+    var value: UserInput = try:
+        initLimitedString(capacity = maxInputLength, text = "invalid")
+      except:
+        return showError(message = "Editing the variable cancelled. Can't set the variable's value.", db = db)
+    while value == "invalid":
+      value = readInput(db = db)
+      if value.len == 0:
+        break
+      if variable.varType == VariableValType.path and not dirExists(dir = $value):
+        showError(message = "Path '" & value & "' doesn't exist.", db = db)
+        showOutput(message = "Value: ", newLine = false, db = db)
+        try:
+          value.text = "invalid"
+        except:
+          discard
+      elif variable.varType == number:
+        try:
+          discard parseInt(s = $value)
+        except:
+          showError(message = "The selected value isn't a number.", db = db)
+          showOutput(message = "Value: ", newLine = false, db = db)
+          try:
+            value.text = "invalid"
+          except:
+            discard
     if value == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
-    elif value == "":
+    elif value.len == 0:
       try:
         value.text = variable.value
       except CapacityError:
