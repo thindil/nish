@@ -623,7 +623,8 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     variable.recursive = recursive == 1
     # Set the type of for the variable's value
     showFormHeader(message = "(5/6) Value's type", db = db)
-    showOutput(message = "The type of the value of the variable. Used to check its correctness during adding or editing the variable. Current value: '", newLine = false, db = db)
+    showOutput(message = "The type of the value of the variable. Used to check its correctness during adding or editing the variable. Current value: '",
+        newLine = false, db = db)
     showOutput(message = $variable.varType, newLine = false, color = values, db = db)
     showOutput(message = "'.:", db = db)
     var inputChar: char = selectOption(options = variablesOptions,
@@ -736,6 +737,8 @@ proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           style = color2)])
       table.add(parts = [style(ss = "Name:", style = color), style(
           ss = variable.name, style = color2)])
+      table.add(parts = [style(ss = "Type:", style = color), style(
+          ss = $variable.varType, style = color2)])
       table.add(parts = [style(ss = "Value:", style = color), style(
           ss = variable.value, style = color2)])
       table.add(parts = [style(ss = "Description:", style = color), style(ss = (
