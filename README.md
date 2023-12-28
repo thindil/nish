@@ -165,6 +165,9 @@ available options for variables are:
 * Path: The main directory in which the variable set.
 * Recursive: If set to 1, the variable is available for all subdirectories of
   the path. If set to 0, is available only in the selected directory.
+* Type: The type of the variable's value. Determines what kind of values are
+  acceptable for the variable. Currently, three types of variables are available.
+  `text`: anything, `number`: any number, `path`: a valid path.
 * Value: The value of the variable.
 * Description: The variable description. Showed on the variables list.
 
@@ -175,6 +178,7 @@ For example, the definition of the variable can look that:
     Name: MY_VAR
     Path: /
     Recursive: 1
+    Type: text
     Value: someval
     Description: Test variable
 
@@ -184,7 +188,8 @@ The definition of the local variable can look that:
     Name: MY_VAR2
     Path: /home/user
     Recursive: 0
-    Value: anotherval
+    Type: number
+    Value: 12
     Description: The second test variable
 
 The variable will be available only in the user's home directory. It doesn't
