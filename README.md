@@ -353,6 +353,23 @@ file to which the completion will be exported and *ID* is an ID of the completio
 export. To import that completion, use the command `completion import [filename]`
 where *filename* is the name of the file to import.
 
+Command `completion export [id] [filename]` exports the selected completion as
+a configuration file. It contains fields:
+
+* `Command`: the command for which the completion is.
+* `Type`: the type of completion. Can be: *Directories only*, *Files only*,
+  *Directories and files*, *Commands*, *Custom* or *Completion for the selected
+  command should be disabled*.
+* `Values`: the values available for the completion. It is needed only for
+  *Custom* type of the completion. All values must be separated by semicolon
+  and in quotes.
+
+For example, the file with an exported completion can look that:
+
+    Command=ls
+    Type=Custom
+    Values="te;ew;wr"
+
 Command `completion` allows managing the Tab completions for commands, like
 deleting them, previewing or listing all of them. For more information about
 the command and its subcommands, please look at the corresponding shell's help
