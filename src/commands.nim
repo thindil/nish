@@ -96,8 +96,8 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.sideEffect, raises: [],
 
 proc executeCommand*(commands: ref Table[string, CommandData];
     commandName: string; arguments, inputString: UserInput; db: DbConn;
-    aliases: ref OrderedTable[AliasName, int];
-    cursorPosition: var Natural): ResultCode {.sideEffect, raises: [], tags: [
+    aliases: ref OrderedTable[AliasName, int]; cursorPosition: var Natural;
+    withShell: bool = true): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect, ReadEnvEffect,
     ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
   ## Execute the command entered by the user
@@ -110,6 +110,8 @@ proc executeCommand*(commands: ref Table[string, CommandData];
   ## * db             - the connection to the shell's database
   ## * aliases        - the list of the shell's aliase
   ## * cursorPosition - the current position of the curson on the screen
+  ## * withShell      - if true, execute the command withing the system's default
+  ##                    shell. Otherwise execute the command as a subprocess
   ##
   ## Returns the shell's code returned by the executed command and the new
   ## position of the cursor on the screen
@@ -144,7 +146,17 @@ proc executeCommand*(commands: ref Table[string, CommandData];
               aliasId = commandName, aliases = aliases, db = db)
           cursorPosition = runeLen(s = $inputString)
         else:
-          # Execute external command
-          return execCmd(command = commandToExecute).ResultCode
+          # Execute external command inside the shell
+          if withShell:
+            return execCmd(command = commandToExecute).ResultCode
+          # Execute an external command without the system's default shell
+          const procOpts: set[ProcessOption] = {poStdErrToStdOut, poUsePath}
+          var commProcess: Process
+          try:
+            commProcess = startProcess(command = commandName, args = [], options = procOpts)
+            result = commProcess.waitForExit.ResultCode
+            commProcess.close
+          except:
+            discard
       except CapacityError:
         return QuitFailure.ResultCode
