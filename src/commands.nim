@@ -156,12 +156,11 @@ proc executeCommand*(commands: ref Table[string, CommandData];
             commProcess = startProcess(command = commandName, args = (
                 if arguments.len > 0: initOptParser(
                 cmdline = $arguments).remainingArgs else: @[]), options = {
-                poStdErrToStdOut, poUsePath})
-            for line in commProcess.lines:
-              showOutput(message = line, db = db)
+                poStdErrToStdOut, poUsePath, poParentStreams})
             result = commProcess.waitForExit.ResultCode
             commProcess.close
           except:
-            discard
+            return showError(message = "Can't execute the command '" &
+                commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
       except CapacityError:
         return QuitFailure.ResultCode
