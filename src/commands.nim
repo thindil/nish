@@ -27,7 +27,7 @@
 ## directory
 
 # Standard library imports
-import std/[os, osproc, tables, unicode]
+import std/[os, osproc, parseopt, tables, unicode]
 # External modules imports
 import contracts
 import norm/sqlite
@@ -139,21 +139,26 @@ proc executeCommand*(commands: ref Table[string, CommandData];
       let commandToExecute: string = commandName & (if arguments.len >
           0: " " & arguments else: "")
       try:
-        # Check if command is an alias, if yes, execute it
+        # Check if the command is an alias, if yes, execute it
         if initLimitedString(capacity = maxInputLength,
             text = commandName) in aliases:
           result = execAlias(arguments = arguments,
               aliasId = commandName, aliases = aliases, db = db)
           cursorPosition = runeLen(s = $inputString)
         else:
-          # Execute external command inside the shell
+          # Execute the external command inside the shell
           if withShell:
             return execCmd(command = commandToExecute).ResultCode
-          # Execute an external command without the system's default shell
-          const procOpts: set[ProcessOption] = {poStdErrToStdOut, poUsePath}
-          var commProcess: Process
+          # Execute the external command without the system's default shell
+          var
+            commProcess: Process
           try:
-            commProcess = startProcess(command = commandName, args = [], options = procOpts)
+            commProcess = startProcess(command = commandName, args = (
+                if arguments.len > 0: initOptParser(
+                cmdline = $arguments).remainingArgs else: @[]), options = {
+                poStdErrToStdOut, poUsePath})
+            for line in commProcess.lines:
+              showOutput(message = line, db = db)
             result = commProcess.waitForExit.ResultCode
             commProcess.close
           except:
