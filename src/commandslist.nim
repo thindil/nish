@@ -32,7 +32,7 @@ import std/[osproc, parseopt, tables]
 import contracts
 import norm/sqlite
 # Internal imports
-import constants, lstring, output, resultcode
+import constants, logger, lstring, output, resultcode
 
 type
   CommandLists* = object
@@ -146,6 +146,7 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
     db: DbConn): ResultCode =
   let commandToExecute: string = commandName & (if arguments.len > 0: " " &
       arguments else: "")
+  logToFile(message = "Executing command: " & commandToExecute)
   # Execute the external command inside the shell
   if withShell:
     return execCmd(command = commandToExecute).ResultCode
