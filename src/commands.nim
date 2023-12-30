@@ -150,10 +150,8 @@ proc executeCommand*(commands: ref Table[string, CommandData];
           if withShell:
             return execCmd(command = commandToExecute).ResultCode
           # Execute the external command without the system's default shell
-          var
-            commProcess: Process
           try:
-            commProcess = startProcess(command = commandName, args = (
+            var commProcess: Process = startProcess(command = commandName, args = (
                 if arguments.len > 0: initOptParser(
                 cmdline = $arguments).remainingArgs else: @[]), options = {
                 poStdErrToStdOut, poUsePath, poParentStreams})
