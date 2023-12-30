@@ -112,8 +112,7 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.sideEffect,
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
     commands: ref CommandsList; plugin: string = ""; db: DbConn) {.sideEffect,
-        raises: [
-    CommandsListError], tags: [RootEffect], contractual.} =
+    raises: [CommandsListError], tags: [RootEffect], contractual.} =
   ## Replace the code of the selected command with the new procedure. If
   ## command argument is different than nil, it will be used as the command
   ## code, otherwise, the argument plugin must be supplied.
@@ -143,21 +142,26 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
           e = getCurrentException(), db = db)
 
 proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
-    db: DbConn): ResultCode =
-  let commandToExecute: string = commandName & (if arguments.len > 0: " " &
-      arguments else: "")
-  logToFile(message = "Executing command: " & commandToExecute)
-  # Execute the external command inside the shell
-  if withShell:
-    return execCmd(command = commandToExecute).ResultCode
-  # Execute the external command without the system's default shell
-  try:
-    var commProcess: Process = startProcess(command = commandName, args = (
-        if arguments.len > 0: initOptParser(
-        cmdline = $arguments).remainingArgs else: @[]), options = {
-        poStdErrToStdOut, poUsePath, poParentStreams})
-    result = commProcess.waitForExit.ResultCode
-    commProcess.close
-  except:
-    return showError(message = "Can't execute the command '" &
-        commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
+    db: DbConn): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
+    ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
+  require:
+    commandName.len > 0
+    db != nil
+  body:
+    let commandToExecute: string = commandName & (if arguments.len > 0: " " &
+        arguments else: "")
+    logToFile(message = "Executing command: " & commandToExecute)
+    # Execute the external command inside the shell
+    if withShell:
+      return execCmd(command = commandToExecute).ResultCode
+    # Execute the external command without the system's default shell
+    try:
+      var commProcess: Process = startProcess(command = commandName, args = (
+          if arguments.len > 0: initOptParser(
+          cmdline = $arguments).remainingArgs else: @[]), options = {
+          poStdErrToStdOut, poUsePath, poParentStreams})
+      result = commProcess.waitForExit.ResultCode
+      commProcess.close
+    except:
+      return showError(message = "Can't execute the command '" &
+          commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
