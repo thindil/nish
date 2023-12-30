@@ -27,7 +27,7 @@
 ## directory
 
 # Standard library imports
-import std/[os, osproc, parseopt, tables, unicode]
+import std/[os, tables, unicode]
 # External modules imports
 import contracts
 import norm/sqlite
@@ -136,8 +136,6 @@ proc executeCommand*(commands: ref Table[string, CommandData];
         showError(message = "Can't execute command '" & commandName &
             "'. Reason: ", e = getCurrentException(), db = db)
     else:
-      let commandToExecute: string = commandName & (if arguments.len >
-          0: " " & arguments else: "")
       try:
         # Check if the command is an alias, if yes, execute it
         if initLimitedString(capacity = maxInputLength,
@@ -146,19 +144,8 @@ proc executeCommand*(commands: ref Table[string, CommandData];
               aliasId = commandName, aliases = aliases, db = db)
           cursorPosition = runeLen(s = $inputString)
         else:
-          # Execute the external command inside the shell
-          if withShell:
-            return execCmd(command = commandToExecute).ResultCode
-          # Execute the external command without the system's default shell
-          try:
-            var commProcess: Process = startProcess(command = commandName, args = (
-                if arguments.len > 0: initOptParser(
-                cmdline = $arguments).remainingArgs else: @[]), options = {
-                poStdErrToStdOut, poUsePath, poParentStreams})
-            result = commProcess.waitForExit.ResultCode
-            commProcess.close
-          except:
-            return showError(message = "Can't execute the command '" &
-                commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
+          # Execute the external command
+          return runCommand(commandName = commandName, arguments = arguments,
+              withShell = withShell, db = db)
       except CapacityError:
         return QuitFailure.ResultCode
