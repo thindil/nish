@@ -27,7 +27,7 @@
 ## deleting, replacing them.
 
 # Standard library imports
-import std/tables
+import std/[osproc, parseopt, tables]
 # External modules imports
 import contracts
 import norm/sqlite
@@ -111,7 +111,8 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.sideEffect,
     commands.del(key = $name)
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = ""; db: DbConn) {.sideEffect, raises: [
+    commands: ref CommandsList; plugin: string = ""; db: DbConn) {.sideEffect,
+        raises: [
     CommandsListError], tags: [RootEffect], contractual.} =
   ## Replace the code of the selected command with the new procedure. If
   ## command argument is different than nil, it will be used as the command
@@ -140,3 +141,22 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
     except KeyError:
       showError(message = "Can't replace command '" & name & "'. Reason: ",
           e = getCurrentException(), db = db)
+
+proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
+    db: DbConn): ResultCode =
+  let commandToExecute: string = commandName & (if arguments.len > 0: " " &
+      arguments else: "")
+  # Execute the external command inside the shell
+  if withShell:
+    return execCmd(command = commandToExecute).ResultCode
+  # Execute the external command without the system's default shell
+  try:
+    var commProcess: Process = startProcess(command = commandName, args = (
+        if arguments.len > 0: initOptParser(
+        cmdline = $arguments).remainingArgs else: @[]), options = {
+        poStdErrToStdOut, poUsePath, poParentStreams})
+    result = commProcess.waitForExit.ResultCode
+    commProcess.close
+  except:
+    return showError(message = "Can't execute the command '" &
+        commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
