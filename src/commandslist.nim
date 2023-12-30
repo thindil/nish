@@ -144,6 +144,16 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
 proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
     db: DbConn): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
+  ## Excecute the selected command with or witout using the system's default
+  ## shell
+  ##
+  ## * commandName - the name of the command entered by the user
+  ## * arguments   - the arguments of the command entered by the user
+  ## * withShell   - if true, execute the command withing the system's default
+  ##                 shell. Otherwise execute the command as a subprocess
+  ## * db          - the connection to the shell's database
+  ##
+  ## Returns the shell's code returned by the executed command
   require:
     commandName.len > 0
     db != nil
