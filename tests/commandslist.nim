@@ -68,5 +68,15 @@ suite "Unit tests for commandslist module":
     check:
       commands.len == 1
 
+  test "Executing a command":
+    checkpoint "Execute a command inside the system's default shell"
+    check:
+      runCommand("ls", initLimitedString(capacity = 4,
+          text = "-a ."), true, db) == QuitSuccess
+    checkpoint "Execute a command without the system's default shell"
+    check:
+      runCommand("ls", initLimitedString(capacity = 4,
+          text = "-a ."), false, db) == QuitSuccess
+
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
