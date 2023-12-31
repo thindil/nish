@@ -27,7 +27,7 @@
 ## setting them, deleting or executing.
 
 # Standard library imports
-import std/[os, osproc, parseopt, strutils, tables]
+import std/[os, parseopt, strutils, tables]
 # External modules imports
 import contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -173,7 +173,8 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       for dbResult in dbAliases:
         table.add(parts = [style(ss = dbResult.id, style = getColor(db = db,
             name = ids)), style(ss = dbResult.name, style = getColor(db = db,
-            name = ids)), style(ss = dbResult.description, style = getColor(db = db, name = default))])
+            name = ids)), style(ss = dbResult.description, style = getColor(
+                db = db, name = default))])
     except:
       return showError(message = "Can't add an alias to the list. Reason:",
           e = getCurrentException(), db = db)
@@ -292,14 +293,20 @@ proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       let
         color: string = getColor(db = db, name = showHeaders)
         color2: string = getColor(db = db, name = default)
-      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id, style = color2)])
-      table.add(parts = [style(ss = "Name:", style = color), style(ss = alias.name, style = color2)])
+      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id,
+          style = color2)])
+      table.add(parts = [style(ss = "Name:", style = color), style(
+          ss = alias.name, style = color2)])
       table.add(parts = [style(ss = "Description:", style = color), style(ss = (
-          if alias.description.len > 0: alias.description else: "(none)"), style = color2)])
-      table.add(parts = [style(ss = "Path:", style = color), style(ss = alias.path & (
-          if alias.recursive: " (recursive)" else: ""), style = color2)])
-      table.add(parts = [style(ss = "Command(s):", style = color), style(ss = alias.commands, style = color2)])
-      table.add(parts = [style(ss = "Output to:", style = color), style(ss = alias.output, style = color2)])
+          if alias.description.len > 0: alias.description else: "(none)"),
+          style = color2)])
+      table.add(parts = [style(ss = "Path:", style = color), style(
+          ss = alias.path & (if alias.recursive: " (recursive)" else: ""),
+              style = color2)])
+      table.add(parts = [style(ss = "Command(s):", style = color), style(
+          ss = alias.commands, style = color2)])
+      table.add(parts = [style(ss = "Output to:", style = color), style(
+          ss = alias.output, style = color2)])
       table.echoTable
     except:
       return showError(message = "Can't show alias. Reason: ",
@@ -366,7 +373,8 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
-    let recursive: BooleanInt = if confirm(prompt = "Recursive", db = db): 1 else: 0
+    let recursive: BooleanInt = if confirm(prompt = "Recursive",
+        db = db): 1 else: 0
     # Set the commands to execute for the alias
     showFormHeader(message = "(5/6 or 7) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:", db = db)
@@ -524,7 +532,8 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
-    let recursive: BooleanInt = if confirm(prompt = "Recursive", db = db): 1 else: 0
+    let recursive: BooleanInt = if confirm(prompt = "Recursive",
+        db = db): 1 else: 0
     try:
       stdout.writeLine(x = "")
     except IOError:
@@ -683,8 +692,6 @@ proc execAlias*(arguments; aliasId: string; aliases;
       var
         conjCommands: bool = false
         userInput: OptParser = initOptParser(cmdline = alias.commands)
-        returnCode: int = QuitSuccess
-        resultOutput: string = ""
       let
         command: UserInput = getArguments(userInput = userInput,
             conjCommands = conjCommands)
@@ -699,15 +706,12 @@ proc execAlias*(arguments; aliasId: string; aliases;
               db = db, oldDirectory = workingDir.DirectoryPath)
           aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
           continue
-        if alias.output == "stdout":
-          returnCode = execCmd(command = $command)
-        else:
-          (resultOutput, returnCode) = execCmdEx(command = $command)
-          if outputFile != nil:
-            outputFile.write(s = resultOutput)
-          else:
-            showError(message = resultOutput, db = db)
-        result = returnCode.ResultCode
+        let spaceIndex = command.find(sub = ' ')
+        result = runCommand(commandName = (if spaceIndex > 0: $(command[0 ..
+            spaceIndex]) else: $command), arguments = (if spaceIndex >
+            0: command[spaceIndex .. ^1] else: emptyLimitedString()),
+            withShell = true, db = db, output = (if alias.output ==
+            "stdout": "" else: alias.output))
         if result != QuitSuccess and conjCommands:
           break
       except:
