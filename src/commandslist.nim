@@ -142,8 +142,9 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
           e = getCurrentException(), db = db)
 
 proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
-    db: DbConn): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
-    ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
+    db: DbConn; output: string = ""): ResultCode {.sideEffect, raises: [],
+    tags: [WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect],
+    contractual.} =
   ## Excecute the selected command with or witout using the system's default
   ## shell
   ##
@@ -152,6 +153,8 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
   ## * withShell   - if true, execute the command withing the system's default
   ##                 shell. Otherwise execute the command as a subprocess
   ## * db          - the connection to the shell's database
+  ## * output      - the path to the file where the command output will be
+  ##                 saved. If empty (default), use the standard output
   ##
   ## Returns the shell's code returned by the executed command
   require:
@@ -163,13 +166,39 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
     logToFile(message = "Executing command: " & commandToExecute)
     # Execute the external command inside the shell
     if withShell:
-      return execCmd(command = commandToExecute).ResultCode
+      if output.len == 0:
+        return execCmd(command = commandToExecute).ResultCode
+      else:
+        let outputFile: File = try:
+              open(filename = output, mode = fmWrite)
+          except IOError:
+            return showError(message = "Can't open output file. Reason: ",
+                e = getCurrentException(), db = db)
+        try:
+          let (resultOutput, returnCode) = execCmdEx(command = commandToExecute)
+          result = returnCode.ResultCode
+          outputFile.write(s = resultOutput)
+          outputFile.close
+        except:
+          return showError(message = "Can't execute the command '" &
+              commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
     # Execute the external command without the system's default shell
     try:
+      var procOpts: set[ProcessOption] = {poStdErrToStdOut, poUsePath}
+      if output.len == 0:
+        procOpts.incl(poParentStreams)
       var commProcess: Process = startProcess(command = commandName, args = (
           if arguments.len > 0: initOptParser(
-          cmdline = $arguments).remainingArgs else: @[]), options = {
-          poStdErrToStdOut, poUsePath, poParentStreams})
+          cmdline = $arguments).remainingArgs else: @[]), options = procOpts)
+      if output.len > 0:
+        let outputFile: File = try:
+              open(filename = output, mode = fmWrite)
+          except IOError:
+            return showError(message = "Can't open output file. Reason: ",
+                e = getCurrentException(), db = db)
+        for line in commProcess.lines:
+          outputFile.write(s = line)
+        outputFile.close
       result = commProcess.waitForExit.ResultCode
       commProcess.close
     except:
