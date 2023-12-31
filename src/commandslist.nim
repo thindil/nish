@@ -170,7 +170,7 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
         return execCmd(command = commandToExecute).ResultCode
       else:
         let outputFile: File = try:
-              open(filename = output, mode = fmWrite)
+              open(filename = output, mode = fmAppend)
           except IOError:
             return showError(message = "Can't open output file. Reason: ",
                 e = getCurrentException(), db = db)
@@ -193,7 +193,7 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
           cmdline = $arguments).remainingArgs else: @[]), options = procOpts)
       if output.len > 0:
         let outputFile: File = try:
-              open(filename = output, mode = fmWrite)
+              open(filename = output, mode = fmAppend)
           except IOError:
             return showError(message = "Can't open output file. Reason: ",
                 e = getCurrentException(), db = db)
