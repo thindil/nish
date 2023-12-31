@@ -179,6 +179,7 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
           result = returnCode.ResultCode
           outputFile.write(s = resultOutput)
           outputFile.close
+          return
         except:
           return showError(message = "Can't execute the command '" &
               commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
