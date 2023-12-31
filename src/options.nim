@@ -323,7 +323,7 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
             if exitCode != QuitSuccess:
               showError(message = "Value for option '" & option.option &
                   "' should be valid command.", db = db)
-            value = emptyLimitedString(capacity = maxInputLength)
+              value = emptyLimitedString(capacity = maxInputLength)
           except:
             return showError(message = "Can't check the existence of command '" &
                 value & "'. Reason: ", e = getCurrentException(), db = db)
