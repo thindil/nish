@@ -531,7 +531,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         if userInput.kind == cmdArgument:
           commandName = userInput.key
         # Set the command arguments
-        let arguments: UserInput = try:
+        var arguments: UserInput = try:
             initLimitedString(capacity = maxInputLength, text = $getArguments(
                 userInput = userInput, conjCommands = conjCommands))
           except CapacityError:
@@ -574,6 +574,20 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Delete environment variable
         of "unset":
           returnCode = unsetCommand(arguments = arguments, db = db)
+        # Execute the command without using the system's default shell
+        of "exec":
+          let spaceIndex: int = arguments.find(sub = ' ')
+          if spaceIndex > 0:
+            commandName = $(arguments[0 .. spaceIndex - 1])
+            arguments = initLimitedString(capacity = maxInputLength, text = $(
+                arguments[spaceIndex + 1 .. ^1]))
+          else:
+            commandName = $arguments
+            arguments = emptyLimitedString(capacity = maxInputLength)
+          returnCode = executeCommand(commands = commands,
+              commandName = commandName, arguments = arguments,
+              inputString = inputString, db = db, aliases = aliases,
+              cursorPosition = cursorPosition, withShell = false)
         # Execute command (the shell's or external) or the shell's alias
         else:
           returnCode = executeCommand(commands = commands,
