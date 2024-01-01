@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -87,7 +87,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
           return
         stdout.write(s = output)
         return output.len
-    except CapacityError, Exception:
+    except:
       showError(message = "Can't get command for prompt. Reason: ",
           e = getCurrentException(), db = db)
       return
