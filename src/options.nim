@@ -27,7 +27,7 @@
 ## adding, removing, updating or showing the options.
 
 # Standard library imports
-import std/[os, osproc, strutils, tables]
+import std/[os, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, sqlite]
@@ -57,7 +57,8 @@ proc dbType*(T: typedesc[OptionValType]): string {.raises: [], tags: [],
   body:
     "TEXT"
 
-proc dbValue*(val: OptionValType): DbValue {.raises: [], tags: [], contractual.} =
+proc dbValue*(val: OptionValType): DbValue {.raises: [], tags: [],
+    contractual.} =
   ## Convert the type of the option's value to database field
   ##
   ## * val - the value to convert
@@ -319,7 +320,12 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
             value = emptyLimitedString(capacity = maxInputLength)
         of command:
           try:
-            let (_, exitCode) = execCmdEx(command = $value)
+            let
+              spaceIndex: int = value.find(sub = ' ')
+              exitCode: ResultCode = runCommand(commandName = (if spaceIndex >
+                  0: $(value[0 .. spaceIndex]) else: $value), arguments = (
+                  if spaceIndex > 0: value[spaceIndex ..
+                  ^1] else: emptyLimitedString()), withShell = true, db = db)
             if exitCode != QuitSuccess:
               showError(message = "Value for option '" & option.option &
                   "' should be valid command.", db = db)
