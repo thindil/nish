@@ -170,15 +170,19 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
         return execCmd(command = commandToExecute).ResultCode
       else:
         let outputFile: File = try:
+            if output == "stderr":
+              stderr
+            else:
               open(filename = output, mode = fmAppend)
-          except IOError:
+          except:
             return showError(message = "Can't open output file. Reason: ",
                 e = getCurrentException(), db = db)
         try:
           let (resultOutput, returnCode) = execCmdEx(command = commandToExecute)
           result = returnCode.ResultCode
           outputFile.write(s = resultOutput)
-          outputFile.close
+          if output != "stderr":
+            outputFile.close
           return
         except:
           return showError(message = "Can't execute the command '" &
@@ -193,8 +197,11 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
           cmdline = $arguments).remainingArgs else: @[]), options = procOpts)
       if output.len > 0:
         let outputFile: File = try:
-              open(filename = output, mode = fmAppend)
-          except IOError:
+              if output == "stderr":
+                stderr
+              else:
+                open(filename = output, mode = fmAppend)
+          except:
             return showError(message = "Can't open output file. Reason: ",
                 e = getCurrentException(), db = db)
         for line in commProcess.lines:
