@@ -44,6 +44,7 @@ of the shell.
 - Refreshing environment variables after adding a new or editing an existing
 - If the shell's alias' output is set to a file, append the result of the alias
   to the file instead of overwritting it.
+- Sending the shell's alias' output to the standard error output
 
 ## [0.6.0] - 2023-11-13
 
