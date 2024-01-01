@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -706,7 +706,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
               db = db, oldDirectory = workingDir.DirectoryPath)
           aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
           continue
-        let spaceIndex = command.find(sub = ' ')
+        let spaceIndex: int = command.find(sub = ' ')
         result = runCommand(commandName = (if spaceIndex > 0: $(command[0 ..
             spaceIndex]) else: $command), arguments = (if spaceIndex >
             0: command[spaceIndex .. ^1] else: emptyLimitedString()),

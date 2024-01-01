@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -187,7 +187,7 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
     try:
       var procOpts: set[ProcessOption] = {poStdErrToStdOut, poUsePath}
       if output.len == 0:
-        procOpts.incl(poParentStreams)
+        procOpts.incl(y = poParentStreams)
       var commProcess: Process = startProcess(command = commandName, args = (
           if arguments.len > 0: initOptParser(
           cmdline = $arguments).remainingArgs else: @[]), options = procOpts)
