@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -126,7 +126,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           highlightValid
       if color == highlightInvalid:
         # Built-in commands
-        if $command in ["exit", "cd", "set", "unset", "."]:
+        if $command in ["exit", "cd", "set", "unset", ".", "exec"]:
           color = highlightValid
         # The shell's commands
         elif commands.hasKey(key = $command):
