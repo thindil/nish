@@ -17,6 +17,7 @@ of the shell.
 - Ability to set the shell's output's colors as the shell's theme system.
 - Date to the debug's log's messages
 - Types to environment variables.
+- Command `exec` to execute a command without using the system's default shell
 
 ### Changed
 - Updated the shell's help entries
