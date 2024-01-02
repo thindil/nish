@@ -1,4 +1,4 @@
-# Copyright © 2021-2023 Bartek Jasicki
+# Copyright © 2021-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -576,18 +576,21 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           returnCode = unsetCommand(arguments = arguments, db = db)
         # Execute the command without using the system's default shell
         of "exec":
-          let spaceIndex: int = arguments.find(sub = ' ')
-          if spaceIndex > 0:
-            commandName = $(arguments[0 .. spaceIndex - 1])
-            arguments = initLimitedString(capacity = maxInputLength, text = $(
-                arguments[spaceIndex + 1 .. ^1]))
+          if arguments.len == 0:
+            returnCode = showError(message = "Enter a command to execute.", db = db)
           else:
-            commandName = $arguments
-            arguments = emptyLimitedString(capacity = maxInputLength)
-          returnCode = executeCommand(commands = commands,
-              commandName = commandName, arguments = arguments,
-              inputString = inputString, db = db, aliases = aliases,
-              cursorPosition = cursorPosition, withShell = false)
+            let spaceIndex: int = arguments.find(sub = ' ')
+            if spaceIndex > 0:
+              commandName = $(arguments[0 .. spaceIndex - 1])
+              arguments = initLimitedString(capacity = maxInputLength, text = $(
+                  arguments[spaceIndex + 1 .. ^1]))
+            else:
+              commandName = $arguments
+              arguments = emptyLimitedString(capacity = maxInputLength)
+            returnCode = executeCommand(commands = commands,
+                commandName = commandName, arguments = arguments,
+                inputString = inputString, db = db, aliases = aliases,
+                cursorPosition = cursorPosition, withShell = false)
         # Execute command (the shell's or external) or the shell's alias
         else:
           returnCode = executeCommand(commands = commands,
