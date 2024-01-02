@@ -116,7 +116,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         description = "The amount of columns for Tab completion list.",
         valueType = OptionValType.positive, readOnly = false, defaultValue = "5"),
         newOption(name = "completionCheckCase", value = "false",
-        description = "If true, Tab completion for directories and files is case-sensitive.",
+        description = "Tab completion for directories and files is case-sensitive.",
         valueType = OptionValType.boolean, readOnly = false,
         defaultValue = "false"),
         newOption(name = "suggestionPrecision", value = "1",
