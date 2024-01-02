@@ -1,4 +1,4 @@
-# Copyright © 2023 Bartek Jasicki
+# Copyright © 2023-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
-    let options: array[11, Option] = [newOption(name = "dbVersion", value = "6",
+    let options: array[12, Option] = [newOption(name = "dbVersion", value = "6",
         description = "Version of the database schema (read only).",
         valueType = OptionValType.natural, readOnly = true, defaultValue = "6"),
         newOption(name = "promptCommand", value = "built-in",
@@ -124,7 +124,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         valueType = OptionValType.natural, readOnly = false, defaultValue = "1"),
         newOption(name = "titleWidth", value = "30",
         description = "The maximum length of a terminal title which will be set.",
-        valueType = OptionValType.positive, readOnly = false, defaultValue = "30")]
+        valueType = OptionValType.positive, readOnly = false, defaultValue = "30"),
+        newOption(name = "execWithShell", value = "true",
+        description = "Execute all commands by using the system's default shell.",
+        valueType = OptionValType.boolean, readOnly = false, defaultValue = "true")]
     # Create a new database if not exists
     if not dbExists:
       if result.createAliasesDb == QuitFailure:
@@ -220,7 +223,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.createThemeDb == QuitFailure:
           return nil
-        for i in [0, 8, 9, 10]:
+        for i in [0, 8, 9, 10, 11]:
           setOption(optionName = initLimitedString(capacity = 40,
               text = options[i].option), value = initLimitedString(capacity = 40,
               text = options[i].value), description = initLimitedString(
@@ -230,7 +233,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       of 4:
         if result.createCompletionDb == QuitFailure:
           return nil
-        for i in [0, 10]:
+        for i in [0, 10, 11]:
           setOption(optionName = initLimitedString(capacity = 40,
               text = options[i].option), value = initLimitedString(capacity = 40,
               text = options[i].value), description = initLimitedString(
@@ -242,12 +245,13 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.createThemeDb == QuitFailure:
           return nil
-        setOption(optionName = initLimitedString(capacity = 40,
-            text = options[0].option), value = initLimitedString(capacity = 40,
-            text = options[0].value), description = initLimitedString(
-            capacity = 256, text = options[0].description),
-            valueType = options[0].valueType, db = result, readOnly = (
-            if options[0].readOnly: 1 else: 0))
+        for i in [0, 11]:
+          setOption(optionName = initLimitedString(capacity = 40,
+              text = options[i].option), value = initLimitedString(capacity = 40,
+              text = options[i].value), description = initLimitedString(
+              capacity = 256, text = options[i].description),
+              valueType = options[i].valueType, db = result, readOnly = (
+              if options[i].readOnly: 1 else: 0))
       of 6:
         discard
       else:
