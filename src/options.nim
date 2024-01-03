@@ -322,10 +322,14 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           try:
             let
               spaceIndex: int = value.find(sub = ' ')
+              withShell: bool = getOption(optionName = initLimitedString(
+                  capacity = 13, text = "execWithShell"), db = db,
+                  defaultValue = initLimitedString(capacity = 4,
+                  text = "true")) == "true"
               exitCode: ResultCode = runCommand(commandName = (if spaceIndex >
                   0: $(value[0 .. spaceIndex]) else: $value), arguments = (
                   if spaceIndex > 0: value[spaceIndex ..
-                  ^1] else: emptyLimitedString()), withShell = true, db = db)
+                  ^1] else: emptyLimitedString()), withShell = withShell, db = db)
             if exitCode != QuitSuccess:
               showError(message = "Value for option '" & option.option &
                   "' should be valid command.", db = db)

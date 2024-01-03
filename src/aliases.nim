@@ -33,7 +33,7 @@ import contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
-    output, resultcode, variables, theme
+    options, output, resultcode, variables, theme
 
 type
   Alias* {.tableName: "aliases".} = ref object of Model
@@ -706,11 +706,15 @@ proc execAlias*(arguments; aliasId: string; aliases;
               db = db, oldDirectory = workingDir.DirectoryPath)
           aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
           continue
-        let spaceIndex: int = command.find(sub = ' ')
+        let
+          spaceIndex: int = command.find(sub = ' ')
+          withShell: bool = getOption(optionName = initLimitedString(
+            capacity = 13, text = "execWithShell"), db = db,
+            defaultValue = initLimitedString(capacity = 4, text = "true")) == "true"
         result = runCommand(commandName = (if spaceIndex > 0: $(command[0 ..
             spaceIndex]) else: $command), arguments = (if spaceIndex >
             0: command[spaceIndex .. ^1] else: emptyLimitedString()),
-            withShell = true, db = db, output = (if alias.output ==
+            withShell = withShell, db = db, output = (if alias.output ==
             "stdout": "" else: alias.output))
         if result != QuitSuccess and conjCommands:
           break

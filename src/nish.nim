@@ -554,6 +554,9 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         except DbError:
           showError(message = "Can't execute preCommand hook for plugins. Reason: ",
               e = getCurrentException(), db = db)
+        let withShell: bool = getOption(optionName = initLimitedString(
+            capacity = 13, text = "execWithShell"), db = db,
+            defaultValue = initLimitedString(capacity = 4, text = "true")) == "true"
         # Parse commands
         case commandName
         # Quit from shell
@@ -590,13 +593,13 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             returnCode = executeCommand(commands = commands,
                 commandName = commandName, arguments = arguments,
                 inputString = inputString, db = db, aliases = aliases,
-                cursorPosition = cursorPosition, withShell = false)
+                cursorPosition = cursorPosition, withShell = not withShell)
         # Execute command (the shell's or external) or the shell's alias
         else:
           returnCode = executeCommand(commands = commands,
               commandName = commandName, arguments = arguments,
               inputString = inputString, db = db, aliases = aliases,
-              cursorPosition = cursorPosition)
+              cursorPosition = cursorPosition, withShell = withShell)
         # If the command returned 0 (unknown command), suggest other command
         logToFile(message = "returnCode = " & $returnCode)
         if returnCode == 127:
