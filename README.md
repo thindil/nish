@@ -3,11 +3,10 @@
 Nish is a non-POSIX, multiplatform command-line shell currently in a beta
 stage. It offers some features common for commands' shells, like Tab
 completion, syntax highlighting, variables, aliases. But it doesn't provide,
-for example own scripting language, instead it depends on the system's default
-shell to execute them. More information about available features, you can find
-below. If you read this file on GitHub: **please don't send pull requests here**.
-All will be automatically closed. Any code propositions should go to the
-[Fossil](https://www.laeran.pl/repositories/nish) repository.
+for example, own scripting language. More information about available features,
+you can find below. If you read this file on GitHub: **please don't send pull
+requests here**. All will be automatically closed. Any code propositions should
+go to the [Fossil](https://www.laeran.pl/repositories/nish) repository.
 
 **IMPORTANT:** If you read the file in the project code repository: This
 version of the file is related to the future version of the shell. It may
@@ -388,6 +387,9 @@ entries.
 * Theming system. It is possible to set the colors and style, like use
   underline, bold or italic font (if the terminal emulator supports it) for
   various of the shell's outputs (errors, help entries, etc.).
+* Ability to execute command with or without the system's default shell.
+  Additionally, the default behavior of the shell can be set in the shell's
+  options.
 
 ### How to install
 
