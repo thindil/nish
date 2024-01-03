@@ -337,7 +337,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       elif names is seq[Option]:
         db.rawSelect(qry = "SELECT * FROM options WHERE readonly=0 ORDER BY option ASC",
             objs = names)
-      elif names in seq[Alias]:
+      elif names is seq[Alias]:
         db.rawSelect(qry = "SELECT * FROM aliases ORDER BY id ASC",
             objs = names)
       var
