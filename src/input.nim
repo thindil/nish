@@ -337,6 +337,9 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       elif names is seq[Option]:
         db.rawSelect(qry = "SELECT * FROM options WHERE readonly=0 ORDER BY option ASC",
             objs = names)
+      elif names in seq[Alias]:
+        db.rawSelect(qry = "SELECT * FROM aliases ORDER BY id ASC",
+            objs = names)
       var
         rowIndex: Natural = 0
         row: array[4, string] = ["", "", "", ""]
@@ -346,6 +349,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
           itemName = $name.name
         elif names is seq[Option]:
           itemName = name.option
+        elif names is seq[Alias]:
+          itemName = name.name
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
             db = db, name = ids)) & style(ss = itemName, style = getColor(
             db = db, name = values))
