@@ -17,7 +17,11 @@ of the shell.
 - Ability to set the shell's output's colors as the shell's theme system.
 - Date to the debug's log's messages
 - Types to environment variables.
-- Command `exec` to execute a command without using the system's default shell
+- Command `exec` to execute a command with or without using the system's
+  default shell. The behavior of the command depends on the shell's
+  configuration.
+- Option to set the shell's default behavior related to executing commands: do
+  the shell should use the system's default shell or not.
 
 ### Changed
 - Updated the shell's help entries
