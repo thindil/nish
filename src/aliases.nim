@@ -30,28 +30,10 @@
 import std/[os, parseopt, strutils, tables]
 # External modules imports
 import contracts, nancy, termstyle
-import norm/[model, pragmas, sqlite]
+import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     options, output, resultcode, variables, theme
-
-type
-  Alias* {.tableName: "aliases".} = ref object of Model
-    ## Data structure for the shell's alias
-    ##
-    ## * name        - the name of the alias, used to trigger it
-    ## * path        - the path in which the alias will work
-    ## * recursive   - if true, the alias will be available also in subdirectories
-    ## * commmands   - the commands to execute by the alias
-    ## * description - the description of the alias, showed on the list of aliases
-    ##                 or in the alias information
-    ## * output      - where to redirect the output of the alias' commands
-    name* {.unique.}: string
-    path: string
-    recursive: bool
-    commands: string
-    description: string
-    output: string
 
 const
   aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
