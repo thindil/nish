@@ -30,7 +30,7 @@ suite "Unit tests for aliases module":
     check:
       deleteAlias(initLimitedString(capacity = 9, text = "delete 22"),
         myaliases, db) == QuitFailure
-    checkpoint("Readding the test alias")
+    checkpoint("Re-adding the test alias")
     var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
       commands = "ls -a", description = "Test alias 2.", output = "output")
     db.insert(testAlias2)
