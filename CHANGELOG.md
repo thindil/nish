@@ -39,7 +39,7 @@ of the shell.
 - Moved information about the last command's error code before information
   about the current directory in the shell's default prompt
 - Command `alias delete` can now be executed without the index of the alias to
-  delete. In that situation, the user will be asked for the alias to delete.
+  delete. In that situation, the user will be asked for the alias to delete
 
 ### Fixed
 - Cross-compiling the shell for Arm
