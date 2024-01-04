@@ -105,7 +105,6 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
   ##
   ## Returns QuitSuccess if the list of aliases was shown, otherwise QuitFailure
   require:
-    arguments.len > 3
     arguments.startsWith(prefix = "list")
     db != nil
   body:
@@ -207,7 +206,6 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
   ## Returns QuitSuccess if the selected alias was properly deleted, otherwise
   ## QuitFailure. Also, updated parameter aliases
   require:
-    arguments.len > 5
     arguments.startsWith(prefix = "delete")
     db != nil
   body:
@@ -258,7 +256,6 @@ proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
   ## Returns quitSuccess if the selected alias was properly show, otherwise
   ## QuitFailure.
   require:
-    arguments.len > 3
     arguments.startsWith(prefix = "show")
     db != nil
   body:
