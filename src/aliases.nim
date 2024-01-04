@@ -211,21 +211,28 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     arguments.startsWith(prefix = "delete")
     db != nil
   body:
+    var
+      id: DatabaseId = 0.DatabaseId
+      alias: Alias = newAlias()
     if arguments.len < 8:
-      return showError(message = "Enter the Id of the alias to delete.", db = db)
-    let id: DatabaseId = try:
-        parseInt(s = $arguments[7 .. ^1]).DatabaseId
-      except ValueError:
-        return showError(message = "The Id of the alias must be a positive number.", db = db)
+      askForName[Alias](db = db, action = "Deleting the alias",
+            namesType = "alias", name = alias)
+      if alias.description.len == 0:
+        return QuitFailure.ResultCode
+      id = alias.id.DatabaseId
+    else:
+        id = try:
+            parseInt(s = $arguments[7 .. ^1]).DatabaseId
+          except ValueError:
+            return showError(message = "The Id of the alias must be a positive number.", db = db)
+        try:
+          if not db.exists(T = Alias, cond = "id=?", params = $id):
+            return showError(message = "The alias with the Id: " & $id &
+              " doesn't exists.", db = db)
+        except:
+          return showError(message = "Can't find the alias in database. Reason: ",
+              e = getCurrentException(), db = db)
     try:
-      if not db.exists(T = Alias, cond = "id=?", params = $id):
-        return showError(message = "The alias with the Id: " & $id &
-          " doesn't exists.", db = db)
-    except:
-      return showError(message = "Can't find the alias in database. Reason: ",
-          e = getCurrentException(), db = db)
-    try:
-      var alias: Alias = newAlias()
       db.select(obj = alias, cond = "id=?", params = $id)
       db.delete(obj = alias)
     except:
