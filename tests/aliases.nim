@@ -1,5 +1,5 @@
 import std/[os, tables]
-import ../src/[aliases, db, directorypath, commandslist, lstring, resultcode]
+import ../src/[aliases, constants, db, directorypath, commandslist, lstring, resultcode]
 import utils/utils
 import contracts, unittest2
 import norm/sqlite

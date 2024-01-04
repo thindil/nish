@@ -1,4 +1,4 @@
-import ../../src/[aliases, db, directorypath]
+import ../../src/[aliases, constants, db, directorypath]
 import norm/sqlite
 import unittest2
 
