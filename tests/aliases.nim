@@ -20,6 +20,14 @@ suite "Unit tests for aliases module":
     check:
       myaliases.len == 1
 
+  test "Getting the shell's alias ID":
+    checkpoint "Getting ID of an existing alias"
+    check:
+      getAliasId(initLimitedString(capacity = 8, text = "delete 2"), db).int == 2
+    checkpoint "Getting ID of a non-existing alias"
+    check:
+      getAliasId(initLimitedString(capacity = 9, text = "delete 22"), db).int == 0
+
   test "Deleting the shell's alias":
     checkpoint "Deleting an existing alias"
     check:
