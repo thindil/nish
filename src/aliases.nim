@@ -194,7 +194,7 @@ proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
     Alias(name: name, path: path, commands: commands, description: description,
         recursive: recursive, output: output)
 
-proc getAliasId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
+proc getAliasId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the alias. If the user didn't enter the ID, show the list of
