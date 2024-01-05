@@ -197,6 +197,15 @@ proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
 proc getAliasId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
+  ## Get the ID of the alias. If the user didn't enter the ID, show the list of
+  ## aliases and ask the user for ID. Otherwise, check correctness of entered
+  ## ID.
+  ##
+  ## * arguments - the user entered text with arguments for a command
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns the ID of an alias or 0 if entered ID was invalid or the user
+  ## decided to cancel the command.
   require:
     db != nil
     arguments.len > 0
