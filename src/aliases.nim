@@ -211,15 +211,24 @@ proc getAliasId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     arguments.len > 0
   body:
     result = 0.DatabaseId
-    var alias: Alias = newAlias()
+    var
+      alias: Alias = newAlias()
+      actionName: string = ""
+      argumentsLen: Positive = 1
+    if arguments.startsWith(prefix = "delete"):
+      actionName = "Deleting"
+      argumentsLen = 8
+    elif arguments.startsWith(prefix = "show"):
+      actionName = "Showing"
+      argumentsLen = 6
     if arguments.len < 8:
-      askForName[Alias](db = db, action = "Deleting the alias",
+      askForName[Alias](db = db, action = actionName & " the alias",
             namesType = "alias", name = alias)
       if alias.description.len == 0:
         return 0.DatabaseId
       return alias.id.DatabaseId
     result = try:
-        parseInt(s = $arguments[7 .. ^1]).DatabaseId
+        parseInt(s = $arguments[argumentsLen - 1 .. ^1]).DatabaseId
       except ValueError:
         showError(message = "The Id of the alias must be a positive number.", db = db)
         return 0.DatabaseId
