@@ -194,7 +194,12 @@ proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
     Alias(name: name, path: path, commands: commands, description: description,
         recursive: recursive, output: output)
 
-proc getAliasId(arguments; db): DatabaseId {.contractual.} =
+proc getAliasId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
+    WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
+    contractual.} =
+  require:
+    db != nil
+    arguments.len > 0
   body:
     result = 0.DatabaseId
     var alias: Alias = newAlias()
@@ -211,10 +216,12 @@ proc getAliasId(arguments; db): DatabaseId {.contractual.} =
         return 0.DatabaseId
     try:
       if not db.exists(T = Alias, cond = "id=?", params = $result):
-        showError(message = "The alias with the Id: " & $result & " doesn't exists.", db = db)
+        showError(message = "The alias with the Id: " & $result &
+            " doesn't exists.", db = db)
         return 0.DatabaseId
     except:
-      showError(message = "Can't find the alias in database. Reason: ", e = getCurrentException(), db = db)
+      showError(message = "Can't find the alias in database. Reason: ",
+          e = getCurrentException(), db = db)
       return 0.DatabaseId
 
 proc deleteAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
