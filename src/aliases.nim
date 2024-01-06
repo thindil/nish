@@ -221,6 +221,9 @@ proc getAliasId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     elif arguments.startsWith(prefix = "show"):
       actionName = "Showing"
       argumentsLen = 6
+    elif arguments.startsWith(prefix = "edit"):
+      actionName = "Editing"
+      argumentsLen = 6
     if arguments.len < argumentsLen:
       askForName[Alias](db = db, action = actionName & " an alias",
             namesType = "alias", name = alias)
@@ -474,22 +477,14 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 3
     db != nil
   body:
-    var
-      alias: Alias = newAlias()
-      id: DatabaseId = 0.DatabaseId
-    if arguments.len < 6:
-      return showError(message = "Enter the ID of the alias to edit.", db = db)
-    try:
-      id = parseInt(s = $arguments[5 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the alias must be a positive number.", db = db)
+    let id: DatabaseId = getAliasId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
+    var alias: Alias = newAlias()
     try:
       db.select(obj = alias, cond = "id=?", params = $id)
     except:
       return showError(message = "Can't check if the alias exists.", db = db)
-    if alias.name.len == 0:
-      return showError(message = "The alias with the Id: " & $id &
-        " doesn't exists.", db = db)
     showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
     # Set the name for the alias
     showFormHeader(message = "(1/6 or 7) Name", db = db)
