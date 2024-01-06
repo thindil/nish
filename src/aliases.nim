@@ -221,8 +221,8 @@ proc getAliasId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     elif arguments.startsWith(prefix = "show"):
       actionName = "Showing"
       argumentsLen = 6
-    if arguments.len < 8:
-      askForName[Alias](db = db, action = actionName & " the alias",
+    if arguments.len < argumentsLen:
+      askForName[Alias](db = db, action = actionName & " an alias",
             namesType = "alias", name = alias)
       if alias.description.len == 0:
         return 0.DatabaseId
@@ -290,12 +290,9 @@ proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.startsWith(prefix = "show")
     db != nil
   body:
-    if arguments.len < 6:
-      return showError(message = "Enter the ID of the alias to show.", db = db)
-    let id: DatabaseId = try:
-        parseInt(s = $arguments[5 .. ^1]).DatabaseId
-      except:
-        return showError(message = "The Id of the alias must be a positive number.", db = db)
+    let id: DatabaseId = getAliasId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     var alias: Alias = newAlias()
     try:
       if not db.exists(T = Alias, cond = "id=?", params = $id):
