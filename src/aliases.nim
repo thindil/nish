@@ -295,9 +295,6 @@ proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return QuitFailure.ResultCode
     var alias: Alias = newAlias()
     try:
-      if not db.exists(T = Alias, cond = "id=?", params = $id):
-        return showError(message = "The alias with the ID: " & $id &
-          " doesn't exists.", db = db)
       db.select(obj = alias, cond = "id=?", params = $id)
     except:
       return showError(message = "Can't read alias data from database. Reason: ",
