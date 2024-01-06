@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -325,8 +325,6 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
     action.len > 0
     namesType.len > 0
   body:
-    showOutput(message = "The name of the " & namesType &
-        ". Select its Id from the list.", db = db)
     var
       table: TerminalTable = TerminalTable()
       names: seq[T] = @[name]
@@ -340,6 +338,12 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       elif names is seq[Alias]:
         db.rawSelect(qry = "SELECT * FROM aliases ORDER BY id ASC",
             objs = names)
+      if names.len == 0:
+        showError(message = "There is no available " & namesType & " to show.", db = db)
+        name.description = ""
+        return
+      showOutput(message = "The name of the " & namesType &
+          ". Select its Id from the list. Enter 'exit' to cancel the command.", db = db)
       var
         rowIndex: Natural = 0
         row: array[4, string] = ["", "", "", ""]
