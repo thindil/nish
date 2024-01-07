@@ -38,9 +38,9 @@ of the shell.
   the same way as it was.
 - Moved information about the last command's error code before information
   about the current directory in the shell's default prompt
-- Commands `alias delete`, `alias show` can now be executed without entering
-  the index of the alias. In that situation, the user will be asked for the
-  index of an alias from the list.
+- Commands `alias delete`, `alias show`, `alias edit` can now be executed
+  without entering the index of the alias. In that situation, the user will
+  be asked for the index of an alias from the list.
 
 ### Fixed
 - Cross-compiling the shell for Arm
