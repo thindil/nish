@@ -338,6 +338,9 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       elif names is seq[Alias]:
         db.rawSelect(qry = "SELECT * FROM aliases ORDER BY id ASC",
             objs = names)
+      elif names is seq[Completion]:
+        db.rawSelect(qry = "SELECT * FROM completions ORDER BY command ASC",
+            objs = names)
       if names.len == 0:
         showError(message = "There is no available " & namesType & " to show.", db = db)
         name.description = ""
@@ -355,6 +358,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
           itemName = name.option
         elif names is seq[Alias]:
           itemName = name.name
+        elif names is seq[Completion]:
+          itemName = name.command
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
             db = db, name = ids)) & style(ss = itemName, style = getColor(
             db = db, name = values))
