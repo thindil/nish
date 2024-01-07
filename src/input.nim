@@ -343,7 +343,10 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
             objs = names)
       if names.len == 0:
         showError(message = "There is no available " & namesType & " to show.", db = db)
-        name.description = ""
+        when names is seq[Completion]:
+          name.command = ""
+        else:
+          name.description = ""
         return
       showOutput(message = "The name of the " & namesType &
           ". Select its Id from the list. Enter 'exit' to cancel the command.", db = db)
@@ -372,7 +375,10 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
     except:
       showError(message = "Can't show the list of " & namesType & "s. Reason: ",
           e = getCurrentException(), db = db)
-      name.description = ""
+      when names is seq[Completion]:
+        name.command = ""
+      else:
+        name.description = ""
       return
     try:
       table.echoTable
@@ -385,11 +391,17 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
     let id: UserInput = readInput(db = db)
     if id == "exit":
       showError(message = action & " cancelled.", db = db)
-      name.description = ""
+      when names is seq[Completion]:
+        name.command = ""
+      else:
+        name.description = ""
       return
     try:
       name = names[parseInt(s = $id) - 1]
     except:
-      name.description = ""
+      when names is seq[Completion]:
+        name.command = ""
+      else:
+        name.description = ""
       discard showError(message = action &
           " cancelled, invalid " & namesType & "'s number: '" & id & "'", db = db)
