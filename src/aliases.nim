@@ -484,7 +484,8 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     try:
       db.select(obj = alias, cond = "id=?", params = $id)
     except:
-      return showError(message = "Can't check if the alias exists.", db = db)
+      return showError(message = "Can't get the alias from database. Reason: ",
+          e = getCurrentException(), db = db)
     showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
     # Set the name for the alias
     showFormHeader(message = "(1/6 or 7) Name", db = db)
