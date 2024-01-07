@@ -388,6 +388,60 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         "' added.", color = success, db = db)
     return QuitSuccess.ResultCode
 
+proc getCompletionId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
+    WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
+    contractual.} =
+  ## Get the ID of the completion. If the user didn't enter the ID, show the list of
+  ## completions and ask the user for ID. Otherwise, check correctness of entered
+  ## ID.
+  ##
+  ## * arguments - the user entered text with arguments for a command
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns the ID of a completion or 0 if entered ID was invalid or the user
+  ## decided to cancel the command.
+  require:
+    db != nil
+    arguments.len > 0
+  body:
+    result = 0.DatabaseId
+    var
+      completion: Completion = newCompletion()
+      actionName: string = ""
+      argumentsLen: Positive = 1
+    if arguments.startsWith(prefix = "delete"):
+      actionName = "Deleting"
+      argumentsLen = 8
+    elif arguments.startsWith(prefix = "show"):
+      actionName = "Showing"
+      argumentsLen = 6
+    elif arguments.startsWith(prefix = "edit"):
+      actionName = "Editing"
+      argumentsLen = 6
+    elif arguments.startsWith(prefix = "export"):
+      actionName = "Exporting"
+      argumentsLen = 8
+    if arguments.len < argumentsLen:
+      askForName[Completion](db = db, action = actionName & " a completion",
+            namesType = "completion", name = completion)
+      if completion.command.len == 0:
+        return 0.DatabaseId
+      return completion.id.DatabaseId
+    result = try:
+        parseInt(s = $arguments[argumentsLen - 1 .. ^1]).DatabaseId
+      except ValueError:
+        showError(message = "The Id of the completion must be a positive number.", db = db)
+        return 0.DatabaseId
+    try:
+      if not db.exists(T = Completion, cond = "id=?", params = $result):
+        showError(message = "The completion with the Id: " & $result &
+            " doesn't exists.", db = db)
+        return 0.DatabaseId
+    except:
+      showError(message = "Can't find the completion in database. Reason: ",
+          e = getCurrentException(), db = db)
+      return 0.DatabaseId
+
 proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
