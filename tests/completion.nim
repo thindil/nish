@@ -1,6 +1,6 @@
 import std/[os, tables]
 import utils/utils
-import ../src/[aliases, completion, commandslist, db, lstring, resultcode]
+import ../src/[aliases, completion, commandslist, constants, db, lstring, resultcode]
 import norm/sqlite
 import unittest2
 
@@ -45,6 +45,16 @@ suite "Unit tests for completion module":
     check:
       completions[0] == "something"
 
+  test "Getting the shell's completion ID":
+    checkpoint "Getting ID of an existing completion"
+    check:
+      getCompletionId(initLimitedString(capacity = 8, text = "delete 1"),
+          db).int == 1
+    checkpoint "Getting ID of a non-existing completion"
+    check:
+      getCompletionId(initLimitedString(capacity = 9, text = "delete 22"),
+          db).int == 0
+
   test "Listing the defined commands' completions":
     check:
       listCompletion(initLimitedString(capacity = 4, text = "list"), db) == QuitSuccess
@@ -52,14 +62,16 @@ suite "Unit tests for completion module":
   test "Deleting a command's completion":
     checkpoint "Deleting an existing completion"
     check:
-      deleteCompletion(initLimitedString(capacity = 8, text = "delete 1"), db) == QuitSuccess
+      deleteCompletion(initLimitedString(capacity = 8, text = "delete 1"),
+          db) == QuitSuccess
       db.count(Completion) == 0
     var completion = newCompletion(command = "ala", cType = custom,
         cValues = "something")
     db.insert(completion)
     checkpoint "Deleting a non-existing completion"
     check:
-      deleteCompletion(initLimitedString(capacity = 8, text = "delete 2"), db) == QuitFailure
+      deleteCompletion(initLimitedString(capacity = 8, text = "delete 2"),
+          db) == QuitFailure
       db.count(Completion) == 1
 
   test "Show a command's completion":
@@ -73,19 +85,23 @@ suite "Unit tests for completion module":
   test "Exporting a command's completion":
     checkpoint "Exporting an existing completion"
     check:
-      exportCompletion(initLimitedString(capacity = 17, text = "export 1 test.txt"), db) == QuitSuccess
+      exportCompletion(initLimitedString(capacity = 17,
+          text = "export 1 test.txt"), db) == QuitSuccess
     checkpoint "Exporting a non-existing completion"
     check:
-      exportCompletion(initLimitedString(capacity = 17, text = "export 2 test.txt"), db) == QuitFailure
+      exportCompletion(initLimitedString(capacity = 17,
+          text = "export 2 test.txt"), db) == QuitFailure
 
   test "Importing a command's completion":
     checkpoint "Importing a new completion"
     discard deleteCompletion(initLimitedString(capacity = 8, text = "delete 1"), db)
     check:
-      importCompletion(initLimitedString(capacity = 15, text = "import test.txt"), db) == QuitSuccess
+      importCompletion(initLimitedString(capacity = 15,
+          text = "import test.txt"), db) == QuitSuccess
     checkpoint "Importing an existing completion"
     check:
-      importCompletion(initLimitedString(capacity = 15, text = "import test.txt"), db) == QuitFailure
+      importCompletion(initLimitedString(capacity = 15,
+          text = "import test.txt"), db) == QuitFailure
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
