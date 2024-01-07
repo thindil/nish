@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -112,6 +112,22 @@ type
     output*: string
   ColumnAmount* = distinct Natural
     ## Used to store length or amount of terminal's characters columns
+  CompletionType* = enum
+    ## Used to set the type of commands' completion
+    dirs = "Directories only", files = "Files only",
+        dirsfiles = "Directories and files", commands = "Commands",
+        custom = "Custom",
+        none = "Completion for the selected command should be disabled"
+  Completion* {.tableName: "completions".} = ref object of Model
+    ## Data structure for the shell's commands' completion
+    ##
+    ## * command - the command for which the completion is set
+    ## * cType   - the type of completion for the command
+    ## * values  - the proper values of completion if the completion's type is
+    ##             set to the custom type
+    command* {.unique.}: string
+    cType*: CompletionType
+    cValues*: string
 
 proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
     contractual.} =

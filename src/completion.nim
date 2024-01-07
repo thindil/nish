@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,33 +30,14 @@
 import std/[os, parsecfg, strutils, tables]
 # External modules imports
 import contracts, nancy, termstyle
-import norm/[model, pragmas, sqlite]
+import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, help, input, lstring, options,
     output, resultcode, theme
 
-type
-  CompletionType* = enum
-    ## Used to set the type of commands' completion
-    dirs = "Directories only", files = "Files only",
-        dirsfiles = "Directories and files", commands = "Commands",
-        custom = "Custom",
-        none = "Completion for the selected command should be disabled"
-
-  DirCompletionType = enum
+type DirCompletionType = enum
     ## Used to set the type of completion for directories and files
     dirs, files, all
-
-  Completion* {.tableName: "completions".} = ref object of Model
-    ## Data structure for the shell's commands' completion
-    ##
-    ## * command - the command for which the completion is set
-    ## * cType   - the type of completion for the command
-    ## * values  - the proper values of completion if the completion's type is
-    ##             set to the custom type
-    command* {.unique.}: string
-    cType: CompletionType
-    cValues: string
 
 const
   completionCommands: seq[string] = @["list", "delete", "show", "add",
