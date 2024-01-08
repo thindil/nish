@@ -16,12 +16,12 @@ of the shell.
 - Creating the Unix man page for the shell
 - Ability to set the shell's output's colors as the shell's theme system.
 - Date to the debug's log's messages
-- Types to environment variables.
+- Types to environment variables
 - Command `exec` to execute a command with or without using the system's
   default shell. The behavior of the command depends on the shell's
-  configuration.
+  configuration
 - Option to set the shell's default behavior related to executing commands: do
-  the shell should use the system's default shell or not.
+  the shell should use the system's default shell or not
 
 ### Changed
 - Updated the shell's help entries
@@ -31,19 +31,19 @@ of the shell.
   about their values more human-friendly
 - **BREAKING**: Redesigned the command `options set`. Instead of setting the
   name and value of the option to set by its arguments, the command is now a
-  form similar to setting an alias or a variable.
+  form similar to setting an alias or a variable
 - **BREAKING**: Redesigned the command `options reset`. Same as above, instead of
   setting the name of the option to reset by its argument, the command will
   ask for the name after executing it. Resetting of all of options is done in
-  the same way as it was.
+  the same way as it was
 - Moved information about the last command's error code before information
   about the current directory in the shell's default prompt
 - Commands `alias delete`, `alias show`, `alias edit` can now be executed
   without entering the index of the alias. In that situation, the user will
-  be asked for the index of an alias from their list.
+  be asked for the index of an alias from their list
 - Command `completion edit` can now be executed without entering the index of
   the completion. In that situation, the user will be asked for the index of
-  a completion from their list.
+  a completion from their list
 
 ### Fixed
 - Cross-compiling the shell for Arm
@@ -54,7 +54,7 @@ of the shell.
 - Commands' suggestions don't work with the built-in shell's commands
 - Refreshing environment variables after adding a new or editing an existing
 - If the shell's alias' output is set to a file, append the result of the alias
-  to the file instead of overwritting it.
+  to the file instead of overwritting it
 - Sending the shell's alias' output to the standard error output
 
 ## [0.6.0] - 2023-11-13
