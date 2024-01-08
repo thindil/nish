@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[os, strutils, tables]
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, help, input, lstring, output, resultcode, theme

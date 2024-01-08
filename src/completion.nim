@@ -29,15 +29,15 @@
 # Standard library imports
 import std/[os, parsecfg, strutils, tables]
 # External modules imports
-import contracts, nancy, termstyle
+import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, help, input, lstring, options,
     output, resultcode, theme
 
 type DirCompletionType = enum
-    ## Used to set the type of completion for directories and files
-    dirs, files, all
+  ## Used to set the type of completion for directories and files
+  dirs, files, all
 
 const
   completionCommands: seq[string] = @["list", "delete", "show", "add",
@@ -358,18 +358,18 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Adding a new completion cancelled.", db = db)
     var completion: Completion = newCompletion(command = $command, cType = (
         case typeChar.toLowerAscii
-        of 'd':
-          CompletionType.dirs
-        of 'f':
-          CompletionType.files
-        of 'a':
-          dirsfiles
-        of 'c':
-          commands
-        of 'u':
-          custom
-        else:
-          none), cValues = $values)
+          of 'd':
+            CompletionType.dirs
+          of 'f':
+            CompletionType.files
+          of 'a':
+            dirsfiles
+          of 'c':
+            commands
+          of 'u':
+            custom
+          else:
+            none), cValues = $values)
     # Check if completion with the same parameters exists in the database
     try:
       if db.exists(T = Completion, cond = "command=?",
@@ -388,8 +388,8 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         "' added.", color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc getCompletionId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
-    WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
+proc getCompletionId*(arguments; db): DatabaseId {.sideEffect, raises: [],
+    tags: [WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the completion. If the user didn't enter the ID, show the list of
   ## completions and ask the user for ID. Otherwise, check correctness of entered
@@ -418,9 +418,6 @@ proc getCompletionId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags:
     elif arguments.startsWith(prefix = "edit"):
       actionName = "Editing"
       argumentsLen = 6
-    elif arguments.startsWith(prefix = "export"):
-      actionName = "Exporting"
-      argumentsLen = 8
     if arguments.len < argumentsLen:
       askForName[Completion](db = db, action = actionName & " a completion",
             namesType = "completion", name = completion)
@@ -457,22 +454,15 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 3
     db != nil
   body:
-    var
-      completion: Completion = newCompletion()
-      id: DatabaseId = 0.DatabaseId
-    if arguments.len < 6:
-      return showError(message = "Enter the ID of the completion to edit.", db = db)
-    try:
-      id = parseInt(s = $arguments[5 .. ^1]).DatabaseId
-    except ValueError:
-      return showError(message = "The Id of the completion must be a positive number.", db = db)
+    let id: DatabaseId = getCompletionId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
+    var completion: Completion = newCompletion()
     try:
       db.select(obj = completion, cond = "id=?", params = $id)
     except:
-      return showError(message = "Can't check if the completion exists.", db = db)
-    if completion.command.len == 0:
-      return showError(message = "The completion with the Id: " & $id &
-        " doesn't exists.", db = db)
+      return showError(message = "Can't get completion from the database. Reason: ",
+          e = getCurrentException(), db = db)
     showOutput(message = "You can cancel editing the completion at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
     # Set the command for the completion
     showFormHeader(message = "(1/2 or 3) Command", db = db)

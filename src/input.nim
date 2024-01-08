@@ -329,6 +329,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       table: TerminalTable = TerminalTable()
       names: seq[T] = @[name]
     try:
+      {.ruleOff: "ifStatements".}
       when names is seq[Color]:
         db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
             objs = names)
@@ -341,6 +342,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       elif names is seq[Completion]:
         db.rawSelect(qry = "SELECT * FROM completions ORDER BY command ASC",
             objs = names)
+      {.ruleOn: "ifStatements".}
       if names.len == 0:
         showError(message = "There is no available " & namesType & " to show.", db = db)
         when names is seq[Completion]:
@@ -355,6 +357,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
         row: array[4, string] = ["", "", "", ""]
       for index, name in names:
         var itemName: string = ""
+        {.ruleOff: "ifStatements".}
         when names is seq[Color]:
           itemName = $name.name
         elif names is seq[Option]:
@@ -363,6 +366,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
           itemName = name.name
         elif names is seq[Completion]:
           itemName = name.command
+        {.ruleOn: "ifStatements".}
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
             db = db, name = ids)) & style(ss = itemName, style = getColor(
             db = db, name = values))

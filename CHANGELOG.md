@@ -40,7 +40,10 @@ of the shell.
   about the current directory in the shell's default prompt
 - Commands `alias delete`, `alias show`, `alias edit` can now be executed
   without entering the index of the alias. In that situation, the user will
-  be asked for the index of an alias from the list.
+  be asked for the index of an alias from their list.
+- Command `completion edit` can now be executed without entering the index of
+  the completion. In that situation, the user will be asked for the index of
+  a completion from their list.
 
 ### Fixed
 - Cross-compiling the shell for Arm
