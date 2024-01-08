@@ -603,19 +603,9 @@ proc deleteCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.startsWith(prefix = "delete")
     db != nil
   body:
-    if arguments.len < 8:
-      return showError(message = "Enter the Id of the completion to delete.", db = db)
-    let id: DatabaseId = try:
-        parseInt(s = $arguments[7 .. ^1]).DatabaseId
-      except ValueError:
-        return showError(message = "The Id of the completion must be a positive number.", db = db)
-    try:
-      if not db.exists(T = Completion, cond = "id=?", params = $id):
-        return showError(message = "The completion with the Id: " & $id &
-          " doesn't exists.", db = db)
-    except:
-      return showError(message = "Can't find the completion in database. Reason: ",
-          e = getCurrentException(), db = db)
+    let id: DatabaseId = getCompletionId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     try:
       var completion: Completion = newCompletion()
       db.select(obj = completion, cond = "id=?", params = $id)
