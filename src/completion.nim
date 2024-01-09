@@ -634,17 +634,11 @@ proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.startsWith(prefix = "show")
     db != nil
   body:
-    if arguments.len < 6:
-      return showError(message = "Enter the ID of the completion to show.", db = db)
-    let id: DatabaseId = try:
-        parseInt(s = $arguments[5 .. ^1]).DatabaseId
-      except:
-        return showError(message = "The Id of the completion must be a positive number.", db = db)
+    let id: DatabaseId = getCompletionId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     var completion: Completion = newCompletion()
     try:
-      if not db.exists(T = Completion, cond = "id=?", params = $id):
-        return showError(message = "The completion with the ID: " & $id &
-          " doesn't exists.", db = db)
       db.select(obj = completion, cond = "id=?", params = $id)
     except:
       return showError(message = "Can't read completion data from database. Reason: ",
