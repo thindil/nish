@@ -342,6 +342,9 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       elif names is seq[Completion]:
         db.rawSelect(qry = "SELECT * FROM completions ORDER BY command ASC",
             objs = names)
+      elif names is seq[Plugin]:
+        db.rawSelect(qry = "SELECT * FROM plugins ORDER BY id ASC",
+            objs = names)
       {.ruleOn: "ifStatements".}
       if names.len == 0:
         showError(message = "There is no available " & namesType & " to show.", db = db)
@@ -366,6 +369,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
           itemName = name.name
         elif names is seq[Completion]:
           itemName = name.command
+        elif names is seq[Plugin]:
+          itemName = name.location
         {.ruleOn: "ifStatements".}
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
             db = db, name = ids)) & style(ss = itemName, style = getColor(
