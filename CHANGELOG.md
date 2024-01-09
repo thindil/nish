@@ -41,9 +41,9 @@ of the shell.
 - Commands `alias delete`, `alias show`, `alias edit` can now be executed
   without entering the index of the alias. In that situation, the user will
   be asked for the index of an alias from their list
-- Commands `completion edit`, `completion delete` can now be executed without
-  entering the index of the completion. In that situation, the user will be
-  asked for the index of a completion from their list
+- Commands `completion edit`, `completion delete`, `completion show` can now
+  be executed without entering the index of the completion. In that situation,
+  the user will be asked for the index of a completion from their list
 
 ### Fixed
 - Cross-compiling the shell for Arm
