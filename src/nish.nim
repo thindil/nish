@@ -68,7 +68,7 @@ proc showProgramVersion*() {.sideEffect, raises: [], tags: [WriteIOEffect],
       stdout.writeLine(x = """
       Nish version: """ & version & """
 
-      Copyright: 2021-2023 Bartek Jasicki <thindil@laeran.pl.eu.org>
+      Copyright: 2021-2024 Bartek Jasicki <thindil@laeran.pl.eu.org>
       License: 3-Clause BSD""")
       stdout.flushFile
     except IOError:
