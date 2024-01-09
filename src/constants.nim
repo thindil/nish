@@ -128,6 +128,17 @@ type
     command* {.unique.}: string
     cType*: CompletionType
     cValues*: string
+  Plugin* {.tableName: "plugins".} = ref object of Model
+    ## Data structure for the shell's plugin
+    ##
+    ## * location    - the full path to the plugin
+    ## * enabled     - if true, the plugin is enabled
+    ## * preCommand  - if true, the plugin is executed before the user's command
+    ## * postCommand - fi true, the plugin is executed after the user's command
+    location*: string
+    enabled*: bool
+    preCommand*: bool
+    postCommand*: bool
 
 proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
     contractual.} =

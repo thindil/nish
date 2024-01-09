@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 import std/[os, osproc, parseopt, streams, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
-import norm/[model, pragmas, sqlite]
+import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, help, lstring, options,
     output, resultcode, theme
@@ -52,17 +52,6 @@ type
     api: seq[string] ## The list of API calls supported by the plugin
   PluginResult* = tuple [code: ResultCode,
       answer: LimitedString] ## Store the result of the plugin's API command
-  Plugin* {.tableName: "plugins".} = ref object of Model
-    ## Data structure for the shell's plugin
-    ##
-    ## * location    - the full path to the plugin
-    ## * enabled     - if true, the plugin is enabled
-    ## * preCommand  - if true, the plugin is executed before the user's command
-    ## * postCommand - fi true, the plugin is executed after the user's command
-    location*: string
-    enabled: bool
-    preCommand: bool
-    postCommand: bool
 
 using
   db: DbConn # Connection to the shell's database
