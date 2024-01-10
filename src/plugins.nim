@@ -30,10 +30,10 @@
 # Standard library imports
 import std/[os, osproc, parseopt, streams, strutils, tables]
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, help, lstring, options,
+import commandslist, constants, databaseid, help, input, lstring, options,
     output, resultcode, theme
 
 const
@@ -546,6 +546,63 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
     showOutput(message = "File '" & pluginPath &
         "' added as a plugin to the shell.", color = success, db = db)
     return QuitSuccess.ResultCode
+
+proc getPluginId*(arguments; db): DatabaseId {.sideEffect, raises: [],
+    tags: [WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
+    contractual.} =
+  ## Get the ID of the plugin. If the user didn't enter the ID, show the list of
+  ## plugins and ask the user for ID. Otherwise, check correctness of entered
+  ## ID.
+  ##
+  ## * arguments - the user entered text with arguments for a command
+  ## * db        - the connection to the shell's database
+  ##
+  ## Returns the ID of a plugin or 0 if entered ID was invalid or the user
+  ## decided to cancel the command.
+  require:
+    db != nil
+    arguments.len > 0
+  body:
+    result = 0.DatabaseId
+    var
+      plugin: Plugin = newPlugin()
+      actionName: string = ""
+      argumentsLen: Positive = 1
+    if arguments.startsWith(prefix = "remove"):
+      actionName = "Removing"
+      argumentsLen = 8
+    elif arguments.startsWith(prefix = "show"):
+      actionName = "Showing"
+      argumentsLen = 6
+    elif arguments.startsWith(prefix = "edit"):
+      actionName = "Editing"
+      argumentsLen = 6
+    elif arguments.startsWith(prefix = "enable"):
+      actionName = "Enabling"
+      argumentsLen = 8
+    elif arguments.startsWith(prefix = "disable"):
+      actionName = "Disabling"
+      argumentsLen = 9
+    if arguments.len < argumentsLen:
+      askForName[Plugin](db = db, action = actionName & " a plugin",
+            namesType = "plugin", name = plugin)
+      if plugin.location.len == 0:
+        return 0.DatabaseId
+      return plugin.id.DatabaseId
+    result = try:
+        parseInt(s = $arguments[argumentsLen - 1 .. ^1]).DatabaseId
+      except ValueError:
+        showError(message = "The Id of the plugin must be a positive number.", db = db)
+        return 0.DatabaseId
+    try:
+      if not db.exists(T = Plugin, cond = "id=?", params = $result):
+        showError(message = "The plugin with the Id: " & $result &
+            " doesn't exists.", db = db)
+        return 0.DatabaseId
+    except:
+      showError(message = "Can't find the plugin in database. Reason: ",
+          e = getCurrentException(), db = db)
+      return 0.DatabaseId
 
 proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
