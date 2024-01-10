@@ -619,20 +619,12 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
     db != nil
     arguments.len > 0
   body:
-    # Check if the user entered proper amount of arguments to the command
-    if arguments.len < 8:
-      return showError(message = "Please enter the Id to the plugin which will be removed from the shell.", db = db)
-    let
-      pluginId: DatabaseId = try:
-          ($arguments[7 .. ^1]).parseInt.DatabaseId
-        except ValueError:
-          return showError(message = "The Id of the plugin must be a positive number.", db = db)
+    let id: DatabaseId = getPluginId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     try:
-      if not db.exists(T = Plugin, cond = "id=?", params = $pluginId):
-        return showError(message = "The plugin with the Id: " & $pluginId &
-          " doesn't exist.", db = db)
       var plugin: Plugin = newPlugin()
-      db.select(obj = plugin, cond = "id=?", params = $pluginId)
+      db.select(obj = plugin, cond = "id=?", params = $id)
       # Execute the disabling code of the plugin first
       if execPlugin(pluginPath = plugin.location, arguments = ["disable"],
           db = db, commands = commands).code != QuitSuccess:
@@ -649,7 +641,7 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
       return showError(message = "Can't delete plugin from database. Reason: ",
           e = getCurrentException(), db = db)
     # Remove the plugin from the list of enabled plugins
-    showOutput(message = "Deleted the plugin with Id: " & $pluginId,
+    showOutput(message = "Deleted the plugin with Id: " & $id,
         color = success, db = db)
     return QuitSuccess.ResultCode
 
@@ -927,7 +919,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
     # Load all enabled plugins and execute the initialization code of the plugin
     try:
       var plugins: seq[Plugin] = @[newPlugin()]
-      db.rawSelect(qry = "SELECT id, location, enabled FROM plugins ORDER BY id ASC",
+      db.rawSelect(qry = "SELECT * FROM plugins ORDER BY id ASC",
           objs = plugins)
       for plugin in plugins.mitems:
         if plugin.enabled:
