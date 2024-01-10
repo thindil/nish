@@ -56,6 +56,7 @@ of the shell.
 - If the shell's alias' output is set to a file, append the result of the alias
   to the file instead of overwritting it
 - Sending the shell's alias' output to the standard error output
+- Loading the shell's plugins at start of the shell
 
 ## [0.6.0] - 2023-11-13
 
