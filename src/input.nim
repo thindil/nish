@@ -337,13 +337,13 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
         db.rawSelect(qry = "SELECT * FROM options WHERE readonly=0 ORDER BY option ASC",
             objs = names)
       elif names is seq[Alias]:
-        db.rawSelect(qry = "SELECT * FROM aliases ORDER BY id ASC",
+        db.rawSelect(qry = "SELECT * FROM aliases ORDER BY name ASC",
             objs = names)
       elif names is seq[Completion]:
         db.rawSelect(qry = "SELECT * FROM completions ORDER BY command ASC",
             objs = names)
       elif names is seq[Plugin]:
-        db.rawSelect(qry = "SELECT * FROM plugins ORDER BY id ASC",
+        db.rawSelect(qry = "SELECT * FROM plugins ORDER BY location ASC",
             objs = names)
       {.ruleOn: "ifStatements".}
       if names.len == 0:
