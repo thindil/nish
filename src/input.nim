@@ -350,6 +350,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
         showError(message = "There is no available " & namesType & " to show.", db = db)
         when names is seq[Completion]:
           name.command = ""
+        elif names is seq[Plugin]:
+          name.location = ""
         else:
           name.description = ""
         return
@@ -386,6 +388,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
           e = getCurrentException(), db = db)
       when names is seq[Completion]:
         name.command = ""
+      elif names is seq[Plugin]:
+        name.location = ""
       else:
         name.description = ""
       return
@@ -402,6 +406,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       showError(message = action & " cancelled.", db = db)
       when names is seq[Completion]:
         name.command = ""
+      elif names is seq[Plugin]:
+        name.location = ""
       else:
         name.description = ""
       return
@@ -410,6 +416,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
     except:
       when names is seq[Completion]:
         name.command = ""
+      elif names is seq[Plugin]:
+        name.location = ""
       else:
         name.description = ""
       discard showError(message = action &
