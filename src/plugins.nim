@@ -919,8 +919,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
     # Load all enabled plugins and execute the initialization code of the plugin
     try:
       var plugins: seq[Plugin] = @[newPlugin()]
-      db.rawSelect(qry = "SELECT * FROM plugins ORDER BY id ASC",
-          objs = plugins)
+      db.select(objs = plugins, cond = "1 = 1 ORDER BY id ASC")
       for plugin in plugins.mitems:
         if plugin.enabled:
           let newPlugin: PluginData = checkPlugin(pluginPath = plugin.location,
