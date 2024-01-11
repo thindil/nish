@@ -568,21 +568,18 @@ proc getPluginId*(arguments; db): DatabaseId {.sideEffect, raises: [],
       plugin: Plugin = newPlugin()
       actionName: string = ""
       argumentsLen: Positive = 1
-    if arguments.startsWith(prefix = "remove"):
-      actionName = "Removing"
-      argumentsLen = 8
-    elif arguments.startsWith(prefix = "show"):
-      actionName = "Showing"
-      argumentsLen = 6
-    elif arguments.startsWith(prefix = "edit"):
-      actionName = "Editing"
-      argumentsLen = 6
-    elif arguments.startsWith(prefix = "enable"):
-      actionName = "Enabling"
-      argumentsLen = 8
-    elif arguments.startsWith(prefix = "disable"):
-      actionName = "Disabling"
-      argumentsLen = 9
+    type Check = object
+      prefix, actionName: string
+    const checks: array[5, Check] = [Check(prefix: "remove",
+        actionName: "Removing"), Check(prefix: "show", actionName: "Showing"),
+        Check(prefix: "edit", actionName: "Editing"), Check(prefix: "enable",
+        actionName: "Enabling"), Check(prefix: "disable",
+        actionName: "Disabling")]
+    for index, check in checks:
+      if arguments.startsWith(prefix = check.prefix):
+        actionName = check.actionName
+        argumentsLen = check.prefix.len + 2
+        break
     if arguments.len < argumentsLen:
       askForName[Plugin](db = db, action = actionName & " a plugin",
             namesType = "plugin", name = plugin)
@@ -823,8 +820,10 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
       let
         color: string = getColor(db = db, name = showHeaders)
         color2: string = getColor(db = db, name = default)
-      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id, style = color2)])
-      table.add(parts = [style(ss = "Path", style = color), style(ss = plugin.location, style = color2)])
+      table.add(parts = [style(ss = "Id:", style = color), style(ss = $id,
+          style = color2)])
+      table.add(parts = [style(ss = "Path", style = color), style(
+          ss = plugin.location, style = color2)])
       table.add(parts = [style(ss = "Enabled:", style = color), style(ss = (
           if plugin.enabled: "Yes" else: "No"), style = color2)])
       let pluginData: PluginResult = execPlugin(pluginPath = plugin.location,
@@ -832,16 +831,20 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
       # If plugin contains any aditional information, show them
       if pluginData.code == QuitSuccess:
         let pluginInfo: seq[string] = ($pluginData.answer).split(sep = ";")
-        table.add(parts = [style(ss = "API version:", style = color), style(ss = (
-            if pluginInfo.len > 2: pluginInfo[2] else: "0.1"), style = color2)])
+        table.add(parts = [style(ss = "API version:", style = color), style(
+            ss = (if pluginInfo.len > 2: pluginInfo[2] else: "0.1"),
+                style = color2)])
         if pluginInfo.len > 2:
-          table.add(parts = [style(ss = "API used:", style = color), style(ss = pluginInfo[3], style = color2)])
-        table.add(parts = [style(ss = "Name:", style = color), style(ss = pluginInfo[0], style = color2)])
+          table.add(parts = [style(ss = "API used:", style = color), style(
+              ss = pluginInfo[3], style = color2)])
+        table.add(parts = [style(ss = "Name:", style = color), style(
+            ss = pluginInfo[0], style = color2)])
         if pluginInfo.len > 1:
           table.add(parts = [style(ss = "Descrition:", style = color),
               style(ss = pluginInfo[1], style = color2)])
       else:
-        table.add(parts = [style(ss = "API version:", style = color), style(ss = "0.1", style = color2)])
+        table.add(parts = [style(ss = "API version:", style = color), style(
+            ss = "0.1", style = color2)])
       table.echoTable
     except:
       return showError(message = "Can't show the plugin's info. Reason: ",
