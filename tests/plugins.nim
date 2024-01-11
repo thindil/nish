@@ -27,6 +27,14 @@ suite "Unit tests for plugins module":
       addPlugin(db, initLimitedString(capacity = 26,
           "add tools/testplugin.223sh"), commands) == QuitFailure
 
+  test "Getting the plugin's ID":
+    checkpoint "Getting ID of an existing plugin"
+    check:
+      getPluginId(initLimitedString(capacity = 8, text = "remove 1"), db).int == 1
+    checkpoint "Getting ID of a non-existing plugin"
+    check:
+      getPluginId(initLimitedString(capacity = 9, text = "remove 22"), db).int == 0
+
   test "Checking a plugin":
     checkpoint "Checking an existing plugin"
     check:
