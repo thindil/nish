@@ -343,8 +343,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
         db.rawSelect(qry = "SELECT * FROM completions ORDER BY command ASC",
             objs = names)
       elif names is seq[Plugin]:
-        db.rawSelect(qry = "SELECT * FROM plugins ORDER BY location ASC",
-            objs = names)
+        db.select(objs = names, cond = "1 = 1 ORDER BY location ASC")
       {.ruleOn: "ifStatements".}
       if names.len == 0:
         showError(message = "There is no available " & namesType & " to show.", db = db)
