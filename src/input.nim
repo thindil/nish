@@ -331,17 +331,13 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
     try:
       {.ruleOff: "ifStatements".}
       when names is seq[Color]:
-        db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
-            objs = names)
+        db.select(objs = names, cond = "1 = 1 ORDER BY name ASC")
       elif names is seq[Option]:
-        db.rawSelect(qry = "SELECT * FROM options WHERE readonly=0 ORDER BY option ASC",
-            objs = names)
+        db.select(objs = names, cond = "readonly=0 ORDER BY option ASC")
       elif names is seq[Alias]:
-        db.rawSelect(qry = "SELECT * FROM aliases ORDER BY name ASC",
-            objs = names)
+        db.select(objs = names, cond = "1 = 1 ORDER BY name ASC")
       elif names is seq[Completion]:
-        db.rawSelect(qry = "SELECT * FROM completions ORDER BY command ASC",
-            objs = names)
+        db.select(objs = names, cond = "1 = 1 ORDER BY command ASC")
       elif names is seq[Plugin]:
         db.select(objs = names, cond = "1 = 1 ORDER BY location ASC")
       {.ruleOn: "ifStatements".}
