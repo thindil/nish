@@ -793,16 +793,10 @@ proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     arguments.len > 0
     db != nil
   body:
-    if arguments.len < 6:
-      return showError(message = "Enter the ID of the plugin to show.", db = db)
-    let id: DatabaseId = try:
-        parseInt(s = $arguments[5 .. ^1]).DatabaseId
-      except ValueError:
-        return showError(message = "The Id of the plugin must be a positive number.", db = db)
+    let id: DatabaseId = getPluginId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     try:
-      if not db.exists(T = Plugin, cond = "id=?", params = $id):
-        return showError(message = "The plugin with the ID: " & $id &
-          " doesn't exists.", db = db)
       var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $id)
       var table: TerminalTable = TerminalTable()
