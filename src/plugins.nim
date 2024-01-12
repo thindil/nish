@@ -660,29 +660,18 @@ proc togglePlugin*(db; arguments; disable: bool = true;
     arguments.len > 0
   body:
     let
-      idStart: int = (if disable: 8 else: 7)
+      id: DatabaseId = getPluginId(arguments = arguments, db = db)
       actionName: string = (if disable: "disable" else: "enable")
-    # Check if the user entered proper amount of arguments
-    if arguments.len < (idStart + 1):
-      return showError(message = "Please enter the Id to the plugin which will be " &
-          actionName & ".", db = db)
-    let
-      pluginId: DatabaseId = try:
-          ($arguments[idStart .. ^1]).parseInt.DatabaseId
-        except ValueError:
-          return showError(message = "The Id of the plugin must be a positive number.", db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     try:
-      # Check if plugin exists
-      if not db.exists(T = Plugin, cond = "id=?", params = $pluginId):
-        return showError(message = "Plugin with Id: " & $pluginId &
-            " doesn't exists.", db = db)
       var plugin: Plugin = newPlugin()
-      db.select(obj = plugin, cond = "id=?", params = $pluginId)
+      db.select(obj = plugin, cond = "id=?", params = $id)
       # Check if plugin can be enabled due to version of API
       let newPlugin: PluginData = checkPlugin(pluginPath = plugin.location,
           db = db, commands = commands)
       if newPlugin.path.len == 0 and not disable:
-        return showError(message = "Can't enable plugin with Id: " & $pluginId &
+        return showError(message = "Can't enable plugin with Id: " & $id &
             " because its API version is incompatible with the shell's version.", db = db)
       # Execute the enabling or disabling code of the plugin
       if actionName in newPlugin.api:
