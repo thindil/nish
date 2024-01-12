@@ -546,7 +546,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Execute plugins with precommand hook
         try:
           var plugins: seq[Plugin] = @[newPlugin()]
-          db.select(objs = plugins, cond = "precommand=1")
+          db.select(objs = plugins, cond = "precommand=1 AND enabled=1")
           for plugin in plugins:
             discard execPlugin(pluginPath = plugin.location, arguments = [
                 "preCommand", commandName & " " & arguments], db = db,
@@ -645,7 +645,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # Execute plugins with postcommand hook
         try:
           var plugins: seq[Plugin] = @[newPlugin()]
-          db.select(objs = plugins, cond = "postcommand=1")
+          db.select(objs = plugins, cond = "postcommand=1 AND enabled=1")
           for plugin in plugins:
             discard execPlugin(pluginPath = plugin.location, arguments = [
                 "postCommand", commandName & " " & arguments], db = db,
