@@ -60,6 +60,7 @@ of the shell.
   to the file instead of overwritting it
 - Sending the shell's alias' output to the standard error output
 - Loading the shell's plugins at start of the shell
+- Disabling the shell's plugins
 
 ## [0.6.0] - 2023-11-13
 
