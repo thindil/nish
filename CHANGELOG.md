@@ -44,9 +44,9 @@ of the shell.
 - Commands `completion edit`, `completion delete`, `completion show` can now
   be executed without entering the index of the completion. In that situation,
   the user will be asked for the index of a completion from their list
-- Commands `plugin remove`, `plugin enable`, `plugin disable` can now be
-  executed without entering the index of the plugin. In that situation, the
-  user will be asked for the index of a plugin from their list
+- Commands `plugin remove`, `plugin enable`, `plugin disable`, `plugin show`
+  can now be executed without entering the index of the plugin. In that
+  situation, the user will be asked for the index of a plugin from their list
 
 ### Fixed
 - Cross-compiling the shell for Arm
