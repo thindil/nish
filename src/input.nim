@@ -340,6 +340,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
         db.select(objs = names, cond = "1 = 1 ORDER BY command ASC")
       elif names is seq[Plugin]:
         db.select(objs = names, cond = "1 = 1 ORDER BY location ASC")
+      elif names is seq[Variable]:
+        db.select(objs = names, cond = "1 = 1 ORDER BY name ASC")
       {.ruleOn: "ifStatements".}
       if names.len == 0:
         showError(message = "There is no available " & namesType & " to show.", db = db)
@@ -368,6 +370,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
           itemName = name.command
         elif names is seq[Plugin]:
           itemName = name.location
+        elif names is seq[Variable]:
+          itemName = name.name
         {.ruleOn: "ifStatements".}
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
             db = db, name = ids)) & style(ss = itemName, style = getColor(
