@@ -1,6 +1,6 @@
 import std/[os, strutils, tables]
 import utils/utils
-import ../src/[commandslist, directorypath, db, lstring, resultcode, variables]
+import ../src/[commandslist, constants, directorypath, db, lstring, resultcode, variables]
 import norm/sqlite
 import unittest2
 
@@ -41,6 +41,16 @@ suite "Unit tests for variable modules":
     check:
       not existsEnv("TESTS2")
 
+  test "Getting the environment variable ID":
+    checkpoint "Getting ID of an existing variable"
+    check:
+      getVariableId(initLimitedString(capacity = 8, text = "delete 2"),
+          db).int == 2
+    checkpoint "Getting ID of a non-existing variable"
+    check:
+      getVariableId(initLimitedString(capacity = 9, text = "delete 22"),
+          db).int == 0
+
   test "Showing environment variables":
     checkpoint "Showing available environment variables"
     check:
@@ -75,7 +85,8 @@ suite "Unit tests for variable modules":
 
   test "Setting an evironment variable":
     check:
-      setCommand(initLimitedString(capacity = 13, text = "test=test_val"), db = db) ==
+      setCommand(initLimitedString(capacity = 13, text = "test=test_val"),
+          db = db) ==
           QuitSuccess
       getEnv("test") == "test_val"
 
