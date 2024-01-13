@@ -139,6 +139,23 @@ type
     enabled*: bool
     preCommand*: bool
     postCommand*: bool
+  VariableValType* = enum
+    ## Used to set the type of variable's value
+    path, text, number
+  Variable* {.tableName: "variables".} = ref object of Model
+    ## Data structure for the shell's environment variable
+    ##
+    ## * name        - the name of the variable
+    ## * path        - the path in which the variable exists
+    ## * recursive   - if true, the variable is available also in subdirectories
+    ## * value       - the value of the variable
+    ## * description - the description of the variable
+    name*: string
+    path*: string
+    recursive*: bool
+    value*: string
+    varType*: VariableValType
+    description*: string
 
 proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
     contractual.} =

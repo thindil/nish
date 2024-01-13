@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 import std/[os, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
-import norm/[model, pragmas, sqlite]
+import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, databaseid, directorypath, help, input, lstring,
     output, resultcode, theme
@@ -45,26 +45,8 @@ const
       'n': "number", 'q': "quit"}.toTable
     ## The list of available options when setting the type of a variable's value
 
-type
-  VariableName = LimitedString
+type VariableName = LimitedString
     ## Used to store variables names in the database.
-  VariableValType* = enum
-    ## Used to set the type of variable's value
-    path, text, number
-  Variable* {.tableName: "variables".} = ref object of Model
-    ## Data structure for the shell's environment variable
-    ##
-    ## * name        - the name of the variable
-    ## * path        - the path in which the variable exists
-    ## * recursive   - if true, the variable is available also in subdirectories
-    ## * value       - the value of the variable
-    ## * description - the description of the variable
-    name*: string
-    path: string
-    recursive: bool
-    value: string
-    varType: VariableValType
-    description: string
 
 using
   db: DbConn # Connection to the shell's database
