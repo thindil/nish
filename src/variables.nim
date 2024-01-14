@@ -556,22 +556,12 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.len > 0
     db != nil
   body:
-    if arguments.len < 6:
-      return showError(message = "Enter the ID of the variable to edit.", db = db)
-    let varId: DatabaseId = try:
-        ($arguments[5 .. ^1]).parseInt.DatabaseId
-      except ValueError:
-        return showError(message = "The Id of the variable must be a positive number.", db = db)
-    try:
-      if not db.exists(T = Variable, cond = "id=?", params = $varId):
-        return showError(message = "The variable with the ID: " & $varId &
-            " doesn't exists.", db = db)
-    except:
-      return showError(message = "Can't check if the selected variable exists. Reason:",
-          e = getCurrentException(), db = db)
+    let id: DatabaseId = getVariableId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     var variable: Variable = newVariable()
     try:
-      db.select(obj = variable, cond = "id=?", params = $varId)
+      db.select(obj = variable, cond = "id=?", params = $id)
     except:
       return showError(message = "Can't get the selected variable from the database. Reason:",
           e = getCurrentException(), db = db)
@@ -720,7 +710,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     except OSError:
       return showError(message = "Can't set variables for the current directory. Reason: ",
           e = getCurrentException(), db = db)
-    showOutput(message = "The variable  with Id: '" & $varId & "' edited.",
+    showOutput(message = "The variable with Id: '" & $id & "' edited.",
         color = success, db = db)
     return QuitSuccess.ResultCode
 
