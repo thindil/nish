@@ -730,17 +730,11 @@ proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.startsWith(prefix = "show")
     db != nil
   body:
-    if arguments.len < 6:
-      return showError(message = "Enter the ID of the variable to show.", db = db)
-    let id: DatabaseId = try:
-        parseInt(s = $arguments[5 .. ^1]).DatabaseId
-      except:
-        return showError(message = "The Id of the variable must be a positive number.", db = db)
+    let id: DatabaseId = getVariableId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     var variable: Variable = newVariable()
     try:
-      if not db.exists(T = Variable, cond = "id=?", params = $id):
-        return showError(message = "The variable with the ID: " & $id &
-          " doesn't exists.", db = db)
       db.select(obj = variable, cond = "id=?", params = $id)
     except:
       return showError(message = "Can't read variable data from database. Reason: ",
