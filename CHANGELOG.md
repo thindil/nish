@@ -47,6 +47,9 @@ of the shell.
 - Commands `plugin remove`, `plugin enable`, `plugin disable`, `plugin show`
   can now be executed without entering the index of the plugin. In that
   situation, the user will be asked for the index of a plugin from their list
+- Command `variable delete` can now be executed without entering the index of
+  the variable. In that situation, the user will be asked for the index of a
+  variable from their list
 
 ### Fixed
 - Cross-compiling the shell for Arm
