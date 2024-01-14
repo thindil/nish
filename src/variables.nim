@@ -383,18 +383,12 @@ proc deleteVariable*(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 0
     db != nil
   body:
-    if arguments.len < 8:
-      return showError(message = "Enter the Id of the variable to delete.", db = db)
-    let varId: DatabaseId = try:
-        ($arguments[7 .. ^1]).parseInt.DatabaseId
-      except ValueError:
-        return showError(message = "The Id of the variable must be a positive number.", db = db)
+    let id: DatabaseId = getVariableId(arguments = arguments, db = db)
+    if id.Natural == 0:
+      return QuitFailure.ResultCode
     try:
-      if not db.exists(T = Variable, cond = "id=?", params = $varId):
-        return showError(message = "The variable with the Id: " & $varId &
-          " doesn't exist.", db = db)
       var variable: Variable = newVariable()
-      db.select(obj = variable, cond = "id=?", params = $varId)
+      db.select(obj = variable, cond = "id=?", params = $id)
       db.delete(obj = variable)
     except:
       return showError(message = "Can't delete variable from database. Reason: ",
@@ -405,7 +399,7 @@ proc deleteVariable*(arguments; db): ResultCode {.sideEffect, raises: [],
     except OSError:
       return showError(message = "Can't set environment variables in the current directory. Reason: ",
           e = getCurrentException(), db = db)
-    showOutput(message = "Deleted the variable with Id: " & $varId,
+    showOutput(message = "Deleted the variable with Id: " & $id,
         color = success, db = db)
     return QuitSuccess.ResultCode
 
