@@ -50,6 +50,7 @@ of the shell.
 - Commands `variable delete`, `variable edit`, `variable show` can now be
   executed without entering the index of the variable. In that situation, the
   user will be asked for the index of a variable from their list
+- Updated contributing guide
 
 ### Fixed
 - Cross-compiling the shell for Arm
