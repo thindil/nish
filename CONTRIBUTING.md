@@ -72,3 +72,15 @@ on the project page. Please attach to that ticket file with diff changes, the
 best if done with command `fossil patch`. Another diff program will work too.
 In that situation, please add information which program was used to create the
 diff file. If you prefer you can also use other options from [the contact page](https://www.laeran.pl/repositories/nish/wiki?name=Contact).
+
+## Additional debugging options
+
+### Using nimprofiler with the program
+
+To build the program with **nimprofiler** support, compile it with command `nimble analyze`.
+More information about **nimprofiler** you can find at [Nim blog](https://nim-lang.org/blog/2017/10/02/documenting-profiling-and-debugging-nim-code.html#profiling-with-nimprof).
+
+### Running unit tests of the program
+
+To execute all unit tests of the program, execute the command `nimble test`.
+The program uses [Unittests2](https://github.com/status-im/nim-unittest2) package for tests. More information about running tests (running only selected tests, etc.) please look at the package documentation.
