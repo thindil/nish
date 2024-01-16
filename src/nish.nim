@@ -28,7 +28,7 @@
 
 # Standard library imports
 import std/[os, osproc, parseopt, strutils, tables, terminal, unicode]
-when compileOption("profiler"):
+when compileOption(option = "profiler"):
   import nimprof
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
