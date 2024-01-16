@@ -72,8 +72,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
     if not promptEnabled:
       return
     try:
-      let promptCommand: OptionValue = getOption(optionName = initLimitedString(
-          capacity = 13, text = "promptCommand"), db = db,
+      let promptCommand: OptionValue = getOption(optionName = "promptCommand", db = db,
               defaultValue = initLimitedString(
           capacity = 8, text = "built-in"))
       if promptCommand != "built-in":

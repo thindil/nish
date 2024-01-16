@@ -111,8 +111,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         resultCode = returnCode, db = db)
     # Get the user input and parse it
     let highlightEnabled: bool = try:
-          getOption(optionName = initLimitedString(capacity = 11,
-            text = "colorSyntax"), db = db, defaultValue = initLimitedString(
+          getOption(optionName = "colorSyntax", db = db, defaultValue = initLimitedString(
             capacity = 4, text = "true")) == "true"
         except CapacityError:
           true
@@ -183,8 +182,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         else:
           try:
             let columnsAmount: int = try:
-                parseInt(s = $getOption(optionName = initLimitedString(
-                    capacity = 17, text = "completionColumns"), db = db,
+                parseInt(s = $getOption("completionColumns", db = db,
                     defaultValue = initLimitedString(capacity = 2, text = "5")))
               except CapacityError, ValueError:
                 5
@@ -556,8 +554,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         except DbError:
           showError(message = "Can't execute preCommand hook for plugins. Reason: ",
               e = getCurrentException(), db = db)
-        let withShell: bool = getOption(optionName = initLimitedString(
-            capacity = 13, text = "execWithShell"), db = db,
+        let withShell: bool = getOption("execWithShell", db = db,
             defaultValue = initLimitedString(capacity = 4, text = "true")) == "true"
         # Parse commands
         case commandName

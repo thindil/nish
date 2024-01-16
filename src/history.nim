@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -111,8 +111,7 @@ proc updateHistory*(commandToAdd: string; db;
     result = db.historyLength
     var value: OptionValue = emptyLimitedString(capacity = 10)
     let historyAmount: Natural = try:
-        value = getOption(optionName = initLimitedString(capacity = 13,
-            text = "historyLength"), db = db, defaultValue = initLimitedString(
+        value = getOption(optionName = "historyLength", db = db, defaultValue = initLimitedString(
             capacity = 10, text = "500"))
         ($value).parseInt
       except:
@@ -120,8 +119,7 @@ proc updateHistory*(commandToAdd: string; db;
     if historyAmount == 0:
       return
     try:
-      value = getOption(optionName = initLimitedString(capacity = 18,
-          text = "historySaveInvalid"), db = db,
+      value = getOption(optionName = "historySaveInvalid", db = db,
           defaultValue = initLimitedString(capacity = 10, text = "false"))
       if returnCode != QuitSuccess and value == "false":
         return
@@ -261,16 +259,14 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
           if argumentsList.len > 1:
             argumentsList[1].parseInt
           else:
-            value = getOption(optionName = initLimitedString(capacity = 13,
-                text = "historyAmount"), db = db)
+            value = getOption(optionName = "historyAmount", db = db)
             ($value).parseInt
         except:
           return showError(message = "Can't get setting for the amount of history commands to show.", db = db)
       historyDirection: string = try:
           if argumentsList.len > 3: (if argumentsList[3] ==
               "true": "ASC" else: "DESC") else:
-            value = getOption(optionName = initLimitedString(capacity = 14,
-                text = "historyReverse"), db = db)
+            value = getOption(optionName = "historyReverse", db = db)
             if value == "true":
               "ASC"
             else:
@@ -281,8 +277,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
           if argumentsList.len > 2:
             argumentsList[2]
           else:
-            value = getOption(optionName = initLimitedString(capacity = 11,
-                text = "historySort"), db = db)
+            value = getOption(optionName = "historySort", db = db)
             $value
         except:
           return showError(message = "Can't get setting for the order of history commands to show.", db = db)
@@ -353,8 +348,7 @@ proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
     var table: TerminalTable = TerminalTable()
     try:
       result = QuitFailure.ResultCode
-      let maxRows: int = ($getOption(optionName = initLimitedString(
-          capacity = 19, text = "historySearchAmount"), db = db)).parseInt
+      let maxRows: int = ($getOption(optionName = "historySearchAmount", db = db)).parseInt
       var currentRow: int = 0
       type LocalEntry = ref object
         command: string

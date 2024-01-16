@@ -120,8 +120,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
     if prefix.len == 0:
       return
     let completionAmount: int = try:
-        parseInt(s = $getOption(optionName = initLimitedString(
-          capacity = 16, text = "completionAmount"), db = db,
+        parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = initLimitedString(capacity = 2, text = "30")))
       except ValueError, CapacityError:
         30
@@ -129,8 +128,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
     if completionAmount == 0:
       return
     let caseSensitive: bool = try:
-        parseBool(s = $getOption(optionName = initLimitedString(
-          capacity = 19, text = "completionCheckCase"), db = db,
+        parseBool(s = $getOption(optionName = "completionCheckCase", db = db,
           defaultValue = initLimitedString(capacity = 5, text = "false")))
       except ValueError, CapacityError:
         true
@@ -191,8 +189,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
     if prefix.len == 0:
       return
     let completionAmount: int = try:
-        parseInt(s = $getOption(optionName = initLimitedString(
-          capacity = 16, text = "completionAmount"), db = db,
+        parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = initLimitedString(capacity = 2, text = "30")))
       except ValueError, CapacityError:
         30
@@ -251,8 +248,7 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
     if prefix.len == 0:
       return
     let completionAmount: int = try:
-        parseInt(s = $getOption(optionName = initLimitedString(
-          capacity = 16, text = "completionAmount"), db = db,
+        parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = initLimitedString(capacity = 2, text = "30")))
       except ValueError, CapacityError:
         30

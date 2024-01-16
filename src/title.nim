@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -48,15 +48,13 @@ proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
     if not stdin.isatty and not stdout.isatty:
       return
     try:
-      if getOption(optionName = initLimitedString(capacity = 8,
-          text = "setTitle"), db = db, defaultValue = initLimitedString(
+      if getOption(optionName = "setTitle", db = db, defaultValue = initLimitedString(
           capacity = 4, text = "true")) == "false":
         return
     except CapacityError:
       return
     let titleWidth: Positive = try:
-          ($getOption(optionName = initLimitedString(capacity = 10,
-              text = "titleWidth"), db = db, defaultValue = initLimitedString(
+          ($getOption(optionName = "titleWidth", db = db, defaultValue = initLimitedString(
               capacity = 4, text = "30"))).parseInt
         except:
           30

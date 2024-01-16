@@ -1,4 +1,4 @@
-# Copyright © 2023 Bartek Jasicki
+# Copyright © 2023-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -85,8 +85,7 @@ proc suggestCommand*(invalidName: string; start: var Natural;
       return ""
     let distance: Natural =
       try:
-        parseInt(s = $getOption(optionName = initLimitedString(capacity = 19,
-            text = "suggestionPrecision"), db = db))
+        parseInt(s = $getOption(optionName = "suggestionPrecision", db = db))
       except:
         1
     # The suggestion system is disabled, quit

@@ -175,8 +175,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for setOption.", db = db)
             return false
           try:
-            setOption(optionName = initLimitedString(capacity = maxNameLength,
-                text = options[0]), value = initLimitedString(
+            setOption(optionName = options[0], value = initLimitedString(
                 capacity = maxInputLength, text = options[1]),
                 description = initLimitedString(capacity = maxInputLength,
                 text = options[2]), valueType = parseEnum[OptionValType](
@@ -203,8 +202,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for removeOption.", db = db)
             return false
           try:
-            if deleteOption(optionName = initLimitedString(
-                capacity = maxNameLength, text = options[0]), db = db) == QuitFailure:
+            if deleteOption(optionName = options[0], db = db) == QuitFailure:
               showError(message = "Failed to remove option '" & options[0] &
                   "'.", db = db)
               return false
@@ -231,8 +229,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             return false
           try:
             plugin.inputStream.write(args = $getOption(
-                optionName = initLimitedString(capacity = maxNameLength,
-                text = options[0]), db = db) & "\n")
+                optionName = options[0], db = db) & "\n")
             plugin.inputStream.flush
           except CapacityError, IOError, OSError:
             showError(message = "Can't get the value of the selected option. Reason: ",

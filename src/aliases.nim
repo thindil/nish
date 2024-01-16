@@ -715,8 +715,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
           continue
         let
           spaceIndex: int = command.find(sub = ' ')
-          withShell: bool = getOption(optionName = initLimitedString(
-            capacity = 13, text = "execWithShell"), db = db,
+          withShell: bool = getOption(optionName = "execWithShell", db = db,
             defaultValue = initLimitedString(capacity = 4, text = "true")) == "true"
         result = runCommand(commandName = (if spaceIndex > 0: $(command[0 ..
             spaceIndex]) else: $command), arguments = (if spaceIndex >
