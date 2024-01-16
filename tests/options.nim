@@ -18,15 +18,15 @@ suite "Unit tests for options module":
   test "Getting the value of an option":
     checkpoint "Getting the value of an existing option"
     check:
-      getOption(initLimitedString(capacity = 13, text = "historyLength"),
+      getOption("historyLength",
           db).len > 0
     checkpoint "Getting the value of a non-existing option"
     check:
-      getOption(initLimitedString(capacity = 10, text = "werweewfwe"),
+      getOption("werweewfwe",
           db).len == 0
 
   test "Adding a new option":
-    let optionName = initLimitedString(capacity = 10, text = "testOption")
+    let optionName = "testOption"
     setOption(optionName = optionName, value = initLimitedString(capacity = 3,
         text = "200"), db = db)
     check:
@@ -34,11 +34,10 @@ suite "Unit tests for options module":
       getOption(optionName, db).len == 0
 
   test "Updating an existing option":
-    setOption(optionName = initLimitedString(capacity = 13,
-          text = "historyLength"), value = initLimitedString(capacity = 3,
+    setOption(optionName = "historyLength", value = initLimitedString(capacity = 3,
           text = "100"), db = db)
     check:
-      getOption(initLimitedString(capacity = 13, text = "historyLength"),
+      getOption("historyLength",
           db) == "100"
 
   test "Setting the new value for an option":
@@ -54,7 +53,7 @@ suite "Unit tests for options module":
     check:
       resetOptions(initLimitedString(capacity = 9,
           text = "reset all"), db) == QuitSuccess
-      getOption(initLimitedString(capacity = 13, text = "historyLength"),
+      getOption("historyLength",
           db) == "500"
 
   test "Showing all options":
