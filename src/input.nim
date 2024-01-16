@@ -353,7 +353,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
           name.description = ""
         return
       showOutput(message = "The name of the " & namesType &
-          ". Select its Id from the list. Enter 'exit' to cancel the command.", db = db)
+          ". Select its number from the list. Enter 'exit' to cancel the command.", db = db)
       var
         rowIndex: Natural = 0
         row: array[4, string] = ["", "", "", ""]
@@ -398,8 +398,8 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       showError(message = "Can't show the list of " & namesType & "s. Reason: ",
           e = getCurrentException(), db = db)
       return
-    showOutput(message = namesType.capitalize() & "'s ID: ", newLine = false,
-        db = db, color = promptColor)
+    showOutput(message = namesType.capitalize() & "'s number: ",
+        newLine = false, db = db, color = promptColor)
     let id: UserInput = readInput(db = db)
     if id == "exit":
       showError(message = action & " cancelled.", db = db)
