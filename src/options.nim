@@ -38,7 +38,7 @@ const optionsCommands: seq[string] = @["list", "set", "reset"]
   ## The list of available subcommands for command options
 
 type
-  OptionName* = LimitedString
+  OptionName* = string
     ## Used to store options names in the database.
   OptionValue* = LimitedString
     ## Used to set or get the option's values
@@ -322,8 +322,7 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           try:
             let
               spaceIndex: int = value.find(sub = ' ')
-              withShell: bool = getOption(optionName = initLimitedString(
-                  capacity = 13, text = "execWithShell"), db = db,
+              withShell: bool = getOption(optionName = "execWithShell", db = db,
                   defaultValue = initLimitedString(capacity = 4,
                   text = "true")) == "true"
               exitCode: ResultCode = runCommand(commandName = (if spaceIndex >
@@ -354,8 +353,7 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
               color = promptColor)
     # Set the option
     try:
-      setOption(optionName = initLimitedString(capacity = option.option.len,
-          text = option.option), value = value, db = db)
+      setOption(optionName = option.option, value = value, db = db)
     except CapacityError:
       return showError(message = "Can't set the option '" & option.option &
           "' in database. Reason: ", e = getCurrentException(), db = db)
