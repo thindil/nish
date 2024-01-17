@@ -40,7 +40,7 @@ const optionsCommands: seq[string] = @["list", "set", "reset"]
 type
   OptionName* = string
     ## Used to store options names in the database.
-  OptionValue* = LimitedString
+  OptionValue* = string
     ## Used to set or get the option's values
 using
   db: DbConn # Connection to the shell's database
@@ -81,10 +81,9 @@ proc to*(dbVal: DbValue, T: typedesc[OptionValType]): T {.raises: [], tags: [],
     except:
       none
 
-proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
-    capacity = maxInputLength)): OptionValue {.sideEffect, raises: [], tags: [
-    ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
-    contractual.} =
+proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.sideEffect,
+    raises: [], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+    RootEffect], contractual.} =
   ## Get the selected option from the database. If the option doesn't exist,
   ## return the defaultValue
   ##
@@ -107,8 +106,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = emptyLimitedString(
       var option: LocalOption = LocalOption()
       db.rawSelect(qry = "SELECT value FROM options WHERE option=?",
           obj = option, params = $optionName)
-      result = initLimitedString(capacity = (if option.value.len ==
-          0: 1 else: option.value.len), text = option.value)
+      result = option.value
     except:
       showError(message = "Can't get value for option '" & optionName &
           "' from database. Reason: ", e = getCurrentException(), db = db)
@@ -133,9 +131,8 @@ proc newOption*(name: string = ""; value: string = ""; description: string = "";
     Option(option: name, value: value, description: description,
         valueType: valueType, defaultValue: defaultValue, readOnly: readOnly)
 
-proc setOption*(optionName; value: OptionValue = emptyLimitedString(
-    capacity = maxInputLength); description: UserInput = emptyLimitedString(
-    capacity = maxInputLength); valueType: OptionValType = none; db;
+proc setOption*(optionName; value: OptionValue = "";
+    description: UserInput = emptyLimitedString(capacity = maxInputLength); valueType: OptionValType = none; db;
     readOnly: BooleanInt = 0) {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
@@ -261,7 +258,7 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
       showOutput(message = " from the list.", db = db, newLine = false)
     showOutput(message = " The current value is: ", db = db, newLine = false)
     showOutput(message = $option.value, db = db, color = values)
-    var value: OptionValue = emptyLimitedString(capacity = maxInputLength)
+    var value: OptionValue = ""
     if option.valueType in {boolean, historysort, header}:
       let optionValues: Table[char, string] = case option.valueType
         of boolean:
@@ -277,7 +274,7 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
       var inputChar: char = selectOption(options = optionValues, default = 'q',
           prompt = "New value", db = db)
       try:
-        value.text = optionValues[inputChar]
+        value = optionValues[inputChar]
       except:
         return showError(message = "Editing the option cancelled. Reason: ",
             db = db, e = getCurrentException())
@@ -287,7 +284,7 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
       showOutput(message = "New value: ", newLine = false, db = db,
           color = promptColor)
       while value.len == 0:
-        value = readInput(maxLength = maxInputLength, db = db)
+        value = $readInput(maxLength = maxInputLength, db = db)
         if value.len == 0:
           showError(message = "Please enter a value for the option.", db = db)
         if value == "exit":
@@ -300,39 +297,39 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           except:
             showError(message = "Value for option '" & option.option &
                 "' should be integer type.", db = db)
-            value = emptyLimitedString(capacity = maxInputLength)
+            value = ""
         of float:
           try:
             discard ($value).parseFloat
           except:
             showError(message = "Value for option '" & option.option &
                 "' should be float type.", db = db)
-            value = emptyLimitedString(capacity = maxInputLength)
+            value = ""
         of natural:
           try:
             if ($value).parseInt < 0:
               showError(message = "Value for option '" & option.option &
                   "' should be a natural integer, zero or more.", db = db)
-              value = emptyLimitedString(capacity = maxInputLength)
+              value = ""
           except:
             showError(message = "Value for option '" & option.option &
                 "' should be integer type.", db = db)
-            value = emptyLimitedString(capacity = maxInputLength)
+            value = ""
         of command:
           try:
             let
               spaceIndex: int = value.find(sub = ' ')
               withShell: bool = getOption(optionName = "execWithShell", db = db,
-                  defaultValue = initLimitedString(capacity = 4,
-                  text = "true")) == "true"
+                  defaultValue = "true") == "true"
               exitCode: ResultCode = runCommand(commandName = (if spaceIndex >
-                  0: $(value[0 .. spaceIndex]) else: $value), arguments = (
-                  if spaceIndex > 0: value[spaceIndex ..
-                  ^1] else: emptyLimitedString()), withShell = withShell, db = db)
+                  0: value[0 .. spaceIndex] else: value),
+                  arguments = initLimitedString(capacity = value.len, text = (
+                  if spaceIndex > 0: value[spaceIndex .. ^1] else: "")),
+                  withShell = withShell, db = db)
             if exitCode != QuitSuccess:
               showError(message = "Value for option '" & option.option &
                   "' should be valid command.", db = db)
-              value = emptyLimitedString(capacity = maxInputLength)
+              value = ""
           except:
             return showError(message = "Can't check the existence of command '" &
                 value & "'. Reason: ", e = getCurrentException(), db = db)
@@ -341,11 +338,11 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
             if ($value).parseInt < 1:
               showError(message = "Value for option '" & option.option &
                   "' should be a positive integer, one or more.", db = db)
-              value = emptyLimitedString(capacity = maxInputLength)
+              value = ""
           except:
             showError(message = "Value for option '" & option.option &
                 "' should be integer type.", db = db)
-            value = emptyLimitedString(capacity = maxInputLength)
+            value = ""
         else:
           discard
         if value.len == 0:
