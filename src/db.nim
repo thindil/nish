@@ -148,8 +148,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
       try:
         for option in options:
-          setOption(optionName = option.option, value = initLimitedString(capacity = 40,
-              text = option.value), description = initLimitedString(
+          setOption(optionName = option.option, value = option.value, description = initLimitedString(
               capacity = 256, text = option.description),
               valueType = option.valueType, db = result, readOnly = (
               if option.readOnly: 1 else: 0))
@@ -160,9 +159,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
     # If database version is different than the newest, update database
     try:
       let dbVersion: int = parseInt(s = $getOption(
-          optionName = "dbVersion",
-              db = result,
-          defaultValue = initLimitedString(capacity = 1, text = "0")))
+          optionName = "dbVersion", db = result, defaultValue = "0"))
       case dbVersion
       of 0 .. 1:
         if result.updateOptionsDb(dbVersion = dbVersion) == QuitFailure:
@@ -182,8 +179,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for option in options:
-          setOption(optionName = option.option, value = initLimitedString(capacity = 40,
-              text = option.value), description = initLimitedString(
+          setOption(optionName = option.option, value = option.value, description = initLimitedString(
               capacity = 256, text = option.description),
               valueType = option.valueType, db = result, readOnly = (
               if option.readOnly: 1 else: 0))
@@ -201,9 +197,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         for i in options.low..options.high:
           if i == 1:
             continue
-          setOption(optionName = options[i].option, value = initLimitedString(
-              capacity = 40,
-              text = options[i].value), description = initLimitedString(
+          setOption(optionName = options[i].option, value = options[i].value, description = initLimitedString(
               capacity = 256, text = options[i].description),
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
@@ -221,8 +215,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 8, 9, 10, 11]:
-          setOption(optionName = options[i].option, value = initLimitedString(capacity = 40,
-              text = options[i].value), description = initLimitedString(
+          setOption(optionName = options[i].option, value = options[i].value, description = initLimitedString(
               capacity = 256, text = options[i].description),
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
@@ -230,8 +223,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createCompletionDb == QuitFailure:
           return nil
         for i in [0, 10, 11]:
-          setOption(optionName = options[i].option, value = initLimitedString(capacity = 40,
-              text = options[i].value), description = initLimitedString(
+          setOption(optionName = options[i].option, value = options[i].value, description = initLimitedString(
               capacity = 256, text = options[i].description),
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
@@ -241,8 +233,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 11]:
-          setOption(optionName = options[i].option, value = initLimitedString(capacity = 40,
-              text = options[i].value), description = initLimitedString(
+          setOption(optionName = options[i].option, value = options[i].value, description = initLimitedString(
               capacity = 256, text = options[i].description),
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))

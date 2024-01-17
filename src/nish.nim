@@ -111,8 +111,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         resultCode = returnCode, db = db)
     # Get the user input and parse it
     let highlightEnabled: bool = try:
-          getOption(optionName = "colorSyntax", db = db, defaultValue = initLimitedString(
-            capacity = 4, text = "true")) == "true"
+          getOption(optionName = "colorSyntax", db = db, defaultValue = "true") == "true"
         except CapacityError:
           true
     var
@@ -183,7 +182,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           try:
             let columnsAmount: int = try:
                 parseInt(s = $getOption(optionName = "completionColumns", db = db,
-                    defaultValue = initLimitedString(capacity = 2, text = "5")))
+                    defaultValue = "5"))
               except CapacityError, ValueError:
                 5
             # If Tab pressed the first time, show the list of completion
@@ -555,7 +554,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           showError(message = "Can't execute preCommand hook for plugins. Reason: ",
               e = getCurrentException(), db = db)
         let withShell: bool = getOption(optionName = "execWithShell", db = db,
-            defaultValue = initLimitedString(capacity = 4, text = "true")) == "true"
+            defaultValue = "true") == "true"
         # Parse commands
         case commandName
         # Quit from shell

@@ -32,7 +32,7 @@ import std/[os, osproc, strutils]
 import contracts, termstyle
 import norm/sqlite
 # Internal imports
-import constants, directorypath, lstring, options, output, resultcode, theme
+import constants, directorypath, options, output, resultcode, theme
 
 proc getFormattedDir*(): DirectoryPath {.sideEffect, raises: [], tags: [
     ReadIOEffect], contractual.} =
@@ -73,8 +73,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
       return
     try:
       let promptCommand: OptionValue = getOption(optionName = "promptCommand", db = db,
-              defaultValue = initLimitedString(
-          capacity = 8, text = "built-in"))
+              defaultValue = "built-in")
       if promptCommand != "built-in":
         var (output, exitCode) = execCmdEx(command = $promptCommand)
         if exitCode != QuitSuccess:

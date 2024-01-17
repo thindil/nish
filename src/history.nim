@@ -109,10 +109,9 @@ proc updateHistory*(commandToAdd: string; db;
     commandToAdd.len > 0
   body:
     result = db.historyLength
-    var value: OptionValue = emptyLimitedString(capacity = 10)
+    var value: OptionValue = ""
     let historyAmount: Natural = try:
-        value = getOption(optionName = "historyLength", db = db, defaultValue = initLimitedString(
-            capacity = 10, text = "500"))
+        value = getOption(optionName = "historyLength", db = db, "500")
         ($value).parseInt
       except:
         500
@@ -120,7 +119,7 @@ proc updateHistory*(commandToAdd: string; db;
       return
     try:
       value = getOption(optionName = "historySaveInvalid", db = db,
-          defaultValue = initLimitedString(capacity = 10, text = "false"))
+          defaultValue = "false")
       if returnCode != QuitSuccess and value == "false":
         return
     except:
@@ -252,7 +251,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
     db != nil
     arguments.len > 0
   body:
-    var value: OptionValue = emptyLimitedString(capacity = 10)
+    var value: OptionValue = ""
     let
       argumentsList: seq[string] = split(s = $arguments)
       amount: HistoryRange = try:

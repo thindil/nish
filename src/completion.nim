@@ -121,7 +121,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
       return
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
-          defaultValue = initLimitedString(capacity = 2, text = "30")))
+          defaultValue = "30"))
       except ValueError, CapacityError:
         30
     # Completion disabled
@@ -129,7 +129,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
       return
     let caseSensitive: bool = try:
         parseBool(s = $getOption(optionName = "completionCheckCase", db = db,
-          defaultValue = initLimitedString(capacity = 5, text = "false")))
+          defaultValue = "false"))
       except ValueError, CapacityError:
         true
     try:
@@ -190,7 +190,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
       return
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
-          defaultValue = initLimitedString(capacity = 2, text = "30")))
+          defaultValue = "30"))
       except ValueError, CapacityError:
         30
     # Completion disabled
@@ -249,7 +249,7 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
       return
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
-          defaultValue = initLimitedString(capacity = 2, text = "30")))
+          defaultValue = "30"))
       except ValueError, CapacityError:
         30
     # Completion disabled

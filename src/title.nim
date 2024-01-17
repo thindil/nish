@@ -48,14 +48,12 @@ proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
     if not stdin.isatty and not stdout.isatty:
       return
     try:
-      if getOption(optionName = "setTitle", db = db, defaultValue = initLimitedString(
-          capacity = 4, text = "true")) == "false":
+      if getOption(optionName = "setTitle", db = db, defaultValue = "true") == "false":
         return
     except CapacityError:
       return
     let titleWidth: Positive = try:
-          ($getOption(optionName = "titleWidth", db = db, defaultValue = initLimitedString(
-              capacity = 4, text = "30"))).parseInt
+          ($getOption(optionName = "titleWidth", db = db, defaultValue = "30")).parseInt
         except:
           30
     let newTitle: string = (if title.len <= titleWidth: title else: title[0 ..

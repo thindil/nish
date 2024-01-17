@@ -175,8 +175,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for setOption.", db = db)
             return false
           try:
-            setOption(optionName = options[0], value = initLimitedString(
-                capacity = maxInputLength, text = options[1]),
+            setOption(optionName = options[0], value = options[1],
                 description = initLimitedString(capacity = maxInputLength,
                 text = options[2]), valueType = parseEnum[OptionValType](
                 s = options[3]), db = db)
