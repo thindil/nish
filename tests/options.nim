@@ -27,15 +27,13 @@ suite "Unit tests for options module":
 
   test "Adding a new option":
     let optionName = "testOption"
-    setOption(optionName = optionName, value = initLimitedString(capacity = 3,
-        text = "200"), db = db)
+    setOption(optionName = optionName, value = "200", db = db)
     check:
       deleteOption(optionName, db) == QuitSuccess
       getOption(optionName, db).len == 0
 
   test "Updating an existing option":
-    setOption(optionName = "historyLength", value = initLimitedString(capacity = 3,
-          text = "100"), db = db)
+    setOption(optionName = "historyLength", value = "100", db = db)
     check:
       getOption("historyLength",
           db) == "100"
