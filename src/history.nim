@@ -111,7 +111,7 @@ proc updateHistory*(commandToAdd: string; db;
     result = db.historyLength
     var value: OptionValue = ""
     let historyAmount: Natural = try:
-        value = getOption(optionName = "historyLength", db = db, "500")
+        value = getOption(optionName = "historyLength", db = db, defaultValue = "500")
         ($value).parseInt
       except:
         500
