@@ -182,7 +182,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         else:
           try:
             let columnsAmount: int = try:
-                parseInt(s = $getOption("completionColumns", db = db,
+                parseInt(s = $getOption(optionName = "completionColumns", db = db,
                     defaultValue = initLimitedString(capacity = 2, text = "5")))
               except CapacityError, ValueError:
                 5
@@ -554,7 +554,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         except DbError:
           showError(message = "Can't execute preCommand hook for plugins. Reason: ",
               e = getCurrentException(), db = db)
-        let withShell: bool = getOption("execWithShell", db = db,
+        let withShell: bool = getOption(optionName = "execWithShell", db = db,
             defaultValue = initLimitedString(capacity = 4, text = "true")) == "true"
         # Parse commands
         case commandName
