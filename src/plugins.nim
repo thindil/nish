@@ -176,8 +176,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             return false
           try:
             setOption(optionName = options[0], value = options[1],
-                description = initLimitedString(capacity = maxInputLength,
-                text = options[2]), valueType = parseEnum[OptionValType](
+                description = options[2], valueType = parseEnum[OptionValType](
                 s = options[3]), db = db)
           except CapacityError, ValueError:
             showError(message = "Can't set option '" & options[0] &

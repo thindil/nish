@@ -132,7 +132,7 @@ proc newOption*(name: string = ""; value: string = ""; description: string = "";
         valueType: valueType, defaultValue: defaultValue, readOnly: readOnly)
 
 proc setOption*(optionName; value: OptionValue = "";
-    description: UserInput = emptyLimitedString(capacity = maxInputLength); valueType: OptionValType = none; db;
+    description: string = ""; valueType: OptionValType = none; db;
     readOnly: BooleanInt = 0) {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =

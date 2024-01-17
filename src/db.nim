@@ -148,8 +148,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
       try:
         for option in options:
-          setOption(optionName = option.option, value = option.value, description = initLimitedString(
-              capacity = 256, text = option.description),
+          setOption(optionName = option.option, value = option.value, description = option.description,
               valueType = option.valueType, db = result, readOnly = (
               if option.readOnly: 1 else: 0))
       except CapacityError:
@@ -179,8 +178,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for option in options:
-          setOption(optionName = option.option, value = option.value, description = initLimitedString(
-              capacity = 256, text = option.description),
+          setOption(optionName = option.option, value = option.value, description = option.description,
               valueType = option.valueType, db = result, readOnly = (
               if option.readOnly: 1 else: 0))
       of 2:
@@ -197,8 +195,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         for i in options.low..options.high:
           if i == 1:
             continue
-          setOption(optionName = options[i].option, value = options[i].value, description = initLimitedString(
-              capacity = 256, text = options[i].description),
+          setOption(optionName = options[i].option, value = options[i].value, description = options[i].description,
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 3:
@@ -215,16 +212,14 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 8, 9, 10, 11]:
-          setOption(optionName = options[i].option, value = options[i].value, description = initLimitedString(
-              capacity = 256, text = options[i].description),
+          setOption(optionName = options[i].option, value = options[i].value, description = options[i].description,
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 4:
         if result.createCompletionDb == QuitFailure:
           return nil
         for i in [0, 10, 11]:
-          setOption(optionName = options[i].option, value = options[i].value, description = initLimitedString(
-              capacity = 256, text = options[i].description),
+          setOption(optionName = options[i].option, value = options[i].value, description = options[i].description,
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 5:
@@ -233,8 +228,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 11]:
-          setOption(optionName = options[i].option, value = options[i].value, description = initLimitedString(
-              capacity = 256, text = options[i].description),
+          setOption(optionName = options[i].option, value = options[i].value, description = options[i].description,
               valueType = options[i].valueType, db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 6:
