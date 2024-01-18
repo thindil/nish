@@ -80,7 +80,7 @@ type
     valueType*: OptionValType
     defaultValue*: string
     readOnly*: bool
-  UserInput* = LimitedString
+  UserInput* = string
     ## Used to store text entered by the user
   ExtendedNatural* = range[-1..int.high]
     ## Used to store various indexes
