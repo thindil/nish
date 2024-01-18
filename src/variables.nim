@@ -45,7 +45,7 @@ const
       'n': "number", 'q': "quit"}.toTable
     ## The list of available options when setting the type of a variable's value
 
-type VariableName = LimitedString
+type VariableName = string
     ## Used to store variables names in the database.
 
 using
@@ -422,7 +422,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:", db = db)
     var
       variable: Variable = newVariable()
-      name: VariableName = emptyLimitedString(capacity = variableNameLength)
+      name: VariableName = ""
     showOutput(message = "Name: ", newLine = false, db = db)
     while name.len == 0:
       name = readInput(maxLength = variableNameLength, db = db)
@@ -430,7 +430,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         showError(message = "Please enter a name for the variable.", db = db)
       elif not validIdentifier(s = $name):
         try:
-          name.text = ""
+          name = ""
           showError(message = "Please enter a valid name for the variable.", db = db)
         except CapacityError:
           showError(message = "Can't set empty name for variable.", db = db)
@@ -497,7 +497,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showFormHeader(message = "(6/6) Value", db = db)
     showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:", db = db)
     showOutput(message = "Value: ", newLine = false, db = db)
-    var value: UserInput = emptyLimitedString(capacity = maxInputLength)
+    var value: UserInput = ""
     while value.len == 0:
       value = readInput(db = db)
       if value.len == 0:
@@ -506,14 +506,14 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       if variable.varType == VariableValType.path and not dirExists(dir = $value):
         showError(message = "Path '" & value & "' doesn't exist.", db = db)
         showOutput(message = "Value: ", newLine = false, db = db)
-        value = emptyLimitedString(capacity = maxInputLength)
+        value = ""
       elif variable.varType == number:
         try:
           discard parseInt(s = $value)
         except:
           showError(message = "The selected value isn't a number.", db = db)
           showOutput(message = "Value: ", newLine = false, db = db)
-          value = emptyLimitedString(capacity = maxInputLength)
+          value = ""
     if value == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.value = $value
@@ -572,10 +572,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         newLine = false, db = db)
     showOutput(message = variable.name, newLine = false, color = values, db = db)
     showOutput(message = "'. Can contains only letters, numbers and underscores.:", db = db)
-    var name: VariableName = try:
-        initLimitedString(capacity = variableNameLength, text = "exit")
-      except CapacityError:
-        return showError(message = "Can't set name of the variable", db = db)
+    var name: VariableName = "exit"
     showOutput(message = "Name: ", newLine = false, db = db)
     while name.len > 0:
       name = readInput(maxLength = variableNameLength, db = db)
@@ -588,7 +585,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Editing the variable cancelled.", db = db)
     elif name == "":
       try:
-        name.text = variable.name
+        name = variable.name
       except CapacityError:
         return showError(message = "Editing the variable cancelled. Reason: can't set name for the variable.", db = db)
     variable.name = $name
@@ -604,7 +601,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Editing the variable cancelled.", db = db)
     elif description == "":
       try:
-        description.text = variable.description
+        description = variable.description
       except CapacityError:
         return showError(message = "Editing the variable cancelled. Reason: can't set description for the variable.", db = db)
     variable.description = $description
@@ -666,10 +663,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         newLine = false, db = db)
     showOutput(message = variable.value, newLine = false, color = values, db = db)
     showOutput(message = "'. Value can't contain a new line character.:", db = db)
-    var value: UserInput = try:
-        initLimitedString(capacity = maxInputLength, text = "invalid")
-      except:
-        return showError(message = "Editing the variable cancelled. Can't set the variable's value.", db = db)
+    var value: UserInput = "invalid"
     while value == "invalid":
       value = readInput(db = db)
       if value.len == 0:
@@ -678,7 +672,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         showError(message = "Path '" & value & "' doesn't exist.", db = db)
         showOutput(message = "Value: ", newLine = false, db = db)
         try:
-          value.text = "invalid"
+          value = "invalid"
         except:
           discard
       elif variable.varType == number:
@@ -688,14 +682,14 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           showError(message = "The selected value isn't a number.", db = db)
           showOutput(message = "Value: ", newLine = false, db = db)
           try:
-            value.text = "invalid"
+            value = "invalid"
           except:
             discard
     if value == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
     elif value.len == 0:
       try:
-        value.text = variable.value
+        value = variable.value
       except CapacityError:
         return showError(message = "Editing the variable cancelled. Reason: can't set value for the variable.", db = db)
     variable.value = $value
@@ -853,13 +847,13 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
           return showVariable(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 8, text = "variable"),
-              helpType = initLimitedString(capacity = 9, text = "variables"), db = db)
+              command = "variable",
+              helpType = "variables", db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 
     try:
-      addCommand(name = initLimitedString(capacity = 8, text = "variable"),
+      addCommand(name = "variable",
           command = variableCommand, commands = commands,
           subCommands = variablesCommands)
     except CapacityError, CommandsListError:

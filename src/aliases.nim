@@ -83,11 +83,8 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [
     try:
       db.rawSelect(qry = dbQuery, objs = dbAliases)
       for dbResult in dbAliases:
-        let index: LimitedString = try:
-            initLimitedString(capacity = maxInputLength, text = dbResult.name)
-          except CapacityError:
-            showError(message = "Can't set index from " & dbResult.name, db = db)
-            return
+        let index: string =
+          dbResult.name
         aliases[index] = dbResult.id
     except:
       showError(message = "Can't set aliases for the current directory. Reason: ",
@@ -346,14 +343,14 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showFormHeader(message = "(1/6 or 7) Name", db = db)
     showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:", db = db)
     showOutput(message = "Name: ", newLine = false, db = db)
-    var name: AliasName = emptyLimitedString(capacity = aliasNameLength)
+    var name: AliasName = ""
     while name.len == 0:
       name = readInput(maxLength = aliasNameLength, db = db)
       if name.len == 0:
         showError(message = "Please enter a name for the alias.", db = db)
       elif not validIdentifier(s = $name):
         try:
-          name.text = ""
+          name = ""
           showError(message = "Please enter a valid name for the alias.", db = db)
         except CapacityError:
           showError(message = "Can't set empty name for alias.", db = db)
@@ -393,7 +390,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showFormHeader(message = "(5/6 or 7) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:", db = db)
     showOutput(message = "Command(s): ", newLine = false, db = db)
-    var commands: UserInput = emptyLimitedString(capacity = maxInputLength)
+    var commands: UserInput = ""
     while commands.len == 0:
       commands = readInput(db = db)
       if commands.len == 0:
@@ -406,17 +403,17 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Where should be redirected the alias output. If you select the option file, you will be asked for the path to the file. Possible options:", db = db)
     var inputChar: char = selectOption(options = aliasesOptions, default = 's',
         prompt = "Output", db = db)
-    var output: UserInput = emptyLimitedString(capacity = maxInputLength)
+    var output: UserInput = ""
     try:
       case inputChar
       of 'o':
-        output.text = "stdout"
+        output = "stdout"
       of 'e':
-        output.text = "stderr"
+        output = "stderr"
       of 'f':
-        output.text = "file"
+        output = "file"
       of 'q':
-        output.text = "exit"
+        output = "exit"
       else:
         discard
     except CapacityError:
@@ -429,7 +426,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       showOutput(message = "Enter the path to the file to which output will be append:", db = db)
       showOutput(message = "Path: ", newLine = false, db = db)
       try:
-        output.text = ""
+        output = ""
       except CapacityError:
         discard
       while output.len == 0:
@@ -501,10 +498,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     if name == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif name == "":
-      try:
-        name.text = alias.name
-      except CapacityError:
-        return showError(message = "Editing the alias cancelled. Reason: Can't set name for the alias", db = db)
+      name = alias.name
     # Set the description for the alias
     showFormHeader(message = "(2/6 or 7) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
@@ -517,10 +511,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     if description == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif description == "":
-      try:
-        description.text = alias.description
-      except CapacityError:
-        return showError(message = "Editing the alias cancelled. Reason: Can't set description for the alias", db = db)
+      description = alias.description
     # Set the working directory for the alias
     showFormHeader(message = "(3/6 or 7) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
@@ -556,10 +547,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     if commands == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif commands == "":
-      try:
-        commands.text = alias.commands
-      except CapacityError:
-        return showError(message = "Editing the alias cancelled. Reason: Can't set commands for the alias", db = db)
+      commands = alias.commands
     # Set the destination for the alias' output
     showFormHeader(message = "(6/6 or 7) Output", db = db)
     showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
@@ -568,17 +556,17 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "':", db = db)
     var inputChar: char = selectOption(options = aliasesOptions, default = 's',
         prompt = "Output", db = db)
-    var output: UserInput = emptyLimitedString(capacity = maxInputLength)
+    var output: UserInput = ""
     try:
       case inputChar
       of 'o':
-        output.text = "stdout"
+        output = "stdout"
       of 'e':
-        output.text = "stderr"
+        output = "stderr"
       of 'f':
-        output.text = "file"
+        output = "file"
       of 'q':
-        output.text = "exit"
+        output = "exit"
       else:
         discard
     except CapacityError:
@@ -591,7 +579,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       showOutput(message = "Enter the path to the file to which output will be append:", db = db)
       showOutput(message = "Path: ", newLine = false, db = db)
       try:
-        output.text = ""
+        output = ""
       except CapacityError:
         discard
       while output.len == 0:
@@ -639,10 +627,8 @@ proc execAlias*(arguments; aliasId: string; aliases;
   body:
     result = QuitSuccess.ResultCode
     let
-      aliasIndex: LimitedString = try:
-          initLimitedString(capacity = maxInputLength, text = aliasId)
-        except CapacityError:
-          return showError(message = "Can't set alias index for " & aliasId, db = db)
+      aliasIndex: string =
+        aliasId
       currentDirectory: DirectoryPath = try:
           getCurrentDirectory().DirectoryPath
       except OSError:
@@ -719,7 +705,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
             defaultValue = "true") == "true"
         result = runCommand(commandName = (if spaceIndex > 0: $(command[0 ..
             spaceIndex]) else: $command), arguments = (if spaceIndex >
-            0: command[spaceIndex .. ^1] else: emptyLimitedString()),
+            0: command[spaceIndex .. ^1] else: ""),
             withShell = withShell, db = db, output = (if alias.output ==
             "stdout": "" else: alias.output))
         if result != QuitSuccess and conjCommands:
@@ -795,14 +781,13 @@ proc initAliases*(db; aliases: ref AliasesList;
           return editAlias(arguments = arguments, aliases = aliases, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 5, text = "alias"),
-                  helpType = initLimitedString(capacity = 7,
-                      text = "aliases"), db = db)
+              command = "alias",
+                  helpType = "aliases", db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 
     try:
-      addCommand(name = initLimitedString(capacity = 5, text = "alias"),
+      addCommand(name = "alias",
           command = aliasCommand, commands = commands,
           subCommands = aliasesCommands)
     except CapacityError, CommandsListError:

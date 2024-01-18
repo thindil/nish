@@ -251,12 +251,10 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             return false
           try:
             if options.len > 1:
-              addCommand(name = initLimitedString(capacity = maxNameLength,
-                  text = options[0]), command = nil, commands = commands,
+              addCommand(name = options[0], command = nil, commands = commands,
                   plugin = pluginPath, subCommands = options[1 .. ^1])
             else:
-              addCommand(name = initLimitedString(capacity = maxNameLength,
-                  text = options[0]), command = nil, commands = commands,
+              addCommand(name = options[0], command = nil, commands = commands,
                   plugin = pluginPath)
           except CommandsListError, CapacityError:
             showError(message = "Can't add command '" & options[0] &
@@ -279,8 +277,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for deleteCommand.", db = db)
             return false
           try:
-            deleteCommand(name = initLimitedString(capacity = maxNameLength,
-                text = options[0]), commands = commands)
+            deleteCommand(name = options[0], commands = commands)
           except CommandsListError, CapacityError:
             showError(message = "Can't delete command '" & options[0] &
                 "'. Reason: " & getCurrentExceptionMsg(), db = db)
@@ -302,8 +299,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for replaceCommand.", db = db)
             return false
           try:
-            replaceCommand(name = initLimitedString(capacity = maxNameLength,
-                text = options[0]), command = nil, commands = commands,
+            replaceCommand(name = options[0], command = nil, commands = commands,
                 plugin = pluginPath, db = db)
           except CommandsListError, CapacityError:
             showError(message = "Can't replace command '" & options[0] &
@@ -328,12 +324,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for addHelp.", db = db)
             return false
           try:
-            return addHelpEntry(topic = initLimitedString(
-                capacity = maxNameLength, text = options[0]),
-                    usage = initLimitedString(
-                capacity = maxInputLength, text = options[1]),
-                plugin = initLimitedString(capacity = maxInputLength,
-                text = pluginPath), content = options[2], isTemplate = false,
+            return addHelpEntry(topic = options[0],
+                    usage = options[1],
+                plugin = pluginPath, content = options[2], isTemplate = false,
                 db = db) == QuitFailure
           except CapacityError:
             showError(message = "Can't add help entry '" & options[0] &
@@ -356,8 +349,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for deleteHelp.", db = db)
             return false
           try:
-            return deleteHelpEntry(topic = initLimitedString(
-                capacity = maxNameLength, text = options[0]), db = db) == QuitFailure
+            return deleteHelpEntry(topic = options[0], db = db) == QuitFailure
           except CapacityError:
             showError(message = "Can't remove help entry '" & options[0] &
                 "'. Reason: ", e = getCurrentException(), db = db)
@@ -381,12 +373,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for updateHelp.", db = db)
             return false
           try:
-            return updateHelpEntry(topic = initLimitedString(
-                capacity = maxNameLength, text = options[0]),
-                usage = initLimitedString(capacity = maxInputLength,
-                text = options[
-                1]), plugin = initLimitedString(capacity = maxInputLength,
-                text = pluginPath), content = options[2], isTemplate = false,
+            return updateHelpEntry(topic = options[0],
+                usage = options[
+                1], plugin = pluginPath, content = options[2], isTemplate = false,
                 db = db) == QuitFailure
           except CapacityError:
             showError(message = "Can't update help entry '" & options[0] &
@@ -886,12 +875,12 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
               commands = list.commands)
         try:
           return showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 6, text = "plugin"),
-              helpType = initLimitedString(capacity = 6, text = "plugin"), db = db)
+              command = "plugin",
+              helpType = "plugin", db = db)
         except CapacityError:
           return QuitFailure.ResultCode
     try:
-      addCommand(name = initLimitedString(capacity = 6, text = "plugin"),
+      addCommand(name = "plugin",
           command = pluginCommand, commands = commands,
           subCommands = pluginsCommands)
     except CapacityError, CommandsListError:

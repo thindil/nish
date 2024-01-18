@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -138,8 +138,7 @@ proc executeCommand*(commands: ref Table[string, CommandData];
     else:
       try:
         # Check if the command is an alias, if yes, execute it
-        if initLimitedString(capacity = maxInputLength,
-            text = commandName) in aliases:
+        if commandName in aliases:
           result = execAlias(arguments = arguments,
               aliasId = commandName, aliases = aliases, db = db)
           cursorPosition = runeLen(s = $inputString)

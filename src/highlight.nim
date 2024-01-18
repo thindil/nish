@@ -126,8 +126,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         elif commands.hasKey(key = $command):
           color = highlightValid
         # Aliases
-        elif aliases.contains(key = initLimitedString(capacity = maxInputLength,
-            text = command)):
+        elif aliases.contains(key = command):
           color = highlightValid
       showOutput(message = $command, newLine = false, color = color, db = db)
       # Check if command's arguments contains quotes

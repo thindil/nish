@@ -30,8 +30,6 @@ import std/[os, tables]
 # External modules imports
 import contracts
 import norm/[model, pragmas]
-# Internal imports
-import lstring
 
 const
   maxNameLength*: Positive = 50
@@ -90,7 +88,7 @@ type
     ## Used to set the sort type for showing the last commands in the shell's
     ## history
     recent, amount, name, recentamount
-  AliasName* = LimitedString
+  AliasName* = string
     ## Used to store aliases names in tables and database.
   AliasesList* = OrderedTable[AliasName, int]
     ## Used to store the available aliases in the selected directory
