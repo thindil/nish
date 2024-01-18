@@ -167,8 +167,7 @@ proc updateHistory*(commandToAdd: string; db;
           e = getCurrentException(), db = db)
 
 proc getHistory*(historyIndex: HistoryRange; db;
-    searchFor: UserInput = emptyLimitedString(
-    capacity = maxInputLength)): string {.sideEffect, raises: [], tags: [
+    searchFor: UserInput = ""): string {.sideEffect, raises: [], tags: [
     ReadDbEffect, ReadEnvEffect, WriteIOEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Get the command with the selected index from the shell history
@@ -513,12 +512,12 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
             return findInHistory(db = db, arguments = arguments)
         try:
           return showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 7, text = "history"),
-              helpType = initLimitedString(capacity = 7, text = "history"), db = db)
+              command = "history",
+              helpType = "history", db = db)
         except CapacityError:
           return QuitFailure.ResultCode
     try:
-      addCommand(name = initLimitedString(capacity = 8, text = "history"),
+      addCommand(name = "history",
           command = historyCommand, commands = commands,
           subCommands = historyCommands)
     except CapacityError, CommandsListError:

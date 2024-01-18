@@ -1,4 +1,4 @@
-# Copyright © 2023 Bartek Jasicki
+# Copyright © 2023-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -282,13 +282,13 @@ proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
           return resetTheme(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 5, text = "theme"),
-              helpType = initLimitedString(capacity = 5, text = "theme"), db = db)
+              command = "theme",
+              helpType = "theme", db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 
     try:
-      addCommand(name = initLimitedString(capacity = 5, text = "theme"),
+      addCommand(name = "theme",
           command = themeCommand, commands = commands,
           subCommands = themeCommands)
     except CapacityError, CommandsListError:

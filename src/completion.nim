@@ -323,7 +323,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     showFormHeader(message = "(1/2 or 3) Command", db = db)
     showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. For example: 'ls'. Can't be empty:", db = db)
     showOutput(message = "Command: ", newLine = false, db = db)
-    var command: LimitedString = emptyLimitedString(capacity = maxInputLength)
+    var command: UserInput = ""
     while command.len == 0:
       command = readInput(maxLength = maxInputLength, db = db)
       if command.len == 0:
@@ -339,7 +339,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         default = 'n', prompt = "Type", db = db)
     if typeChar == 'q':
       return showError(message = "Adding a new completion cancelled.", db = db)
-    var values: UserInput = emptyLimitedString(capacity = maxInputLength)
+    var values: UserInput = ""
     # Set the values for the completion if the user selected custom type of completion
     if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
@@ -468,12 +468,12 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         color = values, db = db)
     showOutput(message = "'.", db = db)
     showOutput(message = "Command: ", newLine = false, db = db)
-    var command: LimitedString = readInput(maxLength = maxInputLength, db = db)
+    var command: UserInput = readInput(maxLength = maxInputLength, db = db)
     if command == "exit":
       return showError(message = "Editing the completion cancelled.", db = db)
     elif command == "":
       try:
-        command.text = completion.command
+        command = completion.command
       except CapacityError:
         return showError(message = "Editing the completion cancelled. Reason: Can't set command for the completion", db = db)
     # Set the type for the completion
@@ -502,7 +502,7 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       stdout.writeLine(x = "")
     except IOError:
       discard
-    var values: UserInput = emptyLimitedString(capacity = maxInputLength)
+    var values: UserInput = ""
     # Set the values for the completion if the user selected custom type of completion
     if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
@@ -806,14 +806,13 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
           return exportCompletion(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 10, text = "completion"),
-                  helpType = initLimitedString(capacity = 11,
-                      text = "completions"), db = db)
+              command = "completion",
+                  helpType = "completions", db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 
     try:
-      addCommand(name = initLimitedString(capacity = 10, text = "completion"),
+      addCommand(name = "completion",
           command = completionCommand, commands = commands,
           subCommands = completionCommands)
     except CapacityError, CommandsListError:

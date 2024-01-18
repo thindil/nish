@@ -62,18 +62,16 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     try:
       stdout.eraseLine
       let
-        input: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = strutils.strip(
-                s = $inputString, trailing = false))
-          except CapacityError:
-            emptyLimitedString(capacity = maxInputLength)
+        input: UserInput =
+          strutils.strip(
+              s = $inputString, trailing = false)
       var
         spaceIndex: ExtendedNatural = input.find(sub = ' ')
         command: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
-                1: $input else: $input[0..spaceIndex - 1]))
+            (if spaceIndex <
+                1: input else: $input[0..spaceIndex - 1])
           except CapacityError:
-            emptyLimitedString(capacity = maxInputLength)
+            ""
       # Show the prompt if enabled
       if promptLength > 0 and promptLength + runeLen(s = $input) <=
           terminalWidth():
@@ -96,7 +94,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       # If command contains equal sign it must be an environment variable,
       # print the variable and get the next word
       while '=' in $command:
-        showOutput(message = $command, newLine = false, color = highlightVariable, db = db)
+        showOutput(message = $command, newLine = false,
+            color = highlightVariable, db = db)
         var startIndex: int = input.find(sub = ' ', start = (if spaceIndex >
             -1: spaceIndex else: 0))
         if startIndex < 0:
@@ -105,18 +104,13 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         showOutput(message = " ", newLine = false, db = db)
         startIndex.inc
         spaceIndex = input.find(sub = ' ', start = startIndex)
-        command = try:
-            initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
-                1: $input[startIndex..^1] else: $input[startIndex..spaceIndex - 1]))
-          except CapacityError:
-            emptyLimitedString(capacity = maxInputLength)
+        command =
+          (if spaceIndex <
+              1: input[startIndex..^1] else: input[startIndex..spaceIndex - 1])
         if spaceIndex == -1:
           spaceIndex = input.len
-      let commandArguments: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = (if spaceIndex <
-                1: "" else: $input[spaceIndex..^1]))
-          except CapacityError:
-            emptyLimitedString(capacity = maxInputLength)
+      let commandArguments: UserInput = (if spaceIndex <
+                1: "" else: $input[spaceIndex..^1])
       var color: ThemeColor = try:
           if findExe(exe = $command).len > 0:
             highlightValid
@@ -132,7 +126,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         elif commands.hasKey(key = $command):
           color = highlightValid
         # Aliases
-        elif aliases.contains(key = command):
+        elif aliases.contains(key = initLimitedString(capacity = maxInputLength,
+            text = command)):
           color = highlightValid
       showOutput(message = $command, newLine = false, color = color, db = db)
       # Check if command's arguments contains quotes

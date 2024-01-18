@@ -372,14 +372,13 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
           return importDb(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 6, text = "nishdb"),
-                  helpType = initLimitedString(capacity = 6,
-                      text = "nishdb"), db = db)
+              command = "nishdb",
+                  helpType = "nishdb", db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 
     try:
-      addCommand(name = initLimitedString(capacity = 6, text = "nishdb"),
+      addCommand(name = "nishdb",
           command = dbCommand, commands = commands,
           subCommands = dbCommands)
     except CapacityError, CommandsListError:

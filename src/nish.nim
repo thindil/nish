@@ -168,7 +168,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
             stdout.cursorBackward(count = runeLen(s = $inputString) -
                 spaceIndex - 1)
             stdout.write(s = completions[0])
-            inputString.text = inputString[0..spaceIndex] & completions[0]
+            inputString = inputString[0..spaceIndex] & completions[0]
             cursorPosition = runeLen(s = $inputString)
           except IOError, OSError:
             discard
@@ -256,10 +256,9 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
               if historyIndex == 0:
                 continue
               try:
-                inputString.text = getHistory(historyIndex = historyIndex,
-                    db = db, searchFor = initLimitedString(
-                    capacity = maxInputLength, text = (
-                    if keyWasArrow: "" else: $inputString)))
+                inputString = getHistory(historyIndex = historyIndex,
+                    db = db, searchFor = (
+                    if keyWasArrow: "" else: $inputString))
               except CapacityError:
                 showError(message = "Entered input is too long.",
                     e = getCurrentException(), db = db)
@@ -282,10 +281,9 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
               if historyIndex > currentHistoryLength:
                 historyIndex = currentHistoryLength
               try:
-                inputString.text = getHistory(historyIndex = historyIndex,
-                    db = db, searchFor = initLimitedString(
-                    capacity = maxInputLength, text = (
-                    if keyWasArrow: "" else: $inputString)))
+                inputString = getHistory(historyIndex = historyIndex,
+                    db = db, searchFor = (
+                    if keyWasArrow: "" else: $inputString))
               except CapacityError:
                 showError(message = "Entered input is too long.",
                     e = getCurrentException(), db = db)
@@ -330,7 +328,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
       # Ctrl-c pressed, cancel current command and return 130 result code
       of 3:
         completionMode = false
-        inputString = emptyLimitedString(capacity = maxInputLength)
+        inputString = ""
         returnCode = 130.ResultCode
         cursorPosition = 0
         commandName = "ctrl-c"
@@ -341,7 +339,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           continue
         try:
           let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-          inputString.text = inputString[0..spaceIndex] & completions[currentCompletion]
+          inputString = inputString[0..spaceIndex] & completions[currentCompletion]
           cursorPosition = runeLen(s = $inputString)
           let line: int = (if completions.len > 3: (completions.len /
               3).int + 1 else: 1)
@@ -410,7 +408,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     var
       userInput: OptParser = initOptParser()
       commandName: string = ""
-      inputString: UserInput = emptyLimitedString(capacity = maxInputLength)
+      inputString: UserInput = ""
       options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
           "help", "version"])
       historyIndex: HistoryRange = -1
@@ -450,7 +448,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           oneTimeCommand = true
           options.next
           try:
-            inputString.text = options.key
+            inputString = options.key
           except CapacityError:
             quit showError(message = "The entered command is too long.", db = nil).int
         of "h", "help":
@@ -520,7 +518,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # User entered just the command to execute the previously entered command,
         # replace it with the previous if exists
         if inputString == "." and lastCommand.len > 0:
-          inputString.text = lastCommand
+          inputString = lastCommand
         userInput = initOptParser(cmdLine = $inputString)
         # Reset the return code of the program
         returnCode = QuitSuccess.ResultCode
@@ -531,12 +529,12 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           commandName = userInput.key
         # Set the command arguments
         var arguments: UserInput = try:
-            initLimitedString(capacity = maxInputLength, text = $getArguments(
-                userInput = userInput, conjCommands = conjCommands))
+            getArguments(
+                userInput = userInput, conjCommands = conjCommands)
           except CapacityError:
-            emptyLimitedString(capacity = maxInputLength)
+            ""
         try:
-          inputString.text = join(a = userInput.remainingArgs, sep = " ")
+          inputString = join(a = userInput.remainingArgs, sep = " ")
         except CapacityError:
           showError(message = "Entered input is too long.",
               e = getCurrentException(), db = db)
@@ -583,11 +581,11 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
             let spaceIndex: int = arguments.find(sub = ' ')
             if spaceIndex > 0:
               commandName = $(arguments[0 .. spaceIndex - 1])
-              arguments = initLimitedString(capacity = maxInputLength, text = $(
-                  arguments[spaceIndex + 1 .. ^1]))
+              arguments = (
+                  arguments[spaceIndex + 1 .. ^1])
             else:
               commandName = $arguments
-              arguments = emptyLimitedString(capacity = maxInputLength)
+              arguments = ""
             returnCode = executeCommand(commands = commands,
                 commandName = commandName, arguments = arguments,
                 inputString = inputString, db = db, aliases = aliases,
@@ -622,7 +620,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
                 style = getColor(db = db, name = suggestAbort)) & "]bort", db = db)
             case getch()
             of 'Y', 'y':
-              inputString.text = newCommand & " " & arguments
+              inputString = newCommand & " " & arguments
               inputChanged = true
               break
             of 'A', 'a':
@@ -657,7 +655,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         # the input, don't execute more commands.
         if inputString.len > 0 and ((returnCode != QuitSuccess and
             conjCommands) or (returnCode == QuitSuccess and not conjCommands)):
-          inputString = emptyLimitedString(capacity = maxInputLength)
+          inputString = ""
         # Run only one command, quit from the shell
         if oneTimeCommand and inputString.len == 0:
           closeDb(returnCode = returnCode, db = db)
