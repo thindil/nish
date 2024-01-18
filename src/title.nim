@@ -32,7 +32,7 @@ import std/[os, strutils, terminal]
 import contracts
 import norm/sqlite
 # Internal imports
-import lstring, options
+import options
 
 proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, RootEffect],
@@ -47,10 +47,7 @@ proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
     # Not a terminal emulator, don't set the title
     if not stdin.isatty and not stdout.isatty:
       return
-    try:
-      if getOption(optionName = "setTitle", db = db, defaultValue = "true") == "false":
-        return
-    except CapacityError:
+    if getOption(optionName = "setTitle", db = db, defaultValue = "true") == "false":
       return
     let titleWidth: Positive = try:
           ($getOption(optionName = "titleWidth", db = db, defaultValue = "30")).parseInt
