@@ -499,12 +499,10 @@ proc initOptions*(commands: ref CommandsList; db) {.sideEffect,
           return showOptions(db = db)
         # Set the selected option
         if arguments.startsWith(prefix = "set"):
-          result = setOptions(db = db)
-          return
+          return setOptions(db = db)
         # Reset the selected option or all options to their default values
         if arguments.startsWith(prefix = "reset"):
-          result = resetOptions(arguments = arguments, db = db)
-          return
+          return resetOptions(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
               command = initLimitedString(capacity = 7, text = "options"),
