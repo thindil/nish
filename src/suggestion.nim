@@ -32,7 +32,7 @@ import std/[editdistance, os, strutils, tables]
 import contracts
 import norm/sqlite
 # Internal imports
-import commandslist, constants, lstring, options
+import commandslist, constants, options
 
 var suggestions: seq[string] = @[]
   ## the list of all available commands to the user, used in the suggestions
