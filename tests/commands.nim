@@ -1,6 +1,6 @@
 import std/tables
 import utils/utils
-import ../src/[commands, commandslist, db, directorypath, lstring, resultcode]
+import ../src/[commands, commandslist, db, directorypath, resultcode]
 import unittest2
 
 suite "Unit tests for commands module":
@@ -10,7 +10,7 @@ suite "Unit tests for commands module":
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
-  var myaliases = newOrderedTable[LimitedString, int]()
+  var myaliases = newOrderedTable[string, int]()
 
   test "Testing cd command":
     checkpoint "Entering an existing directory"
@@ -33,8 +33,7 @@ suite "Unit tests for commands module":
       cursorPosition: Natural = 1
       commands = newTable[string, CommandData]()
     check:
-      executeCommand(commands, "ls", initLimitedString(capacity = 4,
-          text = "-a ."), initLimitedString(capacity = 7, text = "ls -a ."), db,
+      executeCommand(commands, "ls", "-a .", "ls -a .", db,
           myaliases, cursorPosition) == QuitSuccess
 
   suiteTeardown:

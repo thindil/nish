@@ -1,6 +1,6 @@
 import std/tables
 import utils/utils
-import ../src/[commandslist, constants, db, lstring, resultcode]
+import ../src/[commandslist, constants, db, resultcode]
 import contracts, unittest2
 import norm/sqlite
 
@@ -25,45 +25,45 @@ suite "Unit tests for commandslist module":
 
   test "Adding a new command":
     checkpoint "Adding a new command"
-    addCommand(name = initLimitedString(capacity = 4, text = "test"),
+    addCommand(name = "test",
         command = testCommand, commands = commands)
     check:
       commands.len == 1
     checkpoint "Readding the same command"
     expect CommandsListError:
-      addCommand(name = initLimitedString(capacity = 4, text = "test"),
+      addCommand(name = "test",
           command = testCommand, commands = commands)
     check:
       commands.len == 1
     checkpoint "Overwritting built-in command"
     expect CommandsListError:
-      addCommand(name = initLimitedString(capacity = 4, text = "exit"),
+      addCommand(name = "exit",
           command = testCommand, commands = commands)
     check:
       commands.len == 1
 
   test "Replacing a command":
     checkpoint "Replacing an existing command"
-    replaceCommand(name = initLimitedString(capacity = 4, text = "test"),
+    replaceCommand(name = "test",
         command = testCommand2, commands = commands, db = db)
     checkpoint "Replacing a built-in command"
     expect CommandsListError:
-      replaceCommand(name = initLimitedString(capacity = 4, text = "exit"),
+      replaceCommand(name = "exit",
           command = testCommand, commands = commands, db = db)
 
   test "Deleting a command":
     checkpoint "Deleting an exisiting command"
-    deleteCommand(name = initLimitedString(capacity = 4, text = "test"),
+    deleteCommand(name = "test",
         commands = commands)
     check:
       commands.len == 0
-    addCommand(name = initLimitedString(capacity = 5, text = "test2"),
+    addCommand(name = "test2",
         command = testCommand, commands = commands)
     unittest2.require:
       commands.len == 1
     checkpoint "Deleting a non-existing command"
     expect CommandsListError:
-      deleteCommand(name = initLimitedString(capacity = 4, text = "test"),
+      deleteCommand(name = "test",
           commands = commands)
     check:
       commands.len == 1
@@ -71,12 +71,10 @@ suite "Unit tests for commandslist module":
   test "Executing a command":
     checkpoint "Execute a command inside the system's default shell"
     check:
-      runCommand("ls", initLimitedString(capacity = 4,
-          text = "-a ."), true, db) == QuitSuccess
+      runCommand("ls", "-a .", true, db) == QuitSuccess
     checkpoint "Execute a command without the system's default shell"
     check:
-      runCommand("ls", initLimitedString(capacity = 4,
-          text = "-a ."), false, db) == QuitSuccess
+      runCommand("ls", "-a .", false, db) == QuitSuccess
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)

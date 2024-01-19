@@ -1,6 +1,6 @@
 import std/tables
 import utils/utils
-import ../src/[commandslist, db, history, lstring, resultcode]
+import ../src/[commandslist, db, history, resultcode]
 import unittest2
 
 suite "Unit tests for history module":
@@ -25,18 +25,17 @@ suite "Unit tests for history module":
 
   test "Showing the shell's history":
     check:
-     showHistory(db, initLimitedString(capacity = 4, text = "list")) ==
+     showHistory(db, "list") ==
       QuitSuccess
 
   test "Finding text in the shell's history":
     checkpoint "Finding an exising entry in the history"
     check:
-      findInHistory(db, initLimitedString(capacity = 7, text = "find te")) ==
+      findInHistory(db, "find te") ==
            QuitSuccess
     checkpoint "Finding a non-exising entry in the history"
     check:
-      findInHistory(db, initLimitedString(capacity = 8,
-          text = "find asd")) == QuitFailure
+      findInHistory(db, "find asd") == QuitFailure
 
   test "Clearing the shell's history":
     check:
