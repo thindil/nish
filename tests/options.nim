@@ -1,6 +1,6 @@
 import std/tables
 import utils/utils
-import ../src/[constants, commandslist, db, history, lstring, options, resultcode]
+import ../src/[constants, commandslist, db, history, options, resultcode]
 import unittest2
 
 suite "Unit tests for options module":
@@ -49,8 +49,7 @@ suite "Unit tests for options module":
 
   test "Resetting the shell's options":
     check:
-      resetOptions(initLimitedString(capacity = 9,
-          text = "reset all"), db) == QuitSuccess
+      resetOptions("reset all", db) == QuitSuccess
       getOption("historyLength",
           db) == "500"
 

@@ -1,5 +1,5 @@
 import std/[os, tables]
-import ../src/[aliases, constants, db, directorypath, commandslist, lstring, resultcode]
+import ../src/[aliases, constants, db, directorypath, commandslist, resultcode]
 import utils/utils
 import contracts, unittest2
 import norm/sqlite
@@ -9,7 +9,7 @@ suite "Unit tests for aliases module":
   checkpoint "Initializing the tests"
   let db = initDb("test2.db")
   var
-    myaliases = newOrderedTable[LimitedString, int]()
+    myaliases = newOrderedTable[string, int]()
     commands = newTable[string, CommandData]()
 
   checkpoint "Adding testing aliases if needed"
@@ -23,20 +23,20 @@ suite "Unit tests for aliases module":
   test "Getting the shell's alias ID":
     checkpoint "Getting ID of an existing alias"
     check:
-      getAliasId(initLimitedString(capacity = 8, text = "delete 2"), db).int == 2
+      getAliasId("delete 2", db).int == 2
     checkpoint "Getting ID of a non-existing alias"
     check:
-      getAliasId(initLimitedString(capacity = 9, text = "delete 22"), db).int == 0
+      getAliasId("delete 22", db).int == 0
 
   test "Deleting the shell's alias":
     checkpoint "Deleting an existing alias"
     check:
-      deleteAlias(initLimitedString(capacity = 8, text = "delete 2"),
+      deleteAlias("delete 2",
         myaliases, db) == QuitSuccess
       db.count(Alias) == 1
     checkpoint "Deleting a non-existing alias"
     check:
-      deleteAlias(initLimitedString(capacity = 9, text = "delete 22"),
+      deleteAlias("delete 22",
         myaliases, db) == QuitFailure
     checkpoint("Re-adding the test alias")
     var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
@@ -49,25 +49,25 @@ suite "Unit tests for aliases module":
     myaliases.setAliases(getCurrentDir().DirectoryPath, db)
     checkpoint "Checking an existing alias"
     check:
-      execAlias(emptyLimitedString(), "tests", myaliases, db) == QuitSuccess
+      execAlias("", "tests", myaliases, db) == QuitSuccess
     checkpoint "Checking a non existing alias"
     check:
-      execAlias(emptyLimitedString(), "tests2", myaliases, db) == QuitFailure
+      execAlias("", "tests2", myaliases, db) == QuitFailure
 
   test "Listing the shell's aliases":
     checkpoint "List the shell's aliases in the current directory"
     check:
       db.count(Alias) == 2
-      listAliases(initLimitedString(capacity = 4, text = "list"), myaliases,
+      listAliases("list", myaliases,
         db) == QuitSuccess
     checkpoint "List all available the shell aliases"
     check:
-      listAliases(initLimitedString(capacity = 8, text = "list all"),
+      listAliases("list all",
         myaliases, db) == QuitSuccess
     checkpoint "Check what happen when invalid argument passed to listAliases"
     expect PreConditionDefect:
       check:
-        listAliases(initLimitedString(capacity = 8, text = "werwerew"),
+        listAliases("werwerew",
           myaliases, db) == QuitSuccess
 
   test "Initializing an object of Alias type":

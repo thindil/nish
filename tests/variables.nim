@@ -1,6 +1,6 @@
 import std/[os, strutils, tables]
 import utils/utils
-import ../src/[commandslist, constants, directorypath, db, lstring, resultcode, variables]
+import ../src/[commandslist, constants, directorypath, db, resultcode, variables]
 import norm/sqlite
 import unittest2
 
@@ -44,48 +44,48 @@ suite "Unit tests for variable modules":
   test "Getting the environment variable ID":
     checkpoint "Getting ID of an existing variable"
     check:
-      getVariableId(initLimitedString(capacity = 8, text = "delete 2"),
+      getVariableId("delete 2",
           db).int == 2
     checkpoint "Getting ID of a non-existing variable"
     check:
-      getVariableId(initLimitedString(capacity = 9, text = "delete 22"),
+      getVariableId("delete 22",
           db).int == 0
 
   test "Showing environment variables":
     checkpoint "Showing available environment variables"
     check:
-      listVariables(initLimitedString(capacity = 4, text = "list"), db) ==
+      listVariables("list", db) ==
           QuitSuccess
     checkpoint "Showing all environment variables"
     check:
-      listVariables(initLimitedString(capacity = 8, text = "list all"),
+      listVariables("list all",
           db) == QuitSuccess
     checkpoint "Showing environment variables with invalid subcommand"
     check:
-      listVariables(initLimitedString(capacity = 8, text = "werwerew"),
+      listVariables("werwerew",
           db) == QuitSuccess
 
   test "Deleting an environment variable":
     checkpoint "Deleting a non-existing environment variable"
     check:
-      deleteVariable(initLimitedString(capacity = 10, text = "delete 123"),
+      deleteVariable("delete 123",
           db) == QuitFailure
     checkpoint "Deleting a non-existing environment variable with invalid index"
     check:
-      deleteVariable(initLimitedString(capacity = 10, text = "delete sdf"),
+      deleteVariable("delete sdf",
           db) == QuitFailure
     checkpoint "Deleting an existing environment variable"
     check:
-      deleteVariable(initLimitedString(capacity = 8, text = "delete 2"),
+      deleteVariable("delete 2",
           db) == QuitSuccess
     checkpoint "Deleting a previously deleted environment variable"
     check:
-      deleteVariable(initLimitedString(capacity = 8, text = "delete 2"),
+      deleteVariable("delete 2",
           db) == QuitFailure
 
   test "Setting an evironment variable":
     check:
-      setCommand(initLimitedString(capacity = 13, text = "test=test_val"),
+      setCommand("test=test_val",
           db = db) ==
           QuitSuccess
       getEnv("test") == "test_val"
@@ -93,12 +93,12 @@ suite "Unit tests for variable modules":
   test "Unsetting an environment variable":
     checkpoint "Unsetting an existing environment variable"
     check:
-      unsetCommand(initLimitedString(capacity = 4, text = "test"), db = db) ==
+      unsetCommand("test", db = db) ==
           QuitSuccess
       getEnv("test") == ""
     checkpoint "Unsetting an non-existing environment variable"
     check:
-      unsetCommand(initLimitedString(capacity = 4, text = "test"), db = db) ==
+      unsetCommand("test", db = db) ==
           QuitSuccess
 
   test "Initializing an object of Variable type":

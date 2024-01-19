@@ -13,27 +13,27 @@ suite "Unit tests for plugins module":
     initPlugins(db, commands)
 
   test "Adding a new plugin":
-    discard removePlugin(db, initLimitedString(capacity = 8, "remove 1"), commands)
+    discard removePlugin(db, "remove 1", commands)
     checkpoint "Adding an existing, not added plugin"
     check:
-      addPlugin(db, initLimitedString(capacity = 23,
-          "add tools/testplugin.sh"), commands) == QuitSuccess
+      addPlugin(db,
+          "add tools/testplugin.sh", commands) == QuitSuccess
     checkpoint "Adding an existing, previously added plugin"
     check:
-      addPlugin(db, initLimitedString(capacity = 23,
-          "add tools/testplugin.sh"), commands) == QuitFailure
+      addPlugin(db,
+          "add tools/testplugin.sh", commands) == QuitFailure
     checkpoint "Adding a non-existing plugin"
     check:
-      addPlugin(db, initLimitedString(capacity = 26,
-          "add tools/testplugin.223sh"), commands) == QuitFailure
+      addPlugin(db,
+          "add tools/testplugin.223sh", commands) == QuitFailure
 
   test "Getting the plugin's ID":
     checkpoint "Getting ID of an existing plugin"
     check:
-      getPluginId(initLimitedString(capacity = 8, text = "remove 1"), db).int == 1
+      getPluginId("remove 1", db).int == 1
     checkpoint "Getting ID of a non-existing plugin"
     check:
-      getPluginId(initLimitedString(capacity = 9, text = "remove 22"), db).int == 0
+      getPluginId("remove 22", db).int == 0
 
   test "Checking a plugin":
     checkpoint "Checking an existing plugin"
@@ -54,39 +54,39 @@ suite "Unit tests for plugins module":
   test "Showing plugins":
     checkpoint "Showing enabled plugins"
     check:
-      listPlugins(initLimitedString(capacity = 4, text = "list"), db) ==
+      listPlugins("list", db) ==
           QuitSuccess
     checkpoint "Showing all plugins"
     check:
-      listPlugins(initLimitedString(capacity = 8, text = "list all"), db) ==
+      listPlugins("list all", db) ==
           QuitSuccess
     checkpoint "Showing enabled plugins with invalid subcommand"
     check:
-      listPlugins(initLimitedString(capacity = 13, text = "list werwerew"),
+      listPlugins("list werwerew",
           db) == QuitSuccess
 
   test "Enabling or disabling a plugin":
     checkpoint "Disabling a plugin"
     check:
-      togglePlugin(db, initLimitedString(capacity = 9, "disable 1"), true,
+      togglePlugin(db, "disable 1", true,
           commands) == QuitSuccess
     checkpoint "Enabling a plugin"
     check:
-      togglePlugin(db, initLimitedString(capacity = 8, "enable 1"), false,
+      togglePlugin(db, "enable 1", false,
           commands) == QuitSuccess
     checkpoint "Enabling an enabled plugin"
     check:
-      togglePlugin(db, initLimitedString(capacity = 8, "enable 2"), false,
+      togglePlugin(db, "enable 2", false,
           commands) == QuitFailure
 
   test "Uninstalling a plugin":
     checkpoint "Uninstalling an installed plugin"
     check:
-      removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
+      removePlugin(db, "remove 1",
           commands) == QuitSuccess
     checkpoint "Uninstalling a non-installed plugin"
     check:
-      removePlugin(db, initLimitedString(capacity = 8, "remove 1"),
+      removePlugin(db, "remove 1",
           commands) == QuitFailure
 
   test "Initializing an object of Plugin type":
