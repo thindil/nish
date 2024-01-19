@@ -1,5 +1,5 @@
 import std/tables
-import ../src/[commandslist, lstring, suggestion]
+import ../src/[commandslist, suggestion]
 import utils/utils
 import unittest2
 
@@ -8,7 +8,7 @@ suite "Unit tests for suggestion module":
   checkpoint "Initializing the tests"
   let db = initDb("test14.db")
   var
-    myaliases = newOrderedTable[LimitedString, int]()
+    myaliases = newOrderedTable[string, int]()
     commands = newTable[string, CommandData]()
 
   checkpoint "Adding testing aliases if needed"
