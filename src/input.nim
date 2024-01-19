@@ -65,13 +65,12 @@ proc readChar*(inputChar: char; db): string {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
 
 proc deleteChar*(inputString: var UserInput;
-    cursorPosition: var Natural; db) {.sideEffect, raises: [], tags: [WriteIOEffect,
+    cursorPosition: var Natural) {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
   ## Delete the Unicode character at the selected position from the user's input
   ##
   ## * inputString    - the string of characters entered by the user
   ## * cursorPosition - the position of the cursor in the string
-  ## * db             - the connection to the shell's database
   ##
   ## Returns modified inputString and the new cursor position as cursorPosition
   body:
@@ -187,7 +186,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
           stdout.write(s = repeat(c = ' ', count = runeLen(s = $resultString)))
           stdout.cursorBackward(count = runeLen(s = $resultString))
           deleteChar(inputString = resultString,
-              cursorPosition = cursorPosition, db = db)
+              cursorPosition = cursorPosition)
           stdout.write(s = $resultString)
           if cursorPosition < runeLen(s = $resultString):
             stdout.cursorBackward(count = runeLen(s = $resultString) - cursorPosition)
@@ -219,7 +218,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
                 stdout.cursorBackward(count = runeLen(s = $resultString))
                 cursorPosition.inc
                 deleteChar(inputString = resultString,
-                    cursorPosition = cursorPosition, db = db)
+                    cursorPosition = cursorPosition)
                 stdout.write(s = $resultString)
                 if cursorPosition < runeLen(s = $resultString):
                   stdout.cursorBackward(count = runeLen(s = $resultString) - cursorPosition)
