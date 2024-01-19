@@ -78,10 +78,7 @@ proc deleteChar*(inputString: var UserInput;
     var runes: seq[Rune] = toRunes(s = $inputString)
     cursorPosition.dec
     runes.delete(i = cursorPosition)
-    try:
-      inputString.text = $runes
-    except CapacityError:
-      showError(message = "Entered input is too long.", e = getCurrentException(), db = db)
+    inputString = $runes
 
 proc moveCursor*(inputChar: char; cursorPosition: var Natural;
     inputString: UserInput; db) {.sideEffect, raises: [], tags: [WriteIOEffect,
@@ -135,20 +132,12 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
     if insertMode:
       var runes: seq[Rune] = toRunes(s = $inputString)
       runes[cursorPosition] = inputRune.toRunes[0]
-      try:
-        inputString.text = $runes
-      except CapacityError:
-        showError(message = "Entered input is too long.",
-            e = getCurrentException(), db = db)
+      inputString = $runes
     else:
       var runes: seq[Rune] = toRunes(s = $inputString)
       runes.insert(item = inputRune.toRunes[0], i = cursorPosition)
-      try:
-        inputString.text = $runes
-        cursorPosition.inc
-      except CapacityError:
-        showError(message = "Entered input is too long.",
-            e = getCurrentException(), db = db)
+      inputString = $runes
+      cursorPosition.inc
   else:
     try:
       inputString.add(y = inputRune)
@@ -173,14 +162,10 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
     result.capacity == maxLength
   body:
     # Get the user input and parse it
-    let exitString: LimitedString =
-      try:
-        initLimitedString(capacity = maxLength, text = "exit")
-      except CapacityError:
-        return
+    const exitString: string = "exit"
     var
       inputChar: char = '\0'
-      resultString: LimitedString = emptyLimitedString(capacity = maxLength)
+      resultString: string = ""
       cursorPosition: Natural = 0
     # Read the user input until not meet new line character or the input
     # reach the maximum length
@@ -279,7 +264,7 @@ proc getArguments*(userInput: var OptParser;
   ##
   ## Returns properly converted user input and parameter conjCommands
   body:
-    result = emptyLimitedString(capacity = maxInputLength)
+    result = ""
     conjCommands = false
     var
       arguments: seq[string] = userInput.remainingArgs
@@ -302,10 +287,7 @@ proc getArguments*(userInput: var OptParser;
       userInput = initOptParser(cmdline = arguments[index + 1..^1])
     else:
       userInput = initOptParser(cmdline = @[""])
-    try:
-      result.text = strutils.strip(s = $result)
-    except CapacityError:
-      return
+    result = strutils.strip(s = result)
 
 proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
     raises: [], tags: [ReadDbEffect, TimeEffect, ReadIOEffect, WriteIOEffect,

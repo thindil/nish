@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -280,15 +280,9 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     # Try to get the selected help topic from the database
     let
       tokens: seq[string] = split(s = $topic)
-      args: UserInput = try:
-          initLimitedString(capacity = maxInputLength, text = join(a = tokens[
-              1 .. ^1], sep = " "))
-        except CapacityError:
-          return showError(message = "Can't set arguments for help", db = db)
-      command: UserInput = try:
-          initLimitedString(capacity = maxInputLength, text = tokens[0])
-        except CapacityError:
-          return showError(message = "Can't set command for help", db = db)
+      args: UserInput = join(a = tokens[
+              1 .. ^1], sep = " ")
+      command: UserInput = tokens[0]
       key: string = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
     var dbHelp: seq[HelpEntry] = @[newHelpEntry()]
@@ -348,12 +342,9 @@ proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       return QuitSuccess.ResultCode
     # The user selected uknown topic, show the uknown command help entry
     if args.len > 0:
-      try:
-        result = showUnknownHelp(subCommand = args, command = command,
-            helpType = initLimitedString(capacity = maxInputLength, text = (
-            if command == "alias": "aliases" else: $command)), db = db)
-      except CapacityError:
-        return showError(message = "Can't show help for unknown command", db = db)
+      result = showUnknownHelp(subCommand = args, command = command,
+          helpType = (
+          if command == "alias": "aliases" else: $command), db = db)
       return QuitSuccess.ResultCode
     # The user entered the help topic which doesn't exists
     return showError(message = "Unknown help topic: `" & topic &
@@ -458,12 +449,9 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
         if topic.len > 0 and usage.len > 0 and content.len > 0 and
             plugin.len > 0:
           try:
-            result = addHelpEntry(topic = initLimitedString(
-                capacity = maxInputLength, text = topic),
-                usage = initLimitedString(
-                capacity = maxInputLength, text = usage),
-                plugin = initLimitedString(capacity = maxInputLength,
-                text = plugin), content = content, isTemplate = isTemplate, db = db)
+            result = addHelpEntry(topic = topic,
+                usage = usage,
+                plugin = plugin, content = content, isTemplate = isTemplate, db = db)
           except CapacityError:
             return showError(message = "Can't add help entry. Reason: ",
                 e = getCurrentException(), db = db)
@@ -582,9 +570,9 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     {.ruleOn: "paramsUsed".}
 
     try:
-      addCommand(name = initLimitedString(capacity = 4, text = "help"),
+      addCommand(name = "help",
           command = helpCommand, commands = commands)
-      addCommand(name = initLimitedString(capacity = 10, text = "updatehelp"),
+      addCommand(name = "updatehelp",
           command = updateHelpCommand, commands = commands)
     except CapacityError, CommandsListError:
       showError(message = "Can't add commands related to the shell's help. Reason: ",

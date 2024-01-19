@@ -323,8 +323,8 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
                   defaultValue = "true") == "true"
               exitCode: ResultCode = runCommand(commandName = (if spaceIndex >
                   0: value[0 .. spaceIndex] else: value),
-                  arguments = initLimitedString(capacity = value.len, text = (
-                  if spaceIndex > 0: value[spaceIndex .. ^1] else: "")),
+                  arguments = (
+                  if spaceIndex > 0: value[spaceIndex .. ^1] else: ""),
                   withShell = withShell, db = db)
             if exitCode != QuitSuccess:
               showError(message = "Value for option '" & option.option &
@@ -505,13 +505,13 @@ proc initOptions*(commands: ref CommandsList; db) {.sideEffect,
           return resetOptions(arguments = arguments, db = db)
         try:
           return showUnknownHelp(subCommand = arguments,
-              command = initLimitedString(capacity = 7, text = "options"),
-              helpType = initLimitedString(capacity = 7, text = "options"), db = db)
+              command = "options",
+              helpType = "options", db = db)
         except CapacityError:
           return QuitFailure.ResultCode
 
     try:
-      addCommand(name = initLimitedString(capacity = 7, text = "options"),
+      addCommand(name = "options",
           command = optionsCommand, commands = commands,
           subCommands = optionsCommands)
     except CapacityError, CommandsListError:
