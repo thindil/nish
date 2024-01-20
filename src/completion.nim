@@ -32,7 +32,7 @@ import std/[os, parsecfg, strutils, tables]
 import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, help, input, lstring, options,
+import commandslist, constants, databaseid, help, input, options,
     output, resultcode, theme
 
 type DirCompletionType = enum
@@ -122,7 +122,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
-      except ValueError, CapacityError:
+      except:
         30
     # Completion disabled
     if completionAmount == 0:
@@ -130,7 +130,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
     let caseSensitive: bool = try:
         parseBool(s = $getOption(optionName = "completionCheckCase", db = db,
           defaultValue = "false"))
-      except ValueError, CapacityError:
+      except:
         true
     try:
       if caseSensitive:
@@ -191,7 +191,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
-      except ValueError, CapacityError:
+      except:
         30
     # Completion disabled
     if completionAmount == 0:
@@ -250,7 +250,7 @@ proc getCompletion*(commandName, prefix: string; completions: var seq[string];
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
-      except ValueError, CapacityError:
+      except:
         30
     # Completion disabled
     if completionAmount == 0:
@@ -472,10 +472,7 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     if command == "exit":
       return showError(message = "Editing the completion cancelled.", db = db)
     elif command == "":
-      try:
-        command = completion.command
-      except CapacityError:
-        return showError(message = "Editing the completion cancelled. Reason: Can't set command for the completion", db = db)
+      command = completion.command
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
     showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '",
@@ -804,17 +801,14 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
         # Export the selected completion to the file
         if arguments.startsWith(prefix = "export"):
           return exportCompletion(arguments = arguments, db = db)
-        try:
-          return showUnknownHelp(subCommand = arguments,
-              command = "completion",
-                  helpType = "completions", db = db)
-        except CapacityError:
-          return QuitFailure.ResultCode
+        return showUnknownHelp(subCommand = arguments,
+            command = "completion",
+                helpType = "completions", db = db)
 
     try:
       addCommand(name = "completion",
           command = completionCommand, commands = commands,
           subCommands = completionCommands)
-    except CapacityError, CommandsListError:
+    except:
       showError(message = "Can't add commands related to the shell's completion system. Reason: ",
           e = getCurrentException(), db = db)
