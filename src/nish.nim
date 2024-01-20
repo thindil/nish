@@ -139,7 +139,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         if cursorPosition == 0:
           continue
         deleteChar(inputString = inputString,
-            cursorPosition = cursorPosition, db = db)
+            cursorPosition = cursorPosition)
         highlightOutput(promptLength = promptLength,
             inputString = inputString, commands = commands,
             aliases = aliases, oneTimeCommand = oneTimeCommand,
@@ -305,7 +305,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
                   continue
                 cursorPosition.inc
                 deleteChar(inputString = inputString,
-                    cursorPosition = cursorPosition, db = db)
+                    cursorPosition = cursorPosition)
                 highlightOutput(promptLength = promptLength,
                     inputString = inputString, commands = commands,
                     aliases = aliases, oneTimeCommand = oneTimeCommand,
