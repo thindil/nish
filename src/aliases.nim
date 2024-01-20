@@ -32,7 +32,7 @@ import std/[os, parseopt, strutils, tables]
 import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, directorypath, help, input, lstring,
+import commandslist, constants, databaseid, directorypath, help, input,
     options, output, resultcode, variables, theme
 
 const
@@ -349,11 +349,8 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       if name.len == 0:
         showError(message = "Please enter a name for the alias.", db = db)
       elif not validIdentifier(s = $name):
-        try:
-          name = ""
-          showError(message = "Please enter a valid name for the alias.", db = db)
-        except CapacityError:
-          showError(message = "Can't set empty name for alias.", db = db)
+        name = ""
+        showError(message = "Please enter a valid name for the alias.", db = db)
       if name.len == 0:
         showOutput(message = "Name: ", newLine = false, db = db)
     if name == "exit":
@@ -404,20 +401,17 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     var inputChar: char = selectOption(options = aliasesOptions, default = 's',
         prompt = "Output", db = db)
     var output: UserInput = ""
-    try:
-      case inputChar
-      of 'o':
-        output = "stdout"
-      of 'e':
-        output = "stderr"
-      of 'f':
-        output = "file"
-      of 'q':
-        output = "exit"
-      else:
-        discard
-    except CapacityError:
-      return showError(message = "Adding a new alias cancelled. Reason: Can't set output for the alias", db = db)
+    case inputChar
+    of 'o':
+      output = "stdout"
+    of 'e':
+      output = "stderr"
+    of 'f':
+      output = "file"
+    of 'q':
+      output = "exit"
+    else:
+      discard
     if output == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     elif output == "file":
@@ -425,10 +419,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       showFormHeader(message = "(7/7) Output file", db = db)
       showOutput(message = "Enter the path to the file to which output will be append:", db = db)
       showOutput(message = "Path: ", newLine = false, db = db)
-      try:
-        output = ""
-      except CapacityError:
-        discard
+      output = ""
       while output.len == 0:
         output = readInput(db = db)
     if output == "exit":
@@ -557,20 +548,17 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     var inputChar: char = selectOption(options = aliasesOptions, default = 's',
         prompt = "Output", db = db)
     var output: UserInput = ""
-    try:
-      case inputChar
-      of 'o':
-        output = "stdout"
-      of 'e':
-        output = "stderr"
-      of 'f':
-        output = "file"
-      of 'q':
-        output = "exit"
-      else:
-        discard
-    except CapacityError:
-      return showError(message = "Editing the alias cancelled. Reason: Can't set output for the alias", db = db)
+    case inputChar
+    of 'o':
+      output = "stdout"
+    of 'e':
+      output = "stderr"
+    of 'f':
+      output = "file"
+    of 'q':
+      output = "exit"
+    else:
+      discard
     if output == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif output == "file":
@@ -578,10 +566,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       showFormHeader(message = "(7/7) Output file", db = db)
       showOutput(message = "Enter the path to the file to which output will be append:", db = db)
       showOutput(message = "Path: ", newLine = false, db = db)
-      try:
-        output = ""
-      except CapacityError:
-        discard
+      output = ""
       while output.len == 0:
         output = readInput(db = db)
     if output == "exit":
@@ -779,18 +764,15 @@ proc initAliases*(db; aliases: ref AliasesList;
         # Edit the selected alias
         if arguments.startsWith(prefix = "edit"):
           return editAlias(arguments = arguments, aliases = aliases, db = db)
-        try:
-          return showUnknownHelp(subCommand = arguments,
-              command = "alias",
-                  helpType = "aliases", db = db)
-        except CapacityError:
-          return QuitFailure.ResultCode
+        return showUnknownHelp(subCommand = arguments,
+            command = "alias",
+                helpType = "aliases", db = db)
 
     try:
       addCommand(name = "alias",
           command = aliasCommand, commands = commands,
           subCommands = aliasesCommands)
-    except CapacityError, CommandsListError:
+    except:
       showError(message = "Can't add commands related to the shell's aliases. Reason: ",
           e = getCurrentException(), db = db)
     # Set the shell's aliases for the current directory
