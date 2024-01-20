@@ -32,7 +32,7 @@ import std/[os, tables, unicode]
 import contracts
 import norm/sqlite
 # Internal imports
-import aliases, constants, commandslist, directorypath, lstring, output,
+import aliases, constants, commandslist, directorypath, output,
     plugins, resultcode, variables
 
 using
@@ -136,15 +136,12 @@ proc executeCommand*(commands: ref Table[string, CommandData];
         showError(message = "Can't execute command '" & commandName &
             "'. Reason: ", e = getCurrentException(), db = db)
     else:
-      try:
-        # Check if the command is an alias, if yes, execute it
-        if commandName in aliases:
-          result = execAlias(arguments = arguments,
-              aliasId = commandName, aliases = aliases, db = db)
-          cursorPosition = runeLen(s = $inputString)
-        else:
-          # Execute the external command
-          return runCommand(commandName = commandName, arguments = arguments,
-              withShell = withShell, db = db)
-      except CapacityError:
-        return QuitFailure.ResultCode
+      # Check if the command is an alias, if yes, execute it
+      if commandName in aliases:
+        result = execAlias(arguments = arguments,
+            aliasId = commandName, aliases = aliases, db = db)
+        cursorPosition = runeLen(s = $inputString)
+      else:
+        # Execute the external command
+        return runCommand(commandName = commandName, arguments = arguments,
+            withShell = withShell, db = db)
