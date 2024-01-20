@@ -32,7 +32,7 @@ import std/[algorithm, os, parsecfg, strutils, streams]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import commandslist, helpcontent, constants, lstring, output, resultcode, theme
+import commandslist, helpcontent, constants, output, resultcode, theme
 
 using db: DbConn # Connection to the shell's database
 
@@ -448,13 +448,9 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       body:
         if topic.len > 0 and usage.len > 0 and content.len > 0 and
             plugin.len > 0:
-          try:
-            result = addHelpEntry(topic = topic,
-                usage = usage,
-                plugin = plugin, content = content, isTemplate = isTemplate, db = db)
-          except CapacityError:
-            return showError(message = "Can't add help entry. Reason: ",
-                e = getCurrentException(), db = db)
+          result = addHelpEntry(topic = topic,
+              usage = usage,
+              plugin = plugin, content = content, isTemplate = isTemplate, db = db)
           topic = ""
           usage = ""
           content = ""
@@ -489,7 +485,7 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
         of cfgError:
           result = showError(message = "Can't read help entry from configuration file. Reason: " &
               entry.msg, db = db)
-      except IOError, OSError, ValueError, CapacityError:
+      except:
         return showError(message = "Can't get help entry from configuration file. Reason: ",
             e = getCurrentException(), db = db)
     try:
@@ -574,7 +570,7 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
           command = helpCommand, commands = commands)
       addCommand(name = "updatehelp",
           command = updateHelpCommand, commands = commands)
-    except CapacityError, CommandsListError:
+    except:
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException(), db = db)
 
