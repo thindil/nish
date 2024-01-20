@@ -33,7 +33,7 @@ import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
 import aliases, constants, commandslist, completion, directorypath, help,
-    history, logger, lstring, options, output, plugins, resultcode, theme,
+    history, logger, options, output, plugins, resultcode, theme,
     variables
 
 const
@@ -146,15 +146,10 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         return nil
       if result.createThemeDb == QuitFailure:
         return nil
-      try:
-        for option in options:
-          setOption(optionName = option.option, value = option.value, description = option.description,
-              valueType = option.valueType, db = result, readOnly = (
-              if option.readOnly: 1 else: 0))
-      except CapacityError:
-        showError(message = "Can't set database schema. Reason: ",
-            e = getCurrentException(), db = nil)
-        return nil
+      for option in options:
+        setOption(optionName = option.option, value = option.value, description = option.description,
+            valueType = option.valueType, db = result, readOnly = (
+            if option.readOnly: 1 else: 0))
     # If database version is different than the newest, update database
     try:
       let dbVersion: int = parseInt(s = $getOption(
@@ -236,7 +231,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       else:
         showError(message = "Invalid version of database.", db = nil)
         return nil
-    except CapacityError, DbError, ValueError:
+    except:
       showError(message = "Can't update database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
@@ -370,17 +365,14 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
         # Import data into the shell's database
         if arguments.startsWith(prefix = "import"):
           return importDb(arguments = arguments, db = db)
-        try:
-          return showUnknownHelp(subCommand = arguments,
-              command = "nishdb",
-                  helpType = "nishdb", db = db)
-        except CapacityError:
-          return QuitFailure.ResultCode
+        return showUnknownHelp(subCommand = arguments,
+            command = "nishdb",
+                helpType = "nishdb", db = db)
 
     try:
       addCommand(name = "nishdb",
           command = dbCommand, commands = commands,
           subCommands = dbCommands)
-    except CapacityError, CommandsListError:
+    except:
       showError(message = "Can't add commands related to the shell's database. Reason: ",
           e = getCurrentException(), db = db)
