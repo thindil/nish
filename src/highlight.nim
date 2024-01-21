@@ -31,7 +31,7 @@ import std/[os, strutils, tables, terminal, unicode]
 import contracts
 import norm/sqlite
 # Internal imports
-import commandslist, constants, lstring, output, prompt, resultcode, theme
+import commandslist, constants, output, prompt, resultcode, theme
 
 proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     commands: ref Table[string, CommandData]; aliases: ref AliasesList;
@@ -67,11 +67,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
               s = $inputString, trailing = false)
       var
         spaceIndex: ExtendedNatural = input.find(sub = ' ')
-        command: UserInput = try:
-            (if spaceIndex <
+        command: UserInput = (if spaceIndex <
                 1: input else: $input[0..spaceIndex - 1])
-          except CapacityError:
-            ""
       # Show the prompt if enabled
       if promptLength > 0 and promptLength + runeLen(s = $input) <=
           terminalWidth():
