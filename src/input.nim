@@ -32,7 +32,7 @@ import std/[parseopt, strutils, terminal, unicode]
 import contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import constants, lstring, output, theme
+import constants, output, theme
 
 type MaxInputLength* = range[1..maxInputLength]
   ## Used to store maximum allowed length of the user input
@@ -127,6 +127,8 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
   ##
   ## Returns the new cursor position as modified cursorPosition and the modified user's
   ## input's content as inputString
+  if inputString.runeLen + 1 > maxInputLength:
+    return
   if cursorPosition < runeLen(s = $inputString):
     if insertMode:
       var runes: seq[Rune] = toRunes(s = $inputString)
@@ -138,11 +140,8 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
       inputString = $runes
       cursorPosition.inc
   else:
-    try:
-      inputString.add(y = inputRune)
-      cursorPosition.inc
-    except CapacityError:
-      showError(message = "Entered input is too long.", e = getCurrentException(), db = db)
+    inputString.add(y = inputRune)
+    cursorPosition.inc
 
 proc readInput*(maxLength: MaxInputLength = maxInputLength;
     db): UserInput {.sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect,
@@ -275,13 +274,10 @@ proc getArguments*(userInput: var OptParser;
         break
       if argument == "||":
         break
-      try:
-        if " " in argument:
-          result.add(y = " \"" & argument & "\"")
-        else:
-          result.add(y = " " & argument)
-      except CapacityError:
-        break
+      if " " in argument:
+        result.add(y = " \"" & argument & "\"")
+      else:
+        result.add(y = " " & argument)
     if index < arguments.len - 1:
       userInput = initOptParser(cmdline = arguments[index + 1..^1])
     else:
