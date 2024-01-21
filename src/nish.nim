@@ -35,7 +35,7 @@ import ansiparse, contracts, nancy, termstyle
 import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db,
-    directorypath, help, highlight, history, input, logger, lstring, options,
+    directorypath, help, highlight, history, input, logger, options,
     output, plugins, prompt, resultcode, suggestion, theme, themeinit, title,
     variables
 
@@ -110,10 +110,8 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         promptEnabled = not oneTimeCommand, previousCommand = commandName,
         resultCode = returnCode, db = db)
     # Get the user input and parse it
-    let highlightEnabled: bool = try:
+    let highlightEnabled: bool =
           getOption(optionName = "colorSyntax", db = db, defaultValue = "true") == "true"
-        except CapacityError:
-          true
     var
       inputChar: char = '\0'
       completions: seq[string] = @[]
@@ -175,15 +173,12 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           except ValueError:
             showError(message = "Invalid value for character position.",
                 e = getCurrentException(), db = db)
-          except CapacityError:
-            showError(message = "Entered input is too long.",
-                e = getCurrentException(), db = db)
         else:
           try:
             let columnsAmount: int = try:
                 parseInt(s = $getOption(optionName = "completionColumns", db = db,
                     defaultValue = "5"))
-              except CapacityError, ValueError:
+              except ValueError:
                 5
             # If Tab pressed the first time, show the list of completion
             if not completionMode:
@@ -255,13 +250,9 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
             of 'A':
               if historyIndex == 0:
                 continue
-              try:
-                inputString = getHistory(historyIndex = historyIndex,
-                    db = db, searchFor = (
-                    if keyWasArrow: "" else: $inputString))
-              except CapacityError:
-                showError(message = "Entered input is too long.",
-                    e = getCurrentException(), db = db)
+              inputString = getHistory(historyIndex = historyIndex,
+                  db = db, searchFor = (
+                  if keyWasArrow: "" else: $inputString))
               cursorPosition = runeLen(s = $inputString)
               highlightOutput(promptLength = promptLength,
                   inputString = inputString, commands = commands,
@@ -280,13 +271,9 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
               let currentHistoryLength: HistoryRange = historyLength(db = db)
               if historyIndex > currentHistoryLength:
                 historyIndex = currentHistoryLength
-              try:
-                inputString = getHistory(historyIndex = historyIndex,
-                    db = db, searchFor = (
-                    if keyWasArrow: "" else: $inputString))
-              except CapacityError:
-                showError(message = "Entered input is too long.",
-                    e = getCurrentException(), db = db)
+              inputString = getHistory(historyIndex = historyIndex,
+                  db = db, searchFor = (
+                  if keyWasArrow: "" else: $inputString))
               cursorPosition = runeLen(s = $inputString)
               highlightOutput(promptLength = promptLength,
                   inputString = inputString, commands = commands,
@@ -361,9 +348,6 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           discard
         except ValueError:
           showError(message = "Invalid value for character position.",
-              e = getCurrentException(), db = db)
-        except CapacityError:
-          showError(message = "Entered input is too long.",
               e = getCurrentException(), db = db)
       # Any graphical character pressed, show it in the input field
       else:
@@ -447,10 +431,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         of "c":
           oneTimeCommand = true
           options.next
-          try:
-            inputString = options.key
-          except CapacityError:
-            quit showError(message = "The entered command is too long.", db = nil).int
+          inputString = options.key
         of "h", "help":
           showCommandLineHelp()
         of "v", "version":
@@ -528,16 +509,10 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         if userInput.kind == cmdArgument:
           commandName = userInput.key
         # Set the command arguments
-        var arguments: UserInput = try:
+        var arguments: UserInput =
             getArguments(
                 userInput = userInput, conjCommands = conjCommands)
-          except CapacityError:
-            ""
-        try:
-          inputString = join(a = userInput.remainingArgs, sep = " ")
-        except CapacityError:
-          showError(message = "Entered input is too long.",
-              e = getCurrentException(), db = db)
+        inputString = join(a = userInput.remainingArgs, sep = " ")
         # Set a terminal title to current command
         setTitle(title = commandName & " " & $arguments, db = db)
         # Execute plugins with precommand hook
