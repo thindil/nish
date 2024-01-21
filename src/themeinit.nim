@@ -33,7 +33,7 @@ import std/[strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import commandslist, constants, help, input, lstring, output, resultcode, theme
+import commandslist, constants, help, input, output, resultcode, theme
 
 using db: DbConn # Connection to the shell's database
 
@@ -131,32 +131,29 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
         'w': "white", 'd': "default color", 'q': "quit"}.toTable
     var inputChar: char = selectOption(options = colorsOptions, default = 'd',
         prompt = "Color", db = db)
-    try:
-      case inputChar
-      of 'b':
-        color.cValue = black
-      of 'r':
-        color.cValue = red
-      of 'g':
-        color.cValue = green
-      of 'y':
-        color.cValue = yellow
-      of 'l':
-        color.cValue = blue
-      of 'm':
-        color.cValue = magenta
-      of 'c':
-        color.cValue = cyan
-      of 'w':
-        color.cValue = white
-      of 'd':
-        color.cValue = default
-      of 'q':
-        return showError(message = "Editing the theme cancelled.", db = db)
-      else:
-        discard
-    except CapacityError:
-      return showError(message = "Editing the theme cancelled. Reason: Can't set color value for the selected theme's color", db = db)
+    case inputChar
+    of 'b':
+      color.cValue = black
+    of 'r':
+      color.cValue = red
+    of 'g':
+      color.cValue = green
+    of 'y':
+      color.cValue = yellow
+    of 'l':
+      color.cValue = blue
+    of 'm':
+      color.cValue = magenta
+    of 'c':
+      color.cValue = cyan
+    of 'w':
+      color.cValue = white
+    of 'd':
+      color.cValue = default
+    of 'q':
+      return showError(message = "Editing the theme cancelled.", db = db)
+    else:
+      discard
     # Select bold state of the selected color
     showFormHeader(message = "(3/5) Bold:", db = db)
     showOutput(message = "Select the color should be in bold font or not. Not all terminal emulators support the option.", db = db)
@@ -280,17 +277,14 @@ proc initTheme*(db: DbConn; commands: ref CommandsList) {.sideEffect, raises: [
         # Reset the theme's colors to their default values (all colors or one)
         if arguments.startsWith(prefix = "reset"):
           return resetTheme(arguments = arguments, db = db)
-        try:
-          return showUnknownHelp(subCommand = arguments,
-              command = "theme",
-              helpType = "theme", db = db)
-        except CapacityError:
-          return QuitFailure.ResultCode
+        return showUnknownHelp(subCommand = arguments,
+            command = "theme",
+            helpType = "theme", db = db)
 
     try:
       addCommand(name = "theme",
           command = themeCommand, commands = commands,
           subCommands = themeCommands)
-    except CapacityError, CommandsListError:
+    except CommandsListError:
       showThemeError(message = "Can't add commands related to the shell's theme. Reason: ",
           e = getCurrentException())
