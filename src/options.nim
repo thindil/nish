@@ -32,7 +32,7 @@ import std/[os, strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, help, input, lstring, output, resultcode, theme
+import commandslist, constants, help, input, output, resultcode, theme
 
 const optionsCommands: seq[string] = @["list", "set", "reset"]
   ## The list of available subcommands for command options
@@ -349,11 +349,7 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           showOutput(message = "New value: ", newLine = false, db = db,
               color = promptColor)
     # Set the option
-    try:
-      setOption(optionName = option.option, value = value, db = db)
-    except CapacityError:
-      return showError(message = "Can't set the option '" & option.option &
-          "' in database. Reason: ", e = getCurrentException(), db = db)
+    setOption(optionName = option.option, value = value, db = db)
     showOutput(message = "Value for option '" & option.option &
         "' was set to '" & value & "'", color = success, db = db);
     return QuitSuccess.ResultCode
@@ -503,17 +499,14 @@ proc initOptions*(commands: ref CommandsList; db) {.sideEffect,
         # Reset the selected option or all options to their default values
         if arguments.startsWith(prefix = "reset"):
           return resetOptions(arguments = arguments, db = db)
-        try:
-          return showUnknownHelp(subCommand = arguments,
-              command = "options",
-              helpType = "options", db = db)
-        except CapacityError:
-          return QuitFailure.ResultCode
+        return showUnknownHelp(subCommand = arguments,
+            command = "options",
+            helpType = "options", db = db)
 
     try:
       addCommand(name = "options",
           command = optionsCommand, commands = commands,
           subCommands = optionsCommands)
-    except CapacityError, CommandsListError:
+    except CommandsListError:
       showError(message = "Can't add commands related to the shell's options. Reason: ",
           e = getCurrentException(), db = db)
