@@ -33,7 +33,7 @@ import std/[os, osproc, parseopt, streams, strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, help, input, lstring, options,
+import commandslist, constants, databaseid, help, input, options,
     output, resultcode, theme
 
 const
@@ -51,7 +51,7 @@ type
     path*: string    ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
   PluginResult* = tuple [code: ResultCode,
-      answer: LimitedString] ## Store the result of the plugin's API command
+      answer: string] ## Store the result of the plugin's API command
 
 using
   db: DbConn # Connection to the shell's database
@@ -114,7 +114,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     db != nil
   body:
     let
-      emptyAnswer: LimitedString = emptyLimitedString(capacity = maxInputLength)
+      emptyAnswer: string = ""
       plugin: Process = try:
           startProcess(command = pluginPath, args = arguments)
         except OSError, Exception:
@@ -178,7 +178,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             setOption(optionName = options[0], value = options[1],
                 description = options[2], valueType = parseEnum[OptionValType](
                 s = options[3]), db = db)
-          except CapacityError, ValueError:
+          except ValueError:
             showError(message = "Can't set option '" & options[0] &
                 "'. Reason: ", e = getCurrentException(), db = db)
             return false
@@ -199,14 +199,9 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           if options.len == 0:
             showError(message = "Insufficient arguments for removeOption.", db = db)
             return false
-          try:
-            if deleteOption(optionName = options[0], db = db) == QuitFailure:
-              showError(message = "Failed to remove option '" & options[0] &
-                  "'.", db = db)
-              return false
-          except CapacityError:
-            showError(message = "Can't remove option '" & options[0] &
-                "'. Reason: ", e = getCurrentException(), db = db)
+          if deleteOption(optionName = options[0], db = db) == QuitFailure:
+            showError(message = "Failed to remove option '" & options[0] &
+                "'.", db = db)
             return false
           return true
 
@@ -229,7 +224,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             plugin.inputStream.write(args = $getOption(
                 optionName = options[0], db = db) & "\n")
             plugin.inputStream.flush
-          except CapacityError, IOError, OSError:
+          except IOError, OSError:
             showError(message = "Can't get the value of the selected option. Reason: ",
                 e = getCurrentException(), db = db)
           return true
@@ -256,7 +251,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             else:
               addCommand(name = options[0], command = nil, commands = commands,
                   plugin = pluginPath)
-          except CommandsListError, CapacityError:
+          except CommandsListError:
             showError(message = "Can't add command '" & options[0] &
                 "'. Reason: " & getCurrentExceptionMsg(), db = db)
             return false
@@ -278,7 +273,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             return false
           try:
             deleteCommand(name = options[0], commands = commands)
-          except CommandsListError, CapacityError:
+          except CommandsListError:
             showError(message = "Can't delete command '" & options[0] &
                 "'. Reason: " & getCurrentExceptionMsg(), db = db)
             return false
@@ -301,7 +296,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           try:
             replaceCommand(name = options[0], command = nil, commands = commands,
                 plugin = pluginPath, db = db)
-          except CommandsListError, CapacityError:
+          except CommandsListError:
             showError(message = "Can't replace command '" & options[0] &
                 "'. Reason: " & getCurrentExceptionMsg(), db = db)
             return false
@@ -323,15 +318,10 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           if options.len < 3:
             showError(message = "Insufficient arguments for addHelp.", db = db)
             return false
-          try:
-            return addHelpEntry(topic = options[0],
-                    usage = options[1],
-                plugin = pluginPath, content = options[2], isTemplate = false,
-                db = db) == QuitFailure
-          except CapacityError:
-            showError(message = "Can't add help entry '" & options[0] &
-                "'. Reason: ", e = getCurrentException(), db = db)
-            return false
+          return addHelpEntry(topic = options[0],
+                  usage = options[1],
+              plugin = pluginPath, content = options[2], isTemplate = false,
+              db = db) == QuitFailure
 
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
@@ -348,12 +338,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           if options.len == 0:
             showError(message = "Insufficient arguments for deleteHelp.", db = db)
             return false
-          try:
-            return deleteHelpEntry(topic = options[0], db = db) == QuitFailure
-          except CapacityError:
-            showError(message = "Can't remove help entry '" & options[0] &
-                "'. Reason: ", e = getCurrentException(), db = db)
-            return false
+          return deleteHelpEntry(topic = options[0], db = db) == QuitFailure
 
     proc updatePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
         tags: [WriteIOEffect, WriteDbEffect, ReadDbEffect, RootEffect],
@@ -372,15 +357,10 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           if options.len < 3:
             showError(message = "Insufficient arguments for updateHelp.", db = db)
             return false
-          try:
-            return updateHelpEntry(topic = options[0],
-                usage = options[
-                1], plugin = pluginPath, content = options[2], isTemplate = false,
-                db = db) == QuitFailure
-          except CapacityError:
-            showError(message = "Can't update help entry '" & options[0] &
-                "'. Reason: ", e = getCurrentException(), db = db)
-            return false
+          return updateHelpEntry(topic = options[0],
+              usage = options[
+              1], plugin = pluginPath, content = options[2], isTemplate = false,
+              db = db) == QuitFailure
 
     let apiCalls: Table[string, proc(options: seq[string]): bool] = try:
           {"showOutput": showPluginOutput, "showError": showPluginError,
@@ -414,8 +394,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             if remainingOptions.len == 0:
               showError(message = "Insufficient arguments for answer.", db = db)
               break
-            result.answer = initLimitedString(capacity = remainingOptions[
-                0].len, text = remainingOptions[0])
+            result.answer = remainingOptions[0]
           # The plugin sent any unknown request or response, show error about it
           else:
             showError(message = "Unknown request or response from the plugin '" &
@@ -873,17 +852,14 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
         if arguments.startsWith(prefix = "show"):
           return showPlugin(arguments = arguments, db = db,
               commands = list.commands)
-        try:
-          return showUnknownHelp(subCommand = arguments,
-              command = "plugin",
-              helpType = "plugin", db = db)
-        except CapacityError:
-          return QuitFailure.ResultCode
+        return showUnknownHelp(subCommand = arguments,
+            command = "plugin",
+            helpType = "plugin", db = db)
     try:
       addCommand(name = "plugin",
           command = pluginCommand, commands = commands,
           subCommands = pluginsCommands)
-    except CapacityError, CommandsListError:
+    except CommandsListError:
       showError(message = "Can't add commands related to the shell's plugins. Reason: ",
           e = getCurrentException(), db = db)
     # Load all enabled plugins and execute the initialization code of the plugin
