@@ -33,7 +33,7 @@ import std/[os, strutils, times]
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import commandslist, constants, help, lstring, output, options, resultcode, theme
+import commandslist, constants, help, output, options, resultcode, theme
 
 const historyCommands: seq[string] = @["clear", "list", "find"]
   ## The list of available subcommands for command history
@@ -510,17 +510,14 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
           # Find the string in the shell's commands' history
           elif arguments[0..3] == "find":
             return findInHistory(db = db, arguments = arguments)
-        try:
-          return showUnknownHelp(subCommand = arguments,
-              command = "history",
-              helpType = "history", db = db)
-        except CapacityError:
-          return QuitFailure.ResultCode
+        return showUnknownHelp(subCommand = arguments,
+            command = "history",
+            helpType = "history", db = db)
     try:
       addCommand(name = "history",
           command = historyCommand, commands = commands,
           subCommands = historyCommands)
-    except CapacityError, CommandsListError:
+    except:
       showError(message = "Can't add commands related to the shell's history. Reason: ",
           e = getCurrentException(), db = db)
     # Return the current help index set on the last command in the shell's history
