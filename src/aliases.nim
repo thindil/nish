@@ -47,8 +47,9 @@ using
   aliases: ref AliasesList # The list of aliases available in the selected directory
   arguments: UserInput # The string with arguments entered by the user for the command
 
-proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [],
-    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
+proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [
+    ], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
+        RootEffect],
     contractual.} =
   ## Set the available aliases in the selected directory
   ##
@@ -67,7 +68,6 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: []
           directory & "'"
       remainingDirectory: DirectoryPath = parentDir(
           path = $directory).DirectoryPath
-
     # Construct SQL querry, search for aliases also defined in parent directories
     # if they are recursive
     while remainingDirectory.len > 0:
@@ -82,9 +82,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: []
     try:
       db.rawSelect(qry = dbQuery, objs = dbAliases)
       for dbResult in dbAliases:
-        let index: string =
-          dbResult.name
-        aliases[index] = dbResult.id
+        aliases[dbResult.name] = dbResult.id
     except:
       showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException(), db = db)
@@ -147,11 +145,11 @@ proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         showOutput(message = "There are no defined shell's aliases in the current directory.", db = db)
         return QuitSuccess.ResultCode
     try:
+      let color: string = getColor(db = db, name = ids)
       for dbResult in dbAliases:
-        table.add(parts = [style(ss = dbResult.id, style = getColor(db = db,
-            name = ids)), style(ss = dbResult.name, style = getColor(db = db,
-            name = ids)), style(ss = dbResult.description, style = getColor(
-                db = db, name = default))])
+        table.add(parts = [style(ss = dbResult.id, style = color), style(
+            ss = dbResult.name, style = color), style(ss = dbResult.description,
+            style = getColor(db = db, name = default))])
     except:
       return showError(message = "Can't add an alias to the list. Reason:",
           e = getCurrentException(), db = db)
