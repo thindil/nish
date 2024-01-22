@@ -39,7 +39,7 @@ suite "Unit tests for input module":
     var
       inputString = "my text"
       cursorPosition: Natural = 1
-    deleteChar(inputString, cursorPosition, db)
+    deleteChar(inputString, cursorPosition)
     check:
       inputString == "y text"
       cursorPosition == 0

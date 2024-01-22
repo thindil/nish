@@ -1,6 +1,6 @@
 import std/tables
 import utils/utils
-import ../src/[commandslist, db, lstring, plugins, resultcode]
+import ../src/[commandslist, db, plugins, resultcode]
 import unittest2
 
 suite "Unit tests for plugins module":
