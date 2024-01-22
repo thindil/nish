@@ -33,7 +33,7 @@ import std/[os, strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, directorypath, help, input, lstring,
+import commandslist, constants, databaseid, directorypath, help, input,
     output, resultcode, theme
 
 const
@@ -429,11 +429,8 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       if name.len == 0:
         showError(message = "Please enter a name for the variable.", db = db)
       elif not validIdentifier(s = $name):
-        try:
-          name = ""
-          showError(message = "Please enter a valid name for the variable.", db = db)
-        except CapacityError:
-          showError(message = "Can't set empty name for variable.", db = db)
+        name = ""
+        showError(message = "Please enter a valid name for the variable.", db = db)
       if name.len == 0:
         showOutput(message = "Name: ", newLine = false, db = db)
     if name == "exit":
@@ -479,20 +476,17 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "The type of the value of the variable. Used to check its correctness during adding or editing the variable.", db = db)
     var inputChar: char = selectOption(options = variablesOptions,
         default = 't', prompt = "Type", db = db)
-    try:
-      case inputChar
-      of 'p':
-        variable.varType = path
-      of 't':
-        variable.varType = text
-      of 'n':
-        variable.varType = number
-      of 'q':
-        return showError(message = "Adding a variable cancelled.", db = db)
-      else:
-        discard
-    except CapacityError:
-      return showError(message = "Adding a variable cancelled. Reason: Can't set type of the value for the selected variable", db = db)
+    case inputChar
+    of 'p':
+      variable.varType = path
+    of 't':
+      variable.varType = text
+    of 'n':
+      variable.varType = number
+    of 'q':
+      return showError(message = "Adding a variable cancelled.", db = db)
+    else:
+      discard
     # Set the value for the variable
     showFormHeader(message = "(6/6) Value", db = db)
     showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:", db = db)
@@ -584,10 +578,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if name == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
     elif name == "":
-      try:
-        name = variable.name
-      except CapacityError:
-        return showError(message = "Editing the variable cancelled. Reason: can't set name for the variable.", db = db)
+      name = variable.name
     variable.name = $name
     # Set the description for the variable
     showFormHeader(message = "(2/6) Description", db = db)
@@ -600,10 +591,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if description == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
     elif description == "":
-      try:
-        description = variable.description
-      except CapacityError:
-        return showError(message = "Editing the variable cancelled. Reason: can't set description for the variable.", db = db)
+      description = variable.description
     variable.description = $description
     # Set the working directory for the variable
     showFormHeader(message = "(3/6) Working directory", db = db)
@@ -643,20 +631,17 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     showOutput(message = "'.:", db = db)
     var inputChar: char = selectOption(options = variablesOptions,
         default = 't', prompt = "Type", db = db)
-    try:
-      case inputChar
-      of 'p':
-        variable.varType = path
-      of 't':
-        variable.varType = text
-      of 'n':
-        variable.varType = number
-      of 'q':
-        return showError(message = "Editing the variable cancelled.", db = db)
-      else:
-        discard
-    except CapacityError:
-      return showError(message = "Editing the variable cancelled. Reason: Can't set type of the value for the selected variable", db = db)
+    case inputChar
+    of 'p':
+      variable.varType = path
+    of 't':
+      variable.varType = text
+    of 'n':
+      variable.varType = number
+    of 'q':
+      return showError(message = "Editing the variable cancelled.", db = db)
+    else:
+      discard
     # Set the value for the variable
     showFormHeader(message = "(6/6) Value", db = db)
     showOutput(message = "The value of the variable. Current value: '",
@@ -688,10 +673,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if value == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
     elif value.len == 0:
-      try:
-        value = variable.value
-      except CapacityError:
-        return showError(message = "Editing the variable cancelled. Reason: can't set value for the variable.", db = db)
+      value = variable.value
     variable.value = $value
     # Save the variable to the database
     try:
@@ -845,18 +827,15 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
         # Show an existing variable
         if arguments.startsWith(prefix = "show"):
           return showVariable(arguments = arguments, db = db)
-        try:
-          return showUnknownHelp(subCommand = arguments,
-              command = "variable",
-              helpType = "variables", db = db)
-        except CapacityError:
-          return QuitFailure.ResultCode
+        return showUnknownHelp(subCommand = arguments,
+            command = "variable",
+            helpType = "variables", db = db)
 
     try:
       addCommand(name = "variable",
           command = variableCommand, commands = commands,
           subCommands = variablesCommands)
-    except CapacityError, CommandsListError:
+    except CommandsListError:
       showError(message = "Can't add commands related to the shell's variables system. Reason: ",
           e = getCurrentException(), db = db)
     # Set the environment variables for the current directory
