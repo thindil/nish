@@ -47,9 +47,8 @@ using
   aliases: ref AliasesList # The list of aliases available in the selected directory
   arguments: UserInput # The string with arguments entered by the user for the command
 
-proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [
-    ], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
-        RootEffect],
+proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [],
+    tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
   ## Set the available aliases in the selected directory
   ##
@@ -223,7 +222,7 @@ proc getAliasId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
       argumentsLen = 6
     if arguments.len < argumentsLen:
       askForName[Alias](db = db, action = actionName & " an alias",
-            namesType = "alias", name = alias)
+          namesType = "alias", name = alias)
       if alias.description.len == 0:
         return 0.DatabaseId
       return alias.id.DatabaseId
@@ -494,8 +493,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showFormHeader(message = "(2/6 or 7) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
         newLine = false, db = db)
-    showOutput(message = alias.description, newLine = false,
-        color = values, db = db)
+    showOutput(message = alias.description, newLine = false, color = values, db = db)
     showOutput(message = "'. Can't contains a new line character.: ", db = db)
     showOutput(message = "Description: ", newLine = false, db = db)
     var description: UserInput = readInput(db = db)
@@ -764,13 +762,11 @@ proc initAliases*(db; aliases: ref AliasesList;
         # Edit the selected alias
         if arguments.startsWith(prefix = "edit"):
           return editAlias(arguments = arguments, aliases = aliases, db = db)
-        return showUnknownHelp(subCommand = arguments,
-            command = "alias",
-                helpType = "aliases", db = db)
+        return showUnknownHelp(subCommand = arguments, command = "alias",
+            helpType = "aliases", db = db)
 
     try:
-      addCommand(name = "alias",
-          command = aliasCommand, commands = commands,
+      addCommand(name = "alias", command = aliasCommand, commands = commands,
           subCommands = aliasesCommands)
     except:
       showError(message = "Can't add commands related to the shell's aliases. Reason: ",
