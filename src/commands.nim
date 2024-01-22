@@ -121,17 +121,14 @@ proc executeCommand*(commands: ref Table[string, CommandData];
       try:
         # The shell's command from plugin
         if commands[commandName].command == nil:
-          let returnValues: PluginResult = execPlugin(
-              pluginPath = commands[commandName].plugin, arguments = [
-                  commandName, $arguments],
+          let returnValues: PluginResult = execPlugin(pluginPath = commands[
+              commandName].plugin, arguments = [commandName, $arguments],
               db = db, commands = commands)
           return returnValues.code
         # Build-in shell's command
         else:
-          return commands[commandName].command(
-              arguments = arguments, db = db, list = CommandLists(
-              aliases: aliases,
-              commands: commands))
+          return commands[commandName].command(arguments = arguments, db = db,
+              list = CommandLists(aliases: aliases, commands: commands))
       except KeyError:
         showError(message = "Can't execute command '" & commandName &
             "'. Reason: ", e = getCurrentException(), db = db)
