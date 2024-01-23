@@ -55,7 +55,7 @@ suite "Unit tests for input module":
     var
       inputString = "my text"
       cursorPosition: Natural = 7
-    updateInput(cursorPosition, inputString, false, "a", db)
+    updateInput(cursorPosition, inputString, false, "a")
     check:
       inputString == "my texta"
       cursorPosition == 8
