@@ -113,9 +113,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
     arguments.len > 0
     db != nil
   body:
-    let
-      emptyAnswer: string = ""
-      plugin: Process = try:
+    const emptyAnswer: string = ""
+    let plugin: Process = try:
           startProcess(command = pluginPath, args = arguments)
         except OSError, Exception:
           return (showError(message = "Can't execute the plugin '" &
