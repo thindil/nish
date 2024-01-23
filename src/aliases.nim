@@ -184,6 +184,8 @@ proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
   ##                 Default value is the standard output
   ##
   ## Returns the new data structure for the selected shell's alias.
+  ensure:
+    result != nil
   body:
     Alias(name: name, path: path, commands: commands, description: description,
         recursive: recursive, output: output)
@@ -335,21 +337,27 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
   require:
     db != nil
   body:
-    showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
+    let codeColor: string = getColor(db = db, name = helpCode)
+    showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word " &
+        style(ss = "'exit'", style = codeColor) & " as an answer.", db = db)
     # Set the name for the alias
     showFormHeader(message = "(1/6 or 7) Name", db = db)
-    showOutput(message = "The name of the alias. Will be used to execute it. For example: 'ls'. Can't be empty and can contains only letters, numbers and underscores:", db = db)
-    showOutput(message = "Name: ", newLine = false, db = db)
+    showOutput(message = "The name of the alias. Will be used to execute it. For example: " &
+        style(ss = "'ls'", style = codeColor) &
+        ". Can't be empty and can contains only letters, numbers and underscores:", db = db)
+    showOutput(message = "Name: ", newLine = false, db = db,
+        color = promptColor)
     var name: AliasName = ""
     while name.len == 0:
       name = readInput(maxLength = aliasNameLength, db = db)
       if name.len == 0:
         showError(message = "Please enter a name for the alias.", db = db)
-      elif not validIdentifier(s = $name):
+      elif not name.validIdentifier:
         name = ""
         showError(message = "Please enter a valid name for the alias.", db = db)
       if name.len == 0:
-        showOutput(message = "Name: ", newLine = false, db = db)
+        showOutput(message = "Name: ", newLine = false, db = db,
+            color = promptColor)
     if name == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the description for the alias
