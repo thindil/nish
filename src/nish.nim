@@ -371,7 +371,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
               e = getCurrentException(), db = db)
         updateInput(cursorPosition = cursorPosition,
             inputString = inputString, insertMode = insertMode,
-            inputRune = inputRune, db = db)
+            inputRune = inputRune)
         highlightOutput(promptLength = promptLength,
             inputString = inputString, commands = commands,
             aliases = aliases, oneTimeCommand = oneTimeCommand,

@@ -238,7 +238,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
           showError(message = "Can't print entered character. Reason: ",
               e = getCurrentException(), db = db)
         updateInput(cursorPosition = cursorPosition, inputString = resultString,
-            insertMode = false, inputRune = inputRune, db = db)
+            insertMode = false, inputRune = inputRune)
     try:
       stdout.writeLine(x = "")
     except IOError:
