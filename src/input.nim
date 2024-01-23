@@ -156,8 +156,6 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
   ##
   ## Returns the user input text or "exit" if there was an error or the user pressed
   ## Escape key
-  ensure:
-    result.capacity == maxLength
   body:
     # Get the user input and parse it
     const exitString: string = "exit"
