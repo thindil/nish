@@ -115,7 +115,7 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
           e = getCurrentException(), db = db)
 
 proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
-    insertMode: bool; inputRune: string; db) {.sideEffect, raises: [], tags: [
+    insertMode: bool; inputRune: string) {.sideEffect, raises: [], tags: [
     WriteIOEffect, RootEffect], contractual.} =
   ## Update the user's input with the new Unicode character
   ##
@@ -123,7 +123,6 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
   ## * inputString    - the user's input's content
   ## * insertMode     - if true, the input is in the insert (replace) mode
   ## * inputRune      - the Unicode character to enter to the user's input
-  ## * db             - the connection to the shell's database
   ##
   ## Returns the new cursor position as modified cursorPosition and the modified user's
   ## input's content as inputString
