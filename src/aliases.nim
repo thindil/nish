@@ -345,8 +345,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "The name of the alias. Will be used to execute it. For example: " &
         style(ss = "'ls'", style = codeColor) &
         ". Can't be empty and can contains only letters, numbers and underscores:", db = db)
-    showOutput(message = "Name: ", newLine = false, db = db,
-        color = promptColor)
+    showFormPrompt(prompt = "Name", db = db)
     var name: AliasName = ""
     while name.len == 0:
       name = readInput(maxLength = aliasNameLength, db = db)
@@ -356,21 +355,20 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
         name = ""
         showError(message = "Please enter a valid name for the alias.", db = db)
       if name.len == 0:
-        showOutput(message = "Name: ", newLine = false, db = db,
-            color = promptColor)
+        showFormPrompt(prompt = "Name", db = db)
     if name == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the description for the alias
     showFormHeader(message = "(2/6 or 7) Description", db = db)
     showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ", db = db)
-    showOutput(message = "Description: ", newLine = false, db = db)
+    showFormPrompt(prompt = "Description", db = db)
     let description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the working directory for the alias
     showFormHeader(message = "(3/6 or 7) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ", db = db)
-    showOutput(message = "Path: ", newLine = false, db = db)
+    showFormPrompt(prompt = "Path", db = db)
     var path: DirectoryPath = "".DirectoryPath
     while path.len == 0:
       path = ($readInput(db = db)).DirectoryPath
@@ -380,7 +378,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
         path = "".DirectoryPath
         showError(message = "Please enter a path to the existing directory", db = db)
       if path.len == 0:
-        showOutput(message = "Path: ", newLine = false, db = db)
+        showFormPrompt(prompt = "Path", db = db)
     if path == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the recursiveness for the alias
@@ -391,13 +389,13 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     # Set the commands to execute for the alias
     showFormHeader(message = "(5/6 or 7) Commands", db = db)
     showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:", db = db)
-    showOutput(message = "Command(s): ", newLine = false, db = db)
+    showFormPrompt(prompt = "Command(s)", db = db)
     var commands: UserInput = ""
     while commands.len == 0:
       commands = readInput(db = db)
       if commands.len == 0:
         showError(message = "Please enter commands for the alias.", db = db)
-        showOutput(message = "Command(s): ", newLine = false, db = db)
+        showFormPrompt(prompt = "Command(s)", db = db)
     if commands == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the destination for the alias' output
@@ -423,7 +421,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       # Set the destination for the alias' output
       showFormHeader(message = "(7/7) Output file", db = db)
       showOutput(message = "Enter the path to the file to which output will be append:", db = db)
-      showOutput(message = "Path: ", newLine = false, db = db)
+      showFormPrompt(prompt = "Path", db = db)
       output = ""
       while output.len == 0:
         output = readInput(db = db)
