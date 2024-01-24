@@ -217,6 +217,10 @@ proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
 
 proc showFormPrompt*(prompt: string; db) {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
+  ## Show the prompt in the shell's forms
+  ##
+  ## * prompt - the text displayed as a form's prompt
+  ## * db     - the connection to the shell's database
   require:
     db != nil
     prompt.len > 0
