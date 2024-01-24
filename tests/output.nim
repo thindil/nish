@@ -33,5 +33,8 @@ suite "Unit tests for output module":
       check:
         confirm("Confirm", db)
 
+  test "Showing a form's prompt":
+    showFormPrompt("Form prompt", db)
+
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
