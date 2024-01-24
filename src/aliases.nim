@@ -338,13 +338,13 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
     db != nil
   body:
     let codeColor: string = getColor(db = db, name = helpCode)
-    showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word " &
-        style(ss = "'exit'", style = codeColor) & " as an answer.", db = db)
+    showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word '" &
+        style(ss = "exit", style = codeColor) & "' as an answer.", db = db)
     # Set the name for the alias
     showFormHeader(message = "(1/6 or 7) Name", db = db)
-    showOutput(message = "The name of the alias. Will be used to execute it. For example: " &
-        style(ss = "'ls'", style = codeColor) &
-        ". Can't be empty and can contains only letters, numbers and underscores:", db = db)
+    showOutput(message = "The name of the alias. Will be used to execute it. For example: '" &
+        style(ss = "ls", style = codeColor) &
+        "'. Can't be empty and can contains only letters, numbers and underscores:", db = db)
     showFormPrompt(prompt = "Name", db = db)
     var name: AliasName = ""
     while name.len == 0:
@@ -360,14 +360,18 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the description for the alias
     showFormHeader(message = "(2/6 or 7) Description", db = db)
-    showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: 'List content of the directory.'. Can't contains a new line character. Can be empty.: ", db = db)
+    showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. For example: '" &
+        style(ss = "List content of the directory.", style = codeColor) &
+        "'. Can't contains a new line character. Can be empty.: ", db = db)
     showFormPrompt(prompt = "Description", db = db)
     let description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the working directory for the alias
     showFormHeader(message = "(3/6 or 7) Working directory", db = db)
-    showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Can't be empty and must be a path to the existing directory.: ", db = db)
+    showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '" &
+        style(ss = "/", style = codeColor) &
+        "'. Can't be empty and must be a path to the existing directory.: ", db = db)
     showFormPrompt(prompt = "Path", db = db)
     var path: DirectoryPath = "".DirectoryPath
     while path.len == 0:
@@ -383,12 +387,18 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
-    showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
+    showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &
+        style(ss = "y", style = codeColor) & "' or '" & style(ss = "n",
+        style = codeColor) & "':", db = db)
     let recursive: BooleanInt = if confirm(prompt = "Recursive",
         db = db): 1 else: 0
     # Set the commands to execute for the alias
     showFormHeader(message = "(5/6 or 7) Commands", db = db)
-    showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. For example: 'clear && ls -a'. Commands can't contain a new line character. Can't be empty.:", db = db)
+    showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '" &
+        style(ss = "&&", style = codeColor) & "' or '" & style(ss = "||",
+        style = codeColor) & "'. For example: '" & style(ss = "clear && ls -a",
+        style = codeColor) &
+        "'. Commands can't contain a new line character. Can't be empty.:", db = db)
     showFormPrompt(prompt = "Command(s)", db = db)
     var commands: UserInput = ""
     while commands.len == 0:
@@ -477,14 +487,18 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     except:
       return showError(message = "Can't get the alias from database. Reason: ",
           e = getCurrentException(), db = db)
-    showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
+    let
+      codeColor: string = getColor(db = db, name = helpCode)
+      valueColor: string = getColor(db = db, name = values)
+    showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word " &
+        style(ss = "'exit'", style = codeColor) &
+        " as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
     # Set the name for the alias
     showFormHeader(message = "(1/6 or 7) Name", db = db)
-    showOutput(message = "The name of the alias. Will be used to execute it. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = alias.name, newLine = false, color = values, db = db)
-    showOutput(message = "'. Can contains only letters, numbers and underscores.", db = db)
-    showOutput(message = "Name: ", newLine = false, db = db)
+    showOutput(message = "The name of the alias. Will be used to execute it. Current value: '" &
+        style(ss = alias.name, style = valueColor) &
+        "'. Can contains only letters, numbers and underscores.", db = db)
+    showFormPrompt(prompt = "Name", db = db)
     var name: AliasName = readInput(maxLength = aliasNameLength, db = db)
     while name.len > 0 and not validIdentifier(s = $name):
       showError(message = "Please enter a valid name for the alias.", db = db)
@@ -495,11 +509,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       name = alias.name
     # Set the description for the alias
     showFormHeader(message = "(2/6 or 7) Description", db = db)
-    showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = alias.description, newLine = false, color = values, db = db)
-    showOutput(message = "'. Can't contains a new line character.: ", db = db)
-    showOutput(message = "Description: ", newLine = false, db = db)
+    showOutput(message = "The description of the alias. It will be show on the list of available aliases and in the alias details. Current value: '" &
+        style(ss = alias.description, style = valueColor) &
+        "'. Can't contains a new line character.: ", db = db)
+    showFormPrompt(prompt = "Description", db = db)
     var description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
