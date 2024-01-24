@@ -1,4 +1,4 @@
-# Copyright © 2022-2023 Bartek Jasicki
+# Copyright © 2022-2024 Bartek Jasicki
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -215,7 +215,11 @@ proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
       discard
     return inputChar in {'y', 'Y'}
 
-proc showFormPrompt*(prompt: string; db) {.contractual.} =
+proc showFormPrompt*(prompt: string; db) {.sideEffect, raises: [], tags: [
+    ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
+  require:
+    db != nil
+    prompt.len > 0
   body:
     showOutput(message = prompt & ": ", newLine = false, db = db,
         color = promptColor)
