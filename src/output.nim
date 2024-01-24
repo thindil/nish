@@ -214,3 +214,8 @@ proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
     except IOError:
       discard
     return inputChar in {'y', 'Y'}
+
+proc showFormPrompt*(prompt: string; db) {.contractual.} =
+  body:
+    showOutput(message = prompt & ": ", newLine = false, db = db,
+        color = promptColor)
