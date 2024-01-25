@@ -318,23 +318,28 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
   require:
     db != nil
   body:
-    showOutput(message = "You can cancel adding a new completion at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
+    let codeColor: string = getColor(db = db, name = helpCode)
+    showOutput(message = "You can cancel adding a new completion at any time by double press Escape key or enter word '" &
+        style(ss = "exit", style = codeColor) & "' as an answer.", db = db)
     # Set the command for the completion
     showFormHeader(message = "(1/2 or 3) Command", db = db)
-    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. For example: 'ls'. Can't be empty:", db = db)
-    showOutput(message = "Command: ", newLine = false, db = db)
+    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. For example: '" &
+        style(ss = "ls", style = codeColor) & "'. Can't be empty:", db = db)
+    showFormPrompt(prompt = "Command", db = db)
     var command: UserInput = ""
     while command.len == 0:
       command = readInput(maxLength = maxInputLength, db = db)
       if command.len == 0:
         showError(message = "Please enter a name for the command.", db = db)
       if command.len == 0:
-        showOutput(message = "Command: ", newLine = false, db = db)
+        showFormPrompt(prompt = "Command", db = db)
     if command == "exit":
       return showError(message = "Adding a new completion cancelled.", db = db)
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
-    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ", db = db)
+    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type '" &
+        style(ss = "custom", style = codeColor) &
+            "' will be selected, you will need also enter a list of the values for the completion. The default option is disabling completion. Possible values are: ", db = db)
     let typeChar: char = selectOption(options = completionOptions,
         default = 'n', prompt = "Type", db = db)
     if typeChar == 'q':
@@ -344,12 +349,12 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
     if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
       showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. Can't be empty.:", db = db)
-      showOutput(message = "Value(s): ", newLine = false, db = db)
+      showFormPrompt(prompt = "Value(s)", db = db)
       while values.len == 0:
         values = readInput(db = db)
         if values.len == 0:
           showError(message = "Please enter values for the completion.", db = db)
-          showOutput(message = "Value(s): ", newLine = false, db = db)
+          showFormPrompt(prompt = "Value(s)", db = db)
       if values == "exit":
         return showError(message = "Adding a new completion cancelled.", db = db)
     var completion: Completion = newCompletion(command = $command, cType = (
