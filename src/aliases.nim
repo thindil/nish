@@ -520,11 +520,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       description = alias.description
     # Set the working directory for the alias
     showFormHeader(message = "(3/6 or 7) Working directory", db = db)
-    showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = alias.path, newLine = false, color = values, db = db)
-    showOutput(message = "'. Must be a path to the existing directory.", db = db)
-    showOutput(message = "Path: ", newLine = false, db = db)
+    showOutput(message = "The full path to the directory in which the alias will be available. If you want to have a global alias, set it to '/'. Current value: '" &
+        style(ss = alias.path, style = valueColor) &
+        "'. Must be a path to the existing directory.", db = db)
+    showFormPrompt(prompt = "Path", db = db)
     var path: DirectoryPath = ($readInput(db = db)).DirectoryPath
     while path.len > 0 and (path != "exit" and not dirExists(dir = $path)):
       showError(message = "Please enter a path to the existing directory", db = db)
@@ -544,11 +543,10 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       discard
     # Set the commands to execute for the alias
     showFormHeader(message = "(5/6 or 7) Commands", db = db)
-    showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = alias.commands, newLine = false, color = values, db = db)
-    showOutput(message = "'. Commands can't contain a new line character.:", db = db)
-    showOutput(message = "Commands: ", newLine = false, db = db)
+    showOutput(message = "The commands which will be executed when the alias is invoked. If you want to execute more than one command, you can merge them with '&&' or '||'. Current value: '" &
+        style(ss = alias.commands, style = valueColor) &
+        "'. Commands can't contain a new line character.:", db = db)
+    showFormPrompt(prompt = "Commands", db = db)
     var commands: UserInput = readInput(db = db)
     if commands == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
@@ -556,10 +554,8 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       commands = alias.commands
     # Set the destination for the alias' output
     showFormHeader(message = "(6/6 or 7) Output", db = db)
-    showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = alias.output, newLine = false, color = values, db = db)
-    showOutput(message = "':", db = db)
+    showOutput(message = "Where should be redirected the alias output. Possible values are stdout (standard output, default), stderr (standard error) or path to the file to which output will be append. Current value: '" &
+        style(ss = alias.output, style = valueColor) & "':", db = db)
     var inputChar: char = selectOption(options = aliasesOptions, default = 's',
         prompt = "Output", db = db)
     var output: UserInput = ""
@@ -580,7 +576,7 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       # Set the destination for the alias' output
       showFormHeader(message = "(7/7) Output file", db = db)
       showOutput(message = "Enter the path to the file to which output will be append:", db = db)
-      showOutput(message = "Path: ", newLine = false, db = db)
+      showFormPrompt(prompt = "Path", db = db)
       output = ""
       while output.len == 0:
         output = readInput(db = db)
