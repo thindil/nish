@@ -46,7 +46,7 @@ const
     ## The list of available options when setting the type of a variable's value
 
 type VariableName = string
-    ## Used to store variables names in the database.
+  ## Used to store variables names in the database.
 
 using
   db: DbConn # Connection to the shell's database
@@ -416,10 +416,14 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
   require:
     db != nil
   body:
-    showOutput(message = "You can cancel adding a new variable at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
+    let codeColor: string = getColor(db = db, name = helpCode)
+    showOutput(message = "You can cancel adding a new variable at any time by double press Escape key or enter word '" &
+        style(ss = "exit", style = codeColor) & "' as an answer.", db = db)
     # Set the name for the variable
     showFormHeader(message = "(1/6) Name", db = db)
-    showOutput(message = "The name of the variable. For example: 'MY_KEY'. Can't be empty and can contains only letters, numbers and underscores:", db = db)
+    showOutput(message = "The name of the variable. For example: '" & style(
+        ss = "MY_KEY", style = codeColor) &
+        "'. Can't be empty and can contains only letters, numbers and underscores:", db = db)
     var
       variable: Variable = newVariable()
       name: VariableName = ""
@@ -438,7 +442,9 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     variable.name = $name
     # Set the description for the variable
     showFormHeader(message = "(2/6) Description", db = db)
-    showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: 'My key to database.'. Can't contains a new line character.: ", db = db)
+    showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: '" &
+        style(ss = "My key to database.", style = codeColor) &
+        "'. Can't contains a new line character.: ", db = db)
     showOutput(message = "Description: ", newLine = false, db = db)
     let description: UserInput = readInput(db = db)
     if description == "exit":
@@ -446,7 +452,9 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     variable.description = $description
     # Set the working directory for the variable
     showFormHeader(message = "(3/6) Working directory", db = db)
-    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Can't be empty and must be a path to the existing directory.: ", db = db)
+    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '" &
+        style(ss = "/", style = codeColor) &
+        "'. Can't be empty and must be a path to the existing directory.: ", db = db)
     showOutput(message = "Path: ", newLine = false, db = db)
     var path: DirectoryPath = "".DirectoryPath
     while path.len == 0:
@@ -463,7 +471,9 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     variable.path = $path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/6) Recursiveness", db = db)
-    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
+    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &
+        style(ss = "y", style = codeColor) & "' or '" & style(ss = "n",
+        style = codeColor) & "':", db = db)
     let recursive: BooleanInt = if confirm(prompt = "Recursive",
         db = db): 1 else: 0
     try:
@@ -489,7 +499,9 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       discard
     # Set the value for the variable
     showFormHeader(message = "(6/6) Value", db = db)
-    showOutput(message = "The value of the variable. For example: 'mykeytodatabase'. Value can't contain a new line character. Can't be empty.:", db = db)
+    showOutput(message = "The value of the variable. For example: '" & style(
+        ss = "mykeytodatabase", style = codeColor) &
+        "'. Value can't contain a new line character. Can't be empty.:", db = db)
     showOutput(message = "Value: ", newLine = false, db = db)
     var value: UserInput = ""
     while value.len == 0:
