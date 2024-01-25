@@ -498,6 +498,8 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         commands
       of 'u':
         custom
+      of 'q':
+        return showError(message = "Editing the completion cancelled.", db = db)
       else:
         none
     try:
