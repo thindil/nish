@@ -464,15 +464,17 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     except:
       return showError(message = "Can't get completion from the database. Reason: ",
           e = getCurrentException(), db = db)
-    showOutput(message = "You can cancel editing the completion at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
+    let
+      codeColor: string = getColor(db = db, name = helpCode)
+      valueColor: string = getColor(db = db, name = values)
+    showOutput(message = "You can cancel editing the completion at any time by double press Escape key or enter word '" &
+        style(ss = "exit", style = codeColor) &
+            "' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
     # Set the command for the completion
     showFormHeader(message = "(1/2 or 3) Command", db = db)
-    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = completion.command, newLine = false,
-        color = values, db = db)
-    showOutput(message = "'.", db = db)
-    showOutput(message = "Command: ", newLine = false, db = db)
+    showOutput(message = "The command for which the completion will be. Will be used to find the completion in the shell's database. Current value: '" &
+        style(ss = completion.command, style = valueColor) & "'.", db = db)
+    showFormPrompt(prompt = "Command", db = db)
     var command: UserInput = readInput(maxLength = maxInputLength, db = db)
     if command == "exit":
       return showError(message = "Editing the completion cancelled.", db = db)
@@ -480,11 +482,9 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
       command = completion.command
     # Set the type for the completion
     showFormHeader(message = "(2/2 or 3) Type", db = db)
-    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '",
-        newLine = false, db = db)
-    showOutput(message = $completion.cType, newLine = false,
-        color = values, db = db)
-    showOutput(message = "'. Possible values are:", db = db)
+    showOutput(message = "The type of the completion. It determines what values will be suggested for the completion. If type 'custom' will be selected, you will need also enter a list of the values for the completion. The current value is: '" &
+        style(ss = $completion.cType, style = valueColor) &
+        "'. Possible values are:", db = db)
     let typeChar: char = selectOption(options = completionOptions,
         default = 'n', prompt = "Type", db = db)
     let completionType: CompletionType = case typeChar.toLowerAscii
@@ -508,17 +508,14 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
     # Set the values for the completion if the user selected custom type of completion
     if typeChar == 'u':
       showFormHeader(message = "(3/3) Values", db = db)
-      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. The current value is: '",
-          newLine = false, db = db)
-      showOutput(message = completion.cValues, newLine = false,
-          color = ThemeColor.values, db = db)
-      showOutput(message = "'.", db = db)
-      showOutput(message = "Value(s): ", newLine = false, db = db)
+      showOutput(message = "The values for the completion, separated by semicolon. Values can't contain a new line character. The current value is: '" &
+          style(ss = completion.cValues, style = valueColor) & "'.", db = db)
+      showFormPrompt(prompt = "Value(s)", db = db)
       while values.len == 0:
         values = readInput(db = db)
         if values.len == 0:
           showError(message = "Please enter values for the completion.", db = db)
-          showOutput(message = "Value(s): ", newLine = false, db = db)
+          showFormPrompt(prompt = "Value(s)", db = db)
       if values == "exit":
         return showError(message = "Editing the existing completion cancelled.", db = db)
     # Save the completion to the database
