@@ -427,7 +427,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     var
       variable: Variable = newVariable()
       name: VariableName = ""
-    showOutput(message = "Name: ", newLine = false, db = db)
+    showFormPrompt(prompt = "Name", db = db)
     while name.len == 0:
       name = readInput(maxLength = variableNameLength, db = db)
       if name.len == 0:
@@ -436,7 +436,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         name = ""
         showError(message = "Please enter a valid name for the variable.", db = db)
       if name.len == 0:
-        showOutput(message = "Name: ", newLine = false, db = db)
+        showFormPrompt(prompt = "Name", db = db)
     if name == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.name = $name
@@ -445,7 +445,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "The description of the variable. It will be show on the list of available variables. For example: '" &
         style(ss = "My key to database.", style = codeColor) &
         "'. Can't contains a new line character.: ", db = db)
-    showOutput(message = "Description: ", newLine = false, db = db)
+    showFormPrompt(prompt = "Description", db = db)
     let description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
@@ -455,7 +455,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '" &
         style(ss = "/", style = codeColor) &
         "'. Can't be empty and must be a path to the existing directory.: ", db = db)
-    showOutput(message = "Path: ", newLine = false, db = db)
+    showFormPrompt(prompt = "Path", db = db)
     var path: DirectoryPath = "".DirectoryPath
     while path.len == 0:
       path = ($readInput(db = db)).DirectoryPath
@@ -465,7 +465,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         path = "".DirectoryPath
         showError(message = "Please enter a path to the existing directory", db = db)
       if path.len == 0:
-        showOutput(message = "Path: ", newLine = false, db = db)
+        showFormPrompt(prompt = "Path", db = db)
     if path == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.path = $path
@@ -502,23 +502,23 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     showOutput(message = "The value of the variable. For example: '" & style(
         ss = "mykeytodatabase", style = codeColor) &
         "'. Value can't contain a new line character. Can't be empty.:", db = db)
-    showOutput(message = "Value: ", newLine = false, db = db)
+    showFormPrompt(prompt = "Value", db = db)
     var value: UserInput = ""
     while value.len == 0:
       value = readInput(db = db)
       if value.len == 0:
         showError(message = "Please enter value for the variable.", db = db)
-        showOutput(message = "Value: ", newLine = false, db = db)
+        showFormPrompt(prompt = "Value", db = db)
       if variable.varType == VariableValType.path and not dirExists(dir = $value):
         showError(message = "Path '" & value & "' doesn't exist.", db = db)
-        showOutput(message = "Value: ", newLine = false, db = db)
+        showFormPrompt(prompt = "Value", db = db)
         value = ""
       elif variable.varType == number:
         try:
           discard parseInt(s = $value)
         except:
           showError(message = "The selected value isn't a number.", db = db)
-          showOutput(message = "Value: ", newLine = false, db = db)
+          showFormPrompt(prompt = "Value", db = db)
           value = ""
     if value == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
