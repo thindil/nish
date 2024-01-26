@@ -490,9 +490,9 @@ proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     let
       codeColor: string = getColor(db = db, name = helpCode)
       valueColor: string = getColor(db = db, name = values)
-    showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word " &
-        style(ss = "'exit'", style = codeColor) &
-        " as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
+    showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word '" &
+        style(ss = "exit", style = codeColor) &
+        "' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
     # Set the name for the alias
     showFormHeader(message = "(1/6 or 7) Name", db = db)
     showOutput(message = "The name of the alias. Will be used to execute it. Current value: '" &
