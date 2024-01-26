@@ -571,13 +571,17 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     except:
       return showError(message = "Can't get the selected variable from the database. Reason:",
           e = getCurrentException(), db = db)
-    showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word 'exit' as an answer. You can also reuse a current value by pressing Enter.", db = db)
+    let
+      codeColor: string = getColor(db = db, name = helpCode)
+      valueColor: string = getColor(db = db, name = values)
+    showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word '" &
+        style(ss = "exit", style = codeColor) &
+        "' as an answer. You can also reuse a current value by pressing Enter.", db = db)
     # Set the name for the variable
     showFormHeader(message = "(1/6) Name", db = db)
-    showOutput(message = "The name of the variable. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = variable.name, newLine = false, color = values, db = db)
-    showOutput(message = "'. Can contains only letters, numbers and underscores.:", db = db)
+    showOutput(message = "The name of the variable. Current value: '" & style(
+        ss = variable.name, style = valueColor) &
+        "'. Can contains only letters, numbers and underscores.:", db = db)
     var name: VariableName = "exit"
     showOutput(message = "Name: ", newLine = false, db = db)
     while name.len > 0:
@@ -594,11 +598,9 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     variable.name = $name
     # Set the description for the variable
     showFormHeader(message = "(2/6) Description", db = db)
-    showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = variable.description, newLine = false,
-        color = values, db = db)
-    showOutput(message = "'. Can't contains a new line character.: ", db = db)
+    showOutput(message = "The description of the variable. It will be show on the list of available variable. Current value: '" &
+        style(ss = variable.description, style = valueColor) &
+        "'. Can't contains a new line character.: ", db = db)
     var description: UserInput = readInput(db = db)
     if description == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
@@ -607,10 +609,9 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     variable.description = $description
     # Set the working directory for the variable
     showFormHeader(message = "(3/6) Working directory", db = db)
-    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = variable.path, newLine = false, color = values, db = db)
-    showOutput(message = "'. Must be a path to the existing directory.:", db = db)
+    showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
+        style(ss = variable.path, style = valueColor) &
+            "'. Must be a path to the existing directory.:", db = db)
     showOutput(message = "Path: ", newLine = false, db = db)
     var path: DirectoryPath = "exit".DirectoryPath
     while path.len > 0:
@@ -627,7 +628,9 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     variable.path = $path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/6) Recursiveness", db = db)
-    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
+    showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &
+        style(ss = "y", style = codeColor) & "' or '" & style(ss = "n",
+        style = codeColor) & "':", db = db)
     let recursive: BooleanInt = if confirm(prompt = "Recursive",
         db = db): 1 else: 0
     try:
@@ -637,10 +640,8 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     variable.recursive = recursive == 1
     # Set the type of for the variable's value
     showFormHeader(message = "(5/6) Value's type", db = db)
-    showOutput(message = "The type of the value of the variable. Used to check its correctness during adding or editing the variable. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = $variable.varType, newLine = false, color = values, db = db)
-    showOutput(message = "'.:", db = db)
+    showOutput(message = "The type of the value of the variable. Used to check its correctness during adding or editing the variable. Current value: '" &
+        style(ss = $variable.varType, style = valueColor) & "'.:", db = db)
     var inputChar: char = selectOption(options = variablesOptions,
         default = 't', prompt = "Type", db = db)
     case inputChar
@@ -656,10 +657,9 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       discard
     # Set the value for the variable
     showFormHeader(message = "(6/6) Value", db = db)
-    showOutput(message = "The value of the variable. Current value: '",
-        newLine = false, db = db)
-    showOutput(message = variable.value, newLine = false, color = values, db = db)
-    showOutput(message = "'. Value can't contain a new line character.:", db = db)
+    showOutput(message = "The value of the variable. Current value: '" & style(
+        ss = variable.value, style = valueColor) &
+        "'. Value can't contain a new line character.:", db = db)
     var value: UserInput = "invalid"
     while value == "invalid":
       value = readInput(db = db)
