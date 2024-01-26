@@ -406,7 +406,6 @@ You will need:
 * [Nim compiler](https://nim-lang.org/install.html)
 * [Contracts](https://github.com/Udiknedormin/NimContracts)
 * [Nimassets](https://github.com/xmonader/nimassets)
-* [Nancy](https://github.com/PMunch/nancy)
 * [TermStyle](https://github.com/PMunch/termstyle)
 * [Nimalyzer](https://github.com/thindil/nimalyzer)
 * [Norm](https://github.com/moigagoo/norm)
