@@ -51,6 +51,7 @@ of the shell.
   executed without entering the index of the variable. In that situation, the
   user will be asked for the index of a variable from their list
 - Updated contributing guide
+- Look of various shell's forms. Now they are more colorful.
 
 ### Fixed
 - Cross-compiling the shell for Arm
