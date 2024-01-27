@@ -138,14 +138,33 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().Column
       let headerType: string = option.value
       if headerType == "hidden":
         return
+      let color = getColor(db = db, name = headers)
+
+      proc echoTableSeps(table: TerminalTable, maxSize = terminalWidth(),
+          seps = defaultSeps, color = "") =
+        let sizes = table.getColumnSizes(maxSize - 4, padding = 3)
+        stdout.write(color)
+        printSeparator(top)
+        for k, entry in table.entries(sizes):
+          for _, row in entry():
+            stdout.write seps.vertical & " "
+            for i, cell in row():
+              stdout.write cell & (if i != sizes.high: " " & seps.vertical & " " else: "")
+            stdout.write color & " " & seps.vertical & "\n"
+          if k != table.rows - 1:
+            printSeparator(center)
+        stdout.write color
+        printSeparator(bottom)
+        stdout.write "\e[0m"
+
       var table: TerminalTable = TerminalTable()
       table.add(parts = style(ss = message.center(width = width.int),
-          style = getColor(db = db, name = headers)))
+          style = color))
       case headerType
       of "unicode":
-        table.echoTableSeps(seps = boxSeps)
+        table.echoTableSeps(seps = boxSeps, color = color)
       of "ascii":
-        table.echoTableSeps
+        table.echoTableSeps(color = color)
       of "none":
         table.echoTable
       else:
