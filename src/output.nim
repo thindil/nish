@@ -117,8 +117,9 @@ proc showError*(message: OutputMessage; db;
         discard
     return QuitFailure.ResultCode
 
-proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().ColumnAmount except ValueError: 80.ColumnAmount);
-    db) {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
+proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
+    ).ColumnAmount except ValueError: 80.ColumnAmount);db) {.sideEffect, raises: [], tags: [
+        ReadIOEffect, WriteIOEffect,
     RootEffect], contractual.} =
   ## Show form's header with the selected message
   ##
@@ -140,22 +141,22 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth().Column
         return
       let color = getColor(db = db, name = headers)
 
-      proc echoTableSeps(table: TerminalTable, maxSize = terminalWidth(),
-          seps = defaultSeps, color = "") =
-        let sizes = table.getColumnSizes(maxSize - 4, padding = 3)
+      proc echoTableSeps(table: TerminalTable; seps = defaultSeps;
+          color: string) =
+        let sizes = table.getColumnSizes(terminalWidth() - 4, padding = 3)
         stdout.write(color)
         printSeparator(top)
         for k, entry in table.entries(sizes):
           for _, row in entry():
-            stdout.write seps.vertical & " "
+            stdout.write(seps.vertical & " ")
             for i, cell in row():
-              stdout.write cell & (if i != sizes.high: " " & seps.vertical & " " else: "")
-            stdout.write color & " " & seps.vertical & "\n"
+              stdout.write(cell & (if i != sizes.high: " " & seps.vertical & " " else: ""))
+            stdout.write(color & " " & seps.vertical & "\n")
           if k != table.rows - 1:
             printSeparator(center)
-        stdout.write color
+        stdout.write(color)
         printSeparator(bottom)
-        stdout.write "\e[0m"
+        stdout.write("\e[0m")
 
       var table: TerminalTable = TerminalTable()
       table.add(parts = style(ss = message.center(width = width.int),
