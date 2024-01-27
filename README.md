@@ -407,6 +407,7 @@ You will need:
 * [Contracts](https://github.com/Udiknedormin/NimContracts)
 * [Nimassets](https://github.com/xmonader/nimassets)
 * [TermStyle](https://github.com/PMunch/termstyle)
+* [Nancy](https://github.com/PMunch/nancy)
 * [Nimalyzer](https://github.com/thindil/nimalyzer)
 * [Norm](https://github.com/moigagoo/norm)
 * [Unittests2](https://github.com/status-im/nim-unittest2)
