@@ -146,20 +146,21 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
               RootEffect], contractual.} =
         body:
           try:
-            let sizes = table.getColumnSizes(terminalWidth() - 4, padding = 3)
-            stdout.write(color)
-            printSeparator(top)
-            for k, entry in table.entries(sizes):
+            let sizes = table.getColumnSizes(maxSize = terminalWidth() - 4, padding = 3)
+            stdout.write(a = color)
+            printSeparator(position = top)
+            for k, entry in table.entries(sizes = sizes):
               for _, row in entry():
-                stdout.write(seps.vertical & " ")
+                stdout.write(a = seps.vertical & " ")
                 for i, cell in row():
-                  stdout.write(cell & (if i != sizes.high: " " & seps.vertical & " " else: ""))
-                stdout.write(color & " " & seps.vertical & "\n")
+                  stdout.write(a = cell & (if i != sizes.high: " " &
+                      seps.vertical & " " else: ""))
+                stdout.write(a = color & " " & seps.vertical & "\n")
               if k != table.rows - 1:
-                printSeparator(center)
-            stdout.write(color)
-            printSeparator(bottom)
-            stdout.write("\e[0m")
+                printSeparator(position = center)
+            stdout.write(a = color)
+            printSeparator(position = bottom)
+            stdout.write(a = "\e[0m")
           except:
             showError(message = "Can't draw table. Reason: ",
                 e = getCurrentException(), db = db)
