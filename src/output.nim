@@ -118,9 +118,9 @@ proc showError*(message: OutputMessage; db;
     return QuitFailure.ResultCode
 
 proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
-    ).ColumnAmount except ValueError: 80.ColumnAmount);db) {.sideEffect, raises: [], tags: [
-        ReadIOEffect, WriteIOEffect,
-    RootEffect], contractual.} =
+    ).ColumnAmount except ValueError: 80.ColumnAmount); db) {.sideEffect,
+        raises: [], tags: [ReadIOEffect, WriteIOEffect, RootEffect],
+            contractual.} =
   ## Show form's header with the selected message
   ##
   ## * message - the text which will be shown in the header
@@ -142,21 +142,27 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
       let color = getColor(db = db, name = headers)
 
       proc echoTableSeps(table: TerminalTable; seps = defaultSeps;
-          color: string) =
-        let sizes = table.getColumnSizes(terminalWidth() - 4, padding = 3)
-        stdout.write(color)
-        printSeparator(top)
-        for k, entry in table.entries(sizes):
-          for _, row in entry():
-            stdout.write(seps.vertical & " ")
-            for i, cell in row():
-              stdout.write(cell & (if i != sizes.high: " " & seps.vertical & " " else: ""))
-            stdout.write(color & " " & seps.vertical & "\n")
-          if k != table.rows - 1:
-            printSeparator(center)
-        stdout.write(color)
-        printSeparator(bottom)
-        stdout.write("\e[0m")
+          color: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
+              RootEffect], contractual.} =
+        body:
+          try:
+            let sizes = table.getColumnSizes(terminalWidth() - 4, padding = 3)
+            stdout.write(color)
+            printSeparator(top)
+            for k, entry in table.entries(sizes):
+              for _, row in entry():
+                stdout.write(seps.vertical & " ")
+                for i, cell in row():
+                  stdout.write(cell & (if i != sizes.high: " " & seps.vertical & " " else: ""))
+                stdout.write(color & " " & seps.vertical & "\n")
+              if k != table.rows - 1:
+                printSeparator(center)
+            stdout.write(color)
+            printSeparator(bottom)
+            stdout.write("\e[0m")
+          except:
+            showError(message = "Can't draw table. Reason: ",
+                e = getCurrentException(), db = db)
 
       var table: TerminalTable = TerminalTable()
       table.add(parts = style(ss = message.center(width = width.int),
