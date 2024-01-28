@@ -152,7 +152,8 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
         ## * color - the color of the header's frame
         body:
           try:
-            let sizes: seq[int] = table.getColumnSizes(maxSize = terminalWidth() - 4, padding = 3)
+            let sizes: seq[int] = table.getColumnSizes(maxSize = terminalWidth() -
+                4, padding = 3)
             stdout.write(a = color)
             printSeparator(position = top)
             for k, entry in table.entries(sizes = sizes):
@@ -176,7 +177,11 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
           style = color))
       case headerType
       of "unicode":
-        table.echoTableSeps(seps = boxSeps, color = color)
+        const unicodeSeps = (topLeft: "╔", topRight: "╗", topMiddle: "╦",
+            bottomLeft: "╚", bottomMiddle: "╩", bottomRight: "╝",
+            centerLeft: "╠", centerMiddle: "╬", centerRight: "╣",
+            vertical: "║", horizontal: "═")
+        table.echoTableSeps(seps = unicodeSeps, color = color)
       of "ascii":
         table.echoTableSeps(color = color)
       of "none":
