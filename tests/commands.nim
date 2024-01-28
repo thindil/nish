@@ -1,7 +1,8 @@
-import std/tables
 import utils/utils
-import ../src/[commands, commandslist, db, directorypath, resultcode]
 import unittest2
+import ../src/db
+{.warning[UnusedImport]:off.}
+include ../src/commands
 
 suite "Unit tests for commands module":
 
