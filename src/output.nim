@@ -139,7 +139,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
       let headerType: string = option.value
       if headerType == "hidden":
         return
-      let color = getColor(db = db, name = headers)
+      let color: string = getColor(db = db, name = headers)
 
       proc echoTableSeps(table: TerminalTable; seps = defaultSeps;
           color: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
@@ -152,15 +152,15 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
         ## * color - the color of the header's frame
         body:
           try:
-            let sizes = table.getColumnSizes(maxSize = terminalWidth() - 4, padding = 3)
+            let sizes: seq[int] = table.getColumnSizes(maxSize = terminalWidth() - 4, padding = 3)
             stdout.write(a = color)
             printSeparator(position = top)
             for k, entry in table.entries(sizes = sizes):
               for _, row in entry():
                 stdout.write(a = seps.vertical & " ")
                 for i, cell in row():
-                  stdout.write(a = cell & (if i != sizes.high: " " &
-                      seps.vertical & " " else: ""))
+                  stdout.write(a = cell & (if i == sizes.high: "" else: " " &
+                      seps.vertical & " "))
                 stdout.write(a = color & " " & seps.vertical & "\n")
               if k != table.rows - 1:
                 printSeparator(position = center)
