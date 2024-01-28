@@ -1,8 +1,8 @@
-import std/[os, tables]
-import ../src/[aliases, constants, db, directorypath, commandslist, resultcode]
 import utils/utils
-import contracts, unittest2
-import norm/sqlite
+import unittest2
+import ../src/db
+{.warning[UnusedImport]:off.}
+include ../src/aliases
 
 suite "Unit tests for aliases module":
 
