@@ -40,7 +40,7 @@ using
   aliases: ref AliasesList # The list of aliases available in the selected directory
   newDirectory: DirectoryPath # The directory to which the current directory will be changed
 
-proc changeDirectory*(newDirectory; aliases; db): ResultCode {.sideEffect,
+proc changeDirectory(newDirectory; aliases; db): ResultCode {.sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Change the current directory for the shell
