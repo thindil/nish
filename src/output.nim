@@ -144,6 +144,12 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
       proc echoTableSeps(table: TerminalTable; seps = defaultSeps;
           color: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
               RootEffect], contractual.} =
+        ## Draw a form's header with selected color and separators as its frame,
+        ## overwrites echoTableSeps from nancy module
+        ##
+        ## * table - the form's header which will be draw
+        ## * seps  - the separators used to draw the header
+        ## * color - the color of the header's frame
         body:
           try:
             let sizes = table.getColumnSizes(maxSize = terminalWidth() - 4, padding = 3)
