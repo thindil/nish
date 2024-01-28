@@ -36,7 +36,7 @@ import commandslist, constants, databaseid, directorypath, help, input,
     options, output, resultcode, variables, theme
 
 const
-  aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
+  aliasesCommands: seq[string] = @["list", "delete", "show", "add", "edit"]
     ## The list of available subcommands for command alias
   aliasesOptions: Table[char, string] = {'o': "standard output",
       'e': "standard error", 'f': "file", 'q': "quit"}.toTable
@@ -87,7 +87,7 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [
       showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException(), db = db)
 
-proc listAliases*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
+proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## List available aliases in the current directory, if entered command was
@@ -190,7 +190,7 @@ proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
     Alias(name: name, path: path, commands: commands, description: description,
         recursive: recursive, output: output)
 
-proc getAliasId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
+proc getAliasId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the alias. If the user didn't enter the ID, show the list of
@@ -241,7 +241,7 @@ proc getAliasId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
       return 0.DatabaseId
 
-proc deleteAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
+proc deleteAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Delete the selected alias from the shell's database
@@ -274,7 +274,7 @@ proc deleteAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     showOutput(message = "Deleted the alias with Id: " & $id, color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc showAlias(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Show details about the selected alias, its ID, name, description and
@@ -323,7 +323,7 @@ proc showAlias*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
+proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Add a new alias to the shell. Ask the user a few questions and fill the
@@ -463,7 +463,7 @@ proc addAlias*(aliases; db): ResultCode {.sideEffect, raises: [],
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc editAlias*(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
+proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Edit the selected alias
