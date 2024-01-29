@@ -1,8 +1,8 @@
-import std/tables
 import utils/utils
-import ../src/[commandslist, constants, db, resultcode]
-import contracts, unittest2
-import norm/sqlite
+import ../src/db
+import unittest2
+{.warning[UnusedImport]:off.}
+include ../src/commandslist
 
 suite "Unit tests for commandslist module":
 
