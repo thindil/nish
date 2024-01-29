@@ -36,7 +36,7 @@ import commandslist, constants, databaseid, directorypath, help, input,
     options, output, resultcode, variables, theme
 
 const
-  aliasesCommands: seq[string] = @["list", "delete", "show", "add", "edit"]
+  aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
     ## The list of available subcommands for command alias
   aliasesOptions: Table[char, string] = {'o': "standard output",
       'e': "standard error", 'f': "file", 'q': "quit"}.toTable
