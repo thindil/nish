@@ -48,7 +48,7 @@ const
 type
   PluginData = object
     ## Store information about the shell's plugin
-    path*: string    ## Full path to the selected plugin
+    path: string    ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
   PluginResult* = tuple [code: ResultCode,
       answer: string] ## Store the result of the plugin's API command
@@ -416,7 +416,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
       return (showError(message = "Can't close process for the plugin '" &
           pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
 
-proc checkPlugin*(pluginPath: string; db; commands): PluginData {.sideEffect,
+proc checkPlugin(pluginPath: string; db; commands): PluginData {.sideEffect,
     raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
   ## Get information about the selected plugin and check it compatybility with
@@ -446,7 +446,7 @@ proc checkPlugin*(pluginPath: string; db; commands): PluginData {.sideEffect,
       return
     result = PluginData(path: pluginPath, api: split(s = pluginInfo[3], sep = ","))
 
-proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
+proc addPlugin(db; arguments; commands): ResultCode {.sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, TimeEffect, WriteDbEffect, RootEffect],
     contractual.} =
@@ -509,7 +509,7 @@ proc addPlugin*(db; arguments; commands): ResultCode {.sideEffect,
         "' added as a plugin to the shell.", color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc getPluginId*(arguments; db): DatabaseId {.sideEffect, raises: [],
+proc getPluginId(arguments; db): DatabaseId {.sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the plugin. If the user didn't enter the ID, show the list of
@@ -563,7 +563,7 @@ proc getPluginId*(arguments; db): DatabaseId {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
       return 0.DatabaseId
 
-proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
+proc removePlugin(db; arguments; commands): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
     ReadIOEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Disable the plugin and remove it from the shell.
@@ -604,7 +604,7 @@ proc removePlugin*(db; arguments; commands): ResultCode {.sideEffect,
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc togglePlugin*(db; arguments; disable: bool = true;
+proc togglePlugin(db; arguments; disable: bool = true;
     commands): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
     ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
@@ -659,7 +659,7 @@ proc togglePlugin*(db; arguments; disable: bool = true;
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
           e = getCurrentException(), db = db)
 
-proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
+proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## List enabled plugins, if entered command was "plugin list all" list all
@@ -737,7 +737,7 @@ proc listPlugins*(arguments; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc showPlugin*(arguments; db; commands): ResultCode {.sideEffect, raises: [],
+proc showPlugin(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, ExecIOEffect, RootEffect, RootEffect],
     contractual.} =
