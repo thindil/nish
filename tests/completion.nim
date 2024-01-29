@@ -1,8 +1,8 @@
-import std/[os, tables]
 import utils/utils
-import ../src/[aliases, completion, commandslist, constants, db, resultcode]
-import norm/sqlite
+import ../src/[aliases, db]
 import unittest2
+{.warning[UnusedImport]:off.}
+include ../src/completion
 
 suite "Unit tests for completion module":
 
