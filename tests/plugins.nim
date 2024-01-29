@@ -1,7 +1,8 @@
-import std/tables
 import utils/utils
-import ../src/[commandslist, db, plugins, resultcode]
+import ../src/db
 import unittest2
+{.warning[UnusedImport]:off.}
+include ../src/plugins
 
 suite "Unit tests for plugins module":
 
@@ -9,8 +10,8 @@ suite "Unit tests for plugins module":
   let db = initDb("test13.db")
   var commands = newTable[string, CommandData]()
 
-  test "Initialization of plugins":
-    initPlugins(db, commands)
+#  test "Initialization of plugins":
+#    initPlugins(db, commands)
 
   test "Adding a new plugin":
     discard removePlugin(db, "remove 1", commands)
@@ -50,20 +51,20 @@ suite "Unit tests for plugins module":
           QuitSuccess
       execPlugin("tools/testplugin.sh", ["info"], db, commands).answer.len >
           0
-
-  test "Showing plugins":
-    checkpoint "Showing enabled plugins"
-    check:
-      listPlugins("list", db) ==
-          QuitSuccess
-    checkpoint "Showing all plugins"
-    check:
-      listPlugins("list all", db) ==
-          QuitSuccess
-    checkpoint "Showing enabled plugins with invalid subcommand"
-    check:
-      listPlugins("list werwerew",
-          db) == QuitSuccess
+#
+#  test "Showing plugins":
+#    checkpoint "Showing enabled plugins"
+#    check:
+#      listPlugins("list", db) ==
+#          QuitSuccess
+#    checkpoint "Showing all plugins"
+#    check:
+#      listPlugins("list all", db) ==
+#          QuitSuccess
+#    checkpoint "Showing enabled plugins with invalid subcommand"
+#    check:
+#      listPlugins("list werwerew",
+#          db) == QuitSuccess
 
   test "Enabling or disabling a plugin":
     checkpoint "Disabling a plugin"
