@@ -52,7 +52,7 @@ using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
 
-proc dbType*(T: typedesc[CompletionType]): string {.raises: [], tags: [],
+proc dbType(T: typedesc[CompletionType]): string {.raises: [], tags: [],
     contractual.} =
   ## Set the type of field in the database
   ##
@@ -62,7 +62,7 @@ proc dbType*(T: typedesc[CompletionType]): string {.raises: [], tags: [],
   body:
     "INTEGER"
 
-proc dbValue*(val: CompletionType): DbValue {.raises: [], tags: [],
+proc dbVale*(val: CompletionType): DbValue {.raises: [], tags: [],
     contractual.} =
   ## Convert the type of the option's value to database field
   ##
@@ -72,7 +72,7 @@ proc dbValue*(val: CompletionType): DbValue {.raises: [], tags: [],
   body:
     dbValue(v = val.ord)
 
-proc to*(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
+proc to(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
     contractual.} =
   ## Convert the value from the database to enumeration
   ##
@@ -86,7 +86,7 @@ proc to*(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
     except:
       none
 
-proc newCompletion*(command: string = ""; cType: CompletionType = none;
+proc newCompletion(command: string = ""; cType: CompletionType = none;
     cValues: string = ""): Completion {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's completion option.
   ##
@@ -306,7 +306,7 @@ proc createCompletionDb*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
+proc addCompletion(db): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Add a new commands' completion to the shell. Ask the user a few questions and fill the
@@ -389,7 +389,7 @@ proc addCompletion*(db): ResultCode {.sideEffect, raises: [],
         "' added.", color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc getCompletionId*(arguments; db): DatabaseId {.sideEffect, raises: [],
+proc getCompletionId(arguments; db): DatabaseId {.sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the completion. If the user didn't enter the ID, show the list of
@@ -440,7 +440,7 @@ proc getCompletionId*(arguments; db): DatabaseId {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
       return 0.DatabaseId
 
-proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+proc editCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Edit the selected alias
@@ -533,7 +533,7 @@ proc editCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+proc listCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## List all available commands' completions.
@@ -585,7 +585,7 @@ proc listCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc deleteCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+proc deleteCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Delete the selected completion from the shell's database
@@ -614,7 +614,7 @@ proc deleteCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+proc showCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
         ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
@@ -660,7 +660,7 @@ proc showCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+proc exportCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
         ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
@@ -712,7 +712,7 @@ proc exportCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
         " to file: " & $fileName, color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc importCompletion*(arguments; db): ResultCode {.sideEffect, raises: [],
+proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
         ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
