@@ -1,7 +1,6 @@
 import utils/utils
 import unittest2
 import ../src/db
-{.warning[UnusedImport]:off.}
 include ../src/commands
 
 suite "Unit tests for commands module":
