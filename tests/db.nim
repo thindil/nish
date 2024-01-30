@@ -1,8 +1,7 @@
 import std/tables
-import ../src/[db, commandslist, resultcode]
 import utils/utils
 import unittest2
-import norm/sqlite
+include ../src/db
 
 suite "Unit tests for db module":
 
