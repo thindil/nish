@@ -1,5 +1,5 @@
-import ../src/directorypath
 import unittest2
+include ../src/directorypath
 
 suite "Unit tests for directorypath module":
   let path: DirectoryPath = "/test/path".DirectoryPath
