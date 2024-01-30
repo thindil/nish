@@ -1,6 +1,5 @@
-import std/os
-import ../src/constants
 import unittest2
+include ../src/constants
 
 suite "Unit tests for constant module":
 
