@@ -1,5 +1,6 @@
-import ../src/databaseid
 import unittest2
+{.warning[UnusedImport]:off.}
+include ../src/databaseid
 
 suite "Unit tests for databaseid module":
 
