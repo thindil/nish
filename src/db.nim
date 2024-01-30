@@ -237,7 +237,7 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       return nil
     dbFile = dbPath
 
-proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
+proc optimizeDb(arguments; db): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, WriteIOEffect, ReadIOEffect,
     RootEffect], contractual.} =
   ## Optimize the shell's database
@@ -261,7 +261,7 @@ proc optimizeDb*(arguments; db): ResultCode {.sideEffect,
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc exportDb(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ExecIOEffect, ReadIOEffect, RootEffect], contractual.} =
   ## Create a SQL file with the shell's database.
   ##
@@ -296,7 +296,7 @@ proc exportDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc importDb*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc importDb(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Import data from the SQL file into the shell's database
   ##
