@@ -1,7 +1,7 @@
-import std/tables
 import utils/utils
-import ../src/[db, commandslist, highlight, resultcode, constants]
+import ../src/db
 import unittest2
+include ../src/highlight
 
 suite "Unit tests for highlight module":
 
