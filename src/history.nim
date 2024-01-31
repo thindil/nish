@@ -76,7 +76,7 @@ proc historyLength*(db): HistoryRange {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
       return HistoryRange.low
 
-proc newHistoryEntry*(command: string = ""; lastUsed: DateTime = now();
+proc newHistoryEntry(command: string = ""; lastUsed: DateTime = now();
     amount: Positive = 1; path: string = ""): HistoryEntry {.raises: [], tags: [],
     contractual.} =
   ## Create a new data structure for the shell's commands' history entry.
@@ -216,7 +216,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
           e = getCurrentException(), db = db)
     return $searchFor
 
-proc clearHistory*(db): ResultCode {.sideEffect, raises: [], tags: [
+proc clearHistory(db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Clear the shell's history, don't add the command to the history
@@ -236,7 +236,7 @@ proc clearHistory*(db): ResultCode {.sideEffect, raises: [], tags: [
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
+proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Show the last X entries to the shell's history. X can be set in the shell's
@@ -325,7 +325,7 @@ proc showHistory*(db; arguments): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc findInHistory*(db; arguments): ResultCode {.raises: [], tags: [
+proc findInHistory(db; arguments): ResultCode {.raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, RootEffect], contractual.} =
   ## Find the selected term in the shell's commands' history
   ##
