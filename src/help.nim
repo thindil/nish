@@ -36,7 +36,7 @@ import commandslist, helpcontent, constants, output, resultcode, theme
 
 using db: DbConn # Connection to the shell's database
 
-proc newHelpEntry*(topic: string = ""; usage: string = ""; content: string = "";
+proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
     plugin: string = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's help's entry.
@@ -106,7 +106,7 @@ proc showUnknownHelp*(subCommand, command,
                 "` for `" & command & "`. To see all available " & helpType &
                 " commands, type `" & command & "`.", db = db)
 
-proc showHelp*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
+proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     ], tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Show the selected help section. If the user entered non-existing name of
@@ -409,7 +409,7 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
       return showError(message = "Can't add help entry to database. Reason: ",
           e = getCurrentException(), db = db)
 
-proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
+proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
   ## Read the help entries from the configuration file and add them to
   ## the shell's database
@@ -494,7 +494,7 @@ proc readHelpFromFile*(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       return showError(message = "Can't close file with help entries. Reason: ",
           e = getCurrentException(), db = db)
 
-proc updateHelp*(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
+proc updateHelp(db): ResultCode {.sideEffect, raises: [], tags: [WriteIOEffect,
     ReadIOEffect, ReadDbEffect, WriteDbEffect, RootEffect], contractual.} =
   ## Clear the user help content and replace it with the default values
   ##
