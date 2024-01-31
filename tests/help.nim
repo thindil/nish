@@ -1,8 +1,8 @@
 import std/tables
 import utils/utils
-import ../src/[aliases, commandslist, db, help, resultcode]
-import norm/sqlite
+import ../src/[aliases, db]
 import unittest2
+include ../src/help
 
 suite "Unit tests for help module":
 
@@ -82,7 +82,7 @@ suite "Unit tests for help module":
 
   test "Updating a help entry":
     discard deleteHelpEntry("test", db)
-    require:
+    unittest2.require:
       addHelpEntry("test",
           "test topic",
               "test", "test help", false, db) == QuitSuccess
