@@ -1,7 +1,8 @@
 import std/tables
 import utils/utils
-import ../src/[commandslist, db, history, resultcode]
+import ../src/db
 import unittest2
+include ../src/history
 
 suite "Unit tests for history module":
 
