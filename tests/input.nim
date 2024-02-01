@@ -1,7 +1,6 @@
-import std/parseopt
 import utils/utils
-import ../src/[constants, input]
 import unittest2
+include ../src/input
 when defined(testInput):
   import ../src/theme
   import nimalyzer
