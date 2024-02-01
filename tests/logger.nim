@@ -1,5 +1,5 @@
-import ../src/logger
 import unittest2
+include ../src/logger
 when defined(debug):
   import std/os
 
