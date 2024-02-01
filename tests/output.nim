@@ -1,8 +1,9 @@
 when defined(testInput):
   import std/tables
 import utils/utils
-import ../src/[db, output, resultcode]
+import ../src/db
 import unittest2
+include ../src/output
 
 suite "Unit tests for output module":
 
