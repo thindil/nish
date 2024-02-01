@@ -1,6 +1,7 @@
 import utils/utils
-import ../src/[db, directorypath, prompt, resultcode]
+import ../src/db
 import unittest2
+include ../src/prompt
 
 suite "Unit tests for prompt module":
 
