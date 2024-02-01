@@ -47,7 +47,7 @@ using
   optionName: OptionName # The name of option to get or set
   arguments: UserInput # The user entered agruments for set or reset option
 
-proc dbType*(T: typedesc[OptionValType]): string {.raises: [], tags: [],
+proc dbType(T: typedesc[OptionValType]): string {.raises: [], tags: [],
     contractual.} =
   ## Set the type of field in the database
   ##
@@ -57,7 +57,7 @@ proc dbType*(T: typedesc[OptionValType]): string {.raises: [], tags: [],
   body:
     "TEXT"
 
-proc dbValue*(val: OptionValType): DbValue {.raises: [], tags: [],
+proc dbValue(val: OptionValType): DbValue {.raises: [], tags: [],
     contractual.} =
   ## Convert the type of the option's value to database field
   ##
@@ -67,7 +67,7 @@ proc dbValue*(val: OptionValType): DbValue {.raises: [], tags: [],
   body:
     dbValue(v = $val)
 
-proc to*(dbVal: DbValue, T: typedesc[OptionValType]): T {.raises: [], tags: [],
+proc to(dbVal: DbValue, T: typedesc[OptionValType]): T {.raises: [], tags: [],
     contractual.} =
   ## Convert the value from the database to enumeration
   ##
@@ -171,7 +171,7 @@ proc setOption*(optionName; value: OptionValue = "";
       showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException(), db = db)
 
-proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
+proc showOptions(db): ResultCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Show the shell's options
@@ -223,7 +223,7 @@ proc showOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
+proc setOptions(db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Set the selected option's value
@@ -354,7 +354,7 @@ proc setOptions*(db): ResultCode {.sideEffect, raises: [], tags: [
         "' was set to '" & value & "'", color = success, db = db);
     return QuitSuccess.ResultCode
 
-proc resetOptions*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc resetOptions(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Reset the selected option's value to default value. If the argument is set
