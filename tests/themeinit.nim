@@ -1,7 +1,7 @@
-import std/tables
-import ../src/[commandslist, db, resultcode, themeinit]
 import utils/utils
 import unittest2
+import ../src/db
+include ../src/themeinit
 
 suite "Unit tests for themeinit module":
 
