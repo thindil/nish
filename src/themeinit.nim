@@ -37,7 +37,7 @@ import commandslist, constants, help, input, output, resultcode, theme
 
 using db: DbConn # Connection to the shell's database
 
-proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
+proc showTheme(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Show all the colors which can be set in the shell's theme
   ##
@@ -89,7 +89,7 @@ proc showTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
+proc editTheme(db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect], contractual.} =
   ## Set the value for the theme's color
   ##
@@ -174,7 +174,7 @@ proc editTheme*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc resetTheme*(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
+proc resetTheme(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadDbEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Reset the selected theme's color's values to default values. If the optional
