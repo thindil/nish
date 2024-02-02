@@ -1,7 +1,6 @@
-import std/tables
-import ../src/[commandslist, suggestion]
 import utils/utils
 import unittest2
+include ../src/suggestion
 
 suite "Unit tests for suggestion module":
 
