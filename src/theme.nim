@@ -66,7 +66,7 @@ using db: DbConn # Connection to the shell's database
 const themeCommands*: seq[string] = @["list", "edit", "reset"]
   ## The list of available subcommands for command theme
 
-proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],
+proc dbType(T: typedesc[ColorName]): string {.raises: [], tags: [],
     contractual.} =
   ## Set the type of field in the database
   ##
@@ -76,7 +76,7 @@ proc dbType*(T: typedesc[ColorName]): string {.raises: [], tags: [],
   body:
     "TEXT"
 
-proc dbValue*(val: ColorName): DbValue {.raises: [], tags: [],
+proc dbValue(val: ColorName): DbValue {.raises: [], tags: [],
     contractual.} =
   ## Convert the type of the colors' value to database field
   ##
@@ -87,7 +87,7 @@ proc dbValue*(val: ColorName): DbValue {.raises: [], tags: [],
     dbValue(v = $val)
 
 {.push ruleOff: "paramsUsed".}
-proc to*(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
+proc to(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
     contractual.} =
   ## Convert the value from the database to enumeration
   ##
@@ -102,7 +102,7 @@ proc to*(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
       default
 {.pop ruleOff: "paramsUsed".}
 
-proc dbType*(T: typedesc[ThemeColor]): string {.raises: [], tags: [],
+proc dbType(T: typedesc[ThemeColor]): string {.raises: [], tags: [],
     contractual.} =
   ## Set the type of field in the database
   ##
@@ -112,7 +112,7 @@ proc dbType*(T: typedesc[ThemeColor]): string {.raises: [], tags: [],
   body:
     "TEXT"
 
-proc dbValue*(val: ThemeColor): DbValue {.raises: [], tags: [],
+proc dbValue(val: ThemeColor): DbValue {.raises: [], tags: [],
     contractual.} =
   ## Convert the type of the colors' value to database field
   ##
@@ -123,7 +123,7 @@ proc dbValue*(val: ThemeColor): DbValue {.raises: [], tags: [],
     dbValue(v = $val)
 
 {.push ruleOff: "paramsUsed".}
-proc to*(dbVal: DbValue, T: typedesc[ThemeColor]): T {.raises: [], tags: [],
+proc to(dbVal: DbValue, T: typedesc[ThemeColor]): T {.raises: [], tags: [],
     contractual.} =
   ## Convert the value from the database to enumeration
   ##
