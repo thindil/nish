@@ -1,6 +1,7 @@
-import ../src/[db, resultcode, theme]
 import utils/utils
-import unittest2, termstyle
+import unittest2
+import ../src/db
+include ../src/theme
 
 suite "Unit tests for theme module":
 
