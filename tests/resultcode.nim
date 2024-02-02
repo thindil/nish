@@ -1,5 +1,5 @@
-import ../src/resultcode
 import unittest2
+include ../src/resultcode
 
 suite "Unit tests for resultcode module":
 
