@@ -52,7 +52,7 @@ using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
 
-proc dbType*(T: typedesc[VariableValType]): string {.raises: [], tags: [],
+proc dbType(T: typedesc[VariableValType]): string {.raises: [], tags: [],
     contractual.} =
   ## Set the type of field in the database
   ##
@@ -62,7 +62,7 @@ proc dbType*(T: typedesc[VariableValType]): string {.raises: [], tags: [],
   body:
     "TEXT"
 
-proc dbValue*(val: VariableValType): DbValue {.raises: [], tags: [],
+proc dbValue(val: VariableValType): DbValue {.raises: [], tags: [],
     contractual.} =
   ## Convert the type of the variable's value to database field
   ##
@@ -72,7 +72,7 @@ proc dbValue*(val: VariableValType): DbValue {.raises: [], tags: [],
   body:
     dbValue(v = $val)
 
-proc to*(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [
+proc to(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [
     ], contractual.} =
   ## Convert the value from the database to enumeration
   ##
@@ -86,7 +86,7 @@ proc to*(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [
     except:
       text
 
-proc buildQuery*(directory: DirectoryPath; fields: string = "";
+proc buildQuery(directory: DirectoryPath; fields: string = "";
     where: string = ""): string {.sideEffect, raises: [], tags: [ReadDbEffect],
     contractual.} =
   ## Build database query for get environment variables for the selected
@@ -118,7 +118,7 @@ proc buildQuery*(directory: DirectoryPath; fields: string = "";
 
     result.add(y = " ORDER BY id ASC")
 
-proc newVariable*(name: string = ""; path: string = ""; recursive: bool = false;
+proc newVariable(name: string = ""; path: string = ""; recursive: bool = false;
     value: string = ""; description: string = ""): Variable {.raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's environment variable.
@@ -246,7 +246,7 @@ proc unsetCommand*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Can't unset the environment variable '" &
           arguments & "'. Reason:", e = getCurrentException(), db = db)
 
-proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## List available variables, if entered command was "variables list all" list all
@@ -318,7 +318,7 @@ proc listVariables*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc getVariableId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
+proc getVariableId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the variable. If the user didn't enter the ID, show the list of
@@ -369,7 +369,7 @@ proc getVariableId*(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
       return 0.DatabaseId
 
-proc deleteVariable*(arguments; db): ResultCode {.sideEffect, raises: [],
+proc deleteVariable(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Delete the selected variable from the shell's database
@@ -403,7 +403,7 @@ proc deleteVariable*(arguments; db): ResultCode {.sideEffect, raises: [],
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
+proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
   ## Add a new variable to the shell. Ask the user a few questions and fill the
@@ -547,7 +547,7 @@ proc addVariable*(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Edit the selected variable.  Ask the user a few questions and fill the
@@ -702,7 +702,7 @@ proc editVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc showVariable*(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
+proc showVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Show details about the selected variable, its ID, name, description and
