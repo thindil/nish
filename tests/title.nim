@@ -1,6 +1,7 @@
 import utils/utils
-import ../src/[db, resultcode, title]
+import ../src/[db, resultcode]
 import unittest2
+include ../src/title
 
 suite "Unit tests for title module":
 
