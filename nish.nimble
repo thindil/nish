@@ -13,7 +13,7 @@ binDir = "bin"
 
 # Dependencies
 
-requires "nim >= 1.6.14"
+requires "nim >= 2.0.0"
 requires "contracts >= 0.2.2"
 requires "nimassets >= 0.2.4"
 requires "termstyle >= 0.1.0"
