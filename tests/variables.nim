@@ -1,8 +1,8 @@
-import std/[os, strutils, tables]
 import utils/utils
-import ../src/[commandslist, constants, directorypath, db, resultcode, variables]
-import norm/sqlite
+import ../src/db
 import unittest2
+{.warning[UnusedImport]:off.}
+include ../src/variables
 
 suite "Unit tests for variable modules":
 
