@@ -28,12 +28,12 @@
 ## the standard environment variables.
 
 # Standard library imports
-import std/[os, strutils, tables]
+import std/[os, paths, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, directorypath, help, input, output, resultcode, theme
+import commandslist, constants, help, input, output, resultcode, theme
 
 const
   variableNameLength*: Positive = maxNameLength
@@ -85,7 +85,7 @@ proc to(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [
     except:
       text
 
-proc buildQuery(directory: DirectoryPath; fields: string = "";
+proc buildQuery(directory: Path; fields: string = "";
     where: string = ""): string {.sideEffect, raises: [], tags: [ReadDbEffect],
     contractual.} =
   ## Build database query for get environment variables for the selected
@@ -98,18 +98,17 @@ proc buildQuery(directory: DirectoryPath; fields: string = "";
   ##
   ## Returns the string with database's query for the selected directory and fields
   require:
-    directory.len > 0
+    directory.string.len > 0
   body:
     result = (if fields.len > 0: "SELECT " & fields &
-        " FROM variables WHERE " else: "") & "path='" & directory & "'"
-    var remainingDirectory: DirectoryPath = parentDir(
-        path = $directory).DirectoryPath
+        " FROM variables WHERE " else: "") & "path='" & directory.string & "'"
+    var remainingDirectory: Path = parentDir(path = directory)
 
     # Construct SQL querry, search for variables also defined in parent directories
     # if they are recursive
-    while remainingDirectory != "":
-      result.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
-      remainingDirectory = parentDir(path = $remainingDirectory).DirectoryPath
+    while remainingDirectory.string != "":
+      result.add(y = " OR (path='" & remainingDirectory.string & "' AND recursive=1)")
+      remainingDirectory = parentDir(path = remainingDirectory)
 
     # If optional arguments entered, add them to the query
     if where.len > 0:
@@ -135,8 +134,8 @@ proc newVariable(name: string = ""; path: string = ""; recursive: bool = false;
     Variable(name: name, path: path, recursive: recursive, value: value,
         description: description)
 
-proc setVariables*(newDirectory: DirectoryPath; db;
-    oldDirectory: DirectoryPath = "".DirectoryPath) {.sideEffect,
+proc setVariables*(newDirectory: Path; db;
+    oldDirectory: Path = "".Path) {.sideEffect,
     raises: [], tags: [ReadDbEffect, WriteEnvEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Set the environment variables in the selected directory and remove the
@@ -148,13 +147,13 @@ proc setVariables*(newDirectory: DirectoryPath; db;
   ## * oldDirectory - the old directory in which environment variables will be
   ##                  removed. Can be empty. Default value is empty
   require:
-    newDirectory.len > 0
+    newDirectory.string.len > 0
     db != nil
   body:
     var skipped: seq[int64] = @[]
 
     # Remove the old environment variables if needed
-    if oldDirectory.len > 0:
+    if oldDirectory.string.len > 0:
       try:
         var variables: seq[Variable] = @[newVariable()]
         db.select(objs = variables, cond = buildQuery(directory = oldDirectory))
@@ -293,7 +292,7 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     elif arguments[0..3] == "list":
       try:
         db.select(objs = variables, cond = buildQuery(
-            directory = getCurrentDirectory().DirectoryPath))
+            directory = getCurrentDirectory().Path))
         if variables.len == 0:
           showOutput(message = "There are no defined shell's environment variables in this directory.", db = db)
           return QuitSuccess.ResultCode
@@ -393,8 +392,8 @@ proc deleteVariable(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't delete variable from database. Reason: ",
           e = getCurrentException(), db = db)
     try:
-      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db,
-          oldDirectory = getCurrentDirectory().DirectoryPath)
+      setVariables(newDirectory = getCurrentDirectory().Path, db = db,
+          oldDirectory = getCurrentDirectory().Path)
     except OSError:
       return showError(message = "Can't set environment variables in the current directory. Reason: ",
           e = getCurrentException(), db = db)
@@ -455,19 +454,19 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         style(ss = "/", style = codeColor) &
         "'. Can't be empty and must be a path to the existing directory.: ", db = db)
     showFormPrompt(prompt = "Path", db = db)
-    var path: DirectoryPath = "".DirectoryPath
-    while path.len == 0:
-      path = ($readInput(db = db)).DirectoryPath
-      if path.len == 0:
+    var path: Path = "".Path
+    while path.string.len == 0:
+      path = ($readInput(db = db)).Path
+      if path.string.len == 0:
         showError(message = "Please enter a path for the alias.", db = db)
-      elif not dirExists(dir = $path) and path != "exit":
-        path = "".DirectoryPath
+      elif not dirExists(dir = path.string) and path.string != "exit":
+        path = "".Path
         showError(message = "Please enter a path to the existing directory", db = db)
-      if path.len == 0:
+      if path.string.len == 0:
         showFormPrompt(prompt = "Path", db = db)
-    if path == "exit":
+    if path.string == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
-    variable.path = $path
+    variable.path = path.string
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &
@@ -525,7 +524,7 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Check if variable with the same parameters exists in the database
     try:
       if db.exists(T = Variable, cond = "name=? AND path=? AND recursive=? AND value=?",
-          params = [($name).dbValue, ($path).dbValue, ($recursive).dbValue, (
+          params = [($name).dbValue, path.string.dbValue, ($recursive).dbValue, (
           $value).dbValue]):
         return showError(message = "There is a variable with the same name, path and value in the database.", db = db)
     except:
@@ -538,7 +537,7 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       return showError(message = "Can't add the variable to database. Reason: ",
           e = getCurrentException(), db = db)
     try:
-      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db)
+      setVariables(newDirectory = getCurrentDirectory().Path, db = db)
     except OSError:
       return showError(message = "Can't set variables for the current directory. Reason: ",
           e = getCurrentException(), db = db)
@@ -612,19 +611,19 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         style(ss = variable.path, style = valueColor) &
             "'. Must be a path to the existing directory.:", db = db)
     showOutput(message = "Path: ", newLine = false, db = db)
-    var path: DirectoryPath = "exit".DirectoryPath
-    while path.len > 0:
-      path = ($readInput(db = db)).DirectoryPath
-      if path.len > 0 and not dirExists(dir = $path) and path != "exit":
+    var path: Path = "exit".Path
+    while path.string.len > 0:
+      path = ($readInput(db = db)).Path
+      if path.string.len > 0 and not dirExists(dir = path.string) and path.string != "exit":
         showError(message = "Please enter a path to the existing directory", db = db)
         showOutput(message = "Path: ", newLine = false, db = db)
       else:
         break
-    if path == "exit":
+    if path.string == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
-    elif path == "":
-      path = variable.path.DirectoryPath
-    variable.path = $path
+    elif path.string == "":
+      path = variable.path.Path
+    variable.path = path.string
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &
@@ -693,7 +692,7 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Can't save the edits of the variable to database. Reason: ",
           e = getCurrentException(), db = db)
     try:
-      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db)
+      setVariables(newDirectory = getCurrentDirectory().Path, db = db)
     except OSError:
       return showError(message = "Can't set variables for the current directory. Reason: ",
           e = getCurrentException(), db = db)
@@ -851,7 +850,7 @@ proc initVariables*(db; commands: ref CommandsList) {.sideEffect,
           e = getCurrentException(), db = db)
     # Set the environment variables for the current directory
     try:
-      setVariables(newDirectory = getCurrentDirectory().DirectoryPath, db = db)
+      setVariables(newDirectory = getCurrentDirectory().Path, db = db)
     except OSError:
       showError(message = "Can't set environment variables for the current directory. Reason:",
           e = getCurrentException(), db = db)
