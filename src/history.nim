@@ -191,9 +191,12 @@ proc getHistory*(historyIndex: HistoryRange; db;
       if searchFor.len == 0:
         if db.exists(T = HistoryEntry, cond = "path=?",
             params = getCurrentDirectory()):
-          db.rawSelect(qry = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?",
-              obj = entry, params = [getCurrentDirectory().dbValue, ($(
-              historyLength(db = db) - historyIndex)).dbValue])
+          try:
+            db.rawSelect(qry = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?",
+                obj = entry, params = [getCurrentDirectory().dbValue, ($(
+                historyLength(db = db) - historyIndex)).dbValue])
+          except NotFoundError:
+            return searchFor
         if entry.command.len == 0 and db.exists(T = HistoryEntry):
           db.rawSelect(qry = "SELECT command FROM history ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?",
               obj = entry, params = $(historyLength(db = db) - historyIndex))
