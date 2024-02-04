@@ -27,13 +27,13 @@
 ## setting them, deleting or executing.
 
 # Standard library imports
-import std/[os, parseopt, strutils, tables]
+import std/[os, paths, parseopt, strutils, tables]
 # External modules imports
 import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, directorypath, help, input, options, output,
-    resultcode, variables, theme
+import commandslist, constants, help, input, options, output, resultcode,
+    variables, theme
 
 const
   aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
@@ -47,7 +47,7 @@ using
   aliases: ref AliasesList # The list of aliases available in the selected directory
   arguments: UserInput # The string with arguments entered by the user for the command
 
-proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [
+proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
     ], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
         RootEffect],
     contractual.} =
@@ -59,20 +59,19 @@ proc setAliases*(aliases; directory: DirectoryPath; db) {.sideEffect, raises: [
   ##
   ## Returns the parameter aliases with the new list of available aliases
   require:
-    directory.len > 0
+    directory.string.len > 0
     db != nil
   body:
     aliases.clear
     var
       dbQuery: string = "SELECT id, name FROM aliases WHERE path='" &
-          directory & "'"
-      remainingDirectory: DirectoryPath = parentDir(
-          path = $directory).DirectoryPath
+          directory.string & "'"
+      remainingDirectory: Path = parentDir(path = directory)
     # Construct SQL querry, search for aliases also defined in parent directories
     # if they are recursive
-    while remainingDirectory.len > 0:
-      dbQuery.add(y = " OR (path='" & remainingDirectory & "' AND recursive=1)")
-      remainingDirectory = parentDir(path = $remainingDirectory).DirectoryPath
+    while remainingDirectory.string.len > 0:
+      dbQuery.add(y = " OR (path='" & remainingDirectory.string & "' AND recursive=1)")
+      remainingDirectory = parentDir(path = remainingDirectory)
     dbQuery.add(y = " ORDER BY id ASC")
     # Set the aliases
     type LocalAlias = ref object
@@ -267,7 +266,7 @@ proc deleteAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't delete alias from database. Reason: ",
           e = getCurrentException(), db = db)
     try:
-      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
     except OSError:
       return showError(message = "Can't delete alias, setting a new aliases not work. Reason: ",
           e = getCurrentException(), db = db)
@@ -373,17 +372,17 @@ proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
         style(ss = "/", style = codeColor) &
         "'. Can't be empty and must be a path to the existing directory.: ", db = db)
     showFormPrompt(prompt = "Path", db = db)
-    var path: DirectoryPath = "".DirectoryPath
-    while path.len == 0:
-      path = ($readInput(db = db)).DirectoryPath
-      if path.len == 0:
+    var path: Path = "".Path
+    while path.string.len == 0:
+      path = ($readInput(db = db)).Path
+      if path.string.len == 0:
         showError(message = "Please enter a path for the alias.", db = db)
-      elif not dirExists(dir = $path) and path != "exit":
-        path = "".DirectoryPath
+      elif not dirExists(dir = path.string) and path.string != "exit":
+        path = "".Path
         showError(message = "Please enter a path to the existing directory", db = db)
-      if path.len == 0:
+      if path.string.len == 0:
         showFormPrompt(prompt = "Path", db = db)
-    if path == "exit":
+    if path.string == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
@@ -437,7 +436,7 @@ proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
         output = readInput(db = db)
     if output == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
-    var alias: Alias = newAlias(name = $name, path = $path,
+    var alias: Alias = newAlias(name = $name, path = path.string,
         recursive = recursive == 1, commands = $commands,
         description = $description, output = $output)
     # Check if alias with the same parameters exists in the database
@@ -455,7 +454,7 @@ proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     # Refresh the list of available aliases
     try:
-      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException(), db = db)
@@ -524,14 +523,14 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         style(ss = alias.path, style = valueColor) &
         "'. Must be a path to the existing directory.", db = db)
     showFormPrompt(prompt = "Path", db = db)
-    var path: DirectoryPath = ($readInput(db = db)).DirectoryPath
-    while path.len > 0 and (path != "exit" and not dirExists(dir = $path)):
+    var path: Path = ($readInput(db = db)).Path
+    while path.string.len > 0 and (path.string != "exit" and not dirExists(dir = path.string)):
       showError(message = "Please enter a path to the existing directory", db = db)
-      path = ($readInput(db = db)).DirectoryPath
-    if path == "exit":
+      path = ($readInput(db = db)).Path
+    if path.string == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
-    elif path == "":
-      path = alias.path.DirectoryPath
+    elif path.string == "":
+      path = alias.path.Path
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
@@ -585,7 +584,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     # Save the alias to the database
     try:
       alias.name = $name
-      alias.path = $path
+      alias.path = path.string
       alias.recursive = recursive == 1
       alias.commands = $commands
       alias.description = $description
@@ -596,7 +595,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     # Refresh the list of available aliases
     try:
-      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException(), db = db)
@@ -625,8 +624,8 @@ proc execAlias*(arguments; aliasId: string; aliases;
     let
       aliasIndex: string =
         aliasId
-      currentDirectory: DirectoryPath = try:
-          getCurrentDirectory().DirectoryPath
+      currentDirectory: Path = try:
+          getCurrentDirectory().Path
       except OSError:
         return showError(message = "Can't get current directory. Reason: ",
             e = getCurrentException(), db = db)
@@ -691,9 +690,9 @@ proc execAlias*(arguments; aliasId: string; aliases;
         if command[0..2] == "cd ":
           workingDir = getCurrentDirectory()
           setCurrentDir(newDir = $command[3..^1])
-          setVariables(newDirectory = getCurrentDirectory().DirectoryPath,
-              db = db, oldDirectory = workingDir.DirectoryPath)
-          aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
+          setVariables(newDirectory = getCurrentDirectory().Path,
+              db = db, oldDirectory = workingDir.Path)
+          aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
           continue
         let
           spaceIndex: int = command.find(sub = ' ')
@@ -718,8 +717,8 @@ proc execAlias*(arguments; aliasId: string; aliases;
     if workingDir.len > 0:
       try:
         setVariables(newDirectory = currentDirectory, db = db,
-            oldDirectory = getCurrentDirectory().DirectoryPath)
-        setCurrentDir(newDir = $currentDirectory)
+            oldDirectory = getCurrentDirectory().Path)
+        setCurrentDir(newDir = currentDirectory.string)
         aliases.setAliases(directory = currentDirectory, db = db)
       except OSError:
         return showError(message = "Can't restore aliases and variables. Reason: ",
@@ -786,7 +785,7 @@ proc initAliases*(db; aliases: ref AliasesList;
           e = getCurrentException(), db = db)
     # Set the shell's aliases for the current directory
     try:
-      aliases.setAliases(directory = getCurrentDirectory().DirectoryPath, db = db)
+      aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
     except OSError:
       showError(message = "Can't initialize aliases. Reason: ",
           e = getCurrentException(), db = db)

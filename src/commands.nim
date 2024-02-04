@@ -27,18 +27,17 @@
 ## directory
 
 # Standard library imports
-import std/[os, tables, unicode]
+import std/[os, paths, tables, unicode]
 # External modules imports
 import contracts
 import norm/sqlite
 # Internal imports
-import aliases, constants, commandslist, directorypath, output,
-    plugins, resultcode, variables
+import aliases, constants, commandslist, output, plugins, resultcode, variables
 
 using
   db: DbConn # Connection to the shell's database
   aliases: ref AliasesList # The list of aliases available in the selected directory
-  newDirectory: DirectoryPath # The directory to which the current directory will be changed
+  newDirectory: Path # The directory to which the current directory will be changed
 
 proc changeDirectory(newDirectory; aliases; db): ResultCode {.sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
@@ -53,20 +52,21 @@ proc changeDirectory(newDirectory; aliases; db): ResultCode {.sideEffect,
   ## Returns QuitSuccess if the working directory was properly changed, otherwise
   ## QuitFailure. Also, updated parameter aliases.
   require:
-    newDirectory.len > 0
+    newDirectory.string.len > 0
     db != nil
   body:
     try:
-      var path: DirectoryPath = try:
-          absolutePath(path = expandTilde(path = $newDirectory)).DirectoryPath
+      var path: Path = try:
+          absolutePath(path = expandTilde(path = newDirectory.string)).Path
         except ValueError:
           return showError(message = "Can't get absolute path to the new directory.", db = db)
-      if not dirExists(dir = $path):
-        return showError(message = "Directory '" & path & "' doesn't exist.", db = db)
-      path = expandFilename(filename = $path).DirectoryPath
+      if not dirExists(dir = path.string):
+        return showError(message = "Directory '" & path.string &
+            "' doesn't exist.", db = db)
+      path = expandFilename(filename = path.string).Path
       setVariables(newDirectory = path, db = db,
-          oldDirectory = getCurrentDirectory().DirectoryPath)
-      setCurrentDir(newDir = $path)
+          oldDirectory = getCurrentDirectory().Path)
+      setCurrentDir(newDir = path.string)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess.ResultCode
     except OSError:
@@ -88,8 +88,8 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.sideEffect, raises: [],
   require:
     db != nil
   body:
-    if newDirectory.len == 0:
-      result = changeDirectory(newDirectory = "~".DirectoryPath,
+    if newDirectory.string.len == 0:
+      result = changeDirectory(newDirectory = "~".Path,
           aliases = aliases, db = db)
     else:
       result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)

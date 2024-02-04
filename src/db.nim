@@ -27,14 +27,13 @@
 ## the shell's database.
 
 # Standard library imports
-import std/[os, osproc, strutils]
+import std/[os, osproc, paths, strutils]
 # External modules imports
 import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
-import aliases, constants, commandslist, completion, directorypath, help,
-    history, logger, options, output, plugins, resultcode, theme,
-    variables
+import aliases, constants, commandslist, completion, help, history, logger,
+    options, output, plugins, resultcode, theme, variables
 
 const
   dbCommands*: seq[string] = @["optimize", "export", "import"]
@@ -44,7 +43,7 @@ using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
 
-var dbFile: DirectoryPath = "".DirectoryPath ## The full path to the shell's database
+var dbFile: Path = "".Path ## The full path to the shell's database
 
 proc closeDb*(returnCode: ResultCode; db) {.sideEffect, raises: [],
     tags: [DbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
@@ -65,7 +64,7 @@ proc closeDb*(returnCode: ResultCode; db) {.sideEffect, raises: [],
       quit QuitFailure
     quit returnCode.int
 
-proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
+proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
   ## Open connection to the shell database. Create database if not exists.
@@ -76,17 +75,17 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
   ## Returns pointer to the database connection. If connection cannot be established,
   ## returns nil.
   require:
-    dbPath.len > 0
+    dbPath.string.len > 0
   body:
     try:
-      discard existsOrCreateDir(dir = parentDir(path = $dbPath))
+      discard existsOrCreateDir(dir = parentDir(path = dbPath).string)
     except OSError, IOError:
       showError(message = "Can't create directory for the shell's database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
-    let dbExists: bool = fileExists(filename = $dbPath)
+    let dbExists: bool = fileExists(filename = dbPath.string)
     try:
-      result = open(connection = $dbPath, user = "", password = "", database = "")
+      result = open(connection = dbPath.string, user = "", password = "", database = "")
     except DbError:
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException(), db = nil)
@@ -99,35 +98,43 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         valueType = OptionValType.command, readOnly = false,
         defaultValue = "built-in"), newOption(name = "setTitle", value = "true",
         description = "Set a terminal title to currently running command.",
-        valueType = OptionValType.boolean, readOnly = false, defaultValue = "true"),
+        valueType = OptionValType.boolean, readOnly = false,
+        defaultValue = "true"),
         newOption(name = "colorSyntax", value = "true",
         description = "Color the user input with info about invalid commands, quotes, etc.",
-        valueType = OptionValType.boolean, readOnly = false, defaultValue = "true"),
+        valueType = OptionValType.boolean, readOnly = false,
+        defaultValue = "true"),
         newOption(name = "completionAmount", value = "100",
         description = "The amount of Tab completions to show.",
-        valueType = OptionValType.natural, readOnly = false, defaultValue = "100"),
+        valueType = OptionValType.natural, readOnly = false,
+        defaultValue = "100"),
         newOption(name = "outputHeaders", value = "unicode",
         description = "How to present the headers of commands.",
         valueType = OptionValType.header, readOnly = false,
         defaultValue = "unicode"), newOption(name = "helpColumns", value = "5",
         description = "The amount of columns for help list command.",
-        valueType = OptionValType.positive, readOnly = false, defaultValue = "5"),
+        valueType = OptionValType.positive, readOnly = false,
+        defaultValue = "5"),
         newOption(name = "completionColumns", value = "5",
         description = "The amount of columns for Tab completion list.",
-        valueType = OptionValType.positive, readOnly = false, defaultValue = "5"),
+        valueType = OptionValType.positive, readOnly = false,
+        defaultValue = "5"),
         newOption(name = "completionCheckCase", value = "false",
         description = "Tab completion for directories and files is case-sensitive.",
         valueType = OptionValType.boolean, readOnly = false,
         defaultValue = "false"),
         newOption(name = "suggestionPrecision", value = "1",
         description = "How precise is the commands' suggestion system.",
-        valueType = OptionValType.natural, readOnly = false, defaultValue = "1"),
+        valueType = OptionValType.natural, readOnly = false,
+        defaultValue = "1"),
         newOption(name = "titleWidth", value = "30",
         description = "The maximum length of a terminal title which will be set.",
-        valueType = OptionValType.positive, readOnly = false, defaultValue = "30"),
+        valueType = OptionValType.positive, readOnly = false,
+        defaultValue = "30"),
         newOption(name = "execWithShell", value = "true",
         description = "Execute all commands by using the system's default shell.",
-        valueType = OptionValType.boolean, readOnly = false, defaultValue = "true")]
+        valueType = OptionValType.boolean, readOnly = false,
+        defaultValue = "true")]
     # Create a new database if not exists
     if not dbExists:
       if result.createAliasesDb == QuitFailure:
@@ -147,8 +154,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
       if result.createThemeDb == QuitFailure:
         return nil
       for option in options:
-        setOption(optionName = option.option, value = option.value, description = option.description,
-            valueType = option.valueType, db = result, readOnly = (
+        setOption(optionName = option.option, value = option.value,
+            description = option.description, valueType = option.valueType,
+            db = result, readOnly = (
             if option.readOnly: 1 else: 0))
     # If database version is different than the newest, update database
     try:
@@ -173,8 +181,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for option in options:
-          setOption(optionName = option.option, value = option.value, description = option.description,
-              valueType = option.valueType, db = result, readOnly = (
+          setOption(optionName = option.option, value = option.value,
+              description = option.description, valueType = option.valueType,
+              db = result, readOnly = (
               if option.readOnly: 1 else: 0))
       of 2:
         if result.updatePluginsDb == QuitFailure:
@@ -190,8 +199,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         for i in options.low..options.high:
           if i == 1:
             continue
-          setOption(optionName = options[i].option, value = options[i].value, description = options[i].description,
-              valueType = options[i].valueType, db = result, readOnly = (
+          setOption(optionName = options[i].option, value = options[i].value,
+              description = options[i].description, valueType = options[i].valueType,
+                  db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 3:
         if result.updateOptionsDb(dbVersion = dbVersion) == QuitFailure:
@@ -207,15 +217,17 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 8, 9, 10, 11]:
-          setOption(optionName = options[i].option, value = options[i].value, description = options[i].description,
-              valueType = options[i].valueType, db = result, readOnly = (
+          setOption(optionName = options[i].option, value = options[i].value,
+              description = options[i].description, valueType = options[i].valueType,
+                  db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 4:
         if result.createCompletionDb == QuitFailure:
           return nil
         for i in [0, 10, 11]:
-          setOption(optionName = options[i].option, value = options[i].value, description = options[i].description,
-              valueType = options[i].valueType, db = result, readOnly = (
+          setOption(optionName = options[i].option, value = options[i].value,
+              description = options[i].description, valueType = options[i].valueType,
+                  db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 5:
         if result.updateVariablesDb == QuitFailure:
@@ -223,8 +235,9 @@ proc startDb*(dbPath: DirectoryPath): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 11]:
-          setOption(optionName = options[i].option, value = options[i].value, description = options[i].description,
-              valueType = options[i].valueType, db = result, readOnly = (
+          setOption(optionName = options[i].option, value = options[i].value,
+              description = options[i].description, valueType = options[i].valueType,
+                  db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 6:
         discard
@@ -286,7 +299,7 @@ proc exportDb(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           return showError(message = "Unknown type of the shell's data to backup. Available types are: " &
               tablesNames.join(sep = ", "), db = db)
     try:
-      args[1].writeFile(content = execCmdEx(command = "sqlite3 " & dbFile &
+      args[1].writeFile(content = execCmdEx(command = "sqlite3 " & dbFile.string &
           " '.dump " & (if args.len > 2: args[2 .. ^1].join(
           sep = " ") else: "") & "'").output)
       showOutput(message = "The backup file: '" & $args[1] & "' created.",
@@ -315,12 +328,13 @@ proc importDb(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Enter the name of the file from which the data will be imported to the database.", db = db)
     try:
       let res: tuple[output: string; exitCode: int] = execCmdEx(
-          command = "sqlite3 " & dbFile & " '.read " & args[1] & "'")
+          command = "sqlite3 " & dbFile.string & " '.read " & args[1] & "'")
       if res.exitCode == 0:
         showOutput(message = "The data from the file: '" & $args[1] &
             "' was imported to the database.", color = success, db = db)
       else:
-        return showError(message = "Can't import the data into the shell's database. Reason: " & res.output, db = db)
+        return showError(message = "Can't import the data into the shell's database. Reason: " &
+            res.output, db = db)
     except:
       return showError(message = "Can't import the data into the shell's database. Reason: ",
           e = getCurrentException(), db = db)
