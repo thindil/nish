@@ -32,8 +32,7 @@ import std/[os, parsecfg, strutils, tables]
 import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, help, input, options,
-    output, resultcode, theme
+import commandslist, constants, help, input, options, output, resultcode, theme
 
 type DirCompletionType = enum
   ## Used to set the type of completion for directories and files
@@ -359,18 +358,18 @@ proc addCompletion(db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Adding a new completion cancelled.", db = db)
     var completion: Completion = newCompletion(command = $command, cType = (
         case typeChar.toLowerAscii
-          of 'd':
-            CompletionType.dirs
-          of 'f':
-            CompletionType.files
-          of 'a':
-            dirsfiles
-          of 'c':
-            commands
-          of 'u':
-            custom
-          else:
-            none), cValues = $values)
+        of 'd':
+          CompletionType.dirs
+        of 'f':
+          CompletionType.files
+        of 'a':
+          dirsfiles
+        of 'c':
+          commands
+        of 'u':
+          custom
+        else:
+        none), cValues = $values)
     # Check if completion with the same parameters exists in the database
     try:
       if db.exists(T = Completion, cond = "command=?",
@@ -389,7 +388,7 @@ proc addCompletion(db): ResultCode {.sideEffect, raises: [],
         "' added.", color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc getCompletionId(arguments; db): DatabaseId {.sideEffect, raises: [],
+proc getCompletionId(arguments; db): Natural {.sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the completion. If the user didn't enter the ID, show the list of
@@ -405,7 +404,7 @@ proc getCompletionId(arguments; db): DatabaseId {.sideEffect, raises: [],
     db != nil
     arguments.len > 0
   body:
-    result = 0.DatabaseId
+    result = 0
     var
       completion: Completion = newCompletion()
       actionName: string = ""
@@ -423,22 +422,22 @@ proc getCompletionId(arguments; db): DatabaseId {.sideEffect, raises: [],
       askForName[Completion](db = db, action = actionName & " a completion",
             namesType = "completion", name = completion)
       if completion.command.len == 0:
-        return 0.DatabaseId
-      return completion.id.DatabaseId
+        return 0
+      return completion.id
     result = try:
-        parseInt(s = $arguments[argumentsLen - 1 .. ^1]).DatabaseId
+        parseInt(s = $arguments[argumentsLen - 1 .. ^1])
       except ValueError:
         showError(message = "The Id of the completion must be a positive number.", db = db)
-        return 0.DatabaseId
+        return 0
     try:
       if not db.exists(T = Completion, cond = "id=?", params = $result):
         showError(message = "The completion with the Id: " & $result &
             " doesn't exists.", db = db)
-        return 0.DatabaseId
+        return 0
     except:
       showError(message = "Can't find the completion in database. Reason: ",
           e = getCurrentException(), db = db)
-      return 0.DatabaseId
+      return 0
 
 proc editCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [ReadDbEffect, ReadIOEffect, WriteIOEffect, WriteDbEffect,
@@ -455,8 +454,8 @@ proc editCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 3
     db != nil
   body:
-    let id: DatabaseId = getCompletionId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getCompletionId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     var completion: Completion = newCompletion()
     try:
@@ -600,8 +599,8 @@ proc deleteCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.startsWith(prefix = "delete")
     db != nil
   body:
-    let id: DatabaseId = getCompletionId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getCompletionId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     try:
       var completion: Completion = newCompletion()
@@ -631,8 +630,8 @@ proc showCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.startsWith(prefix = "show")
     db != nil
   body:
-    let id: DatabaseId = getCompletionId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getCompletionId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     var completion: Completion = newCompletion()
     try:
@@ -682,8 +681,8 @@ proc exportCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     if args.len < 3:
       return showError(message = "Enter the ID of the completion to export and the name of the file where it will be saved.", db = db)
     let
-      id: DatabaseId = try:
-          args[1].parseInt.DatabaseId
+      id: Natural = try:
+          args[1].parseInt
         except:
           return showError(message = "The Id of the completion must be a positive number.", db = db)
       fileName: string = args[2 .. ^1].join(sep = " ")

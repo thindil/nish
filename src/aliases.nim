@@ -32,8 +32,8 @@ import std/[os, parseopt, strutils, tables]
 import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, directorypath, help, input,
-    options, output, resultcode, variables, theme
+import commandslist, constants, directorypath, help, input, options, output,
+    resultcode, variables, theme
 
 const
   aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]
@@ -190,7 +190,7 @@ proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
     Alias(name: name, path: path, commands: commands, description: description,
         recursive: recursive, output: output)
 
-proc getAliasId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
+proc getAliasId(arguments; db): Natural {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the alias. If the user didn't enter the ID, show the list of
@@ -206,7 +206,7 @@ proc getAliasId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     db != nil
     arguments.len > 0
   body:
-    result = 0.DatabaseId
+    result = 0
     var
       alias: Alias = newAlias()
       actionName: string = ""
@@ -224,22 +224,22 @@ proc getAliasId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
       askForName[Alias](db = db, action = actionName & " an alias",
           namesType = "alias", name = alias)
       if alias.description.len == 0:
-        return 0.DatabaseId
-      return alias.id.DatabaseId
+        return 0
+      return alias.id
     result = try:
-        parseInt(s = $arguments[argumentsLen - 1 .. ^1]).DatabaseId
+        parseInt(s = $arguments[argumentsLen - 1 .. ^1])
       except ValueError:
         showError(message = "The Id of the alias must be a positive number.", db = db)
-        return 0.DatabaseId
+        return 0
     try:
       if not db.exists(T = Alias, cond = "id=?", params = $result):
         showError(message = "The alias with the Id: " & $result &
             " doesn't exists.", db = db)
-        return 0.DatabaseId
+        return 0
     except:
       showError(message = "Can't find the alias in database. Reason: ",
           e = getCurrentException(), db = db)
-      return 0.DatabaseId
+      return 0
 
 proc deleteAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
@@ -256,8 +256,8 @@ proc deleteAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     arguments.startsWith(prefix = "delete")
     db != nil
   body:
-    let id: DatabaseId = getAliasId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getAliasId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     try:
       var alias: Alias = newAlias()
@@ -289,8 +289,8 @@ proc showAlias(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.startsWith(prefix = "show")
     db != nil
   body:
-    let id: DatabaseId = getAliasId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getAliasId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     var alias: Alias = newAlias()
     try:
@@ -478,8 +478,8 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 3
     db != nil
   body:
-    let id: DatabaseId = getAliasId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getAliasId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     var alias: Alias = newAlias()
     try:

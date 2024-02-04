@@ -33,8 +33,7 @@ import std/[os, osproc, parseopt, streams, strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, help, input, options,
-    output, resultcode, theme
+import commandslist, constants, help, input, options, output, resultcode, theme
 
 const
   minApiVersion: float = 0.2
@@ -48,7 +47,7 @@ const
 type
   PluginData = object
     ## Store information about the shell's plugin
-    path: string    ## Full path to the selected plugin
+    path: string     ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
   PluginResult* = tuple [code: ResultCode,
       answer: string] ## Store the result of the plugin's API command
@@ -293,8 +292,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             showError(message = "Insufficient arguments for replaceCommand.", db = db)
             return false
           try:
-            replaceCommand(name = options[0], command = nil, commands = commands,
-                plugin = pluginPath, db = db)
+            replaceCommand(name = options[0], command = nil,
+                commands = commands, plugin = pluginPath, db = db)
           except CommandsListError:
             showError(message = "Can't replace command '" & options[0] &
                 "'. Reason: " & getCurrentExceptionMsg(), db = db)
@@ -509,7 +508,7 @@ proc addPlugin(db; arguments; commands): ResultCode {.sideEffect,
         "' added as a plugin to the shell.", color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc getPluginId(arguments; db): DatabaseId {.sideEffect, raises: [],
+proc getPluginId(arguments; db): Natural {.sideEffect, raises: [],
     tags: [WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the plugin. If the user didn't enter the ID, show the list of
@@ -525,7 +524,7 @@ proc getPluginId(arguments; db): DatabaseId {.sideEffect, raises: [],
     db != nil
     arguments.len > 0
   body:
-    result = 0.DatabaseId
+    result = 0
     var
       plugin: Plugin = newPlugin()
       actionName: string = ""
@@ -546,22 +545,22 @@ proc getPluginId(arguments; db): DatabaseId {.sideEffect, raises: [],
       askForName[Plugin](db = db, action = actionName & " a plugin",
             namesType = "plugin", name = plugin)
       if plugin.location.len == 0:
-        return 0.DatabaseId
-      return plugin.id.DatabaseId
+        return 0
+      return plugin.id
     result = try:
-        parseInt(s = $arguments[argumentsLen - 1 .. ^1]).DatabaseId
+        parseInt(s = $arguments[argumentsLen - 1 .. ^1])
       except ValueError:
         showError(message = "The Id of the plugin must be a positive number.", db = db)
-        return 0.DatabaseId
+        return 0
     try:
       if not db.exists(T = Plugin, cond = "id=?", params = $result):
         showError(message = "The plugin with the Id: " & $result &
             " doesn't exists.", db = db)
-        return 0.DatabaseId
+        return 0
     except:
       showError(message = "Can't find the plugin in database. Reason: ",
           e = getCurrentException(), db = db)
-      return 0.DatabaseId
+      return 0
 
 proc removePlugin(db; arguments; commands): ResultCode {.sideEffect,
     raises: [], tags: [WriteDbEffect, ReadDbEffect, ExecIOEffect, ReadEnvEffect,
@@ -578,8 +577,8 @@ proc removePlugin(db; arguments; commands): ResultCode {.sideEffect,
     db != nil
     arguments.len > 0
   body:
-    let id: DatabaseId = getPluginId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getPluginId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     try:
       var plugin: Plugin = newPlugin()
@@ -622,9 +621,9 @@ proc togglePlugin(db; arguments; disable: bool = true;
     arguments.len > 0
   body:
     let
-      id: DatabaseId = getPluginId(arguments = arguments, db = db)
+      id: Natural = getPluginId(arguments = arguments, db = db)
       actionName: string = (if disable: "disable" else: "enable")
-    if id.Natural == 0:
+    if id == 0:
       return QuitFailure.ResultCode
     try:
       var plugin: Plugin = newPlugin()
@@ -755,8 +754,8 @@ proc showPlugin(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     arguments.len > 0
     db != nil
   body:
-    let id: DatabaseId = getPluginId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getPluginId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     try:
       var plugin: Plugin = newPlugin()

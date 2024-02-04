@@ -33,8 +33,7 @@ import std/[os, strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, databaseid, directorypath, help, input,
-    output, resultcode, theme
+import commandslist, constants, directorypath, help, input, output, resultcode, theme
 
 const
   variableNameLength*: Positive = maxNameLength
@@ -318,7 +317,7 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc getVariableId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
+proc getVariableId(arguments; db): Natural {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadDbEffect, ReadIOEffect, RootEffect],
     contractual.} =
   ## Get the ID of the variable. If the user didn't enter the ID, show the list of
@@ -334,7 +333,7 @@ proc getVariableId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
     db != nil
     arguments.len > 0
   body:
-    result = 0.DatabaseId
+    result = 0
     var
       variable: Variable = newVariable()
       actionName: string = ""
@@ -352,22 +351,22 @@ proc getVariableId(arguments; db): DatabaseId {.sideEffect, raises: [], tags: [
       askForName[Variable](db = db, action = actionName & " a variable",
             namesType = "variable", name = variable)
       if variable.description.len == 0:
-        return 0.DatabaseId
-      return variable.id.DatabaseId
+        return 0
+      return variable.id
     result = try:
-        parseInt(s = $arguments[argumentsLen - 1 .. ^1]).DatabaseId
+        parseInt(s = $arguments[argumentsLen - 1 .. ^1])
       except ValueError:
         showError(message = "The Id of the variable must be a positive number.", db = db)
-        return 0.DatabaseId
+        return 0
     try:
       if not db.exists(T = Variable, cond = "id=?", params = $result):
         showError(message = "The variable with the Id: " & $result &
             " doesn't exists.", db = db)
-        return 0.DatabaseId
+        return 0
     except:
       showError(message = "Can't find the variable in database. Reason: ",
           e = getCurrentException(), db = db)
-      return 0.DatabaseId
+      return 0
 
 proc deleteVariable(arguments; db): ResultCode {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, WriteDbEffect,
@@ -383,8 +382,8 @@ proc deleteVariable(arguments; db): ResultCode {.sideEffect, raises: [],
     arguments.len > 0
     db != nil
   body:
-    let id: DatabaseId = getVariableId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getVariableId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     try:
       var variable: Variable = newVariable()
@@ -562,8 +561,8 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.len > 0
     db != nil
   body:
-    let id: DatabaseId = getVariableId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getVariableId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     var variable: Variable = newVariable()
     try:
@@ -718,8 +717,8 @@ proc showVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     arguments.startsWith(prefix = "show")
     db != nil
   body:
-    let id: DatabaseId = getVariableId(arguments = arguments, db = db)
-    if id.Natural == 0:
+    let id: Natural = getVariableId(arguments = arguments, db = db)
+    if id == 0:
       return QuitFailure.ResultCode
     var variable: Variable = newVariable()
     try:
