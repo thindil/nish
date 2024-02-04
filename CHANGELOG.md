@@ -66,6 +66,7 @@ of the shell.
 - Sending the shell's alias' output to the standard error output
 - Loading the shell's plugins at start of the shell
 - Disabling the shell's plugins
+- Crash when there is no more entries in the shell's history
 
 ## [0.6.0] - 2023-11-13
 
