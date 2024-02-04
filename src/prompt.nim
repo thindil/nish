@@ -27,14 +27,14 @@
 ## prompt or getting formatted directory name
 
 # Standard library imports
-import std/[os, osproc, strutils]
+import std/[os, osproc, paths, strutils]
 # External modules imports
 import contracts, termstyle
 import norm/sqlite
 # Internal imports
-import constants, directorypath, options, output, resultcode, theme
+import constants, options, output, resultcode, theme
 
-proc getFormattedDir*(): DirectoryPath {.sideEffect, raises: [], tags: [
+proc getFormattedDir*(): Path {.sideEffect, raises: [], tags: [
     ReadIOEffect], contractual.} =
   ## Get the formatted current directory path, replace home directory with
   ## tilde, etc.
@@ -42,16 +42,16 @@ proc getFormattedDir*(): DirectoryPath {.sideEffect, raises: [], tags: [
   ## Returns the formatted path to the current directory
   body:
     result = try:
-      getCurrentDirectory().DirectoryPath
+      getCurrentDirectory().Path
     except OSError:
-      "[unknown dir]".DirectoryPath
-    let homeDirectory: DirectoryPath = getHomeDir().DirectoryPath
-    if endsWith(s = result & "/", suffix = $homeDirectory):
-      return "~".DirectoryPath
-    let homeIndex: ExtendedNatural = result.find(sub = homeDirectory)
+      "[unknown dir]".Path
+    let homeDirectory: Path = getHomeDir().Path
+    if endsWith(s = result.string & "/", suffix = homeDirectory.string):
+      return "~".Path
+    let homeIndex: ExtendedNatural = result.string.find(sub = homeDirectory.string)
     if homeIndex > -1:
       return ("~/" & result.string[homeIndex +
-          homeDirectory.len..^1]).DirectoryPath
+          homeDirectory.string.len..^1]).Path
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode; db: DbConn): Natural {.sideEffect, raises: [],
@@ -101,16 +101,16 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         except IOError:
           discard
       result = 3 + resultString.len
-    let currentDirectory: DirectoryPath = getFormattedDir()
+    let currentDirectory: Path = getFormattedDir()
     try:
-      stdout.write(s = style(ss = $currentDirectory, style = getColor(db = db,
+      stdout.write(s = style(ss = currentDirectory.string, style = getColor(db = db,
           name = promptColor)))
     except ValueError, IOError:
       try:
-        stdout.write(s = $currentDirectory)
+        stdout.write(s = currentDirectory.string)
       except IOError:
         discard
-    result += currentDirectory.len
+    result += currentDirectory.string.len
     try:
       stdout.write(s = style(ss = "# ", style = getColor(db = db,
           name = promptColor)))

@@ -27,17 +27,16 @@
 ## and stopping the shell and the main loop of the shell itself.
 
 # Standard library imports
-import std/[os, osproc, parseopt, strutils, tables, terminal, unicode]
+import std/[os, osproc, paths, parseopt, strutils, tables, terminal, unicode]
 when compileOption(option = "profiler"):
   import nimprof
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/sqlite
 # Internal imports
-import aliases, commands, commandslist, completion, constants, db,
-    directorypath, help, highlight, history, input, logger, options,
-    output, plugins, prompt, resultcode, suggestion, theme, themeinit, title,
-    variables
+import aliases, commands, commandslist, completion, constants, db, help,
+    highlight, history, input, logger, options, output, plugins, prompt,
+    resultcode, suggestion, theme, themeinit, title, variables
 
 proc showCommandLineHelp*() {.sideEffect, raises: [], tags: [WriteIOEffect],
     contractual.} =
@@ -111,7 +110,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         resultCode = returnCode, db = db)
     # Get the user input and parse it
     let highlightEnabled: bool =
-          getOption(optionName = "colorSyntax", db = db, defaultValue = "true") == "true"
+      getOption(optionName = "colorSyntax", db = db, defaultValue = "true") == "true"
     var
       inputChar: char = '\0'
       completions: seq[string] = @[]
@@ -176,8 +175,8 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         else:
           try:
             let columnsAmount: int = try:
-                parseInt(s = $getOption(optionName = "completionColumns", db = db,
-                    defaultValue = "5"))
+                parseInt(s = $getOption(optionName = "completionColumns",
+                    db = db, defaultValue = "5"))
               except ValueError:
                 5
             # If Tab pressed the first time, show the list of completion
@@ -400,8 +399,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
       returnCode: ResultCode = QuitSuccess.ResultCode
       aliases: ref OrderedTable[AliasName, int] = newOrderedTable[AliasName,
           int]()
-      dbPath: DirectoryPath = (getConfigDir() & DirSep & "nish" &
-          DirSep & "nish.db").DirectoryPath
+      dbPath: Path = (getConfigDir() & DirSep & "nish" &
+          DirSep & "nish.db").Path
       cursorPosition: Natural = 0
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
       lastCommand: string = ""
@@ -437,7 +436,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         of "v", "version":
           showProgramVersion()
         of "db":
-          dbPath = options.val.DirectoryPath
+          dbPath = options.val.Path
       else:
         discard
 
@@ -476,7 +475,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     initPlugins(db = db, commands = commands)
 
     # Set the title of the terminal to current directory
-    setTitle(title = $getFormattedDir(), db = db)
+    setTitle(title = getFormattedDir().string, db = db)
 
     # Start the shell
     while true:
@@ -510,8 +509,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           commandName = userInput.key
         # Set the command arguments
         var arguments: UserInput =
-            getArguments(
-                userInput = userInput, conjCommands = conjCommands)
+          getArguments(
+              userInput = userInput, conjCommands = conjCommands)
         inputString = join(a = userInput.remainingArgs, sep = " ")
         # Set a terminal title to current command
         setTitle(title = commandName & " " & $arguments, db = db)
@@ -540,7 +539,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           closeDb(returnCode = returnCode, db = db)
         # Change current directory
         of "cd":
-          returnCode = cdCommand(newDirectory = ($arguments).DirectoryPath,
+          returnCode = cdCommand(newDirectory = ($arguments).Path,
               aliases = aliases, db = db)
         # Set the environment variable
         of "set":
@@ -612,7 +611,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         historyIndex = updateHistory(commandToAdd = lastCommand, db = db,
             returnCode = returnCode)
         # Restore the terminal title
-        setTitle(title = $getFormattedDir(), db = db)
+        setTitle(title = getFormattedDir().string, db = db)
         # Execute plugins with postcommand hook
         try:
           var plugins: seq[Plugin] = @[newPlugin()]
