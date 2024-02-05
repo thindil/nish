@@ -26,7 +26,7 @@
 ## This module contains constants and variables types used by the shell's code
 
 # Standard library imports
-import std/os
+import std/[dirs, os, paths]
 # External modules imports
 import contracts
 
@@ -43,7 +43,7 @@ const
   version*: string = "0.7.0"
     ## The version of the shell
 
-proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
+proc getCurrentDirectory*(): Path {.raises: [], tags: [ReadIOEffect],
     contractual.} =
   ## Get the current directory. Exception free version of getCurrentDir
   ##
@@ -51,14 +51,14 @@ proc getCurrentDirectory*(): string {.raises: [], tags: [ReadIOEffect],
   ## deleted by other program, returns the home directory of the user.
   body:
     try:
-      result = getCurrentDir()
+      result = paths.getCurrentDir()
     except OSError:
-      result = getHomeDir()
+      result = getHomeDir().Path
       try:
         setCurrentDir(newDir = result)
       except OSError:
         try:
-          result = getAppDir()
+          result = getAppDir().Path
           setCurrentDir(newDir = result)
         except OSError:
           discard
