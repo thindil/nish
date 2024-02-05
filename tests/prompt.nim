@@ -10,7 +10,7 @@ suite "Unit tests for prompt module":
 
   test "Getting formated directory name":
     check:
-      getFormattedDir().len > 0
+      getFormattedDir().string.len > 0
 
   test "Showing the shell's prompt":
     showPrompt(true, "ls -a", QuitSuccess.ResultCode, db)

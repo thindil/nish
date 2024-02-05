@@ -46,7 +46,7 @@ suite "Unit tests for aliases module":
       db.count(Alias) == 2
 
   test "Setting the shell's aliases in the current directory":
-    myaliases.setAliases(getCurrentDir().DirectoryPath, db)
+    myaliases.setAliases(paths.getCurrentDir(), db)
     checkpoint "Checking an existing alias"
     check:
       execAlias("", "tests", myaliases, db) == QuitSuccess

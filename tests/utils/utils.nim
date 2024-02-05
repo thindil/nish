@@ -1,9 +1,10 @@
-import ../../src/[aliases, constants, db, directorypath]
+import std/paths
+import ../../src/[aliases, db, types]
 import norm/sqlite
 import unittest2
 
 proc initDb*(dbName: string): DbConn =
-  result = startDb(dbName.DirectoryPath)
+  result = startDb(dbName.Path)
   require:
     result != nil
 

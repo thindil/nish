@@ -15,18 +15,18 @@ suite "Unit tests for commands module":
   test "Testing cd command":
     checkpoint "Entering an existing directory"
     check:
-      cdCommand("/".DirectoryPath, myaliases, db) == QuitSuccess
+      cdCommand("/".Path, myaliases, db) == QuitSuccess
     checkpoint "Trying to enter a non-existing directory"
     check:
-      cdCommand("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure
+      cdCommand("/adfwerewtr".Path, myaliases, db) == QuitFailure
 
   test "Testing changing the current directory of the shell":
     checkpoint "Changing the current directory"
     check:
-      changeDirectory("..".DirectoryPath, myaliases, db) == QuitSuccess
+      changeDirectory("..".Path, myaliases, db) == QuitSuccess
     checkpoint "Changing the current directory to non-existing directory"
     check:
-      changeDirectory("/adfwerewtr".DirectoryPath, myaliases, db) == QuitFailure
+      changeDirectory("/adfwerewtr".Path, myaliases, db) == QuitFailure
 
   test "Executing a command":
     var

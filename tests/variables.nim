@@ -27,11 +27,11 @@ suite "Unit tests for variable modules":
 
   test "Building a SQL query":
     check:
-      buildQuery("/".DirectoryPath, "name") ==
+      buildQuery("/".Path, "name") ==
       "SELECT name FROM variables WHERE path='/' ORDER BY id ASC"
 
   test "Setting variables in the selected directory":
-    setVariables("/home".DirectoryPath, db)
+    setVariables("/home".Path, db)
 
   test "Getting an environment variable":
     check:
