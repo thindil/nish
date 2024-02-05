@@ -32,7 +32,7 @@ import std/[strutils, tables, terminal]
 import contracts, nancy, termstyle
 import norm/sqlite
 # Internal imports
-import constants, logger, resultcode, theme
+import logger, resultcode, theme, types
 
 type OutputMessage* = string
   ## Used to store message to show to the user

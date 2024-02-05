@@ -33,7 +33,7 @@ import std/[os, osproc, parseopt, streams, strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, help, input, options, output, resultcode, theme
+import commandslist, constants, help, input, options, output, resultcode, theme, types
 
 const
   minApiVersion: float = 0.2

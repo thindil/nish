@@ -33,7 +33,7 @@ import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, help, input, options, output, resultcode,
-    variables, theme
+    variables, theme, types
 
 const
   aliasesCommands*: seq[string] = @["list", "delete", "show", "add", "edit"]

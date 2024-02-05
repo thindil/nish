@@ -33,7 +33,7 @@ import std/[os, paths, strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, help, input, output, resultcode, theme
+import commandslist, constants, help, input, output, resultcode, theme, types
 
 const
   variableNameLength*: Positive = maxNameLength

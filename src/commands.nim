@@ -32,7 +32,7 @@ import std/[os, paths, tables, unicode]
 import contracts
 import norm/sqlite
 # Internal imports
-import aliases, constants, commandslist, output, plugins, resultcode, variables
+import aliases, constants, commandslist, output, plugins, resultcode, variables, types
 
 using
   db: DbConn # Connection to the shell's database

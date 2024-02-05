@@ -36,7 +36,7 @@ import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db, help,
     highlight, history, input, logger, options, output, plugins, prompt,
-    resultcode, suggestion, theme, themeinit, title, variables
+    resultcode, suggestion, theme, themeinit, title, types, variables
 
 proc showCommandLineHelp*() {.sideEffect, raises: [], tags: [WriteIOEffect],
     contractual.} =

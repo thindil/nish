@@ -33,7 +33,7 @@ import std/[os, strutils, times]
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import commandslist, constants, help, output, options, resultcode, theme
+import commandslist, constants, help, output, options, resultcode, theme, types
 
 const historyCommands: seq[string] = @["clear", "list", "find"]
   ## The list of available subcommands for command history

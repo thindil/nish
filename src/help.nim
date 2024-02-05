@@ -32,7 +32,7 @@ import std/[algorithm, os, parsecfg, strutils, streams]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import commandslist, helpcontent, constants, output, resultcode, theme
+import commandslist, helpcontent, output, resultcode, theme, types
 
 using db: DbConn # Connection to the shell's database
 

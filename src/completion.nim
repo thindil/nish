@@ -32,7 +32,7 @@ import std/[os, parsecfg, strutils, tables]
 import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, help, input, options, output, resultcode, theme
+import commandslist, constants, help, input, options, output, resultcode, theme, types
 
 type DirCompletionType = enum
   ## Used to set the type of completion for directories and files
@@ -369,7 +369,7 @@ proc addCompletion(db): ResultCode {.sideEffect, raises: [],
         of 'u':
           custom
         else:
-        none), cValues = $values)
+      none), cValues = $values)
     # Check if completion with the same parameters exists in the database
     try:
       if db.exists(T = Completion, cond = "command=?",

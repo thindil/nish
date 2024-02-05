@@ -32,7 +32,7 @@ import std/[parseopt, strutils, terminal, unicode]
 import contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import constants, output, theme
+import constants, output, theme, types
 
 type MaxInputLength* = range[1..maxInputLength]
   ## Used to store maximum allowed length of the user input
