@@ -28,7 +28,7 @@
 ## in.
 
 # Standard library imports
-import std/[os, strutils, times]
+import std/[os, paths, strutils, times]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
@@ -140,26 +140,26 @@ proc updateHistory*(commandToAdd: string; db;
         return
     try:
       # Update history if there is the command in the history in the same directory
-      let currentDir: string = getCurrentDirectory()
+      let currentDir: Path = getCurrentDirectory()
       var entry: HistoryEntry = newHistoryEntry()
       # If the history entry exists, update the amount and time
       if db.exists(T = HistoryEntry, cond = "command=? AND path=?", params = [
-          commandToAdd.dbValue, currentDir.dbValue]):
+          commandToAdd.dbValue, currentDir.string.dbValue]):
         db.select(obj = entry, cond = "command=? AND path=?", params = [
-            commandToAdd.dbValue, currentDir.dbValue])
+            commandToAdd.dbValue, currentDir.string.dbValue])
         entry.amount.inc
         entry.lastUsed = now()
         db.update(obj = entry)
       elif db.exists(T = HistoryEntry, cond = "command=?",
           params = commandToAdd):
         db.select(obj = entry, cond = "command=?", params = commandToAdd)
-        entry.path = currentDir
+        entry.path = currentDir.string
         entry.amount.inc
         entry.lastUsed = now()
         db.update(obj = entry)
       # Add the new entry to the shell's history
       else:
-        entry = newHistoryEntry(command = commandToAdd, path = currentDir)
+        entry = newHistoryEntry(command = commandToAdd, path = currentDir.string)
         db.insert(obj = entry)
         result.inc
     except:
@@ -190,10 +190,10 @@ proc getHistory*(historyIndex: HistoryRange; db;
       # Get the command based on the historyIndex parameter
       if searchFor.len == 0:
         if db.exists(T = HistoryEntry, cond = "path=?",
-            params = getCurrentDirectory()):
+            params = getCurrentDirectory().string):
           try:
             db.rawSelect(qry = "SELECT command FROM history WHERE path=? ORDER BY lastused DESC, amount ASC LIMIT 1 OFFSET ?",
-                obj = entry, params = [getCurrentDirectory().dbValue, ($(
+                obj = entry, params = [getCurrentDirectory().string.dbValue, ($(
                 historyLength(db = db) - historyIndex)).dbValue])
           except NotFoundError:
             return searchFor
@@ -203,10 +203,10 @@ proc getHistory*(historyIndex: HistoryRange; db;
         return entry.command
       # Get the command based on the searchFor parameter
       if db.exists(T = HistoryEntry, cond = "command LIKE ? AND path=?",
-          params = [(searchFor & "%").dbValue, getCurrentDirectory().dbValue]):
+          params = [(searchFor & "%").dbValue, getCurrentDirectory().string.dbValue]):
         db.rawSelect(qry = "SELECT command FROM history WHERE command LIKE ? AND path=? ORDER BY lastused DESC, amount DESC",
             obj = entry, params = [(searchFor & "%").dbValue,
-            getCurrentDirectory().dbValue])
+            getCurrentDirectory().string.dbValue])
       if entry.command.len == 0:
         if db.exists(T = HistoryEntry, cond = "command LIKE ?", params = (
             searchFor & "%").dbValue):

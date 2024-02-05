@@ -533,7 +533,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         of "exit":
           historyIndex = updateHistory(commandToAdd = "exit", db = db)
           try:
-            setTitle(title = getCurrentDirectory(), db = db)
+            setTitle(title = getCurrentDirectory().string, db = db)
           except OSError:
             setTitle(title = "nish", db = db)
           closeDb(returnCode = returnCode, db = db)

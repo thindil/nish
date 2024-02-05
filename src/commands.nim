@@ -65,7 +65,7 @@ proc changeDirectory(newDirectory; aliases; db): ResultCode {.sideEffect,
             "' doesn't exist.", db = db)
       path = expandFilename(filename = path.string).Path
       setVariables(newDirectory = path, db = db,
-          oldDirectory = getCurrentDirectory().Path)
+          oldDirectory = getCurrentDirectory())
       setCurrentDir(newDir = path.string)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess.ResultCode

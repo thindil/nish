@@ -266,7 +266,7 @@ proc deleteAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't delete alias from database. Reason: ",
           e = getCurrentException(), db = db)
     try:
-      aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
+      aliases.setAliases(directory = getCurrentDirectory(), db = db)
     except OSError:
       return showError(message = "Can't delete alias, setting a new aliases not work. Reason: ",
           e = getCurrentException(), db = db)
@@ -454,7 +454,7 @@ proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     # Refresh the list of available aliases
     try:
-      aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
+      aliases.setAliases(directory = getCurrentDirectory(), db = db)
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException(), db = db)
@@ -595,7 +595,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     # Refresh the list of available aliases
     try:
-      aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
+      aliases.setAliases(directory = getCurrentDirectory(), db = db)
     except OSError:
       return showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException(), db = db)
@@ -625,7 +625,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
       aliasIndex: string =
         aliasId
       currentDirectory: Path = try:
-          getCurrentDirectory().Path
+          getCurrentDirectory()
       except OSError:
         return showError(message = "Can't get current directory. Reason: ",
             e = getCurrentException(), db = db)
@@ -675,7 +675,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
           return showError(message = "Can't open output file. Reason: ",
               e = getCurrentException(), db = db)
     # Execute the selected alias
-    var workingDir: string = ""
+    var workingDir: Path = "".Path
     while alias.commands.len > 0:
       var
         conjCommands: bool = false
@@ -690,9 +690,9 @@ proc execAlias*(arguments; aliasId: string; aliases;
         if command[0..2] == "cd ":
           workingDir = getCurrentDirectory()
           setCurrentDir(newDir = $command[3..^1])
-          setVariables(newDirectory = getCurrentDirectory().Path,
-              db = db, oldDirectory = workingDir.Path)
-          aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
+          setVariables(newDirectory = getCurrentDirectory(),
+              db = db, oldDirectory = workingDir)
+          aliases.setAliases(directory = getCurrentDirectory(), db = db)
           continue
         let
           spaceIndex: int = command.find(sub = ' ')
@@ -714,10 +714,10 @@ proc execAlias*(arguments; aliasId: string; aliases;
     if outputFile != nil:
       outputFile.close
     # Restore old variables and aliases
-    if workingDir.len > 0:
+    if workingDir.string.len > 0:
       try:
         setVariables(newDirectory = currentDirectory, db = db,
-            oldDirectory = getCurrentDirectory().Path)
+            oldDirectory = getCurrentDirectory())
         setCurrentDir(newDir = currentDirectory.string)
         aliases.setAliases(directory = currentDirectory, db = db)
       except OSError:
@@ -785,7 +785,7 @@ proc initAliases*(db; aliases: ref AliasesList;
           e = getCurrentException(), db = db)
     # Set the shell's aliases for the current directory
     try:
-      aliases.setAliases(directory = getCurrentDirectory().Path, db = db)
+      aliases.setAliases(directory = getCurrentDirectory(), db = db)
     except OSError:
       showError(message = "Can't initialize aliases. Reason: ",
           e = getCurrentException(), db = db)
