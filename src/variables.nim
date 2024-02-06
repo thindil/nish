@@ -101,13 +101,13 @@ proc buildQuery(directory: Path; fields: string = "";
     directory.string.len > 0
   body:
     result = (if fields.len > 0: "SELECT " & fields &
-        " FROM variables WHERE " else: "") & "path='" & directory.string & "'"
+        " FROM variables WHERE " else: "") & "path='" & $directory & "'"
     var remainingDirectory: Path = parentDir(path = directory)
 
     # Construct SQL querry, search for variables also defined in parent directories
     # if they are recursive
-    while remainingDirectory.string != "":
-      result.add(y = " OR (path='" & remainingDirectory.string & "' AND recursive=1)")
+    while $remainingDirectory != "":
+      result.add(y = " OR (path='" & $remainingDirectory & "' AND recursive=1)")
       remainingDirectory = parentDir(path = remainingDirectory)
 
     # If optional arguments entered, add them to the query
@@ -459,14 +459,14 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       path = ($readInput(db = db)).Path
       if path.string.len == 0:
         showError(message = "Please enter a path for the alias.", db = db)
-      elif not dirExists(dir = path.string) and path.string != "exit":
+      elif not dirExists(dir = $path) and $path != "exit":
         path = "".Path
         showError(message = "Please enter a path to the existing directory", db = db)
       if path.string.len == 0:
         showFormPrompt(prompt = "Path", db = db)
-    if path.string == "exit":
+    if $path == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
-    variable.path = path.string
+    variable.path = $path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &
@@ -524,7 +524,7 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Check if variable with the same parameters exists in the database
     try:
       if db.exists(T = Variable, cond = "name=? AND path=? AND recursive=? AND value=?",
-          params = [($name).dbValue, path.string.dbValue, ($recursive).dbValue, (
+          params = [($name).dbValue, ($path).dbValue, ($recursive).dbValue, (
           $value).dbValue]):
         return showError(message = "There is a variable with the same name, path and value in the database.", db = db)
     except:
@@ -614,16 +614,16 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     var path: Path = "exit".Path
     while path.string.len > 0:
       path = ($readInput(db = db)).Path
-      if path.string.len > 0 and not dirExists(dir = path.string) and path.string != "exit":
+      if path.string.len > 0 and not dirExists(dir = $path) and $path != "exit":
         showError(message = "Please enter a path to the existing directory", db = db)
         showOutput(message = "Path: ", newLine = false, db = db)
       else:
         break
-    if path.string == "exit":
+    if $path == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
-    elif path.string == "":
+    elif $path == "":
       path = variable.path.Path
-    variable.path = path.string
+    variable.path = $path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &

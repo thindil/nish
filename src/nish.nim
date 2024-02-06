@@ -475,7 +475,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     initPlugins(db = db, commands = commands)
 
     # Set the title of the terminal to current directory
-    setTitle(title = getFormattedDir().string, db = db)
+    setTitle(title = $getFormattedDir(), db = db)
 
     # Start the shell
     while true:
@@ -533,7 +533,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         of "exit":
           historyIndex = updateHistory(commandToAdd = "exit", db = db)
           try:
-            setTitle(title = getCurrentDirectory().string, db = db)
+            setTitle(title = $getCurrentDirectory(), db = db)
           except OSError:
             setTitle(title = "nish", db = db)
           closeDb(returnCode = returnCode, db = db)
@@ -611,7 +611,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         historyIndex = updateHistory(commandToAdd = lastCommand, db = db,
             returnCode = returnCode)
         # Restore the terminal title
-        setTitle(title = getFormattedDir().string, db = db)
+        setTitle(title = $getFormattedDir(), db = db)
         # Execute plugins with postcommand hook
         try:
           var plugins: seq[Plugin] = @[newPlugin()]
