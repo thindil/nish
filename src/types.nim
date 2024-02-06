@@ -26,7 +26,7 @@
 ## This module contains types used by the shell's code
 
 # Standard library imports
-import std/tables
+import std/[paths, tables]
 # External modules imports
 import norm/[model, pragmas]
 
@@ -140,3 +140,6 @@ type
     value*: string
     varType*: VariableValType
     description*: string
+
+proc `$`*(path: Path): string =
+  return path.string
