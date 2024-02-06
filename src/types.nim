@@ -143,3 +143,6 @@ type
 
 proc `$`*(path: Path): string =
   return path.string
+
+proc len*(path: Path): Natural =
+  return ($path).len
