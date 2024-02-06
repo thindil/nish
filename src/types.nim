@@ -29,6 +29,7 @@
 import std/[paths, tables]
 # External modules imports
 import norm/[model, pragmas]
+import contracts
 
 type
   HelpEntry* {.tableName: "help".} = ref object of Model
@@ -141,18 +142,22 @@ type
     varType*: VariableValType
     description*: string
 
-proc `$`*(path: Path): string =
+proc `$`*(path: Path): string {.sideEffect, raises: [], tags: [],
+    contractual.} =
   ## Convert Path type to string.
   ##
   ## * path - the path variable which will be converted to string
   ##
   ## The parameter path converted to a string
-  return path.string
+  body:
+    return path.string
 
-proc len*(path: Path): Natural =
+proc len*(path: Path): Natural {.sideEffect, raises: [], tags: [],
+    contractual.} =
   ## Get the length of the path variable
   ##
   ## * path - the path variable which length will be count
   ##
   ## The lenght of the parameter path
-  return ($path).len
+  body:
+    return ($path).len
