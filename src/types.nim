@@ -142,7 +142,17 @@ type
     description*: string
 
 proc `$`*(path: Path): string =
+  ## Convert Path type to string.
+  ##
+  ## * path - the path variable which will be converted to string
+  ##
+  ## The parameter path converted to a string
   return path.string
 
 proc len*(path: Path): Natural =
+  ## Get the length of the path variable
+  ##
+  ## * path - the path variable which length will be count
+  ##
+  ## The lenght of the parameter path
   return ($path).len
