@@ -51,7 +51,7 @@ type
     command*: string
     lastUsed: DateTime
     amount: int
-    path: string
+    path: Path
 
 using
   db: DbConn # Connection to the shell's database
@@ -77,7 +77,7 @@ proc historyLength*(db): HistoryRange {.sideEffect, raises: [], tags: [
       return HistoryRange.low
 
 proc newHistoryEntry(command: string = ""; lastUsed: DateTime = now();
-    amount: Positive = 1; path: string = ""): HistoryEntry {.raises: [], tags: [],
+    amount: Positive = 1; path: Path = "".Path): HistoryEntry {.raises: [], tags: [],
     contractual.} =
   ## Create a new data structure for the shell's commands' history entry.
   ##
@@ -153,13 +153,13 @@ proc updateHistory*(commandToAdd: string; db;
       elif db.exists(T = HistoryEntry, cond = "command=?",
           params = commandToAdd):
         db.select(obj = entry, cond = "command=?", params = commandToAdd)
-        entry.path = $currentDir
+        entry.path = currentDir
         entry.amount.inc
         entry.lastUsed = now()
         db.update(obj = entry)
       # Add the new entry to the shell's history
       else:
-        entry = newHistoryEntry(command = commandToAdd, path = $currentDir)
+        entry = newHistoryEntry(command = commandToAdd, path = currentDir)
         db.insert(obj = entry)
         result.inc
     except:
