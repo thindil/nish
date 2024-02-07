@@ -98,7 +98,7 @@ proc buildQuery(directory: Path; fields: string = "";
   ##
   ## Returns the string with database's query for the selected directory and fields
   require:
-    directory.string.len > 0
+    directory.len > 0
   body:
     result = (if fields.len > 0: "SELECT " & fields &
         " FROM variables WHERE " else: "") & "path='" & $directory & "'"
@@ -147,13 +147,13 @@ proc setVariables*(newDirectory: Path; db;
   ## * oldDirectory - the old directory in which environment variables will be
   ##                  removed. Can be empty. Default value is empty
   require:
-    newDirectory.string.len > 0
+    newDirectory.len > 0
     db != nil
   body:
     var skipped: seq[int64] = @[]
 
     # Remove the old environment variables if needed
-    if oldDirectory.string.len > 0:
+    if oldDirectory.len > 0:
       try:
         var variables: seq[Variable] = @[newVariable()]
         db.select(objs = variables, cond = buildQuery(directory = oldDirectory))
@@ -455,14 +455,14 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         "'. Can't be empty and must be a path to the existing directory.: ", db = db)
     showFormPrompt(prompt = "Path", db = db)
     var path: Path = "".Path
-    while path.string.len == 0:
+    while path.len == 0:
       path = ($readInput(db = db)).Path
-      if path.string.len == 0:
+      if path.len == 0:
         showError(message = "Please enter a path for the alias.", db = db)
       elif not dirExists(dir = $path) and $path != "exit":
         path = "".Path
         showError(message = "Please enter a path to the existing directory", db = db)
-      if path.string.len == 0:
+      if path.len == 0:
         showFormPrompt(prompt = "Path", db = db)
     if $path == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
@@ -612,9 +612,9 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
             "'. Must be a path to the existing directory.:", db = db)
     showOutput(message = "Path: ", newLine = false, db = db)
     var path: Path = "exit".Path
-    while path.string.len > 0:
+    while path.len > 0:
       path = ($readInput(db = db)).Path
-      if path.string.len > 0 and not dirExists(dir = $path) and $path != "exit":
+      if path.len > 0 and not dirExists(dir = $path) and $path != "exit":
         showError(message = "Please enter a path to the existing directory", db = db)
         showOutput(message = "Path: ", newLine = false, db = db)
       else:

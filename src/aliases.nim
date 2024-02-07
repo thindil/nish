@@ -59,7 +59,7 @@ proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
   ##
   ## Returns the parameter aliases with the new list of available aliases
   require:
-    directory.string.len > 0
+    directory.len > 0
     db != nil
   body:
     aliases.clear
@@ -69,7 +69,7 @@ proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
       remainingDirectory: Path = parentDir(path = directory)
     # Construct SQL querry, search for aliases also defined in parent directories
     # if they are recursive
-    while remainingDirectory.string.len > 0:
+    while remainingDirectory.len > 0:
       dbQuery.add(y = " OR (path='" & $remainingDirectory & "' AND recursive=1)")
       remainingDirectory = parentDir(path = remainingDirectory)
     dbQuery.add(y = " ORDER BY id ASC")
@@ -373,14 +373,14 @@ proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
         "'. Can't be empty and must be a path to the existing directory.: ", db = db)
     showFormPrompt(prompt = "Path", db = db)
     var path: Path = "".Path
-    while path.string.len == 0:
+    while path.len == 0:
       path = ($readInput(db = db)).Path
-      if path.string.len == 0:
+      if path.len == 0:
         showError(message = "Please enter a path for the alias.", db = db)
       elif not dirExists(dir = $path) and $path != "exit":
         path = "".Path
         showError(message = "Please enter a path to the existing directory", db = db)
-      if path.string.len == 0:
+      if path.len == 0:
         showFormPrompt(prompt = "Path", db = db)
     if $path == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
@@ -524,7 +524,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         "'. Must be a path to the existing directory.", db = db)
     showFormPrompt(prompt = "Path", db = db)
     var path: Path = ($readInput(db = db)).Path
-    while path.string.len > 0 and ($path != "exit" and not dirExists(dir = $path)):
+    while path.len > 0 and ($path != "exit" and not dirExists(dir = $path)):
       showError(message = "Please enter a path to the existing directory", db = db)
       path = ($readInput(db = db)).Path
     if $path == "exit":
@@ -714,7 +714,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
     if outputFile != nil:
       outputFile.close
     # Restore old variables and aliases
-    if workingDir.string.len > 0:
+    if workingDir.len > 0:
       try:
         setVariables(newDirectory = currentDirectory, db = db,
             oldDirectory = getCurrentDirectory())

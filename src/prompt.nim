@@ -51,7 +51,7 @@ proc getFormattedDir*(): Path {.sideEffect, raises: [], tags: [
     let homeIndex: ExtendedNatural = result.string.find(sub = homeDirectory.string)
     if homeIndex > -1:
       return ("~/" & ($result)[homeIndex +
-          homeDirectory.string.len..^1]).Path
+          homeDirectory.len..^1]).Path
 
 proc showPrompt*(promptEnabled: bool; previousCommand: string;
     resultCode: ResultCode; db: DbConn): Natural {.sideEffect, raises: [],
@@ -110,7 +110,7 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
         stdout.write(s = $currentDirectory)
       except IOError:
         discard
-    result += currentDirectory.string.len
+    result += currentDirectory.len
     try:
       stdout.write(s = style(ss = "# ", style = getColor(db = db,
           name = promptColor)))

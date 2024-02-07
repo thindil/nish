@@ -75,7 +75,7 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
   ## Returns pointer to the database connection. If connection cannot be established,
   ## returns nil.
   require:
-    dbPath.string.len > 0
+    dbPath.len > 0
   body:
     try:
       discard existsOrCreateDir(dir = $parentDir(path = dbPath))
