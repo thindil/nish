@@ -28,7 +28,7 @@
 # Standard library imports
 import std/[paths, tables]
 # External modules imports
-import norm/[model, pragmas]
+import norm/[model, pragmas, sqlite]
 import contracts
 
 type
@@ -152,6 +152,8 @@ proc `$`*(path: Path): string {.sideEffect, raises: [], tags: [],
   body:
     return path.string
 
+# Procedures related to Path type
+
 proc len*(path: Path): Natural {.sideEffect, raises: [], tags: [],
     contractual.} =
   ## Get the length of the path variable
@@ -161,3 +163,37 @@ proc len*(path: Path): Natural {.sideEffect, raises: [], tags: [],
   ## The lenght of the parameter path
   body:
     return ($path).len
+
+proc dbType*(T: typedesc[Path]): string {.raises: [], tags: [],
+    contractual.} =
+  ## Set the type of field in the database
+  ##
+  ## * T - the type for which the field will be set
+  ##
+  ## Returns the type of the field in the database
+  body:
+    "TEXT"
+
+proc dbValue*(val: Path): DbValue {.raises: [], tags: [],
+    contractual.} =
+  ## Convert the path to database field
+  ##
+  ## * val - the value to convert
+  ##
+  ## Returns the converted val parameter
+  body:
+    dbValue(v = $val)
+
+proc to*(dbVal: DbValue, T: typedesc[Path]): T {.raises: [], tags: [
+    ], contractual.} =
+  ## Convert the value from the database to path
+  ##
+  ## * dbVal - the value to convert
+  ## * T     - the type to which the value will be converted
+  ##
+  ## Returns the converted dbVal parameter
+  body:
+    try:
+      dbVal.s.Path
+    except:
+      "".Path
