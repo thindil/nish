@@ -120,7 +120,7 @@ type
     ## * enabled     - if true, the plugin is enabled
     ## * preCommand  - if true, the plugin is executed before the user's command
     ## * postCommand - fi true, the plugin is executed after the user's command
-    location*: string
+    location*: Path
     enabled*: bool
     preCommand*: bool
     postCommand*: bool
