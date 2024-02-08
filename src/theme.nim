@@ -86,7 +86,6 @@ proc dbValue(val: ColorName): DbValue {.raises: [], tags: [],
   body:
     dbValue(v = $val)
 
-{.push ruleOff: "paramsUsed".}
 proc to(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
     contractual.} =
   ## Convert the value from the database to enumeration
@@ -97,10 +96,9 @@ proc to(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
   ## Returns the converted dbVal parameter
   body:
     try:
-      parseEnum[ColorName](s = dbVal.s)
+      parseEnum[T](s = dbVal.s)
     except:
       default
-{.pop ruleOff: "paramsUsed".}
 
 proc dbType(T: typedesc[ThemeColor]): string {.raises: [], tags: [],
     contractual.} =
@@ -122,7 +120,6 @@ proc dbValue(val: ThemeColor): DbValue {.raises: [], tags: [],
   body:
     dbValue(v = $val)
 
-{.push ruleOff: "paramsUsed".}
 proc to(dbVal: DbValue, T: typedesc[ThemeColor]): T {.raises: [], tags: [],
     contractual.} =
   ## Convert the value from the database to enumeration
@@ -133,10 +130,9 @@ proc to(dbVal: DbValue, T: typedesc[ThemeColor]): T {.raises: [], tags: [],
   ## Returns the converted dbVal parameter
   body:
     try:
-      parseEnum[ThemeColor](s = dbVal.s)
+      parseEnum[T](s = dbVal.s)
     except:
       errors
-{.pop ruleOff: "paramsUsed".}
 
 proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
     description: string = ""; bold: bool = false; underline: bool = false;
