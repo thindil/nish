@@ -39,17 +39,17 @@ suite "Unit tests for plugins module":
   test "Checking a plugin":
     checkpoint "Checking an existing plugin"
     check:
-      checkPlugin("tools/testplugin.sh", db, commands).path ==
-          "tools/testplugin.sh"
+      checkPlugin("tools/testplugin.sh".Path, db, commands).path ==
+          "tools/testplugin.sh".Path
     checkpoint "Cheking a non-existing plugin"
     check:
-      checkPlugin("sdfsdfds.df", db, commands).path.len == 0
+      checkPlugin("sdfsdfds.df".Path, db, commands).path.len == 0
 
   test "Executing a plugin":
     check:
-      execPlugin("tools/testplugin.sh", ["init"], db, commands).code ==
+      execPlugin("tools/testplugin.sh".Path, ["init"], db, commands).code ==
           QuitSuccess
-      execPlugin("tools/testplugin.sh", ["info"], db, commands).answer.len >
+      execPlugin("tools/testplugin.sh".Path, ["info"], db, commands).answer.len >
           0
 #
 #  test "Showing plugins":
@@ -91,9 +91,9 @@ suite "Unit tests for plugins module":
           commands) == QuitFailure
 
   test "Initializing an object of Plugin type":
-    let newPlugin = newPlugin(path = "/")
+    let newPlugin = newPlugin(path = "/".Path)
     check:
-      newPlugin.location == "/"
+      newPlugin.location == "/".Path
 
   suiteTeardown:
     closeDb(QuitSuccess.ResultCode, db)
