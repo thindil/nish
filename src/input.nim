@@ -322,7 +322,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
         when names is seq[Completion]:
           name.command = ""
         elif names is seq[Plugin]:
-          name.location = ""
+          name.location = "".Path
         else:
           name.description = ""
         return
@@ -343,7 +343,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
         elif names is seq[Completion]:
           itemName = name.command
         elif names is seq[Plugin]:
-          itemName = name.location
+          itemName = $name.location
         elif names is seq[Variable]:
           itemName = name.name
         {.ruleOn: "ifStatements".}
@@ -362,7 +362,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       when names is seq[Completion]:
         name.command = ""
       elif names is seq[Plugin]:
-        name.location = ""
+        name.location = "".Path
       else:
         name.description = ""
       return
@@ -380,7 +380,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       when names is seq[Completion]:
         name.command = ""
       elif names is seq[Plugin]:
-        name.location = ""
+        name.location = "".Path
       else:
         name.description = ""
       return
@@ -390,7 +390,7 @@ proc askForName*[T](db; action, namesType: string; name: var T) {.sideEffect,
       when names is seq[Completion]:
         name.command = ""
       elif names is seq[Plugin]:
-        name.location = ""
+        name.location = "".Path
       else:
         name.description = ""
       discard showError(message = action &

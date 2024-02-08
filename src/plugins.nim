@@ -28,7 +28,7 @@
 ## plugins' API, please look at the testplugin.sh in the tools directory.
 
 # Standard library imports
-import std/[os, osproc, parseopt, streams, strutils, tables]
+import std/[os, osproc, parseopt, paths, streams, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
@@ -47,7 +47,7 @@ const
 type
   PluginData = object
     ## Store information about the shell's plugin
-    path: string     ## Full path to the selected plugin
+    path: Path       ## Full path to the selected plugin
     api: seq[string] ## The list of API calls supported by the plugin
   PluginResult* = tuple [code: ResultCode,
       answer: string] ## Store the result of the plugin's API command
@@ -57,7 +57,7 @@ using
   arguments: UserInput # The string with arguments entered by the user for the command
   commands: ref CommandsList # The list of the shell's commands
 
-proc newPlugin*(path: string = ""; enabled: bool = false;
+proc newPlugin*(path: Path = "".Path; enabled: bool = false;
     preCommand: bool = false; postCommand: bool = false): Plugin {.raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's plugin.
@@ -90,7 +90,7 @@ proc createPluginsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
+proc execPlugin*(pluginPath: Path; arguments: openArray[string]; db;
     commands): PluginResult {.sideEffect, raises: [], tags: [
     ExecIOEffect, ReadEnvEffect, ReadIOEffect, WriteIOEffect, ReadDbEffect,
     TimeEffect, WriteDbEffect, RootEffect], contractual.} =
@@ -114,10 +114,10 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
   body:
     const emptyAnswer: string = ""
     let plugin: Process = try:
-          startProcess(command = pluginPath, args = arguments)
+          startProcess(command = $pluginPath, args = arguments)
         except OSError, Exception:
           return (showError(message = "Can't execute the plugin '" &
-              pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
+              $pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
 
     proc showPluginOutput(options: seq[string]): bool {.closure, sideEffect,
         raises: [], tags: [WriteIOEffect, ReadIOEffect, RootEffect],
@@ -245,10 +245,10 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           try:
             if options.len > 1:
               addCommand(name = options[0], command = nil, commands = commands,
-                  plugin = pluginPath, subCommands = options[1 .. ^1])
+                  plugin = $pluginPath, subCommands = options[1 .. ^1])
             else:
               addCommand(name = options[0], command = nil, commands = commands,
-                  plugin = pluginPath)
+                  plugin = $pluginPath)
           except CommandsListError:
             showError(message = "Can't add command '" & options[0] &
                 "'. Reason: " & getCurrentExceptionMsg(), db = db)
@@ -293,7 +293,7 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
             return false
           try:
             replaceCommand(name = options[0], command = nil,
-                commands = commands, plugin = pluginPath, db = db)
+                commands = commands, plugin = $pluginPath, db = db)
           except CommandsListError:
             showError(message = "Can't replace command '" & options[0] &
                 "'. Reason: " & getCurrentExceptionMsg(), db = db)
@@ -316,9 +316,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           if options.len < 3:
             showError(message = "Insufficient arguments for addHelp.", db = db)
             return false
-          return addHelpEntry(topic = options[0],
-                  usage = options[1],
-              plugin = pluginPath, content = options[2], isTemplate = false,
+          return addHelpEntry(topic = options[0], usage = options[1],
+              plugin = $pluginPath, content = options[2], isTemplate = false,
               db = db) == QuitFailure
 
     proc deletePluginHelp(options: seq[string]): bool {.sideEffect, raises: [],
@@ -355,9 +354,8 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           if options.len < 3:
             showError(message = "Insufficient arguments for updateHelp.", db = db)
             return false
-          return updateHelpEntry(topic = options[0],
-              usage = options[
-              1], plugin = pluginPath, content = options[2], isTemplate = false,
+          return updateHelpEntry(topic = options[0], usage = options[1],
+              plugin = $pluginPath, content = options[2], isTemplate = false,
               db = db) == QuitFailure
 
     let apiCalls: Table[string, proc(options: seq[string]): bool] = try:
@@ -396,26 +394,26 @@ proc execPlugin*(pluginPath: string; arguments: openArray[string]; db;
           # The plugin sent any unknown request or response, show error about it
           else:
             showError(message = "Unknown request or response from the plugin '" &
-                pluginPath & "'. Got: '" & options.key & "'", db = db)
+                $pluginPath & "'. Got: '" & options.key & "'", db = db)
           break
     except OSError, IOError, Exception:
-      return (showError(message = "Can't get the plugin '" & pluginPath &
+      return (showError(message = "Can't get the plugin '" & $pluginPath &
           "' output. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
     try:
       if plugin.peekExitCode.ResultCode == 2:
-        return (showError(message = "Plugin '" & pluginPath &
+        return (showError(message = "Plugin '" & $pluginPath &
             "' doesn't support API command '" & arguments[0] & "'", db = db), emptyAnswer)
       result.code = plugin.peekExitCode.ResultCode
     except OSError:
       return (showError(message = "Can't get exit code from plugin '" &
-          pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
+          $pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
     try:
       plugin.close
     except OSError, IOError, Exception:
       return (showError(message = "Can't close process for the plugin '" &
-          pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
+          $pluginPath & "'. Reason: ", e = getCurrentException(), db = db), emptyAnswer)
 
-proc checkPlugin(pluginPath: string; db; commands): PluginData {.sideEffect,
+proc checkPlugin(pluginPath: Path; db; commands): PluginData {.sideEffect,
     raises: [], tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect,
     ReadEnvEffect, ReadIOEffect, ReadDbEffect, RootEffect], contractual.} =
   ## Get information about the selected plugin and check it compatybility with
@@ -464,23 +462,21 @@ proc addPlugin(db; arguments; commands): ResultCode {.sideEffect,
     # Check if the user entered path to the plugin
     if arguments.len < 5:
       return showError(message = "Please enter the path to the plugin which will be added to the shell.", db = db)
-    let pluginPath: string = try:
-        normalizedPath(path = $getCurrentDirectory() & DirSep & $arguments[4..^1])
-      except OSError:
-        $arguments[4..^1]
+    var pluginPath: Path = getCurrentDirectory() / arguments[4 .. ^1].Path
+    normalizePath(path = pluginPath)
     # Check if the file exists
-    if not fileExists(filename = pluginPath):
-      return showError(message = "File '" & pluginPath & "' doesn't exist.", db = db)
+    if not fileExists(filename = $pluginPath):
+      return showError(message = "File '" & $pluginPath & "' doesn't exist.", db = db)
     try:
       # Check if the plugin isn't added previously
       if db.exists(T = Plugin, cond = "location=?", params = pluginPath):
-        return showError(message = "File '" & pluginPath &
+        return showError(message = "File '" & $pluginPath &
             "' is already added as a plugin to the shell.", db = db)
       # Check if the plugin can be added
       let newPlugin: PluginData = checkPlugin(pluginPath = pluginPath, db = db,
           commands = commands)
       if newPlugin.path.len == 0:
-        return showError(message = "Can't add file '" & pluginPath &
+        return showError(message = "Can't add file '" & $pluginPath &
             "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.", db = db)
       # Add the plugin to the shell database
       var plugin: Plugin = newPlugin(path = pluginPath, enabled = true,
@@ -492,19 +488,19 @@ proc addPlugin(db; arguments; commands): ResultCode {.sideEffect,
         if execPlugin(pluginPath = pluginPath, arguments = ["install"],
             db = db, commands = commands).code != QuitSuccess:
           db.delete(obj = plugin)
-          return showError(message = "Can't install plugin '" & pluginPath &
+          return showError(message = "Can't install plugin '" & $pluginPath &
               "'.", db = db)
       # Execute the enabling code of the plugin
       if "enable" in newPlugin.api:
         if execPlugin(pluginPath = pluginPath, arguments = ["enable"],
             db = db, commands = commands).code != QuitSuccess:
           db.delete(obj = plugin)
-          return showError(message = "Can't enable plugin '" & pluginPath &
+          return showError(message = "Can't enable plugin '" & $pluginPath &
               "'.", db = db)
     except:
       return showError(message = "Can't add plugin to the shell. Reason: ",
           e = getCurrentException(), db = db)
-    showOutput(message = "File '" & pluginPath &
+    showOutput(message = "File '" & $pluginPath &
         "' added as a plugin to the shell.", color = success, db = db)
     return QuitSuccess.ResultCode
 
@@ -586,12 +582,12 @@ proc removePlugin(db; arguments; commands): ResultCode {.sideEffect,
       # Execute the disabling code of the plugin first
       if execPlugin(pluginPath = plugin.location, arguments = ["disable"],
           db = db, commands = commands).code != QuitSuccess:
-        return showError(message = "Can't disable plugin '" & plugin.location &
+        return showError(message = "Can't disable plugin '" & $plugin.location &
             "'.", db = db)
       # Execute the uninstalling code of the plugin
       if execPlugin(pluginPath = plugin.location, arguments = ["uninstall"],
           db = db, commands = commands).code != QuitSuccess:
-        return showError(message = "Can't remove plugin '" & plugin.location &
+        return showError(message = "Can't remove plugin '" & $plugin.location &
             "'.", db = db)
       # Remove the plugin from the base
       db.delete(obj = plugin)
@@ -639,7 +635,7 @@ proc togglePlugin(db; arguments; disable: bool = true;
         if execPlugin(pluginPath = plugin.location, arguments = [actionName],
             db = db, commands = commands).code != QuitSuccess:
           return showError(message = "Can't " & actionName & " plugin '" &
-              plugin.location & "'.", db = db)
+              $plugin.location & "'.", db = db)
       # Update the state of the plugin
       plugin.enabled = not disable
       db.update(obj = plugin)
@@ -871,14 +867,14 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           if newPlugin.path.len == 0:
             plugin.enabled = false
             db.update(obj = plugin)
-            showError(message = "Plugin '" & plugin.location &
+            showError(message = "Plugin '" & $plugin.location &
                 "' isn't compatible with the current version of shell's API and will be disabled.", db = db)
             continue
           if "init" in newPlugin.api:
             if execPlugin(pluginPath = plugin.location, arguments = ["init"],
                 db = db, commands = commands).code != QuitSuccess:
               showError(message = "Can't initialize plugin '" &
-                  plugin.location & "'.", db = db)
+                  $plugin.location & "'.", db = db)
               continue
     except:
       showError(message = "Can't read data about the shell's plugins. Reason: ",

@@ -122,7 +122,7 @@ proc executeCommand*(commands: ref Table[string, CommandData];
         # The shell's command from plugin
         if commands[commandName].command == nil:
           let returnValues: PluginResult = execPlugin(pluginPath = commands[
-              commandName].plugin, arguments = [commandName, $arguments],
+              commandName].plugin.Path, arguments = [commandName, $arguments],
               db = db, commands = commands)
           return returnValues.code
         # Build-in shell's command
