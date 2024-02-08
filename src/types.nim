@@ -90,7 +90,7 @@ type
     ##                 or in the alias information
     ## * output      - where to redirect the output of the alias' commands
     name* {.unique.}: string
-    path*: string
+    path*: Path
     recursive*: bool
     commands*: string
     description*: string
