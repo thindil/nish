@@ -194,6 +194,6 @@ proc to*(dbVal: DbValue, T: typedesc[Path]): T {.raises: [], tags: [
   ## Returns the converted dbVal parameter
   body:
     try:
-      dbVal.s.Path
+      dbVal.s.T
     except:
-      "".Path
+      "".T
