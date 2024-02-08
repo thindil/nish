@@ -142,6 +142,8 @@ type
     varType*: VariableValType
     description*: string
 
+# Procedures related to Path type
+
 proc `$`*(path: Path): string {.sideEffect, raises: [], tags: [],
     contractual.} =
   ## Convert Path type to string.
@@ -151,8 +153,6 @@ proc `$`*(path: Path): string {.sideEffect, raises: [], tags: [],
   ## The parameter path converted to a string
   body:
     return path.string
-
-# Procedures related to Path type
 
 proc len*(path: Path): Natural {.sideEffect, raises: [], tags: [],
     contractual.} =
