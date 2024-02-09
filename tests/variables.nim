@@ -13,15 +13,15 @@ suite "Unit tests for variable modules":
   initVariables(db, commands)
   checkpoint "Adding testing variables if needed"
   if db.count(Variable) == 0:
-    var variable = newVariable(name = "TESTS", path = "/", recursive = true,
+    var variable = newVariable(name = "TESTS", path = "/".Path, recursive = true,
           value = "test_variable", description = "Test variable.")
     db.insert(variable)
-    var variable2 = newVariable(name = "TESTS2", path = "/",
+    var variable2 = newVariable(name = "TESTS2", path = "/".Path,
         recursive = false, value = "test_variable2",
         description = "Test variable 2.")
     db.insert(variable2)
   if db.count(Variable) == 1:
-    var variable = newVariable(name = "TESTS2", path = "/", recursive = false,
+    var variable = newVariable(name = "TESTS2", path = "/".Path, recursive = false,
         value = "test_variable2", description = "Test variable 2.")
     db.insert(variable)
 
