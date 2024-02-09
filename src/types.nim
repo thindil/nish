@@ -136,7 +136,7 @@ type
     ## * value       - the value of the variable
     ## * description - the description of the variable
     name*: string
-    path*: string
+    path*: Path
     recursive*: bool
     value*: string
     varType*: VariableValType
