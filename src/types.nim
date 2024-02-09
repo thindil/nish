@@ -141,6 +141,8 @@ type
     value*: string
     varType*: VariableValType
     description*: string
+  ResultCode* = distinct Natural
+    ## Used to store result code from commands entered by the user
 
 # Procedures related to Path type
 
@@ -197,3 +199,21 @@ proc to*(dbVal: DbValue, T: typedesc[Path]): T {.raises: [], tags: [
       dbVal.s.T
     except:
       "".T
+
+# Procedures related to ResultCode type
+
+proc `==`*(x: ResultCode; y: int): bool {.borrow.}
+  ## Used to compare ResultCode with int. Borrowed from int type.
+  ##
+  ## * x - The ResultCode to compare
+  ## * y - The int to compare
+  ##
+  ## Returns true if both ResultCode and int are the same, otherwise false.
+
+proc `$`*(x: ResultCode): string {.borrow.}
+  ## Get string representation of ResultCode. Borrowed from int type.
+  ##
+  ## * x - The ResultCode which will be converted to string
+  ##
+  ## Returns the string representation of the x parameter
+
