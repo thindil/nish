@@ -10,9 +10,9 @@ proc initDb*(dbName: string): DbConn =
 
 proc addAliases*(db: DbConn) =
   if db.count(Alias) == 0:
-    var alias = newAlias(name = "tests", path = "/", recursive = true,
+    var alias = newAlias(name = "tests", path = "/".Path, recursive = true,
           commands = "ls -a", description = "Test alias.", output = "output")
     db.insert(alias)
-    var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
+    var testAlias2 = newAlias(name = "tests2", path = "/".Path, recursive = false,
         commands = "ls -a", description = "Test alias 2.", output = "output")
     db.insert(testAlias2)

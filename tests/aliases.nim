@@ -39,7 +39,7 @@ suite "Unit tests for aliases module":
       deleteAlias("delete 22",
         myaliases, db) == QuitFailure
     checkpoint("Re-adding the test alias")
-    var testAlias2 = newAlias(name = "tests2", path = "/", recursive = false,
+    var testAlias2 = newAlias(name = "tests2", path = "/".Path, recursive = false,
       commands = "ls -a", description = "Test alias 2.", output = "output")
     db.insert(testAlias2)
     unittest2.require:
