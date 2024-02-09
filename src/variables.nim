@@ -116,7 +116,7 @@ proc buildQuery(directory: Path; fields: string = "";
 
     result.add(y = " ORDER BY id ASC")
 
-proc newVariable(name: string = ""; path: string = ""; recursive: bool = false;
+proc newVariable(name: string = ""; path: Path = "".Path; recursive: bool = false;
     value: string = ""; description: string = ""): Variable {.raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's environment variable.
@@ -466,7 +466,7 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         showFormPrompt(prompt = "Path", db = db)
     if $path == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
-    variable.path = $path
+    variable.path = path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &
@@ -622,8 +622,8 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     if $path == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
     elif $path == "":
-      path = variable.path.Path
-    variable.path = $path
+      path = variable.path
+    variable.path = path
     # Set the recursiveness for the variable
     showFormHeader(message = "(4/6) Recursiveness", db = db)
     showOutput(message = "Select if variable is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press '" &
@@ -742,7 +742,7 @@ proc showVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           if variable.description.len > 0: variable.description else: "(none)"),
           style = color2)])
       table.add(parts = [style(ss = "Path:", style = color), style(
-          ss = variable.path & (if variable.recursive: " (recursive)" else: ""),
+          ss = $variable.path & (if variable.recursive: " (recursive)" else: ""),
               style = color2)])
       table.echoTable
     except:
