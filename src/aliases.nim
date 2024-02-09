@@ -168,7 +168,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc newAlias*(name: string = ""; path: string = ""; commands: string = "";
+proc newAlias*(name: string = ""; path: Path = "".Path; commands: string = "";
     description: string = ""; recursive: bool = true;
     output: string = "output"): Alias {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's alias.
@@ -310,7 +310,7 @@ proc showAlias(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           if alias.description.len > 0: alias.description else: "(none)"),
           style = color2)])
       table.add(parts = [style(ss = "Path:", style = color), style(
-          ss = alias.path & (if alias.recursive: " (recursive)" else: ""),
+          ss = $alias.path & (if alias.recursive: " (recursive)" else: ""),
               style = color2)])
       table.add(parts = [style(ss = "Command(s):", style = color), style(
           ss = alias.commands, style = color2)])
@@ -436,7 +436,7 @@ proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
         output = readInput(db = db)
     if output == "exit":
       return showError(message = "Adding a new alias cancelled.", db = db)
-    var alias: Alias = newAlias(name = $name, path = $path,
+    var alias: Alias = newAlias(name = $name, path = path,
         recursive = recursive == 1, commands = $commands,
         description = $description, output = $output)
     # Check if alias with the same parameters exists in the database
@@ -530,7 +530,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     if $path == "exit":
       return showError(message = "Editing the alias cancelled.", db = db)
     elif $path == "":
-      path = alias.path.Path
+      path = alias.path
     # Set the recursiveness for the alias
     showFormHeader(message = "(4/6 or 7) Recursiveness", db = db)
     showOutput(message = "Select if alias is recursive or not. If recursive, it will be available also in all subdirectories for path set above. Press 'y' or 'n':", db = db)
@@ -584,7 +584,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     # Save the alias to the database
     try:
       alias.name = $name
-      alias.path = $path
+      alias.path = path
       alias.recursive = recursive == 1
       alias.commands = $commands
       alias.description = $description
