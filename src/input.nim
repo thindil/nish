@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[parseopt, strutils, terminal, unicode]
 # External modules imports
-import contracts, nancy, nimalyzer, termstyle
+import contracts, nancy, termstyle
 import norm/sqlite
 # Internal imports
 import constants, output, theme, types
@@ -92,24 +92,29 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
   ## Returns the new position of the cursor as modified cursorPosition argument
   body:
     try:
-      {.ruleOff: "ifStatements".}
+      case inputChar
       # Arrow left key pressed
-      if inputChar == 'D' and cursorPosition > 0:
-        stdout.cursorBackward
-        cursorPosition.dec
+      of 'D':
+        if cursorPosition > 0:
+          stdout.cursorBackward
+          cursorPosition.dec
       # Arrow right key pressed
-      elif inputChar == 'C' and cursorPosition < runeLen(s = $inputString):
-        stdout.cursorForward
-        cursorPosition.inc
+      of 'C':
+        if cursorPosition < runeLen(s = $inputString):
+          stdout.cursorForward
+          cursorPosition.inc
       # Home key pressed
-      elif inputChar == 'H' and cursorPosition > 0:
-        stdout.cursorBackward(count = cursorPosition)
-        cursorPosition = 0
+      of 'H':
+        if cursorPosition > 0:
+          stdout.cursorBackward(count = cursorPosition)
+          cursorPosition = 0
       # End key pressed
-      elif inputChar == 'F' and cursorPosition < runeLen(s = $inputString):
-        stdout.cursorForward(count = runeLen(s = $inputString) - cursorPosition)
-        cursorPosition = runeLen(s = $inputString)
-      {.ruleOn: "ifStatements".}
+      of 'F':
+        if cursorPosition < runeLen(s = $inputString):
+          stdout.cursorForward(count = runeLen(s = $inputString) - cursorPosition)
+          cursorPosition = runeLen(s = $inputString)
+      else:
+        discard
     except IOError, ValueError, OSError:
       showError(message = "Can't move the cursor. Reason: ",
           e = getCurrentException(), db = db)
