@@ -31,7 +31,7 @@ import std/[os, strutils, tables, terminal, unicode]
 import contracts
 import norm/sqlite
 # Internal imports
-import commandslist, output, prompt, resultcode, theme, types
+import commandslist, output, prompt, theme, types
 
 proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     commands: ref Table[string, CommandData]; aliases: ref AliasesList;

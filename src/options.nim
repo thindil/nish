@@ -32,7 +32,7 @@ import std/[os, strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, help, input, output, resultcode, theme, types
+import commandslist, constants, help, input, output, theme, types
 
 const optionsCommands: seq[string] = @["list", "set", "reset"]
   ## The list of available subcommands for command options

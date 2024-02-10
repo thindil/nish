@@ -32,7 +32,7 @@ import std/[os, parsecfg, strutils, tables]
 import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, help, input, options, output, resultcode, theme, types
+import commandslist, constants, help, input, options, output, theme, types
 
 type DirCompletionType = enum
   ## Used to set the type of completion for directories and files

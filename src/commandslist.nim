@@ -32,7 +32,7 @@ import std/[osproc, parseopt, tables]
 import contracts
 import norm/sqlite
 # Internal imports
-import constants, logger, output, resultcode, types
+import constants, logger, output, types
 
 type
   CommandLists* = object

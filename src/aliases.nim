@@ -32,7 +32,7 @@ import std/[os, paths, parseopt, strutils, tables]
 import contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
 # Internal imports
-import commandslist, constants, help, input, options, output, resultcode,
+import commandslist, constants, help, input, options, output,
     variables, theme, types
 
 const

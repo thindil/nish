@@ -33,7 +33,7 @@ import std/[strutils, tables]
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
-import commandslist, help, input, output, resultcode, theme, types
+import commandslist, help, input, output, theme, types
 
 using db: DbConn # Connection to the shell's database
 

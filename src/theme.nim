@@ -32,7 +32,7 @@ import std/[strutils, terminal]
 import contracts, nimalyzer, termstyle
 import norm/[model, pragmas, sqlite]
 # Internal imports
-import logger, resultcode
+import logger, types
 
 type
   ColorName* = enum

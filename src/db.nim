@@ -33,7 +33,7 @@ import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
 import aliases, commandslist, completion, help, history, logger,
-    options, output, plugins, resultcode, theme, types, variables
+    options, output, plugins, theme, types, variables
 
 const
   dbCommands*: seq[string] = @["optimize", "export", "import"]

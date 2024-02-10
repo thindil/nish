@@ -32,7 +32,7 @@ import std/[os, osproc, paths, strutils]
 import contracts, termstyle
 import norm/sqlite
 # Internal imports
-import constants, options, output, resultcode, theme, types
+import constants, options, output, theme, types
 
 proc getFormattedDir*(): Path {.sideEffect, raises: [], tags: [
     ReadIOEffect], contractual.} =
