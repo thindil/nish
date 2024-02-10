@@ -100,9 +100,8 @@ type
   CompletionType* = enum
     ## Used to set the type of commands' completion
     dirs = "Directories only", files = "Files only",
-        dirsfiles = "Directories and files", commands = "Commands",
-        custom = "Custom",
-        none = "Completion for the selected command should be disabled"
+    dirsfiles = "Directories and files", commands = "Commands",
+    custom = "Custom", none = "Completion for the selected command should be disabled"
   Completion* {.tableName: "completions".} = ref object of Model
     ## Data structure for the shell's commands' completion
     ##
