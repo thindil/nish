@@ -40,7 +40,7 @@ type
     ## * content  - the content of the help's entry
     ## * plugin   - the name of the plugin to which the help's entry belongs.
     ## * template - if true, the entry is a template and treated differently. It
-    ##              have some variables in own content which will be replaced by
+    ##              has some variables in own content which will be replaced by
     ##              proper values when show to the user.
     topic* {.unique.}: string
     usage*: string
