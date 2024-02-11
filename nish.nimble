@@ -2,7 +2,7 @@ import os
 
 # Package
 
-version = "0.6.0"
+version = "0.7.0"
 author = "Bartek thindil Jasicki"
 description = "A non-POSIX, multiplatform command line shell"
 license = "BSD-3-Clause"
