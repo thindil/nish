@@ -158,12 +158,12 @@ proc setVariables*(newDirectory: Path; db;
         var variables: seq[Variable] = @[newVariable()]
         db.select(objs = variables, cond = buildQuery(directory = oldDirectory))
         for variable in variables:
-          if not db.exists(T = Variable, cond = buildQuery(
+          if db.exists(T = Variable, cond = buildQuery(
               directory = newDirectory, where = "AND name='" & variable.name &
               "' AND value='" & variable.value & "'")):
-            delEnv(key = variable.name)
-          else:
             skipped.add(y = variable.id)
+          else:
+            delEnv(key = variable.name)
       except:
         showError(message = "Can't delete environment variables from the old directory. Reason: ",
             e = getCurrentException(), db = db)
@@ -285,7 +285,7 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
             e = getCurrentException(), db = db)
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size
+        width += size
       showFormHeader(message = "All declared environent variables are:",
           width = width.ColumnAmount, db = db)
     # Show the list of environment variables available in current directory
@@ -306,7 +306,7 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
             e = getCurrentException(), db = db)
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size
+        width += size
       showFormHeader(message = "Declared environent variables are:",
           width = width.ColumnAmount, db = db)
     try:
