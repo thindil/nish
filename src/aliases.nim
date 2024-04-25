@@ -669,8 +669,8 @@ proc execAlias*(arguments; aliasId: string; aliases;
           start = argumentPosition + 1)
     # If output location is set to file, create or open the file
     let outputFile: File = try:
-          (if alias.output notin ["stdout", "stderr"]: open(
-              filename = alias.output, mode = fmWrite) else: nil)
+          (if alias.output in ["stdout", "stderr"]: nil else: open(
+                filename = alias.output, mode = fmWrite))
         except IOError:
           return showError(message = "Can't open output file. Reason: ",
               e = getCurrentException(), db = db)
