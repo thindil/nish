@@ -85,13 +85,14 @@ proc showPrompt*(promptEnabled: bool; previousCommand: string;
           return
         stdout.write(s = output)
         return output.len
-    except:
+    except OSError, IOError:
       showError(message = "Can't get command for prompt. Reason: ",
           e = getCurrentException(), db = db)
       return
     result = 0
     if previousCommand != "" and resultCode != QuitSuccess:
-      let resultString: string = $exitStatusLikeShell(status = resultCode.cint)
+      type ResultString = string
+      let resultString: ResultString = $exitStatusLikeShell(status = resultCode.cint)
       try:
         stdout.write(s = style(ss = "[" & resultString & "] ", style = getColor(
             db = db, name = promptError)))
