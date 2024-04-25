@@ -695,7 +695,7 @@ proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
             e = getCurrentException(), db = db)
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size
+        width += size
       showFormHeader(message = "All available plugins are:",
           width = width.ColumnAmount, db = db)
     # Show the list of enabled plugins
@@ -722,7 +722,7 @@ proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
             e = getCurrentException(), db = db)
       var width: int = 0
       for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size
+        width += size
       showFormHeader(message = "Enabled plugins are:",
           width = width.ColumnAmount, db = db)
     try:
