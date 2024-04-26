@@ -34,9 +34,13 @@ import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, help, input, options, output, theme, types
 
-type DirCompletionType = enum
-  ## Used to set the type of completion for directories and files
-  dirs, files, all
+type
+  DirCompletionType = enum
+    ## Used to set the type of completion for directories and files
+    dirs, files, all
+
+  CompletionPrefix* = string
+    ## Used to get a completion for directories or commands
 
 const
   completionCommands: seq[string] = @["list", "delete", "show", "add",
@@ -98,7 +102,7 @@ proc newCompletion(command: string = ""; cType: CompletionType = none;
   body:
     Completion(command: command, cType: cType, cValues: cValues)
 
-proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
+proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[string]; db;
     cType: DirCompletionType = all) {.sideEffect, raises: [], tags: [
     ReadDirEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
@@ -169,7 +173,7 @@ proc getDirCompletion*(prefix: string; completions: var seq[string]; db;
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException(), db = db)
 
-proc getCommandCompletion*(prefix: string; completions: var seq[string];
+proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[string];
     aliases: ref AliasesList; commands: ref CommandsList; db) {.sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadDirEffect, ReadDbEffect,
     ReadEnvEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
@@ -225,7 +229,7 @@ proc getCommandCompletion*(prefix: string; completions: var seq[string];
     except OSError:
       return
 
-proc getCompletion*(commandName, prefix: string; completions: var seq[string];
+proc getCompletion*(commandName, prefix: CompletionPrefix; completions: var seq[string];
     aliases: ref AliasesList; commands: ref CommandsList; db) {.sideEffect,
     raises: [], tags: [ReadDirEffect, WriteIOEffect, ReadDbEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
