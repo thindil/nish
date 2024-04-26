@@ -225,7 +225,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
             if currentCompletion == completions.len:
               let line: Natural = completions.len div columnsAmount
               if line > 0 and completions.len > columnsAmount:
-                stdout.cursorUp(count = line)
+                stdout.cursorUp(count = line - 1)
               stdout.cursorBackward(count = terminalWidth())
               currentCompletion = 0
               continue
