@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 Tag **BREAKING** means the change break compatibility with a previous version
 of the shell.
 
+## [Unreleased]
+
+### Fixed
+- Returning to the first row from the last row in Tab completions' list.
+
 ## [0.7.0] - 2024-02-11
 
 ### Added
