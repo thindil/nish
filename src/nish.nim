@@ -146,7 +146,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
       of 9:
         let
           spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
-          prefix: string = (if spaceIndex ==
+          prefix: CompletionPrefix = (if spaceIndex ==
               -1: $inputString else: $inputString[spaceIndex + 1..^1])
         completions = @[]
         getDirCompletion(prefix = prefix, completions = completions, db = db)
@@ -174,7 +174,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
                 e = getCurrentException(), db = db)
         else:
           try:
-            let columnsAmount: int = try:
+            let columnsAmount: Positive = try:
                 parseInt(s = $getOption(optionName = "completionColumns",
                     db = db, defaultValue = "5"))
               except ValueError:
@@ -182,7 +182,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
             # If Tab pressed the first time, show the list of completion
             if not completionMode:
               stdout.writeLine(x = "")
-              let color: string = getColor(db = db, name = completionList)
+              let color: ColorCode = getColor(db = db, name = completionList)
               var
                 table: TerminalTable = TerminalTable()
                 row: seq[string] = @[]
@@ -223,7 +223,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
             currentCompletion.inc
             # Return to the first completion if reached the end of the list
             if currentCompletion == completions.len:
-              let line: int = completions.len div columnsAmount
+              let line: Natural = completions.len div columnsAmount
               if line > 0 and completions.len > columnsAmount:
                 stdout.cursorUp(count = line)
               stdout.cursorBackward(count = terminalWidth())
@@ -634,7 +634,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
         if oneTimeCommand and inputString.len == 0:
           closeDb(returnCode = returnCode, db = db)
         cursorPosition = runeLen(s = $inputString)
-      except:
+      except Exception:
         showError(message = "Internal shell error. Additional details: ",
             e = getCurrentException(), db = db)
 
