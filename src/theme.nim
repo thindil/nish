@@ -60,6 +60,8 @@ type
     bold*: bool
     underline*: bool
     italic*: bool
+  ColorCode* = string
+    ## Used to get the terminal code for a color
 
 using db: DbConn # Connection to the shell's database
 
@@ -252,7 +254,7 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       return QuitFailure.ResultCode
     return QuitSuccess.ResultCode
 
-proc getColor*(db; name: ThemeColor): string {.sideEffect, raises: [], tags: [
+proc getColor*(db; name: ThemeColor): ColorCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Get the selected the shell's theme's color.
   ##
