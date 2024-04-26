@@ -34,12 +34,15 @@ import norm/sqlite
 # Internal imports
 import constants, output, theme, types
 
-type MaxInputLength* = range[1..maxInputLength]
-  ## Used to store maximum allowed length of the user input
+type
+  MaxInputLength* = range[1..maxInputLength]
+    ## Used to store maximum allowed length of the user input
+  InputRune* = string
+    ## Used to get full Unicode rune from the user's input
 
 using db: DbConn # Connection to the shell's database
 
-proc readChar*(inputChar: char; db): string {.sideEffect, raises: [], tags: [
+proc readChar*(inputChar: char; db): InputRune {.sideEffect, raises: [], tags: [
     WriteIOEffect, ReadIOEffect, RootEffect], contractual.} =
   ## Read the Unicode character from the user's input
   ##
@@ -120,7 +123,7 @@ proc moveCursor*(inputChar: char; cursorPosition: var Natural;
           e = getCurrentException(), db = db)
 
 proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
-    insertMode: bool; inputRune: string) {.sideEffect, raises: [], tags: [
+    insertMode: bool; inputRune: InputRune) {.sideEffect, raises: [], tags: [
     WriteIOEffect, RootEffect], contractual.} =
   ## Update the user's input with the new Unicode character
   ##
@@ -149,8 +152,7 @@ proc updateInput*(cursorPosition: var Natural; inputString: var UserInput;
 
 proc readInput*(maxLength: MaxInputLength = maxInputLength;
     db): UserInput {.sideEffect, raises: [], tags: [WriteIOEffect, ReadIOEffect,
-        TimeEffect, RootEffect],
-    contractual.} =
+    TimeEffect, RootEffect], contractual.} =
   ## Read the user input. Used in adding a new or editing an existing alias
   ## or environment variable
   ##
