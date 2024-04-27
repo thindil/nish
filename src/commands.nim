@@ -39,6 +39,8 @@ using
   aliases: ref AliasesList # The list of aliases available in the selected directory
   newDirectory: Path # The directory to which the current directory will be changed
 
+type CommandName* = string ## Used to store the name of the user's command
+
 proc changeDirectory(newDirectory; aliases; db): ResultCode {.sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
@@ -95,7 +97,7 @@ proc cdCommand*(newDirectory; aliases; db): ResultCode {.sideEffect, raises: [],
       result = changeDirectory(newDirectory = newDirectory, aliases = aliases, db = db)
 
 proc executeCommand*(commands: ref Table[string, CommandData];
-    commandName: string; arguments, inputString: UserInput; db: DbConn;
+    commandName: CommandName; arguments, inputString: UserInput; db: DbConn;
     aliases: ref OrderedTable[AliasName, int]; cursorPosition: var Natural;
     withShell: bool = true): ResultCode {.sideEffect, raises: [], tags: [
     WriteIOEffect, WriteDbEffect, TimeEffect, ExecIOEffect, ReadEnvEffect,
