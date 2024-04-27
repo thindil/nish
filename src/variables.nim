@@ -674,7 +674,7 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       elif variable.varType == number:
         try:
           discard parseInt(s = $value)
-        except:
+        except ValueError:
           showError(message = "The selected value isn't a number.", db = db)
           showOutput(message = "Value: ", newLine = false, db = db)
           value = "invalid"
@@ -686,7 +686,7 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Save the variable to the database
     try:
       db.update(obj = variable)
-    except:
+    except DbError, ValueError:
       return showError(message = "Can't save the edits of the variable to database. Reason: ",
           e = getCurrentException(), db = db)
     try:
@@ -720,7 +720,7 @@ proc showVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     var variable: Variable = newVariable()
     try:
       db.select(obj = variable, cond = "id=?", params = $id)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't read variable data from database. Reason: ",
           e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
@@ -743,7 +743,7 @@ proc showVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           ss = $variable.path & (if variable.recursive: " (recursive)" else: ""),
               style = color2)])
       table.echoTable
-    except:
+    except IOError, UnknownEscapeError, InsufficientInputError, FinalByteError, Exception:
       return showError(message = "Can't show variable. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -761,7 +761,7 @@ proc createVariablesDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newVariable())
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't create 'variables' table. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -780,7 +780,7 @@ proc updateVariablesDb*(db): ResultCode {.sideEffect,
   body:
     try:
       db.exec(query = sql(query = """ALTER TABLE variables ADD varType TEXT NOT NULL DEFAULT 'text'"""))
-    except:
+    except DbError:
       return showError(message = "Can't update table for the shell's variables. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
