@@ -670,20 +670,14 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       if variable.varType == VariableValType.path and not dirExists(dir = $value):
         showError(message = "Path '" & value & "' doesn't exist.", db = db)
         showOutput(message = "Value: ", newLine = false, db = db)
-        try:
-          value = "invalid"
-        except:
-          discard
+        value = "invalid"
       elif variable.varType == number:
         try:
           discard parseInt(s = $value)
         except:
           showError(message = "The selected value isn't a number.", db = db)
           showOutput(message = "Value: ", newLine = false, db = db)
-          try:
-            value = "invalid"
-          except:
-            discard
+          value = "invalid"
     if value == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
     elif value.len == 0:
