@@ -32,6 +32,7 @@ import std/[os, paths, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
+import norm/private/log
 # Internal imports
 import commandslist, constants, help, input, output, theme, types
 
@@ -82,7 +83,7 @@ proc to(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [
   body:
     try:
       parseEnum[VariableValType](s = dbVal.s)
-    except:
+    except ValueError:
       text
 
 proc buildQuery(directory: Path; fields: string = "";
@@ -116,8 +117,9 @@ proc buildQuery(directory: Path; fields: string = "";
 
     result.add(y = " ORDER BY id ASC")
 
-proc newVariable(name: string = ""; path: Path = "".Path; recursive: bool = false;
-    value: string = ""; description: string = ""): Variable {.raises: [],
+proc newVariable(name: string = ""; path: Path = "".Path;
+    recursive: bool = false; value: string = "";
+        description: string = ""): Variable {.raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's environment variable.
   ##
@@ -164,7 +166,7 @@ proc setVariables*(newDirectory: Path; db;
             skipped.add(y = variable.id)
           else:
             delEnv(key = variable.name)
-      except:
+      except OSError, ValueError, DbError, LoggingError:
         showError(message = "Can't delete environment variables from the old directory. Reason: ",
             e = getCurrentException(), db = db)
     # Set the new environment variables
@@ -193,7 +195,7 @@ proc setVariables*(newDirectory: Path; db;
           value[variableIndex..variableEnd - 1] = getEnv(key = variableName)
           variableIndex = value.find(sub = '$', start = variableEnd)
         putEnv(key = variable.name, val = value)
-    except:
+    except OSError, ValueError, DbError, LoggingError:
       showError(message = "Can't set environment variables for the new directory. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -280,7 +282,8 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
               name = ids)), style(ss = variable.name, style = getColor(db = db,
               name = values)), style(ss = variable.value, style = getColor(
               db = db, name = default))])
-      except:
+      except ValueError, DbError, LoggingError, UnknownEscapeError,
+          FinalByteError, InsufficientInputError:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException(), db = db)
       var width: int = 0
@@ -301,7 +304,8 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
               name = ids)), style(ss = variable.name, style = getColor(db = db,
               name = values)), style(ss = variable.value, style = getColor(
               db = db, name = default))])
-      except:
+      except ValueError, DbError, LoggingError, UnknownEscapeError,
+          FinalByteError, InsufficientInputError:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException(), db = db)
       var width: int = 0
@@ -362,7 +366,7 @@ proc getVariableId(arguments; db): Natural {.sideEffect, raises: [], tags: [
         showError(message = "The variable with the Id: " & $result &
             " doesn't exists.", db = db)
         return 0
-    except:
+    except ValueError, DbError:
       showError(message = "Can't find the variable in database. Reason: ",
           e = getCurrentException(), db = db)
       return 0
@@ -388,7 +392,7 @@ proc deleteVariable(arguments; db): ResultCode {.sideEffect, raises: [],
       var variable: Variable = newVariable()
       db.select(obj = variable, cond = "id=?", params = $id)
       db.delete(obj = variable)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't delete variable from database. Reason: ",
           e = getCurrentException(), db = db)
     try:
@@ -514,7 +518,7 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       elif variable.varType == number:
         try:
           discard parseInt(s = $value)
-        except:
+        except ValueError:
           showError(message = "The selected value isn't a number.", db = db)
           showFormPrompt(prompt = "Value", db = db)
           value = ""
@@ -527,13 +531,13 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
           params = [($name).dbValue, ($path).dbValue, ($recursive).dbValue, (
           $value).dbValue]):
         return showError(message = "There is a variable with the same name, path and value in the database.", db = db)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't check if the same variable exists in the database. Reason: ",
           e = getCurrentException(), db = db)
     # Save the variable to the database
     try:
       db.insert(obj = variable)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't add the variable to database. Reason: ",
           e = getCurrentException(), db = db)
     try:
