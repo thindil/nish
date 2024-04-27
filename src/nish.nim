@@ -327,8 +327,8 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           let spaceIndex: ExtendedNatural = inputString.rfind(sub = ' ')
           inputString = inputString[0..spaceIndex] & completions[currentCompletion]
           cursorPosition = runeLen(s = $inputString)
-          let line: int = (if completions.len > 3: (completions.len /
-              3).int + 1 else: 1)
+          let line: int32 = (if completions.len > 3: (completions.len /
+              3).int32 + 1 else: 1)
           stdout.cursorUp(count = (currentCompletion / 3).int)
           for i in 1..line:
             stdout.cursorDown
@@ -352,7 +352,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
       else:
         if inputChar.ord < 32:
           continue
-        let inputRune: string = readChar(inputChar = inputChar, db = db)
+        let inputRune: InputRune = readChar(inputChar = inputChar, db = db)
         try:
           if promptLength + cursorPosition == terminalWidth() - 1:
             stdout.eraseLine
@@ -390,7 +390,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
     startLogging()
     var
       userInput: OptParser = initOptParser()
-      commandName: string = ""
+      commandName, lastCommand: CommandName = ""
       inputString: UserInput = ""
       options: OptParser = initOptParser(shortNoVal = {'h', 'v'}, longNoVal = @[
           "help", "version"])
@@ -403,7 +403,6 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           DirSep & "nish.db").Path
       cursorPosition: Natural = 0
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
-      lastCommand: string = ""
 
     # On Unix systems, load various users' configurations for shells
     when not defined(windows):
@@ -552,7 +551,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           if arguments.len == 0:
             returnCode = showError(message = "Enter a command to execute.", db = db)
           else:
-            let spaceIndex: int = arguments.find(sub = ' ')
+            let spaceIndex: ExtendedNatural = arguments.find(sub = ' ')
             if spaceIndex > 0:
               commandName = $(arguments[0 .. spaceIndex - 1])
               arguments = (
@@ -580,7 +579,8 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           while true:
             let
               oldStart: Natural = start
-              newCommand: string = suggestCommand(invalidName = $commandName,
+              newCommand: CommandName = suggestCommand(
+                invalidName = $commandName,
                 start = start, db = db)
             if newCommand.len == 0:
               break
