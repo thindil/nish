@@ -570,7 +570,7 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     var variable: Variable = newVariable()
     try:
       db.select(obj = variable, cond = "id=?", params = $id)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't get the selected variable from the database. Reason:",
           e = getCurrentException(), db = db)
     let
