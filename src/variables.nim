@@ -342,7 +342,7 @@ proc getVariableId(arguments; db): Natural {.sideEffect, raises: [], tags: [
     result = 0
     var
       variable: Variable = newVariable()
-      actionName: string = ""
+      actionName: OutputMessage = ""
       argumentsLen: Positive = 1
     if arguments.startsWith(prefix = "delete"):
       actionName = "Deleting"
@@ -421,7 +421,7 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
   require:
     db != nil
   body:
-    let codeColor: string = getColor(db = db, name = helpCode)
+    let codeColor: ColorCode = getColor(db = db, name = helpCode)
     showOutput(message = "You can cancel adding a new variable at any time by double press Escape key or enter word '" &
         style(ss = "exit", style = codeColor) & "' as an answer.", db = db)
     # Set the name for the variable
@@ -577,8 +577,8 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Can't get the selected variable from the database. Reason:",
           e = getCurrentException(), db = db)
     let
-      codeColor: string = getColor(db = db, name = helpCode)
-      valueColor: string = getColor(db = db, name = values)
+      codeColor: ColorCode = getColor(db = db, name = helpCode)
+      valueColor: ColorCode = getColor(db = db, name = values)
     showOutput(message = "You can cancel editing the variable at any time by double press Escape key or enter word '" &
         style(ss = "exit", style = codeColor) &
         "' as an answer. You can also reuse a current value by pressing Enter.", db = db)
@@ -729,8 +729,8 @@ proc showVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     var table: TerminalTable = TerminalTable()
     try:
       let
-        color: string = getColor(db = db, name = showHeaders)
-        color2: string = getColor(db = db, name = default)
+        color: ColorCode = getColor(db = db, name = showHeaders)
+        color2: ColorCode = getColor(db = db, name = default)
       table.add(parts = [style(ss = "Id:", style = color), style(ss = $id,
           style = color2)])
       table.add(parts = [style(ss = "Name:", style = color), style(
