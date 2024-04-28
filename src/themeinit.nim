@@ -32,6 +32,7 @@ import std/[strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
+import norm/private/log
 # Internal imports
 import commandslist, help, input, output, theme, types
 
@@ -79,12 +80,13 @@ proc showTheme(db): ResultCode {.sideEffect, raises: [], tags: [
             name = ids)), style(ss = value, style = getColor(db = db,
             name = values)), style(ss = color.description, style = getColor(
             db = db, name = default))])
-    except:
+    except ValueError, DbError, LoggingError, UnknownEscapeError,
+        FinalByteError, InsufficientInputError:
       return showError(message = "Can't show the shell's theme's colors. Reason: ",
           e = getCurrentException(), db = db)
     try:
       table.echoTable
-    except:
+    except IOError, Exception:
       return showError(message = "Can't show the list of shell's theme's colors. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -102,8 +104,10 @@ proc editTheme(db): ResultCode {.sideEffect, raises: [], tags: [
     # Select the color to edit
     showOutput(message = "You can cancel editing a color at any time by double press Escape key or enter word 'exit' as an answer.", db = db)
     showFormHeader(message = "(1/5) Name:", db = db)
-    showOutput(message = "You can get more information about each color with command ", db= db, newLine = false)
-    showOutput(message = "'theme list'", color = helpCommand, db = db, newLine = false)
+    showOutput(message = "You can get more information about each color with command ",
+        db = db, newLine = false)
+    showOutput(message = "'theme list'", color = helpCommand, db = db,
+        newLine = false)
     showOutput(message = ".", db = db)
     var color: Color = newColor()
     askForName[Color](db = db, action = "Editing the theme",
@@ -169,7 +173,7 @@ proc editTheme(db): ResultCode {.sideEffect, raises: [], tags: [
     # Save the color to the database
     try:
       db.update(obj = color)
-    except:
+    except DbError, ValueError:
       return showError(message = "Can't save the edits of the theme to database. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -206,7 +210,7 @@ proc resetTheme(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
               cols[index].italic = color.italic
               break
         db.update(objs = cols)
-      except:
+      except KeyError, ValueError, DbError, LoggingError:
         return showError(message = "Can't reset the whole theme. Reason: ",
             e = getCurrentException(), db = db)
       showOutput(message = "The shell's theme reseted to its default values.",
@@ -227,7 +231,7 @@ proc resetTheme(arguments: UserInput; db): ResultCode {.sideEffect, raises: [],
           break
       try:
         db.update(obj = color)
-      except:
+      except DbError, ValueError:
         return showError(message = "Can't update the shell's theme's color. Reason: ",
             e = getCurrentException(), db = db)
       showOutput(message = "The shell's theme color '" & $color.name &
