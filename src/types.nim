@@ -194,10 +194,7 @@ proc to*(dbVal: DbValue, T: typedesc[Path]): T {.raises: [], tags: [
   ##
   ## Returns the converted dbVal parameter
   body:
-    try:
-      dbVal.s.T
-    except:
-      "".T
+    dbVal.s.T
 
 # Procedures related to ResultCode type
 
