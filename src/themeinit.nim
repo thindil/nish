@@ -51,7 +51,7 @@ proc showTheme(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = tableHeaders)
+      let color: ColorCode = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "Name", style = color), style(ss = "Value",
           style = color), style(ss = "Description", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -63,7 +63,7 @@ proc showTheme(db): ResultCode {.sideEffect, raises: [], tags: [
       db.rawSelect(qry = "SELECT * FROM theme ORDER BY name ASC",
           objs = cols)
       for color in cols:
-        var value: string = $color.cValue
+        var value: OutputMessage = $color.cValue
         if color.underline:
           value &= ", underlined"
         if color.bold:
@@ -119,7 +119,7 @@ proc editTheme(db): ResultCode {.sideEffect, raises: [], tags: [
     showOutput(message = $color.name, db = db, newLine = false, color = ids)
     showOutput(message = " " & color.description.toLowerAscii & " is: ",
         db = db, newLine = false)
-    var value: string = $color.cValue
+    var value: OutputMessage = $color.cValue
     if color.underline:
       value &= ", underlined"
     if color.bold:
