@@ -293,7 +293,7 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       for size in table.getColumnSizes(maxSize = int.high):
         width += size.ColumnAmount
       showFormHeader(message = "All declared environent variables are:",
-          width = width.ColumnAmount, db = db)
+          width = width, db = db)
     # Show the list of environment variables available in current directory
     elif arguments[0..3] == "list":
       try:
@@ -311,11 +311,11 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           FinalByteError, InsufficientInputError:
         return showError(message = "Can't get the current directory name. Reason: ",
             e = getCurrentException(), db = db)
-      var width: int = 0
+      var width: ColumnAmount = 0.ColumnAmount
       for size in table.getColumnSizes(maxSize = int.high):
-        width += size
+        width += size.ColumnAmount
       showFormHeader(message = "Declared environent variables are:",
-          width = width.ColumnAmount, db = db)
+          width = width, db = db)
     try:
       table.echoTable
     except IOError, Exception:
