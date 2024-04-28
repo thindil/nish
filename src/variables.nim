@@ -45,8 +45,11 @@ const
       'n': "number", 'q': "quit"}.toTable
     ## The list of available options when setting the type of a variable's value
 
-type VariableName = string
-  ## Used to store variables names in the database.
+type
+  VariableName = string
+    ## Used to store variables names in the database.
+  VariableValue = string
+    ## Used to store variables' values
 
 using
   db: DbConn # Connection to the shell's database
@@ -177,7 +180,7 @@ proc setVariables*(newDirectory: Path; db;
         if variable.id in skipped:
           continue
         var
-          value: string = variable.value
+          value: VariableValue = variable.value
           variableIndex: ExtendedNatural = value.find(sub = '$')
         # Convert all environment variables inside the variable to their values
         while variableIndex in 0..(value.len - 1):
@@ -191,7 +194,7 @@ proc setVariables*(newDirectory: Path; db;
             variableEnd.inc
           if variableEnd > value.len:
             variableEnd = value.len
-          let variableName: string = value[variableIndex + 1..variableEnd - 1]
+          let variableName: VariableName = value[variableIndex + 1..variableEnd - 1]
           value[variableIndex..variableEnd - 1] = getEnv(key = variableName)
           variableIndex = value.find(sub = '$', start = variableEnd)
         putEnv(key = variable.name, val = value)
@@ -264,7 +267,7 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       table: TerminalTable = TerminalTable()
       variables: seq[Variable] = @[newVariable()]
     try:
-      let color: string = getColor(db = db, name = tableHeaders)
+      let color: ColorCode = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "ID", style = color), style(ss = "Name",
           style = color), style(ss = "Value", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -286,9 +289,9 @@ proc listVariables(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           FinalByteError, InsufficientInputError:
         return showError(message = "Can't read data about variables from database. Reason: ",
             e = getCurrentException(), db = db)
-      var width: int = 0
+      var width: ColumnAmount = 0.ColumnAmount
       for size in table.getColumnSizes(maxSize = int.high):
-        width += size
+        width += size.ColumnAmount
       showFormHeader(message = "All declared environent variables are:",
           width = width.ColumnAmount, db = db)
     # Show the list of environment variables available in current directory
