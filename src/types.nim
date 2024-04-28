@@ -216,3 +216,12 @@ proc `$`*(x: ResultCode): string {.borrow.}
   ##
   ## Returns the string representation of the x parameter
 
+# Procedures related to ResultCode type
+
+proc `+=`*(location: var ColumnAmount; value: ColumnAmount) {.borrow.}
+  ## Used as shorthand assignment to ColumnAmount
+  ##
+  ## * x - The value to which other value will be added
+  ## * y - The value to add
+  ##
+  ## Returns modified parameter location.
