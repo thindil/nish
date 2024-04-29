@@ -31,6 +31,7 @@ import std/[os, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
+import norm/private/log
 # Internal imports
 import commandslist, constants, help, input, output, theme, types
 
@@ -78,7 +79,7 @@ proc to(dbVal: DbValue, T: typedesc[OptionValType]): T {.raises: [], tags: [],
   body:
     try:
       parseEnum[OptionValType](s = dbVal.s)
-    except:
+    except ValueError:
       none
 
 proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.sideEffect,
@@ -107,7 +108,7 @@ proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.s
       db.rawSelect(qry = "SELECT value FROM options WHERE option=?",
           obj = option, params = $optionName)
       result = option.value
-    except:
+    except ValueError, DbError, LoggingError:
       showError(message = "Can't get value for option '" & optionName &
           "' from database. Reason: ", e = getCurrentException(), db = db)
       return defaultValue
@@ -152,7 +153,7 @@ proc setOption*(optionName; value: OptionValue = "";
     try:
       if db.exists(T = Option, cond = "option=?", params = $optionName):
         db.select(obj = option, cond = "option=?", params = $optionName)
-    except:
+    except ValueError, NotFoundError, DbError, LoggingError:
       showError(message = "Can't check existence of the option '" & optionName &
           "'. Reason: ", e = getCurrentException(), db = db)
     if value != "":
@@ -167,7 +168,7 @@ proc setOption*(optionName; value: OptionValue = "";
       else:
         option.defaultValue = option.value
         db.insert(obj = option)
-    except:
+    except ValueError, DbError:
       showError(message = "Can't set value for option '" & optionName &
           "'. Reason: ", e = getCurrentException(), db = db)
 
