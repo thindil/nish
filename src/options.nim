@@ -337,7 +337,7 @@ proc setOptions(db): ResultCode {.sideEffect, raises: [], tags: [
               showError(message = "Value for option '" & option.option &
                   "' should be a positive integer, one or more.", db = db)
               value = ""
-          except:
+          except ValueError:
             showError(message = "Value for option '" & option.option &
                 "' should be integer type.", db = db)
             value = ""
@@ -386,7 +386,7 @@ proc resetOptions(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       option.value = option.defaultValue
       try:
         db.update(obj = option)
-      except:
+      except DbError, ValueError:
         return showError(message = "Can't reset option '" & option.option &
             "' to its default value. Reason: ", e = getCurrentException(), db = db)
       showOutput(message = "The shell's option '" & option.option &
@@ -430,7 +430,7 @@ proc createOptionsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newOption())
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't create 'options' table. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -449,11 +449,12 @@ proc deleteOption*(optionName; db): ResultCode {.sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      if not db.exists(T = Option, cond = "option=?", params = $optionName):
+      var option: Option = newOption(name = $optionName)
+      try:
+        db.select(obj = option, cond = "option=?", params = $optionName)
+      except NotFoundError:
         return showError(message = "Can't delete the selected option '" &
             optionName & "' because there is no that option.", db = db)
-      var option: Option = newOption(name = $optionName)
-      db.select(obj = option, cond = "option=?", params = $optionName)
       db.delete(obj = option)
     except:
       return showError(message = "Can't delete the selected option. Reason: ",
