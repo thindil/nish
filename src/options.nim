@@ -318,23 +318,19 @@ proc setOptions(db): ResultCode {.sideEffect, raises: [], tags: [
                 "' should be integer type.", db = db)
             value = ""
         of command:
-          try:
-            let
-              spaceIndex: int = value.find(sub = ' ')
-              withShell: bool = getOption(optionName = "execWithShell", db = db,
-                  defaultValue = "true") == "true"
-              exitCode: ResultCode = runCommand(commandName = (if spaceIndex >
-                  0: value[0 .. spaceIndex] else: value),
-                  arguments = (
-                  if spaceIndex > 0: value[spaceIndex .. ^1] else: ""),
-                  withShell = withShell, db = db)
-            if exitCode != QuitSuccess:
-              showError(message = "Value for option '" & option.option &
-                  "' should be valid command.", db = db)
-              value = ""
-          except:
-            return showError(message = "Can't check the existence of command '" &
-                value & "'. Reason: ", e = getCurrentException(), db = db)
+          let
+            spaceIndex: int = value.find(sub = ' ')
+            withShell: bool = getOption(optionName = "execWithShell", db = db,
+                defaultValue = "true") == "true"
+            exitCode: ResultCode = runCommand(commandName = (if spaceIndex >
+                0: value[0 .. spaceIndex] else: value),
+                arguments = (
+                if spaceIndex > 0: value[spaceIndex .. ^1] else: ""),
+                withShell = withShell, db = db)
+          if exitCode != QuitSuccess:
+            showError(message = "Value for option '" & option.option &
+                "' should be valid command.", db = db)
+            value = ""
         of positive:
           try:
             if ($value).parseInt < 1:
