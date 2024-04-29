@@ -456,7 +456,7 @@ proc deleteOption*(optionName; db): ResultCode {.sideEffect, raises: [], tags: [
         return showError(message = "Can't delete the selected option '" &
             optionName & "' because there is no that option.", db = db)
       db.delete(obj = option)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't delete the selected option. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
