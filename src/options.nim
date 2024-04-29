@@ -151,9 +151,10 @@ proc setOption*(optionName; value: OptionValue = "";
   body:
     var option: Option = newOption(name = $optionName, readOnly = readOnly == 1)
     try:
-      if db.exists(T = Option, cond = "option=?", params = $optionName):
-        db.select(obj = option, cond = "option=?", params = $optionName)
-    except ValueError, NotFoundError, DbError, LoggingError:
+      db.select(obj = option, cond = "option=?", params = $optionName)
+    except NotFoundError:
+      discard
+    except ValueError, DbError, LoggingError:
       showError(message = "Can't check existence of the option '" & optionName &
           "'. Reason: ", e = getCurrentException(), db = db)
     if value != "":
