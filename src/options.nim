@@ -215,7 +215,7 @@ proc showOptions(db): ResultCode {.sideEffect, raises: [], tags: [
         table.add(parts = [style(ss = option.option, style = getColor(db = db,
             name = ids)), style(ss = value & suffix, style = getColor(db = db,
             name = values)), style(ss = option.description, style = color)])
-    except:
+    except ValueError, DbError, LoggingError, UnknownEscapeError, FinalByteError, InsufficientInputError:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException(), db = db)
     try:
@@ -277,7 +277,7 @@ proc setOptions(db): ResultCode {.sideEffect, raises: [], tags: [
           prompt = "New value", db = db)
       try:
         value = optionValues[inputChar]
-      except:
+      except KeyError:
         return showError(message = "Editing the option cancelled. Reason: ",
             db = db, e = getCurrentException())
       if value == "quit":
@@ -296,14 +296,14 @@ proc setOptions(db): ResultCode {.sideEffect, raises: [], tags: [
         of integer:
           try:
             discard ($value).parseInt
-          except:
+          except ValueError:
             showError(message = "Value for option '" & option.option &
                 "' should be integer type.", db = db)
             value = ""
         of float:
           try:
             discard ($value).parseFloat
-          except:
+          except ValueError:
             showError(message = "Value for option '" & option.option &
                 "' should be float type.", db = db)
             value = ""
@@ -313,7 +313,7 @@ proc setOptions(db): ResultCode {.sideEffect, raises: [], tags: [
               showError(message = "Value for option '" & option.option &
                   "' should be a natural integer, zero or more.", db = db)
               value = ""
-          except:
+          except ValueError:
             showError(message = "Value for option '" & option.option &
                 "' should be integer type.", db = db)
             value = ""
