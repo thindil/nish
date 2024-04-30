@@ -184,7 +184,7 @@ proc showOptions(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = tableHeaders)
+      let color: ColorCode = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "Name", style = color), style(ss = "Value",
           style = color), style(ss = "Description", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -195,11 +195,11 @@ proc showOptions(db): ResultCode {.sideEffect, raises: [], tags: [
       var options: seq[Option] = @[newOption()]
       db.rawSelect(qry = "SELECT * FROM options ORDER BY option ASC",
           objs = options)
-      let color: string = getColor(db = db, name = default)
+      let color: ColorCode = getColor(db = db, name = default)
       for option in options:
         var
-          value: string = option.value
-        let suffix: string = (if value ==
+          value: OptionValue = option.value
+        let suffix: OutputMessage = (if value ==
             option.defaultValue: "" else: " (changed)")
         case option.valueType
         of boolean:
@@ -319,7 +319,7 @@ proc setOptions(db): ResultCode {.sideEffect, raises: [], tags: [
             value = ""
         of command:
           let
-            spaceIndex: int = value.find(sub = ' ')
+            spaceIndex: ExtendedNatural = value.find(sub = ' ')
             withShell: bool = getOption(optionName = "execWithShell", db = db,
                 defaultValue = "true") == "true"
             exitCode: ResultCode = runCommand(commandName = (if spaceIndex >
