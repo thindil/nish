@@ -84,3 +84,25 @@ jobs:
           export PATH=$PATH:$HOME/.nimble/bin:/usr/local/nim/bin
           git config --global --add safe.directory /home/runner/work/nish/nish
           nimble -y release
+
+  build_windows:
+    if: ${{ always() }}
+    needs: tests
+    timeout-minutes: 30
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Nim
+      uses: jiro4989/setup-nim-action@v1
+      with:
+        nim-version: 'stable'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update Nimble
+      run: nimble install -y nimble
+
+    - name: Release build
+      run: nimble -y release
