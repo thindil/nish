@@ -527,7 +527,8 @@ proc getPluginId(arguments; db): Natural {.sideEffect, raises: [],
       actionName: string = ""
       argumentsLen: Positive = 1
     type Check = object
-      prefix, actionName: string
+      prefix: UserInput
+      actionName: OutputMessage
     const checks: array[5, Check] = [Check(prefix: "remove",
         actionName: "Removing"), Check(prefix: "show", actionName: "Showing"),
         Check(prefix: "edit", actionName: "Editing"), Check(prefix: "enable",
