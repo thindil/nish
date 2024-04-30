@@ -32,6 +32,7 @@ import std/[os, osproc, parseopt, paths, streams, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, sqlite]
+import norm/private/log
 # Internal imports
 import commandslist, constants, help, input, options, output, theme, types
 
@@ -85,7 +86,7 @@ proc createPluginsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newPlugin())
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't create 'plugins' table. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -497,7 +498,7 @@ proc addPlugin(db; arguments; commands): ResultCode {.sideEffect,
           db.delete(obj = plugin)
           return showError(message = "Can't enable plugin '" & $pluginPath &
               "'.", db = db)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't add plugin to the shell. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "File '" & $pluginPath &
@@ -553,7 +554,7 @@ proc getPluginId(arguments; db): Natural {.sideEffect, raises: [],
         showError(message = "The plugin with the Id: " & $result &
             " doesn't exists.", db = db)
         return 0
-    except:
+    except ValueError, DbError:
       showError(message = "Can't find the plugin in database. Reason: ",
           e = getCurrentException(), db = db)
       return 0
@@ -591,7 +592,7 @@ proc removePlugin(db; arguments; commands): ResultCode {.sideEffect,
             "'.", db = db)
       # Remove the plugin from the base
       db.delete(obj = plugin)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't delete plugin from database. Reason: ",
           e = getCurrentException(), db = db)
     # Remove the plugin from the list of enabled plugins
@@ -650,7 +651,7 @@ proc togglePlugin(db; arguments; disable: bool = true;
       showOutput(message = (if disable: "Disabled" else: "Enabled") &
           " the plugin '" & $plugin.location & "'", color = success, db = db)
       return QuitSuccess.ResultCode
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't " & actionName & " plugin. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -786,7 +787,8 @@ proc showPlugin(arguments; db; commands): ResultCode {.sideEffect, raises: [],
         table.add(parts = [style(ss = "API version:", style = color), style(
             ss = "0.1", style = color2)])
       table.echoTable
-    except:
+    except ValueError, DbError, LoggingError, UnknownEscapeError,
+        InsufficientInputError, FinalByteError, IOError, Exception:
       return showError(message = "Can't show the plugin's info. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -876,7 +878,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
               showError(message = "Can't initialize plugin '" &
                   $plugin.location & "'.", db = db)
               continue
-    except:
+    except ValueError, DbError, LoggingError:
       showError(message = "Can't read data about the shell's plugins. Reason: ",
           e = getCurrentException(), db = db)
 
