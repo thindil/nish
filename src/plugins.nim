@@ -113,7 +113,7 @@ proc execPlugin*(pluginPath: Path; arguments: openArray[string]; db;
     arguments.len > 0
     db != nil
   body:
-    const emptyAnswer: string = ""
+    const emptyAnswer: OutputMessage = ""
     let plugin: Process = try:
           startProcess(command = $pluginPath, args = arguments)
         except OSError, Exception:
@@ -524,7 +524,7 @@ proc getPluginId(arguments; db): Natural {.sideEffect, raises: [],
     result = 0
     var
       plugin: Plugin = newPlugin()
-      actionName: string = ""
+      actionName: OutputMessage = ""
       argumentsLen: Positive = 1
     type Check = object
       prefix: UserInput
@@ -620,7 +620,7 @@ proc togglePlugin(db; arguments; disable: bool = true;
   body:
     let
       id: Natural = getPluginId(arguments = arguments, db = db)
-      actionName: string = (if disable: "disable" else: "enable")
+      actionName: OutputMessage = (if disable: "disable" else: "enable")
     if id == 0:
       return QuitFailure.ResultCode
     try:
@@ -675,7 +675,7 @@ proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
     # Show the list of all installed plugins with information about their state
     if arguments == "list all":
       try:
-        let color: string = getColor(db = db, name = tableHeaders)
+        let color: ColorCode = getColor(db = db, name = tableHeaders)
         table.add(parts = [style(ss = "ID", style = color), style(ss = "Path",
             style = color), style(ss = "Enabled", style = color)])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -687,7 +687,7 @@ proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
         if plugins.len == 0:
           showOutput(message = "There are no available shell's plugins.", db = db)
           return QuitSuccess.ResultCode
-        let color: string = getColor(db = db, name = default)
+        let color: ColorCode = getColor(db = db, name = default)
         for plugin in plugins:
           table.add(parts = [style(ss = plugin.id, style = getColor(db = db,
               name = ids)), style(ss = plugin.location, style = color), style(
@@ -695,15 +695,15 @@ proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
       except:
         return showError(message = "Can't read info about plugin from database. Reason:",
             e = getCurrentException(), db = db)
-      var width: int = 0
+      var width: ColumnAmount = 0.ColumnAmount
       for size in table.getColumnSizes(maxSize = int.high):
-        width += size
+        width += size.ColumnAmount
       showFormHeader(message = "All available plugins are:",
-          width = width.ColumnAmount, db = db)
+          width = width, db = db)
     # Show the list of enabled plugins
     elif arguments[0..3] == "list":
       try:
-        let color: string = getColor(db = db, name = tableHeaders)
+        let color: ColorCode = getColor(db = db, name = tableHeaders)
         table.add(parts = [style(ss = "ID", style = color), style(ss = "Path",
             style = color)])
       except UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -715,18 +715,18 @@ proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
         if plugins.len == 0:
           showOutput(message = "There are no enabled shell's plugins.", db = db)
           return QuitSuccess.ResultCode
-        let color: string = getColor(db = db, name = default)
+        let color: ColorCode = getColor(db = db, name = default)
         for plugin in plugins:
           table.add(parts = [style(ss = plugin.id, style = getColor(db = db,
               name = ids)), style(ss = plugin.location, style = color)])
       except:
         return showError(message = "Can't show the list of enabled plugins. Reason: ",
             e = getCurrentException(), db = db)
-      var width: int = 0
+      var width: ColumnAmount = 0.ColumnAmount
       for size in table.getColumnSizes(maxSize = int.high):
-        width += size
+        width += size.ColumnAmount
       showFormHeader(message = "Enabled plugins are:",
-          width = width.ColumnAmount, db = db)
+          width = width, db = db)
     try:
       table.echoTable
     except IOError, Exception:
@@ -760,8 +760,8 @@ proc showPlugin(arguments; db; commands): ResultCode {.sideEffect, raises: [],
       db.select(obj = plugin, cond = "id=?", params = $id)
       var table: TerminalTable = TerminalTable()
       let
-        color: string = getColor(db = db, name = showHeaders)
-        color2: string = getColor(db = db, name = default)
+        color: ColorCode = getColor(db = db, name = showHeaders)
+        color2: ColorCode = getColor(db = db, name = default)
       table.add(parts = [style(ss = "Id:", style = color), style(ss = $id,
           style = color2)])
       table.add(parts = [style(ss = "Path", style = color), style(
