@@ -29,8 +29,9 @@
 # Standard library imports
 import std/[parseopt, strutils, terminal, unicode]
 # External modules imports
-import contracts, nancy, termstyle
+import ansiparse, contracts, nancy, termstyle
 import norm/sqlite
+import norm/private/log
 # Internal imports
 import constants, output, theme, types
 
@@ -229,7 +230,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
             else:
               moveCursor(inputChar = inputChar, cursorPosition = cursorPosition,
                   inputString = resultString, db = db)
-          except:
+          except EOFError, IOError, ValueError:
             showError(message = "Can't get the next character after Escape. Reason: ",
                 e = getCurrentException(), db = db)
             return exitString
@@ -363,7 +364,8 @@ proc askForName*[T](db; action: OutputMessage; namesType: string;
           row = ["", "", "", ""]
           rowIndex = 0
       table.add(parts = row)
-    except:
+    except UnknownEscapeError, FinalByteError, InsufficientInputError, DbError,
+        LoggingError, ValueError:
       showError(message = "Can't show the list of " & namesType & "s. Reason: ",
           e = getCurrentException(), db = db)
       when names is seq[Completion]:
@@ -375,7 +377,7 @@ proc askForName*[T](db; action: OutputMessage; namesType: string;
       return
     try:
       table.echoTable
-    except:
+    except IOError, Exception:
       showError(message = "Can't show the list of " & namesType & "s. Reason: ",
           e = getCurrentException(), db = db)
       return
@@ -393,7 +395,7 @@ proc askForName*[T](db; action: OutputMessage; namesType: string;
       return
     try:
       name = names[parseInt(s = $id) - 1]
-    except:
+    except ValueError:
       when names is seq[Completion]:
         name.command = ""
       elif names is seq[Plugin]:
