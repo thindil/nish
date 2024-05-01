@@ -165,10 +165,10 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
   ## Escape key
   body:
     # Get the user input and parse it
-    const exitString: string = "exit"
+    const exitString: UserInput = "exit"
     var
       inputChar: char = '\0'
-      resultString: string = ""
+      resultString: UserInput = ""
       cursorPosition: Natural = 0
     # Read the user input until not meet new line character or the input
     # reach the maximum length
@@ -239,7 +239,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
       # Visible character, add it to the user input string and show it in the
       # console
       elif inputChar.ord > 31:
-        let inputRune: string = readChar(inputChar = inputChar, db = db)
+        let inputRune: InputRune = readChar(inputChar = inputChar, db = db)
         try:
           stdout.write(s = inputRune)
         except IOError:
@@ -271,7 +271,7 @@ proc getArguments*(userInput: var OptParser;
     conjCommands = false
     var
       arguments: seq[string] = userInput.remainingArgs
-      index: int = -1
+      index: ExtendedNatural = -1
     for argument in arguments:
       index.inc
       if argument == "&&":
@@ -340,7 +340,7 @@ proc askForName*[T](db; action: OutputMessage; namesType: string;
         rowIndex: Natural = 0
         row: array[4, string] = ["", "", "", ""]
       for index, name in names:
-        var itemName: string = ""
+        var itemName: OutputMessage = ""
         {.ruleOff: "ifStatements".}
         when names is seq[Color]:
           itemName = $name.name
