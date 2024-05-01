@@ -31,6 +31,7 @@ import std/[algorithm, os, parsecfg, strutils, streams]
 # External modules imports
 import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
+import norm/private/log
 # Internal imports
 import commandslist, helpcontent, output, theme, types
 
@@ -80,7 +81,7 @@ proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
             topic & "' because there is no that topic.", db = db)
       db.update(obj = entry)
       return QuitSuccess.ResultCode
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't update the help entry in the database. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -232,7 +233,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           db.rawSelect(qry = "SELECT value FROM options WHERE option='helpColumns'",
               obj = option)
           columnAmount = option.value.parseInt
-        except:
+        except ValueError, DbError, LoggingError:
           showError(message = "Can't get the shell's setting for amount of help list columns. Reason: ",
               e = getCurrentException(), db = db)
         for key in keys:
@@ -271,7 +272,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       var keys: seq[ShellOption] = @[ShellOption()]
       try:
         db.rawSelect(qry = "SELECT topic FROM help", objs = keys)
-      except:
+      except ValueError, DbError, LoggingError:
         return showError(message = "Can't get help topics from database. Reason: ",
             e = getCurrentException(), db = db)
       keys.sort(cmp = system.cmp)
@@ -288,7 +289,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     var dbHelp: seq[HelpEntry] = @[newHelpEntry()]
     try:
       db.select(objs = dbHelp, cond = "topic LIKE ?", params = key)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't read help content from database. Reason: ",
           e = getCurrentException(), db = db)
     # It there are topic or topics which the user is looking for, show them
@@ -304,7 +305,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           try:
             db.rawSelect(qry = "SELECT value FROM options WHERE option='historySort'",
                 obj = historyOption)
-          except:
+          except ValueError, DbError, LoggingError:
             historyOption.value = "recentamount"
           let sortOrder: string = case historyOption.value:
             of "recent": "recently used"
@@ -316,7 +317,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           try:
             db.rawSelect(qry = "SELECT value FROM options WHERE option='historyReverse'",
                 obj = historyOption)
-          except:
+          except ValueError, DbError, LoggingError:
             historyOption.value = "false"
           let sortDirection: string = (if historyOption.value ==
               "true": " in reversed order." else: ".")
@@ -326,7 +327,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             content = replace(s = content, sub = "$1", by = historyOption.value)
             content = replace(s = content, sub = "$2", by = sortOrder)
             content = replace(s = content, sub = "$3", by = sortDirection)
-          except:
+          except ValueError, DbError, LoggingError:
             discard showError(message = "Can't set the shell's help. Reason: ",
                 e = getCurrentException(), db = db)
         # Show the help entry to the user
@@ -405,7 +406,7 @@ proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
           content = content, plugin = $plugin, templ = isTemplate)
       db.insert(obj = newHelp)
       return QuitSuccess.ResultCode
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't add help entry to database. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -485,7 +486,7 @@ proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
         of cfgError:
           result = showError(message = "Can't read help entry from configuration file. Reason: " &
               entry.msg, db = db)
-      except:
+      except ValueError, OSError, IOError:
         return showError(message = "Can't get help entry from configuration file. Reason: ",
             e = getCurrentException(), db = db)
     try:
@@ -570,7 +571,7 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
           command = helpCommand, commands = commands)
       addCommand(name = "updatehelp",
           command = updateHelpCommand, commands = commands)
-    except:
+    except CommandsListError:
       showError(message = "Can't add commands related to the shell's help. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -612,7 +613,7 @@ proc createHelpDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     # Create table help in the shell's database
     try:
       db.createTables(obj = newHelpEntry())
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't create 'help' table. Reason: ",
           e = getCurrentException(), db = db)
     return readHelpFromFile(db = db)
@@ -639,6 +640,6 @@ proc deleteHelpEntry*(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       db.select(obj = entry, cond = "topic=?", params = $topic)
       db.delete(obj = entry)
       return QuitSuccess.ResultCode
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't delete the help entry in the database. Reason: ",
           e = getCurrentException(), db = db)
