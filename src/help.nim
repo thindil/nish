@@ -135,9 +135,9 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       body:
         # Show the command's usage information
         showOutput(message = "Usage: ", color = helpUsage, newLine = false, db = db)
-        var argumentEnd: int = 0
+        var argumentEnd: ExtendedNatural = 0
         while argumentEnd > -1:
-          let argumentStart: int = helpEntry.usage.find(chars = {'?', '['},
+          let argumentStart: ExtendedNatural = helpEntry.usage.find(chars = {'?', '['},
               start = argumentEnd)
           # The command doesn't have arguments or the code reached the end of
           # its arguments' list, print the command
@@ -166,9 +166,9 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             break
         showOutput(message = "\n", db = db)
         # Show the command's help entry content
-        var markEnd: int = 0
+        var markEnd: ExtendedNatural = 0
         while markEnd > -1:
-          let markStart: int = helpEntry.content.find(chars = {'_', '`', '?',
+          let markStart: ExtendedNatural = helpEntry.content.find(chars = {'_', '`', '?',
               '['}, start = markEnd)
           # If there is no text formatting marks, or the code reached the end
           # of the help content, print the content
@@ -225,7 +225,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       body:
         var
           i: Positive = 1
-          row: string = ""
+          row: OutputMessage = ""
           table: TerminalTable = TerminalTable()
           option: ShellOption = ShellOption()
           columnAmount: Positive = 4
@@ -247,9 +247,9 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
                   e = getCurrentException(), db = db)
             row = ""
             i = 1
-        var width: int = 0
+        var width: ColumnAmount = 0.ColumnAmount
         for size in table.getColumnSizes(maxSize = int.high):
-          width = width + size + 2
+          width += (size + 2).ColumnAmount
         showFormHeader(message = "Available help topics",
             width = width.ColumnAmount, db = db)
         try:
