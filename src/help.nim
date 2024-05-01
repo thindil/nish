@@ -279,12 +279,13 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       showHelpList(keys = keys)
       return QuitSuccess.ResultCode
     # Try to get the selected help topic from the database
+    type DbKey = string
     let
       tokens: seq[string] = split(s = $topic)
       args: UserInput = join(a = tokens[
               1 .. ^1], sep = " ")
       command: UserInput = tokens[0]
-      key: string = (command & (if args.len > 0: " " &
+      key: DbKey = (command & (if args.len > 0: " " &
           args else: "")).replace(sub = '*', by = '%')
     var dbHelp: seq[HelpEntry] = @[newHelpEntry()]
     try:
