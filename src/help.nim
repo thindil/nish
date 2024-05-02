@@ -137,8 +137,8 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         showOutput(message = "Usage: ", color = helpUsage, newLine = false, db = db)
         var argumentEnd: ExtendedNatural = 0
         while argumentEnd > -1:
-          let argumentStart: ExtendedNatural = helpEntry.usage.find(chars = {'?', '['},
-              start = argumentEnd)
+          let argumentStart: ExtendedNatural = helpEntry.usage.find(chars = {
+              '?', '['}, start = argumentEnd)
           # The command doesn't have arguments or the code reached the end of
           # its arguments' list, print the command
           if argumentStart == -1:
@@ -168,8 +168,8 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         # Show the command's help entry content
         var markEnd: ExtendedNatural = 0
         while markEnd > -1:
-          let markStart: ExtendedNatural = helpEntry.content.find(chars = {'_', '`', '?',
-              '['}, start = markEnd)
+          let markStart: ExtendedNatural = helpEntry.content.find(chars = {'_',
+              '`', '?', '['}, start = markEnd)
           # If there is no text formatting marks, or the code reached the end
           # of the help content, print the content
           if markStart == -1:
@@ -297,7 +297,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     if dbHelp.len > 0:
       # There is exactly one topic which the user is looking for, show it
       if dbHelp.len == 1:
-        var content: string = dbHelp[0].content
+        var content: OutputMessage = dbHelp[0].content
         # The help content for the selected topic is template, convert some
         # variables in it to the proper values. At this moment only history list
         # need that conversion.
@@ -308,7 +308,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
                 obj = historyOption)
           except ValueError, DbError, LoggingError:
             historyOption.value = "recentamount"
-          let sortOrder: string = case historyOption.value:
+          let sortOrder: OutputMessage = case historyOption.value:
             of "recent": "recently used"
             of "amount": "how many times used"
             of "name": "name"
@@ -320,7 +320,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
                 obj = historyOption)
           except ValueError, DbError, LoggingError:
             historyOption.value = "false"
-          let sortDirection: string = (if historyOption.value ==
+          let sortDirection: OutputMessage = (if historyOption.value ==
               "true": " in reversed order." else: ".")
           try:
             db.rawSelect(qry = "SELECT value FROM options WHERE option='historyAmount'",
@@ -368,7 +368,7 @@ proc showHelpList*(command: string; subcommands: seq[
     showOutput(message = "Available subcommands for '" & command & "' are: ",
         color = helpUsage, db = db)
     var newSubcommands: seq[string] = @[]
-    let color: string = getColor(db = db, name = helpReqParam)
+    let color: ColorCode = getColor(db = db, name = helpReqParam)
     for subCommand in subcommands:
       newSubcommands.add(y = style(ss = subCommand, style = color))
     showOutput(message = newSubcommands.join(sep = ", "), db = db)
@@ -438,7 +438,7 @@ proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       return showError(message = "Can't read file with help entries. Reason: ",
           e = getCurrentException(), db = db)
     var
-      topic, usage, content, plugin: string = ""
+      topic, usage, content, plugin: UserInput = ""
       isTemplate: bool = false
     proc addEntry(): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
@@ -450,9 +450,8 @@ proc readHelpFromFile(db): ResultCode {.raises: [], tags: [WriteIOEffect,
       body:
         if topic.len > 0 and usage.len > 0 and content.len > 0 and
             plugin.len > 0:
-          result = addHelpEntry(topic = topic,
-              usage = usage,
-              plugin = plugin, content = content, isTemplate = isTemplate, db = db)
+          result = addHelpEntry(topic = topic, usage = usage, plugin = plugin,
+              content = content, isTemplate = isTemplate, db = db)
           topic = ""
           usage = ""
           content = ""
