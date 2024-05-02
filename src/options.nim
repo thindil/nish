@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[os, strutils, tables]
 # External modules imports
-import ansiparse, contracts, nancy, nimalyzer, termstyle
+import ansiparse, contracts, nancy, termstyle
 import norm/[model, sqlite]
 import norm/private/log
 # Internal imports

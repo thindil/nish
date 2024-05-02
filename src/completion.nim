@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[os, parsecfg, strutils, tables]
 # External modules imports
-import contracts, nancy, nimalyzer, termstyle
+import contracts, nancy, termstyle
 import norm/[model, sqlite]
 # Internal imports
 import commandslist, constants, help, input, options, output, theme, types
