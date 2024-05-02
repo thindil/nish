@@ -311,7 +311,6 @@ proc askForName*[T](db; action: OutputMessage; namesType: string;
       table: TerminalTable = TerminalTable()
       names: seq[T] = @[name]
     try:
-      {.ruleOff: "ifStatements".}
       when names is seq[Color]:
         db.select(objs = names, cond = "1 = 1 ORDER BY name ASC")
       elif names is seq[Option]:
@@ -324,7 +323,6 @@ proc askForName*[T](db; action: OutputMessage; namesType: string;
         db.select(objs = names, cond = "1 = 1 ORDER BY location ASC")
       elif names is seq[Variable]:
         db.select(objs = names, cond = "1 = 1 ORDER BY name ASC")
-      {.ruleOn: "ifStatements".}
       if names.len == 0:
         showError(message = "There is no available " & namesType & " to show.", db = db)
         when names is seq[Completion]:
@@ -341,7 +339,6 @@ proc askForName*[T](db; action: OutputMessage; namesType: string;
         row: array[4, string] = ["", "", "", ""]
       for index, name in names:
         var itemName: OutputMessage = ""
-        {.ruleOff: "ifStatements".}
         when names is seq[Color]:
           itemName = $name.name
         elif names is seq[Option]:
@@ -354,7 +351,6 @@ proc askForName*[T](db; action: OutputMessage; namesType: string;
           itemName = $name.location
         elif names is seq[Variable]:
           itemName = name.name
-        {.ruleOn: "ifStatements".}
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(
             db = db, name = ids)) & style(ss = itemName, style = getColor(
             db = db, name = values))
