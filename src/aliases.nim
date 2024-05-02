@@ -64,8 +64,9 @@ proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
     db != nil
   body:
     aliases.clear
+    type DbString = string
     var
-      dbQuery: string = "SELECT id, name FROM aliases WHERE path='" &
+      dbQuery: DbString = "SELECT id, name FROM aliases WHERE path='" &
           $directory & "'"
       remainingDirectory: Path = parentDir(path = directory)
     # Construct SQL querry, search for aliases also defined in parent directories
@@ -104,7 +105,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
   body:
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = tableHeaders)
+      let color: ColorCode = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "ID", style = color), style(ss = "Name",
           style = color), style(ss = "Description", style = color)])
     except InsufficientInputError, FinalByteError, UnknownEscapeError:
@@ -145,7 +146,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         showOutput(message = "There are no defined shell's aliases in the current directory.", db = db)
         return QuitSuccess.ResultCode
     try:
-      let color: string = getColor(db = db, name = ids)
+      let color: ColorCode = getColor(db = db, name = ids)
       for dbResult in dbAliases:
         table.add(parts = [style(ss = dbResult.id, style = color), style(
             ss = dbResult.name, style = color), style(ss = dbResult.description,
@@ -154,15 +155,15 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't add an alias to the list. Reason:",
           e = getCurrentException(), db = db)
     try:
-      var width: int = 0
+      var width: ColumnAmount = 0.ColumnAmount
       for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size + 2
+        width += (size + 2).ColumnAmount
       if arguments == "list all":
         showFormHeader(message = "All available aliases are:",
-            width = width.ColumnAmount, db = db)
+            width = width, db = db)
       else:
         showFormHeader(message = "Available aliases are:",
-            width = width.ColumnAmount, db = db)
+            width = width, db = db)
       table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show the list of aliases. Reason: ",
@@ -209,7 +210,7 @@ proc getAliasId(arguments; db): Natural {.sideEffect, raises: [], tags: [
     result = 0
     var
       alias: Alias = newAlias()
-      actionName: string = ""
+      actionName: OutputMessage = ""
       argumentsLen: Positive = 1
     if arguments.startsWith(prefix = "delete"):
       actionName = "Deleting"
@@ -301,8 +302,8 @@ proc showAlias(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     var table: TerminalTable = TerminalTable()
     try:
       let
-        color: string = getColor(db = db, name = showHeaders)
-        color2: string = getColor(db = db, name = default)
+        color: ColorCode = getColor(db = db, name = showHeaders)
+        color2: ColorCode = getColor(db = db, name = default)
       table.add(parts = [style(ss = "Id:", style = color), style(ss = $id,
           style = color2)])
       table.add(parts = [style(ss = "Name:", style = color), style(
@@ -337,7 +338,7 @@ proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
   require:
     db != nil
   body:
-    let codeColor: string = getColor(db = db, name = helpCode)
+    let codeColor: ColorCode = getColor(db = db, name = helpCode)
     showOutput(message = "You can cancel adding a new alias at any time by double press Escape key or enter word '" &
         style(ss = "exit", style = codeColor) & "' as an answer.", db = db)
     # Set the name for the alias
@@ -488,8 +489,8 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't get the alias from database. Reason: ",
           e = getCurrentException(), db = db)
     let
-      codeColor: string = getColor(db = db, name = helpCode)
-      valueColor: string = getColor(db = db, name = values)
+      codeColor: ColorCode = getColor(db = db, name = helpCode)
+      valueColor: ColorCode = getColor(db = db, name = values)
     showOutput(message = "You can cancel editing the alias at any time by double press Escape key or enter word '" &
         style(ss = "exit", style = codeColor) &
         "' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
@@ -623,7 +624,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
   body:
     result = QuitSuccess.ResultCode
     let
-      aliasIndex: string =
+      aliasIndex: UserInput =
         aliasId
       currentDirectory: Path = try:
           getCurrentDirectory()
@@ -696,7 +697,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
           aliases.setAliases(directory = getCurrentDirectory(), db = db)
           continue
         let
-          spaceIndex: int = command.find(sub = ' ')
+          spaceIndex: ExtendedNatural = command.find(sub = ' ')
           withShell: bool = getOption(optionName = "execWithShell", db = db,
             defaultValue = "true") == "true"
         result = runCommand(commandName = (if spaceIndex > 0: $(command[0 ..
