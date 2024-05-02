@@ -29,8 +29,9 @@
 # Standard library imports
 import std/[os, paths, parseopt, strutils, tables]
 # External modules imports
-import contracts, nancy, termstyle
+import ansiparse, contracts, nancy, termstyle
 import norm/[model, sqlite]
+import norm/private/log
 # Internal imports
 import commandslist, constants, help, input, options, output,
     variables, theme, types
@@ -82,7 +83,7 @@ proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
       db.rawSelect(qry = dbQuery, objs = dbAliases)
       for dbResult in dbAliases:
         aliases[dbResult.name] = dbResult.id
-    except:
+    except ValueError, DbError, LoggingError:
       showError(message = "Can't set aliases for the current directory. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -106,7 +107,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       let color: string = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "ID", style = color), style(ss = "Name",
           style = color), style(ss = "Description", style = color)])
-    except:
+    except InsufficientInputError, FinalByteError, UnknownEscapeError:
       return showError(message = "Can't show aliases list. Reason: ",
           e = getCurrentException(), db = db)
     type LocalAlias = ref object
@@ -119,7 +120,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       try:
         db.rawSelect(qry = "SELECT id, name, description FROM aliases",
             objs = dbAliases)
-      except:
+      except ValueError, DbError, LoggingError:
         return showError(message = "Can't read info about alias from database. Reason:",
             e = getCurrentException(), db = db)
       if dbAliases.len == 0:
@@ -137,7 +138,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
             dbAliases = @[]
           dbAliases.add(y = dbAlias)
           index.inc
-        except:
+        except ValueError, DbError, LoggingError:
           return showError(message = "Can't read info about alias from database. Reason:",
               e = getCurrentException(), db = db)
       if dbAliases[0].name.len == 0:
@@ -149,7 +150,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         table.add(parts = [style(ss = dbResult.id, style = color), style(
             ss = dbResult.name, style = color), style(ss = dbResult.description,
             style = getColor(db = db, name = default))])
-    except:
+    except InsufficientInputError, FinalByteError, UnknownEscapeError:
       return showError(message = "Can't add an alias to the list. Reason:",
           e = getCurrentException(), db = db)
     try:
@@ -163,7 +164,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         showFormHeader(message = "Available aliases are:",
             width = width.ColumnAmount, db = db)
       table.echoTable
-    except:
+    except IOError, Exception:
       return showError(message = "Can't show the list of aliases. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -235,7 +236,7 @@ proc getAliasId(arguments; db): Natural {.sideEffect, raises: [], tags: [
         showError(message = "The alias with the Id: " & $result &
             " doesn't exists.", db = db)
         return 0
-    except:
+    except ValueError, DbError:
       showError(message = "Can't find the alias in database. Reason: ",
           e = getCurrentException(), db = db)
       return 0
@@ -262,7 +263,7 @@ proc deleteAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       var alias: Alias = newAlias()
       db.select(obj = alias, cond = "id=?", params = $id)
       db.delete(obj = alias)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't delete alias from database. Reason: ",
           e = getCurrentException(), db = db)
     try:
@@ -294,7 +295,7 @@ proc showAlias(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     var alias: Alias = newAlias()
     try:
       db.select(obj = alias, cond = "id=?", params = $id)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't read alias data from database. Reason: ",
           e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
@@ -317,7 +318,7 @@ proc showAlias(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       table.add(parts = [style(ss = "Output to:", style = color), style(
           ss = alias.output, style = color2)])
       table.echoTable
-    except:
+    except UnknownEscapeError, FinalByteError, InsufficientInputError, IOError, Exception:
       return showError(message = "Can't show alias. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -443,13 +444,13 @@ proc addAlias(aliases; db): ResultCode {.sideEffect, raises: [],
     try:
       if db.exists(T = Alias, cond = "name=?", params = alias.name):
         return showError(message = "There is an alias with the same name in the database.", db = db)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't check if the similar alias exists. Reason: ",
           e = getCurrentException(), db = db)
     # Save the alias to the database
     try:
       db.insert(obj = alias)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't add the alias to the database. Reason: ",
           e = getCurrentException(), db = db)
     # Refresh the list of available aliases
@@ -483,7 +484,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
     var alias: Alias = newAlias()
     try:
       db.select(obj = alias, cond = "id=?", params = $id)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't get the alias from database. Reason: ",
           e = getCurrentException(), db = db)
     let
@@ -590,7 +591,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       alias.description = $description
       alias.output = $output
       db.update(obj = alias)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't update the alias. Reason: ",
           e = getCurrentException(), db = db)
     # Refresh the list of available aliases
@@ -636,7 +637,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
     try:
       db.rawSelect(qry = "SELECT output, commands FROM aliases WHERE id=?",
           obj = alias, params = aliases[aliasIndex])
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't get information about the alias from the database. Reason:",
           e = getCurrentException(), db = db)
     var commandArguments: seq[string] = (if arguments.len > 0: initOptParser(
@@ -705,7 +706,7 @@ proc execAlias*(arguments; aliasId: string; aliases;
             "stdout": "" else: alias.output))
         if result != QuitSuccess and conjCommands:
           break
-      except:
+      except OSError:
         showError(message = "Can't execute the command of the alias. Reason: ",
             e = getCurrentException(), db = db)
         break
@@ -780,7 +781,7 @@ proc initAliases*(db; aliases: ref AliasesList;
     try:
       addCommand(name = "alias", command = aliasCommand, commands = commands,
           subCommands = aliasesCommands)
-    except:
+    except CommandsListError:
       showError(message = "Can't add commands related to the shell's aliases. Reason: ",
           e = getCurrentException(), db = db)
     # Set the shell's aliases for the current directory
@@ -824,7 +825,7 @@ proc createAliasesDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newAlias())
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't create 'aliases' table. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
