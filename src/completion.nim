@@ -84,10 +84,7 @@ proc to(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
   ##
   ## Returns the converted dbVal parameter
   body:
-    try:
-      dbVal.i.CompletionType
-    except:
-      none
+    dbVal.i.CompletionType
 
 proc newCompletion(command: string = ""; cType: CompletionType = none;
     cValues: string = ""): Completion {.raises: [], tags: [], contractual.} =
