@@ -736,13 +736,9 @@ proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       let
         dict: Config = loadConfig(filename = fileName)
         command: string = dict.getSectionValue(section = "", key = "Command")
-      try:
-        if db.exists(T = Completion, cond = "command=?", params = command):
-          return showError(message = "The completion for the command: " &
-            command & " exists.", db = db)
-      except:
-        return showError(message = "Can't check completion in database. Reason: ",
-            e = getCurrentException(), db = db)
+      if db.exists(T = Completion, cond = "command=?", params = command):
+        return showError(message = "The completion for the command: " &
+          command & " exists.", db = db)
       var completion: Completion = newCompletion(command = dict.getSectionValue(
           section = "", key = "Command"), cType = parseEnum[CompletionType](
           s = dict.getSectionValue(section = "", key = "Type")),
