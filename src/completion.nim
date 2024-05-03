@@ -744,7 +744,7 @@ proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
           s = dict.getSectionValue(section = "", key = "Type")),
           cValues = dict.getSectionValue(section = "", key = "Values"))
       db.insert(obj = completion)
-    except:
+    except KeyError, ValueError, DbError, IOError, OSError, Exception:
       return showError(message = "Can't import the completion from the file. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Imported the completion from file : " & fileName,
@@ -810,6 +810,6 @@ proc initCompletion*(db; commands: ref CommandsList) {.sideEffect, raises: [],
       addCommand(name = "completion",
           command = completionCommand, commands = commands,
           subCommands = completionCommands)
-    except:
+    except CommandsListError:
       showError(message = "Can't add commands related to the shell's completion system. Reason: ",
           e = getCurrentException(), db = db)
