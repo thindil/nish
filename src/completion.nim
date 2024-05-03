@@ -27,7 +27,7 @@
 ## input, like completing names of files, directories, commands, etc.
 
 # Standard library imports
-import std/[os, parsecfg, strutils, tables]
+import std/[os, parsecfg, paths, strutils, tables]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, sqlite]
@@ -149,27 +149,27 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[Completion
           if completion notin completions:
             completions.add(y = completion)
       else:
-        let prefixInsensitive: string = prefix.lastPathPart.toLowerAscii
-        var parentDir: string = case prefix.parentDir
+        let prefixInsensitive: CompletionPrefix = prefix.lastPathPart.toLowerAscii
+        var parentDir: Path = case prefix.parentDir
           of ".":
-            ""
+            "".Path
           of "/":
-            "/"
+            "/".Path
           else:
-            prefix.parentDir & DirSep
+            (prefix.parentDir & DirSep).Path
         if prefix.endsWith(suffix = DirSep):
-          parentDir = prefix
-        for item in walkDir(dir = parentDir.absolutePath, relative = true):
+          parentDir = prefix.Path
+        for item in walkDir(dir = $parentDir.absolutePath, relative = true):
           if completions.len >= completionAmount:
             return
-          if (cType == files and not fileExists(filename = parentDir &
-              item.path)) or (cType == dirs and not dirExists(dir = parentDir & item.path)):
+          if (cType == files and not fileExists(filename = $parentDir &
+              item.path)) or (cType == dirs and not dirExists(dir = $parentDir & item.path)):
             continue
-          var completion: CompletionString = (if dirExists(dir = parentDir &
+          var completion: CompletionString = (if dirExists(dir = $parentDir &
               item.path): item.path & DirSep else: item.path)
           if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
               prefix.endsWith(suffix = DirSep)) and completion notin completions:
-            completions.add(y = parentDir & completion)
+            completions.add(y = $parentDir & completion)
     except ValueError, OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException(), db = db)
@@ -192,7 +192,7 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[string
   body:
     if prefix.len == 0:
       return
-    let completionAmount: int = try:
+    let completionAmount: Natural = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
       except ValueError:
@@ -224,7 +224,7 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[string
         for file in walkFiles(pattern = path & DirSep & prefix & "*"):
           if completions.len >= completionAmount:
             return
-          let fileName: string = file.extractFilename
+          let fileName: CompletionString = file.extractFilename
           if fileName notin completions:
             completions.add(y = fileName)
     except OSError:
@@ -251,7 +251,7 @@ proc getCompletion*(commandName, prefix: CompletionPrefix; completions: var seq[
   body:
     if prefix.len == 0:
       return
-    let completionAmount: int = try:
+    let completionAmount: Natural = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
       except ValueError:
@@ -322,7 +322,7 @@ proc addCompletion(db): ResultCode {.sideEffect, raises: [],
   require:
     db != nil
   body:
-    let codeColor: string = getColor(db = db, name = helpCode)
+    let codeColor: ColorCode = getColor(db = db, name = helpCode)
     showOutput(message = "You can cancel adding a new completion at any time by double press Escape key or enter word '" &
         style(ss = "exit", style = codeColor) & "' as an answer.", db = db)
     # Set the command for the completion
@@ -412,7 +412,7 @@ proc getCompletionId(arguments; db): Natural {.sideEffect, raises: [],
     result = 0
     var
       completion: Completion = newCompletion()
-      actionName: string = ""
+      actionName: OutputMessage = ""
       argumentsLen: Positive = 1
     if arguments.startsWith(prefix = "delete"):
       actionName = "Deleting"
@@ -469,8 +469,8 @@ proc editCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't get completion from the database. Reason: ",
           e = getCurrentException(), db = db)
     let
-      codeColor: string = getColor(db = db, name = helpCode)
-      valueColor: string = getColor(db = db, name = values)
+      codeColor: ColorCode = getColor(db = db, name = helpCode)
+      valueColor: ColorCode = getColor(db = db, name = values)
     showOutput(message = "You can cancel editing the completion at any time by double press Escape key or enter word '" &
         style(ss = "exit", style = codeColor) &
             "' as an answer. You can also reuse a current value by leaving an answer empty.", db = db)
@@ -553,7 +553,7 @@ proc listCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
   body:
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = tableHeaders)
+      let color: ColorCode = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "ID", style = color), style(ss = "Command",
           style = color), style(ss = "Type", style = color)])
     except InsufficientInputError, FinalByteError, UnknownEscapeError:
@@ -578,11 +578,11 @@ proc listCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       return showError(message = "Can't add a completion to the list. Reason:",
           e = getCurrentException(), db = db)
     try:
-      var width: int = 0
+      var width: ColumnAmount = 0.ColumnAmount
       for size in table.getColumnSizes(maxSize = int.high):
-        width = width + size + 2
+        width += (size + 2).ColumnAmount
       showFormHeader(message = "Available completions are:",
-          width = width.ColumnAmount, db = db)
+          width = width, db = db)
       table.echoTable
     except IOError, Exception:
       return showError(message = "Can't show the list of aliases. Reason: ",
