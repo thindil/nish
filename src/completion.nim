@@ -29,8 +29,9 @@
 # Standard library imports
 import std/[os, parsecfg, strutils, tables]
 # External modules imports
-import contracts, nancy, termstyle
+import ansiparse, contracts, nancy, termstyle
 import norm/[model, sqlite]
+import norm/private/log
 # Internal imports
 import commandslist, constants, help, input, options, output, theme, types
 
@@ -122,7 +123,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[string]; d
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
-      except:
+      except ValueError:
         30
     # Completion disabled
     if completionAmount == 0:
@@ -130,7 +131,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[string]; d
     let caseSensitive: bool = try:
         parseBool(s = $getOption(optionName = "completionCheckCase", db = db,
           defaultValue = "false"))
-      except:
+      except ValueError:
         true
     try:
       if caseSensitive:
@@ -166,7 +167,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[string]; d
           if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
               prefix.endsWith(suffix = DirSep)) and completion notin completions:
             completions.add(y = parentDir & completion)
-    except:
+    except ValueError, OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -191,7 +192,7 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[string
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
-      except:
+      except ValueError:
         30
     # Completion disabled
     if completionAmount == 0:
@@ -250,7 +251,7 @@ proc getCompletion*(commandName, prefix: CompletionPrefix; completions: var seq[
     let completionAmount: int = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
-      except:
+      except ValueError:
         30
     # Completion disabled
     if completionAmount == 0:
@@ -259,7 +260,7 @@ proc getCompletion*(commandName, prefix: CompletionPrefix; completions: var seq[
     # Get the completion for the selected command from database
     try:
       db.select(obj = completion, cond = "command=?", params = commandName)
-    except:
+    except ValueError, DbError, LoggingError:
       # Get the completion for the shell's built-in commands
       if commands.hasKey(key = commandName):
         completions = @[]
@@ -267,7 +268,7 @@ proc getCompletion*(commandName, prefix: CompletionPrefix; completions: var seq[
           for command in commands[commandName].subcommands:
             if command.startsWith(prefix = prefix) and command notin completions:
               completions.add(y = command)
-        except:
+        except KeyError:
           return
       return
     completions = @[]
@@ -301,7 +302,7 @@ proc createCompletionDb*(db): ResultCode {.sideEffect, raises: [], tags: [
   body:
     try:
       db.createTables(obj = newCompletion())
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't create 'completions' table. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -376,13 +377,13 @@ proc addCompletion(db): ResultCode {.sideEffect, raises: [],
       if db.exists(T = Completion, cond = "command=?",
           params = completion.command):
         return showError(message = "There is a completion for the same command in the database.", db = db)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't check if the similar completion exists. Reason: ",
           e = getCurrentException(), db = db)
     # Save the completion to the database
     try:
       db.insert(obj = completion)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't add the completion to the database. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "The new completion for the command '" & command &
@@ -435,7 +436,7 @@ proc getCompletionId(arguments; db): Natural {.sideEffect, raises: [],
         showError(message = "The completion with the Id: " & $result &
             " doesn't exists.", db = db)
         return 0
-    except:
+    except ValueError, DbError:
       showError(message = "Can't find the completion in database. Reason: ",
           e = getCurrentException(), db = db)
       return 0
@@ -461,7 +462,7 @@ proc editCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     var completion: Completion = newCompletion()
     try:
       db.select(obj = completion, cond = "id=?", params = $id)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't get completion from the database. Reason: ",
           e = getCurrentException(), db = db)
     let
@@ -526,7 +527,7 @@ proc editCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       completion.cType = completionType
       completion.cValues = $values
       db.update(obj = completion)
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't update the completion. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "The completion with Id: '" & $id & "' edited.",
@@ -552,13 +553,13 @@ proc listCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       let color: string = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "ID", style = color), style(ss = "Command",
           style = color), style(ss = "Type", style = color)])
-    except:
+    except InsufficientInputError, FinalByteError, UnknownEscapeError:
       return showError(message = "Can't show commands list. Reason: ",
           e = getCurrentException(), db = db)
     var dbCompletions: seq[Completion] = @[newCompletion()]
     try:
       db.selectAll(objs = dbCompletions)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't read info about alias from database. Reason:",
           e = getCurrentException(), db = db)
     if dbCompletions.len == 0:
@@ -570,7 +571,7 @@ proc listCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
             name = ids)), style(ss = dbResult.command, style = getColor(db = db,
             name = values)), style(ss = $dbResult.cType, style = getColor(
             db = db, name = default))])
-    except:
+    except InsufficientInputError, FinalByteError, UnknownEscapeError:
       return showError(message = "Can't add a completion to the list. Reason:",
           e = getCurrentException(), db = db)
     try:
@@ -580,7 +581,7 @@ proc listCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       showFormHeader(message = "Available completions are:",
           width = width.ColumnAmount, db = db)
       table.echoTable
-    except:
+    except IOError, Exception:
       return showError(message = "Can't show the list of aliases. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -607,7 +608,7 @@ proc deleteCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       var completion: Completion = newCompletion()
       db.select(obj = completion, cond = "id=?", params = $id)
       db.delete(obj = completion)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't delete completion from database. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Deleted the completion with Id: " & $id,
@@ -637,7 +638,7 @@ proc showCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     var completion: Completion = newCompletion()
     try:
       db.select(obj = completion, cond = "id=?", params = $id)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't read completion data from database. Reason: ",
           e = getCurrentException(), db = db)
     var table: TerminalTable = TerminalTable()
@@ -655,7 +656,7 @@ proc showCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
         table.add(parts = [style(ss = "Values:", style = color),
             style(ss = completion.cValues, style = color2)])
       table.echoTable
-    except:
+    except InsufficientInputError, FinalByteError, UnknownEscapeError, IOError, Exception:
       return showError(message = "Can't show completion. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -684,7 +685,7 @@ proc exportCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     let
       id: Natural = try:
           args[1].parseInt
-        except:
+        except ValueError:
           return showError(message = "The Id of the completion must be a positive number.", db = db)
       fileName: string = args[2 .. ^1].join(sep = " ")
     var completion: Completion = newCompletion()
@@ -693,7 +694,7 @@ proc exportCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "The completion with the ID: " & $id &
           " doesn't exists.", db = db)
       db.select(obj = completion, cond = "id=?", params = $id)
-    except:
+    except ValueError, DbError, LoggingError:
       return showError(message = "Can't read completion data from database. Reason: ",
           e = getCurrentException(), db = db)
     var dict: Config = newConfig()
@@ -705,7 +706,7 @@ proc exportCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
         dict.setSectionKey(section = "", key = "Values",
             value = completion.cValues)
       dict.writeConfig(filename = fileName)
-    except:
+    except KeyError, IOError, OSError:
       return showError(message = "Can't create the completion export file. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Exported the completion with Id: " & $id &
