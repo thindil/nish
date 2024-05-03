@@ -39,8 +39,6 @@ using
   aliases: ref AliasesList # The list of aliases available in the selected directory
   newDirectory: Path # The directory to which the current directory will be changed
 
-type CommandName* = string ## Used to store the name of the user's command
-
 proc changeDirectory(newDirectory; aliases; db): ResultCode {.sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =

@@ -142,6 +142,9 @@ type
     description*: string
   ResultCode* = distinct Natural
     ## Used to store result code from commands entered by the user
+  CommandName* = string
+    ## Used to store the name of the user's command
+
 
 # Procedures related to Path type
 
