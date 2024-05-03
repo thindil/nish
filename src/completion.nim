@@ -43,6 +43,9 @@ type
   CompletionPrefix* = string
     ## Used to get a completion for directories or commands
 
+  CompletionString* = string
+    ## Used to store the completion value
+
 const
   completionCommands: seq[string] = @["list", "delete", "show", "add",
     "edit", "import", "export"]
@@ -100,7 +103,7 @@ proc newCompletion(command: string = ""; cType: CompletionType = none;
   body:
     Completion(command: command, cType: cType, cValues: cValues)
 
-proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[string]; db;
+proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[CompletionString]; db;
     cType: DirCompletionType = all) {.sideEffect, raises: [], tags: [
     ReadDirEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
@@ -120,7 +123,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[string]; d
   body:
     if prefix.len == 0:
       return
-    let completionAmount: int = try:
+    let completionAmount: Natural = try:
         parseInt(s = $getOption(optionName = "completionAmount", db = db,
           defaultValue = "30"))
       except ValueError:
@@ -141,7 +144,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[string]; d
           if (cType == files and not fileExists(filename = item)) or (cType ==
               dirs and not dirExists(dir = item)):
             continue
-          let completion: string = (if dirExists(dir = item): item &
+          let completion: CompletionString = (if dirExists(dir = item): item &
               DirSep else: item)
           if completion notin completions:
             completions.add(y = completion)
@@ -162,7 +165,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[string]; d
           if (cType == files and not fileExists(filename = parentDir &
               item.path)) or (cType == dirs and not dirExists(dir = parentDir & item.path)):
             continue
-          var completion: string = (if dirExists(dir = parentDir &
+          var completion: CompletionString = (if dirExists(dir = parentDir &
               item.path): item.path & DirSep else: item.path)
           if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
               prefix.endsWith(suffix = DirSep)) and completion notin completions:
