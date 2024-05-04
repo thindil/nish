@@ -37,8 +37,11 @@ import constants, logger, output, types
 type
   CommandLists* = object
     ## Store additional data for the shell's command
-    aliases*: ref AliasesList                 ## List of shell's aliases
-    commands*: ref Table[string, CommandData] ## List of the shell's commands
+    aliases: ref AliasesList
+      ## List of shell's aliases
+    commands: ref Table[string, CommandData]
+      ## List of the shell's commands
+
   CommandProc* = proc (arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.raises: [], contractual.}
     ## The shell's command's code
@@ -62,6 +65,16 @@ type
     ## Used to store the shell's commands
   CommandsListError* = object of CatchableError
     ## Raised when a problem with a command occurs
+
+proc commands*(list: CommandLists): ref Table[string, CommandData] =
+  list.commands
+
+proc aliases*(list: CommandLists): ref AliasesList =
+  list.aliases
+
+proc initCommandLists*(commands: ref Table[string, CommandData];
+    aliases: ref AliasesList): CommandLists =
+  CommandLists(commands: commands, aliases: aliases)
 
 proc addCommand*(name: UserInput; command: CommandProc;
     commands: ref CommandsList; plugin: string = ""; subCommands: seq[
@@ -197,7 +210,7 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
           cmdline = $arguments).remainingArgs else: @[]), options = procOpts)
       if output.len > 0:
         let outputFile: File =
-            if output == "stderr":
+          if output == "stderr":
               stderr
             else:
               open(filename = output, mode = fmAppend)
