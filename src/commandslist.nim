@@ -196,14 +196,11 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
           if arguments.len > 0: initOptParser(
           cmdline = $arguments).remainingArgs else: @[]), options = procOpts)
       if output.len > 0:
-        let outputFile: File = try:
-              if output == "stderr":
-                stderr
-              else:
-                open(filename = output, mode = fmAppend)
-          except:
-            return showError(message = "Can't open output file. Reason: ",
-                e = getCurrentException(), db = db)
+        let outputFile: File =
+            if output == "stderr":
+              stderr
+            else:
+              open(filename = output, mode = fmAppend)
         for line in commProcess.lines:
           outputFile.write(s = line)
         outputFile.close
