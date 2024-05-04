@@ -52,6 +52,7 @@ type
     ##               entries, etc
     ##
     ## Returns QuitSuccess if the command was succesfull, otherwise QuitFalse
+
   CommandData* = object
     ## The data structure for the shell command
     ##
@@ -61,19 +62,40 @@ type
     command*: CommandProc
     plugin*: string
     subcommands*: seq[string]
+
   CommandsList* = Table[string, CommandData]
     ## Used to store the shell's commands
+
   CommandsListError* = object of CatchableError
     ## Raised when a problem with a command occurs
 
-proc commands*(list: CommandLists): ref Table[string, CommandData] =
+proc commands*(list: CommandLists): ref Table[string, CommandData] {.sideEffect,
+    raises: [], tags: [], contractual.} =
+  ## The getter of a field of CommandLists type
+  ##
+  ## * list - the CommandLists object which field will be get
+  ##
+  ## Returns the value of the selected field
   list.commands
 
-proc aliases*(list: CommandLists): ref AliasesList =
+proc aliases*(list: CommandLists): ref AliasesList {.sideEffect, raises: [],
+    tags: [], contractual.} =
+  ## The getter of a field of CommandLists type
+  ##
+  ## * list - the CommandLists object which field will be get
+  ##
+  ## Returns the value of the selected field
   list.aliases
 
-proc initCommandLists*(commands: ref Table[string, CommandData];
-    aliases: ref AliasesList): CommandLists =
+proc initCommandLists*(aliases: ref AliasesList; commands: ref Table[string,
+    CommandData]): CommandLists {.sideEffect, raises: [], tags: [],
+    contractual.} =
+  ## The constructor of a CommandLists object
+  ##
+  ## * aliases  - the list of the shell's aliases
+  ## * commands - the list of the shell's commands
+  ##
+  ## Returns newly created object of CommandLists type
   CommandLists(commands: commands, aliases: aliases)
 
 proc addCommand*(name: UserInput; command: CommandProc;
