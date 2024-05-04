@@ -647,8 +647,8 @@ proc showCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     var table: TerminalTable = TerminalTable()
     try:
       let
-        color: string = getColor(db = db, name = showHeaders)
-        color2: string = getColor(db = db, name = default)
+        color: ColorCode = getColor(db = db, name = showHeaders)
+        color2: ColorCode = getColor(db = db, name = default)
       table.add(parts = [style(ss = "Id:", style = color), style(ss = $id,
           style = color2)])
       table.add(parts = [style(ss = "Command:", style = color),
@@ -690,7 +690,7 @@ proc exportCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
           args[1].parseInt
         except ValueError:
           return showError(message = "The Id of the completion must be a positive number.", db = db)
-      fileName: string = args[2 .. ^1].join(sep = " ")
+      fileName: Path = args[2 .. ^1].join(sep = " ").Path
     var completion: Completion = newCompletion()
     try:
       if not db.exists(T = Completion, cond = "id=?", params = $id):
@@ -708,7 +708,7 @@ proc exportCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       if completion.cValues.len > 0:
         dict.setSectionKey(section = "", key = "Values",
             value = completion.cValues)
-      dict.writeConfig(filename = fileName)
+      dict.writeConfig(filename = $fileName)
     except KeyError, IOError, OSError:
       return showError(message = "Can't create the completion export file. Reason: ",
           e = getCurrentException(), db = db)
@@ -734,11 +734,11 @@ proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
   body:
     if arguments.len < 7:
       return showError(message = "Enter the name of the file with the completion.", db = db)
-    let fileName: string = $arguments[7 .. ^1]
+    let fileName: Path = ($arguments[7 .. ^1]).Path
     try:
       let
-        dict: Config = loadConfig(filename = fileName)
-        command: string = dict.getSectionValue(section = "", key = "Command")
+        dict: Config = loadConfig(filename = $fileName)
+        command: CommandName = dict.getSectionValue(section = "", key = "Command")
       if db.exists(T = Completion, cond = "command=?", params = command):
         return showError(message = "The completion for the command: " &
           command & " exists.", db = db)
@@ -750,7 +750,7 @@ proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     except KeyError, ValueError, DbError, IOError, OSError, Exception:
       return showError(message = "Can't import the completion from the file. Reason: ",
           e = getCurrentException(), db = db)
-    showOutput(message = "Imported the completion from file : " & fileName,
+    showOutput(message = "Imported the completion from file : " & $fileName,
         color = success, db = db)
     return QuitSuccess.ResultCode
 
