@@ -174,7 +174,7 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
               stderr
             else:
               open(filename = output, mode = fmAppend)
-          except:
+          except IOError:
             return showError(message = "Can't open output file. Reason: ",
                 e = getCurrentException(), db = db)
         try:
@@ -184,7 +184,7 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
           if output != "stderr":
             outputFile.close
           return
-        except:
+        except OSError, IOError:
           return showError(message = "Can't execute the command '" &
               commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
     # Execute the external command without the system's default shell
@@ -209,6 +209,6 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
         outputFile.close
       result = commProcess.waitForExit.ResultCode
       commProcess.close
-    except:
+    except ValueError, OSError, IOError:
       return showError(message = "Can't execute the command '" &
           commandToExecute & "'. Reason: ", e = getCurrentException(), db = db)
