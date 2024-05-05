@@ -77,7 +77,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       # Erase the previous content if the new line is longer than the terminal's
       # width
       if promptLength + runeLen(s = $input) > terminalWidth():
-        let linesToDelete: int = (runeLen(s = $input) / terminalWidth()).int
+        let linesToDelete: Natural = (runeLen(s = $input) / terminalWidth()).int
         for i in 1 .. linesToDelete:
           stdout.cursorUp
           stdout.eraseLine
@@ -93,7 +93,7 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       while '=' in $command:
         showOutput(message = $command, newLine = false,
             color = highlightVariable, db = db)
-        var startIndex: int = input.find(sub = ' ', start = (if spaceIndex >
+        var startIndex: ExtendedNatural = input.find(sub = ' ', start = (if spaceIndex >
             -1: spaceIndex else: 0))
         if startIndex < 0:
           inputString = input
@@ -129,8 +129,8 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       # Check if command's arguments contains quotes
       var
         quotes: set[char] = {'\'', '"'}
-        quotePosition: int = find(s = $commandArguments, chars = quotes)
-        startPosition: int = 0
+        quotePosition: ExtendedNatural = find(s = $commandArguments, chars = quotes)
+        startPosition: Natural = 0
       # No quotes, print all
       if quotePosition == -1:
         showOutput(message = $commandArguments, newLine = false, db = db)
