@@ -160,7 +160,7 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
             if option.readOnly: 1 else: 0))
     # If database version is different than the newest, update database
     try:
-      let dbVersion: int = parseInt(s = $getOption(
+      let dbVersion: Natural = parseInt(s = $getOption(
           optionName = "dbVersion", db = result, defaultValue = "0"))
       case dbVersion
       of 0 .. 1:
