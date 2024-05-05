@@ -35,11 +35,14 @@ import norm/sqlite
 import constants, logger, output, types
 
 type
+  CommandsList* = Table[string, CommandData]
+    ## Used to store the shell's commands
+
   CommandLists* = object
     ## Store additional data for the shell's command
     aliases: ref AliasesList
       ## List of shell's aliases
-    commands: ref Table[string, CommandData]
+    commands: ref CommandsList
       ## List of the shell's commands
 
   CommandProc* = proc (arguments: UserInput; db: DbConn;
@@ -63,13 +66,10 @@ type
     plugin*: string
     subcommands*: seq[string]
 
-  CommandsList* = Table[string, CommandData]
-    ## Used to store the shell's commands
-
   CommandsListError* = object of CatchableError
     ## Raised when a problem with a command occurs
 
-proc commands*(list: CommandLists): ref Table[string, CommandData] {.sideEffect,
+proc commands*(list: CommandLists): ref CommandsList {.sideEffect,
     raises: [], tags: [], contractual.} =
   ## The getter of a field of CommandLists type
   ##
@@ -87,8 +87,8 @@ proc aliases*(list: CommandLists): ref AliasesList {.sideEffect, raises: [],
   ## Returns the value of the selected field
   list.aliases
 
-proc initCommandLists*(aliases: ref AliasesList; commands: ref Table[string,
-    CommandData]): CommandLists {.sideEffect, raises: [], tags: [],
+proc initCommandLists*(aliases: ref AliasesList;
+    commands: ref CommandsList): CommandLists {.sideEffect, raises: [], tags: [],
     contractual.} =
   ## The constructor of a CommandLists object
   ##
