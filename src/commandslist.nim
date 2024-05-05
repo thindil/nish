@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[osproc, parseopt, tables]
 # External modules imports
-import contracts
+import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
 import constants, logger, output, types
@@ -56,7 +56,7 @@ type
     ##
     ## Returns QuitSuccess if the command was succesfull, otherwise QuitFalse
 
-  CommandData* = object
+  CommandData* {.ruleOff: "objects".} = object
     ## The data structure for the shell command
     ##
     ## * command     - the shell's command procedure which will be executed
