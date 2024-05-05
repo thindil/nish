@@ -244,7 +244,7 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
       else:
         showError(message = "Invalid version of database.", db = nil)
         return nil
-    except:
+    except ValueError:
       showError(message = "Can't update database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
@@ -269,7 +269,7 @@ proc optimizeDb(arguments; db): ResultCode {.sideEffect,
       db.exec(query = "PRAGMA optimize;VACUUM;".SqlQuery)
       showOutput(message = "The shell's database was optimized.",
           color = success, db = db)
-    except:
+    except DbError:
       return showError(message = "Can't optimize the shell's database. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -304,7 +304,7 @@ proc exportDb(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           sep = " ") else: "") & "'").output)
       showOutput(message = "The backup file: '" & $args[1] & "' created.",
           color = success, db = db)
-    except:
+    except IOError, OSError:
       return showError(message = "Can't create the backup of the shell's database. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -335,7 +335,7 @@ proc importDb(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       else:
         return showError(message = "Can't import the data into the shell's database. Reason: " &
             res.output, db = db)
-    except:
+    except OSError, IOError:
       return showError(message = "Can't import the data into the shell's database. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -387,6 +387,6 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
       addCommand(name = "nishdb",
           command = dbCommand, commands = commands,
           subCommands = dbCommands)
-    except:
+    except CommandsListError:
       showError(message = "Can't add commands related to the shell's database. Reason: ",
           e = getCurrentException(), db = db)
