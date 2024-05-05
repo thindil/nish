@@ -194,9 +194,9 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
       showError(message = "Can't replace command '" & name & "'. Reason: ",
           e = getCurrentException(), db = db)
 
-proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
-    db: DbConn; output: string = ""): ResultCode {.sideEffect, raises: [],
-    tags: [WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect],
+proc runCommand*(commandName: CommandName; arguments: UserInput;
+    withShell: bool; db: DbConn; output: string = ""): ResultCode {.sideEffect,
+    raises: [], tags: [WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect],
     contractual.} =
   ## Excecute the selected command with or witout using the system's default
   ## shell
@@ -214,8 +214,8 @@ proc runCommand*(commandName: string; arguments: UserInput; withShell: bool;
     commandName.len > 0
     db != nil
   body:
-    let commandToExecute: string = commandName & (if arguments.len > 0: " " &
-        arguments else: "")
+    let commandToExecute: CommandName = commandName & (if arguments.len >
+        0: " " & arguments else: "")
     logToFile(message = "Executing command: " & commandToExecute)
     # Execute the external command inside the shell
     if withShell:
