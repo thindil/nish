@@ -63,8 +63,8 @@ type
     ## * plugin      - the name of the plugin to which the command belongs
     ## * subcommands - the list of subcommands available for the command
     command*: CommandProc
-    plugin*: string
-    subcommands*: seq[string]
+    plugin: string
+    subcommands: seq[string]
 
   CommandsListError* = object of CatchableError
     ## Raised when a problem with a command occurs
@@ -97,6 +97,24 @@ proc initCommandLists*(aliases: ref AliasesList;
   ##
   ## Returns newly created object of CommandLists type
   CommandLists(commands: commands, aliases: aliases)
+
+proc plugin*(commd: CommandData): string {.sideEffect, raises: [], tags: [],
+    contractual.} =
+  ## The getter of a field of CommandData type
+  ##
+  ## * commd - the CommandData object which field will be get
+  ##
+  ## Returns the value of the selected field
+  commd.plugin
+
+proc subcommands*(commd: CommandData): seq[string] {.sideEffect, raises: [],
+    tags: [], contractual.} =
+  ## The getter of a field of CommandData type
+  ##
+  ## * commd - the CommandData object which field will be get
+  ##
+  ## Returns the value of the selected field
+  commd.subcommands
 
 proc addCommand*(name: UserInput; command: CommandProc;
     commands: ref CommandsList; plugin: string = ""; subCommands: seq[
