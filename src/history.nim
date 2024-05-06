@@ -117,14 +117,9 @@ proc updateHistory*(commandToAdd: string; db;
         500
     if historyAmount == 0:
       return
-    try:
-      value = getOption(optionName = "historySaveInvalid", db = db,
-          defaultValue = "false")
-      if returnCode != QuitSuccess and value == "false":
-        return
-    except:
-      showError(message = "Can't get value of option historySaveInvalid. Reason: ",
-          e = getCurrentException(), db = db)
+    value = getOption(optionName = "historySaveInvalid", db = db,
+        defaultValue = "false")
+    if returnCode != QuitSuccess and value == "false":
       return
     if result >= historyAmount:
       try:
