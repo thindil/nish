@@ -260,16 +260,14 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
             ($value).parseInt
         except ValueError:
           return showError(message = "Can't get setting for the amount of history commands to show.", db = db)
-      historyDirection: string = try:
-          if argumentsList.len > 3: (if argumentsList[3] ==
-              "true": "ASC" else: "DESC") else:
-            value = getOption(optionName = "historyReverse", db = db)
-            if value == "true":
-              "ASC"
-            else:
-              "DESC"
-        except:
-          return showError(message = "Can't get setting for the reverse order of history commands to show.", db = db)
+      historyDirection: string =
+        if argumentsList.len > 3: (if argumentsList[3] ==
+            "true": "ASC" else: "DESC") else:
+          value = getOption(optionName = "historyReverse", db = db)
+          if value == "true":
+            "ASC"
+          else:
+            "DESC"
       orderText: string = try:
           if argumentsList.len > 2:
             argumentsList[2]
