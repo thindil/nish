@@ -32,6 +32,7 @@ import std/[os, paths, strutils, times]
 # External modules imports
 import ansiparse, contracts, nancy, termstyle
 import norm/[model, pragmas, sqlite]
+import norm/private/log
 # Internal imports
 import commandslist, constants, help, output, options, theme, types
 
@@ -129,7 +130,7 @@ proc updateHistory*(commandToAdd: string; db;
                 historyAmount))
         db.delete(objs = entries)
         result = db.historyLength
-      except:
+      except ValueError, DbError, LoggingError:
         showError(message = "Can't delete exceeded entries from the shell's history. Reason: ",
             e = getCurrentException(), db = db)
         return
@@ -157,7 +158,7 @@ proc updateHistory*(commandToAdd: string; db;
         entry = newHistoryEntry(command = commandToAdd, path = currentDir)
         db.insert(obj = entry)
         result.inc
-    except:
+    except ValueError, DbError, LoggingError:
       showError(message = "Can't update the shell's history. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -209,7 +210,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
               obj = entry, params = (searchFor & "%").dbValue)
       if entry.command.len > 0:
         return entry.command
-    except:
+    except ValueError, DbError, LoggingError:
       showError(message = "Can't get the selected command from the shell's history. Reason: ",
           e = getCurrentException(), db = db)
     return $searchFor
@@ -257,7 +258,7 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
           else:
             value = getOption(optionName = "historyAmount", db = db)
             ($value).parseInt
-        except:
+        except ValueError:
           return showError(message = "Can't get setting for the amount of history commands to show.", db = db)
       historyDirection: string = try:
           if argumentsList.len > 3: (if argumentsList[3] ==
