@@ -268,14 +268,12 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
             "ASC"
           else:
             "DESC"
-      orderText: string = try:
-          if argumentsList.len > 2:
-            argumentsList[2]
-          else:
-            value = getOption(optionName = "historySort", db = db)
-            $value
-        except:
-          return showError(message = "Can't get setting for the order of history commands to show.", db = db)
+      orderText: string =
+        if argumentsList.len > 2:
+          argumentsList[2]
+        else:
+          value = getOption(optionName = "historySort", db = db)
+          $value
       historyOrder: string =
         case orderText
         of "recent": "lastused " & historyDirection
