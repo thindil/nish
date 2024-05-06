@@ -78,7 +78,8 @@ proc historyLength*(db): HistoryRange {.sideEffect, raises: [], tags: [
       return HistoryRange.low
 
 proc newHistoryEntry(command: string = ""; lastUsed: DateTime = now();
-    amount: Positive = 1; path: Path = "".Path): HistoryEntry {.raises: [], tags: [],
+    amount: Positive = 1; path: Path = "".Path): HistoryEntry {.raises: [],
+        tags: [],
     contractual.} =
   ## Create a new data structure for the shell's commands' history entry.
   ##
@@ -112,7 +113,8 @@ proc updateHistory*(commandToAdd: string; db;
     result = db.historyLength
     var value: OptionValue = ""
     let historyAmount: Natural = try:
-        value = getOption(optionName = "historyLength", db = db, defaultValue = "500")
+        value = getOption(optionName = "historyLength", db = db,
+            defaultValue = "500")
         ($value).parseInt
       except ValueError:
         500
@@ -310,7 +312,8 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
         width += size
       showFormHeader(message = "The last " & $amount &
           " commands from the shell's history", width = width.ColumnAmount, db = db)
-    except:
+    except ValueError, DbError, LoggingError, UnknownEscapeError,
+        FinalByteError, InsufficientInputError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException(), db = db)
     try:
@@ -341,7 +344,8 @@ proc findInHistory(db; arguments): ResultCode {.raises: [], tags: [
     var table: TerminalTable = TerminalTable()
     try:
       result = QuitFailure.ResultCode
-      let maxRows: int = ($getOption(optionName = "historySearchAmount", db = db)).parseInt
+      let maxRows: int = ($getOption(optionName = "historySearchAmount",
+          db = db)).parseInt
       var currentRow: int = 0
       type LocalEntry = ref object
         command: string
@@ -367,7 +371,8 @@ proc findInHistory(db; arguments): ResultCode {.raises: [], tags: [
       except IOError, Exception:
         return showError(message = "Can't show the list of search results from history. Reason: ",
             e = getCurrentException(), db = db)
-    except:
+    except ValueError, DbError, LoggingError, UnknownEscapeError,
+        FinalByteError, InsufficientInputError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -416,7 +421,7 @@ proc updateHistoryDb*(db; dbVersion: Natural): ResultCode {.sideEffect,
         db.exec(query = sql(query = """UPDATE history SET id=rowid"""))
         db.exec(query = sql(query = """ALTER TABLE history DROP lastused"""))
         db.exec(query = sql(query = """ALTER TABLE history ADD lastUsed FLOAT NOT NULL DEFAULT 0"""))
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't update table for the shell's history. Reason: ",
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
@@ -456,7 +461,7 @@ proc createHistoryDb*(db): ResultCode {.sideEffect, raises: [], tags: [
           valueType = natural, defaultValue = "20", readOnly = false)]
       db.insert(objs = newOptions)
       return QuitSuccess.ResultCode
-    except:
+    except ValueError, DbError:
       return showError(message = "Can't create 'history' table. Reason: ",
           e = getCurrentException(), db = db)
 
@@ -512,7 +517,7 @@ proc initHistory*(db; commands: ref CommandsList): HistoryRange {.
       addCommand(name = "history",
           command = historyCommand, commands = commands,
           subCommands = historyCommands)
-    except:
+    except CommandsListError:
       showError(message = "Can't add commands related to the shell's history. Reason: ",
           e = getCurrentException(), db = db)
     # Return the current help index set on the last command in the shell's history
