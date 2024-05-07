@@ -262,7 +262,7 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
             ($value).parseInt
         except ValueError:
           return showError(message = "Can't get setting for the amount of history commands to show.", db = db)
-      historyDirection: string =
+      historyDirection: DbString =
         if argumentsList.len > 3: (if argumentsList[3] ==
             "true": "ASC" else: "DESC") else:
           value = getOption(optionName = "historyReverse", db = db)
@@ -270,13 +270,13 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
             "ASC"
           else:
             "DESC"
-      orderText: string =
+      orderText: DbString =
         if argumentsList.len > 2:
           argumentsList[2]
         else:
           value = getOption(optionName = "historySort", db = db)
           $value
-      historyOrder: string =
+      historyOrder: DbString =
         case orderText
         of "recent": "lastused " & historyDirection
         of "amount": "amount " & historyDirection
@@ -287,7 +287,7 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
           return showError(message = "Unknown type of history sort order", db = db)
     var table: TerminalTable = TerminalTable()
     try:
-      let color: string = getColor(db = db, name = tableHeaders)
+      let color: ColorCode = getColor(db = db, name = tableHeaders)
       table.add(parts = [style(ss = "Last used", style = color), style(
           ss = "Times", style = color), style(ss = "Command", style = color)])
     except UnknownEscapeError, InsufficientInputError, FinalByteError:
@@ -301,17 +301,17 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
       var entries: seq[LocalEntry] = @[LocalEntry()]
       db.rawSelect(qry = "SELECT command, lastused, amount FROM history ORDER BY " &
           historyOrder & " LIMIT 0, ?", objs = entries, params = amount)
-      let color: string = getColor(db = db, name = default)
+      let color: ColorCode = getColor(db = db, name = default)
       for entry in entries:
         table.add(parts = [style(ss = entry.lastUsed.local.format(
             f = "yyyy-MM-dd HH:mm:ss"), style = color), style(
             ss = $entry.amount, style = color), style(ss = entry.command,
             style = color)])
-      var width: int = 0
+      var width: ColumnAmount = 0.ColumnAmount
       for size in table.getColumnSizes(maxSize = int.high):
-        width += size
+        width += size.ColumnAmount
       showFormHeader(message = "The last " & $amount &
-          " commands from the shell's history", width = width.ColumnAmount, db = db)
+          " commands from the shell's history", width = width, db = db)
     except ValueError, DbError, LoggingError, UnknownEscapeError,
         FinalByteError, InsufficientInputError:
       return showError(message = "Can't get the last commands from the shell's history. Reason: ",
@@ -336,17 +336,17 @@ proc findInHistory(db; arguments): ResultCode {.raises: [], tags: [
     db != nil
     arguments.len > 0
   body:
-    var searchFor: string = strip(s = $arguments)
+    var searchFor: DbString = strip(s = $arguments)
     if searchFor.len < 5:
       return showError(message = "You have to enter a search term for which you want to look in the history.", db = db)
-    let searchTerm: string = searchFor[5..^1]
+    let searchTerm: DbString = searchFor[5..^1]
     searchFor = replace(s = searchTerm, sub = '*', by = '%')
     var table: TerminalTable = TerminalTable()
     try:
       result = QuitFailure.ResultCode
-      let maxRows: int = ($getOption(optionName = "historySearchAmount",
+      let maxRows: Natural = ($getOption(optionName = "historySearchAmount",
           db = db)).parseInt
-      var currentRow: int = 0
+      var currentRow: Natural = 0
       type LocalEntry = ref object
         command: string
       var entries: seq[LocalEntry] = @[LocalEntry()]
