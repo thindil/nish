@@ -146,7 +146,8 @@ type
     ## Used to store the name of the user's command
   DbString* = string
     ## Used to store some text related to database
-
+  OutputMessage* = string
+    ## Used to store message to show to the user
 
 # Procedures related to Path type
 

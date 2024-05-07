@@ -34,9 +34,6 @@ import norm/sqlite
 # Internal imports
 import logger, theme, types
 
-type OutputMessage* = string
-  ## Used to store message to show to the user
-
 using
   message: OutputMessage # The message to show to the user
   db: DBConn # The connection to the shell's database
