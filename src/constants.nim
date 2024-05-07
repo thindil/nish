@@ -29,6 +29,8 @@
 import std/[dirs, os, paths]
 # External modules imports
 import contracts
+# Internal imports
+import types
 
 const
   maxNameLength*: Positive = 50
@@ -40,7 +42,7 @@ const
     ## The list of the shell's built-in commands
   maxInputLength*: Positive = 4096
     ## The maximum length of the user input
-  version*: string = "0.8.0"
+  version*: OutputMessage = "0.8.0"
     ## The version of the shell
 
 proc getCurrentDirectory*(): Path {.raises: [], tags: [ReadIOEffect],
