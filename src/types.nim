@@ -144,6 +144,8 @@ type
     ## Used to store result code from commands entered by the user
   CommandName* = string
     ## Used to store the name of the user's command
+  DbString* = string
+    ## Used to store some text related to database
 
 
 # Procedures related to Path type

@@ -64,7 +64,6 @@ proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
     db != nil
   body:
     aliases.clear
-    type DbString = string
     var
       dbQuery: DbString = "SELECT id, name FROM aliases WHERE path='" &
           $directory & "'"
