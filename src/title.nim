@@ -32,7 +32,7 @@ import std/[os, strutils, terminal]
 import contracts
 import norm/sqlite
 # Internal imports
-import options
+import options, types
 
 proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
     WriteIOEffect, TimeEffect, ReadEnvEffect, ReadDbEffect, RootEffect],
@@ -53,7 +53,7 @@ proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
           ($getOption(optionName = "titleWidth", db = db, defaultValue = "30")).parseInt
         except ValueError:
           30
-    let newTitle: string = (if title.len <= titleWidth: title else: title[0 ..
+    let newTitle: OutputMessage = (if title.len <= titleWidth: title else: title[0 ..
         titleWidth - 1] & "...")
     try:
       stdout.write(s = "\e]2;" & newTitle & "\a")
