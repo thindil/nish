@@ -51,7 +51,7 @@ proc setTitle*(title: string; db: DbConn) {.sideEffect, raises: [], tags: [
       return
     let titleWidth: Positive = try:
           ($getOption(optionName = "titleWidth", db = db, defaultValue = "30")).parseInt
-        except:
+        except ValueError:
           30
     let newTitle: string = (if title.len <= titleWidth: title else: title[0 ..
         titleWidth - 1] & "...")
