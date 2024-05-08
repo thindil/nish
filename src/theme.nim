@@ -31,6 +31,7 @@ import std/[strutils, terminal]
 # External modules imports
 import contracts, nimalyzer, termstyle
 import norm/[model, pragmas, sqlite]
+import norm/private/log
 # Internal imports
 import logger, types
 
@@ -99,7 +100,7 @@ proc to(dbVal: DbValue, T: typedesc[ColorName]): T {.raises: [], tags: [],
   body:
     try:
       parseEnum[T](s = dbVal.s)
-    except:
+    except ValueError:
       default
 
 proc dbType(T: typedesc[ThemeColor]): string {.raises: [], tags: [],
@@ -133,7 +134,7 @@ proc to(dbVal: DbValue, T: typedesc[ThemeColor]): T {.raises: [], tags: [],
   body:
     try:
       parseEnum[T](s = dbVal.s)
-    except:
+    except ValueError:
       errors
 
 proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
@@ -229,7 +230,7 @@ proc showThemeError*(message: string; e: ref Exception) {.sideEffect, raises: [
         stderr.styledWrite(fgRed, e.getStackTrace)
         logToFile(message = e.getStackTrace)
       {.ruleOn: "namedParams".}
-    except:
+    except IOError, ValueError:
       discard
 
 proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
@@ -248,7 +249,7 @@ proc createThemeDb*(db): ResultCode {.sideEffect, raises: [], tags: [
       for color in colors:
         var col: Color = color
         db.insert(obj = col)
-    except:
+    except ValueError, DbError:
       showThemeError(message = "Can't create 'theme' table. Reason: ",
           e = getCurrentException())
       return QuitFailure.ResultCode
@@ -268,7 +269,7 @@ proc getColor*(db; name: ThemeColor): ColorCode {.sideEffect, raises: [], tags: 
       return termRed
     try:
       db.select(obj = color, cond = "name=?", params = $name)
-    except:
+    except ValueError, DbError, LoggingError:
       showThemeError(message = "Can't get the shell's theme color: '" & $name &
           "'. Reason: ", e = getCurrentException())
     case color.cValue
