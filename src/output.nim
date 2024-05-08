@@ -94,7 +94,7 @@ proc showError*(message: OutputMessage; db;
     try:
       if e != nil:
         stderr.writeLine(x = "")
-      let color: string = getColor(db = db, name = errors)
+      let color: ColorCode = getColor(db = db, name = errors)
       stderr.write(a = style(ss = message, style = color))
       if e == nil:
         stderr.writeLine(x = "")
@@ -133,10 +133,10 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
     try:
       var option: LocalOption = LocalOption()
       db.rawSelect(qry = "SELECT value FROM options WHERE option='outputHeaders'", obj = option)
-      let headerType: string = option.value
+      let headerType: DbString = option.value
       if headerType == "hidden":
         return
-      let color: string = getColor(db = db, name = headers)
+      let color: ColorCode = getColor(db = db, name = headers)
 
       proc echoTableSeps(table: TerminalTable; seps = defaultSeps;
           color: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
