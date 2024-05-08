@@ -61,7 +61,7 @@ proc logToFile*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
           stderr.styledWriteLine(fgRed, $e.name)
           stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
           stderr.styledWrite(fgRed, getStackTrace(e = e))
-        except:
+        except IOError, ValueError:
           discard
         {.ruleOn: "namedParams".}
 
@@ -81,7 +81,7 @@ proc startLogging*() {.sideEffect, raises: [], tags: [WriteIOEffect,
           stderr.styledWriteLine(fgRed, $e.name)
           stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
           stderr.styledWrite(fgRed, getStackTrace(e = e))
-        except:
+        except IOError, ValueError:
           discard
         {.ruleOn: "namedParams".}
       setLogFilter(lvl = lvlAll)
