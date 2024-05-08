@@ -107,7 +107,7 @@ proc showError*(message: OutputMessage; db;
         when defined(debug):
           stderr.write(a = style(ss = e.getStackTrace, style = color))
           logToFile(message = e.getStackTrace)
-    except:
+    except IOError:
       try:
         stderr.writeLine(x = message)
       except IOError:
@@ -165,7 +165,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
             stdout.write(a = color)
             printSeparator(position = bottom)
             stdout.write(a = "\e[0m")
-          except:
+          except IOError, Exception:
             showError(message = "Can't draw table. Reason: ",
                 e = getCurrentException(), db = db)
 
