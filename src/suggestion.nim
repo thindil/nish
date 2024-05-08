@@ -86,7 +86,7 @@ proc suggestCommand*(invalidName: string; start: var Natural;
     let distance: Natural =
       try:
         parseInt(s = $getOption(optionName = "suggestionPrecision", db = db))
-      except:
+      except ValueError:
         1
     # The suggestion system is disabled, quit
     if distance == 0:
