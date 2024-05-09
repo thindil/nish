@@ -7,10 +7,10 @@ suite "Unit tests for constant module":
     checkpoint "Get an existing current directory"
     check:
       getCurrentDirectory() == paths.getCurrentDir()
-    let testDir = ospaths2.getCurrentDir() &  DirSep & "test"
-    createDir(testDir)
-    setCurrentDir(testDir)
-    removeDir(testDir)
+    let testDir: string = ospaths2.getCurrentDir() &  DirSep & "test"
+    createDir(dir = testDir)
+    setCurrentDir(newDir = testDir)
+    removeDir(dir = testDir)
     checkpoint "Get a non-existing current directory"
     check:
       getCurrentDirectory().string == getHomeDir()
