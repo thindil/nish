@@ -8,7 +8,7 @@ when defined(testInput):
 suite "Unit tests for input module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test8.db")
+  let db: DbConn = initDb(dbName = "test8.db")
 
   test "Getting the command's arguments":
     var
@@ -38,7 +38,7 @@ suite "Unit tests for input module":
 
   test "Deleting a character":
     var
-      inputString = "my text"
+      inputString: UserInput = "my text"
       cursorPosition: Natural = 1
     deleteChar(inputString = inputString, cursorPosition = cursorPosition)
     check:
@@ -46,7 +46,7 @@ suite "Unit tests for input module":
       cursorPosition == 0
 
   test "Moving the cursor":
-    let inputString = "my text"
+    let inputString: UserInput = "my text"
     var cursorPosition: Natural = 1
     moveCursor(inputChar = 'D', cursorPosition = cursorPosition,
         inputString = inputString, db = db)
@@ -55,7 +55,7 @@ suite "Unit tests for input module":
 
   test "Updating the user's input":
     var
-      inputString = "my text"
+      inputString: UserInput = "my text"
       cursorPosition: Natural = 7
     updateInput(cursorPosition = cursorPosition, inputString = inputString,
         insertMode = false, inputRune = "a")
@@ -67,7 +67,7 @@ suite "Unit tests for input module":
     when not defined(testInput):
       skip()
     else:
-      var color = newColor()
+      var color: Color = newColor()
       askForName[Color](db = db, action = "Testing", namesType = "color", name = color)
       echo color.description
       check:
