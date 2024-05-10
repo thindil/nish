@@ -6,15 +6,17 @@ include ../src/highlight
 suite "Unit tests for highlight module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test7.db")
+  let db: DbConn = initDb(dbName = "test7.db")
   var
-    myaliases = newOrderedTable[string, int]()
-    commands = newTable[string, CommandData]()
+    myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
+    commands: ref Table[string, CommandData] = newTable[string, CommandData]()
     inputString: UserInput = "test"
 
   test "Highlighting the shell's output":
-    highlightOutput(0, inputString, commands, myaliases, false, "",
-        QuitSuccess.ResultCode, db, 0, true)
+    highlightOutput(promptLength = 0, inputString = inputString,
+        commands = commands, aliases = myaliases, oneTimeCommand = false,
+        commandName = "", returnCode = QuitSuccess.ResultCode, db = db,
+        cursorPosition = 0, enabled = true)
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
