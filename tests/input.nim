@@ -8,13 +8,15 @@ when defined(testInput):
 suite "Unit tests for input module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test8.db")
+  let db = initDb(dbName = "test8.db")
 
   test "Getting the command's arguments":
     var
-      userCommand: OptParser = initOptParser("ls -ab --foo --bar=20 file.txt")
+      userCommand: OptParser = initOptParser(
+          cmdline = "ls -ab --foo --bar=20 file.txt")
       conjCommands: bool = true
-      arguments: UserInput = getArguments(userCommand, conjCommands)
+      arguments: UserInput = getArguments(userInput = userCommand,
+          conjCommands = conjCommands)
     check:
       arguments == "ls -ab --foo --bar=20 file.txt"
 
@@ -29,16 +31,16 @@ suite "Unit tests for input module":
   test "Reading a character from the user's input":
     checkpoint "Reading a lowercase character"
     check:
-      readChar('c', db) == "c"
+      readChar(inputChar = 'c', db = db) == "c"
     checkpoint "Reading a uppercase character"
     check:
-      readChar('H', db) == "H"
+      readChar(inputChar = 'H', db = db) == "H"
 
   test "Deleting a character":
     var
       inputString = "my text"
       cursorPosition: Natural = 1
-    deleteChar(inputString, cursorPosition)
+    deleteChar(inputString = inputString, cursorPosition = cursorPosition)
     check:
       inputString == "y text"
       cursorPosition == 0
@@ -46,7 +48,8 @@ suite "Unit tests for input module":
   test "Moving the cursor":
     let inputString = "my text"
     var cursorPosition: Natural = 1
-    moveCursor('D', cursorPosition, inputString, db)
+    moveCursor(inputChar = 'D', cursorPosition = cursorPosition,
+        inputString = inputString, db = db)
     check:
       cursorPosition == 0
 
@@ -54,7 +57,8 @@ suite "Unit tests for input module":
     var
       inputString = "my text"
       cursorPosition: Natural = 7
-    updateInput(cursorPosition, inputString, false, "a")
+    updateInput(cursorPosition = cursorPosition, inputString = inputString,
+        insertMode = false, inputRune = "a")
     check:
       inputString == "my texta"
       cursorPosition == 8
@@ -64,7 +68,7 @@ suite "Unit tests for input module":
       skip()
     else:
       var color = newColor()
-      askForName[Color](db, action = "Testing", "color", color)
+      askForName[Color](db = db, action = "Testing", namesType = "color", name = color)
       echo color.description
       check:
         color != newColor()
