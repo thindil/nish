@@ -46,7 +46,7 @@ suite "Unit tests for input module":
       cursorPosition == 0
 
   test "Moving the cursor":
-    let inputString: UserInput = "my text"
+    const inputString: UserInput = "my text"
     var cursorPosition: Natural = 1
     moveCursor(inputChar = 'D', cursorPosition = cursorPosition,
         inputString = inputString, db = db)
