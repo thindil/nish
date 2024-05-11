@@ -1,5 +1,5 @@
 import utils/utils
-import unittest2
+import unittest2, nimalyzer
 include ../src/input
 when defined(testInput):
   import ../src/theme
@@ -11,12 +11,14 @@ suite "Unit tests for input module":
   let db: DbConn = initDb(dbName = "test8.db")
 
   test "Getting the command's arguments":
+    {.ruleOff: "varUplevel".}
     var
       userCommand: OptParser = initOptParser(
           cmdline = "ls -ab --foo --bar=20 file.txt")
       conjCommands: bool = true
       arguments: UserInput = getArguments(userInput = userCommand,
           conjCommands = conjCommands)
+    {.ruleOn: "varUplevel".}
     check:
       arguments == "ls -ab --foo --bar=20 file.txt"
 
