@@ -34,10 +34,10 @@ include ../src/aliases
 suite "Unit tests for aliases module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test2.db")
+  let db: DbConn = initDb(dbName = "test2.db")
   var
-    myaliases = newOrderedTable[string, int]()
-    commands = newTable[string, CommandData]()
+    myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
+    commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
@@ -64,7 +64,7 @@ suite "Unit tests for aliases module":
     check:
       deleteAlias(arguments = "delete 22", aliases = myaliases, db = db) == QuitFailure
     checkpoint "Re-adding the test alias"
-    var testAlias2 = newAlias(name = "tests2", path = "/".Path,
+    var testAlias2: Alias = newAlias(name = "tests2", path = "/".Path,
       recursive = false,
       commands = "ls -a", description = "Test alias 2.", output = "output")
     db.insert(obj = testAlias2)
@@ -96,7 +96,7 @@ suite "Unit tests for aliases module":
         listAliases(arguments = "werwerew", aliases = myaliases, db = db) == QuitSuccess
 
   test "Initializing an object of Alias type":
-    let newAlias = newAlias(name = "ala")
+    let newAlias: Alias = newAlias(name = "ala")
     check:
       newAlias.name == "ala"
 
