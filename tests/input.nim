@@ -50,12 +50,12 @@ suite "Unit tests for input module":
       arguments == "ls -ab --foo --bar=20 file.txt"
 
   test "Reading the user's input":
-    when not defined(testInput):
-      skip()
-    else:
+    when defined(testInput):
       echo "exit"
       check:
         readInput(db = db) == "exit"
+    else:
+      skip()
 
   test "Reading a character from the user's input":
     checkpoint "Reading a lowercase character"
@@ -93,11 +93,11 @@ suite "Unit tests for input module":
       cursorPosition == 8
 
   test "Asking user for a name from the list":
-    when not defined(testInput):
-      skip()
-    else:
+    when defined(testInput):
       var color: Color = newColor()
       askForName[Color](db = db, action = "Testing", namesType = "color", name = color)
       echo color.description
       check:
         color != newColor()
+    else:
+      skip()
