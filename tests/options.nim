@@ -51,7 +51,7 @@ suite "Unit tests for options module":
       getOption(optionName = "werweewfwe", db = db).len == 0
 
   test "Adding a new option":
-    let optionName: OptionName = "testOption"
+    const optionName: OptionName = "testOption"
     setOption(optionName = optionName, value = "200", db = db)
     check:
       deleteOption(optionName = optionName, db = db) == QuitSuccess
@@ -63,12 +63,12 @@ suite "Unit tests for options module":
       getOption(optionName = "historyLength", db = db) == "100"
 
   test "Setting the new value for an option":
-    when not defined(testInput):
-      skip()
-    else:
+    when defined(testInput):
       check:
         setOptions(db = db) == QuitSuccess
         getOption(optionName = "colorSyntax", db = db) == "true"
+    else:
+      skip()
 
   test "Resetting the shell's options":
     check:
