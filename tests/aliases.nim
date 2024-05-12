@@ -28,7 +28,6 @@
 import utils/utils
 import unittest2
 import ../src/db
-{.warning[UnusedImport]: off.}
 include ../src/aliases
 
 suite "Unit tests for aliases module":
