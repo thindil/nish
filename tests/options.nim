@@ -33,8 +33,8 @@ include ../src/options
 suite "Unit tests for options module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test11.db")
-  var commands = newTable[string, CommandData]()
+  let db: DbConn = initDb(dbName = "test11.db")
+  var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
   discard initHistory(db = db, commands = commands)
 
   test "Initializiation of the shell's options":
@@ -51,7 +51,7 @@ suite "Unit tests for options module":
       getOption(optionName = "werweewfwe", db = db).len == 0
 
   test "Adding a new option":
-    let optionName = "testOption"
+    let optionName: OptionName = "testOption"
     setOption(optionName = optionName, value = "200", db = db)
     check:
       deleteOption(optionName = optionName, db = db) == QuitSuccess
