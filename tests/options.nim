@@ -1,7 +1,6 @@
 import utils/utils
 import ../src/[db, history]
 import unittest2
-{.warning[UnusedImport]: off.}
 include ../src/options
 
 suite "Unit tests for options module":
