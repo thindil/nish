@@ -13,15 +13,15 @@ suite "Unit tests for types module":
 
   test "Getting the type of the database field for Path":
     check:
-      dbType(Path) == "TEXT"
+      dbType(T = Path) == "TEXT"
 
   test "Converting dbValue to Path":
     check:
-      dbValue("/").s == "/"
+      dbValue(val = "/".Path).s == "/"
 
   test "Converting Path to dbValue":
     check:
-      to("/".dbValue, Path) == "/".Path
+      to(dbVal = "/".dbValue, T = Path) == "/".Path
 
   test "Compare ResultCode to int":
     let code: ResultCode = QuitSuccess.ResultCode
