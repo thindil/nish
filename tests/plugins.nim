@@ -6,49 +6,52 @@ include ../src/plugins
 suite "Unit tests for plugins module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test13.db")
+  let db = initDb(dbName = "test13.db")
   var commands = newTable[string, CommandData]()
 
 #  test "Initialization of plugins":
 #    initPlugins(db, commands)
 
   test "Adding a new plugin":
-    discard removePlugin(db, "remove 1", commands)
+    discard removePlugin(db = db, arguments = "remove 1", commands = commands)
     checkpoint "Adding an existing, not added plugin"
     check:
-      addPlugin(db,
-          "add tools/testplugin.sh", commands) == QuitSuccess
+      addPlugin(db = db,
+          arguments = "add tools/testplugin.sh", commands = commands) == QuitSuccess
     checkpoint "Adding an existing, previously added plugin"
     check:
-      addPlugin(db,
-          "add tools/testplugin.sh", commands) == QuitFailure
+      addPlugin(db = db,
+          arguments = "add tools/testplugin.sh", commands = commands) == QuitFailure
     checkpoint "Adding a non-existing plugin"
     check:
-      addPlugin(db,
-          "add tools/testplugin.223sh", commands) == QuitFailure
+      addPlugin(db = db,
+          arguments = "add tools/testplugin.223sh", commands = commands) == QuitFailure
 
   test "Getting the plugin's ID":
     checkpoint "Getting ID of an existing plugin"
     check:
-      getPluginId("remove 1", db).int == 1
+      getPluginId(arguments = "remove 1", db = db).int == 1
     checkpoint "Getting ID of a non-existing plugin"
     check:
-      getPluginId("remove 22", db).int == 0
+      getPluginId(arguments = "remove 22", db = db).int == 0
 
   test "Checking a plugin":
     checkpoint "Checking an existing plugin"
     check:
-      checkPlugin("tools/testplugin.sh".Path, db, commands).path ==
-          "tools/testplugin.sh".Path
+      checkPlugin(pluginPath = "tools/testplugin.sh".Path, db = db,
+          commands = commands).path == "tools/testplugin.sh".Path
     checkpoint "Cheking a non-existing plugin"
     check:
-      checkPlugin("sdfsdfds.df".Path, db, commands).path.len == 0
+      checkPlugin(pluginPath = "sdfsdfds.df".Path, db = db,
+          commands = commands).path.len == 0
 
   test "Executing a plugin":
     check:
-      execPlugin("tools/testplugin.sh".Path, ["init"], db, commands).code ==
+      execPlugin(pluginPath = "tools/testplugin.sh".Path, arguments = ["init"],
+          db = db, commands = commands).code ==
           QuitSuccess
-      execPlugin("tools/testplugin.sh".Path, ["info"], db, commands).answer.len >
+      execPlugin(pluginPath = "tools/testplugin.sh".Path, arguments = ["info"],
+          db = db, commands = commands).answer.len >
           0
 #
 #  test "Showing plugins":
@@ -68,26 +71,26 @@ suite "Unit tests for plugins module":
   test "Enabling or disabling a plugin":
     checkpoint "Disabling a plugin"
     check:
-      togglePlugin(db, "disable 1", true,
-          commands) == QuitSuccess
+      togglePlugin(db = db, arguments = "disable 1", disable = true,
+          commands = commands) == QuitSuccess
     checkpoint "Enabling a plugin"
     check:
-      togglePlugin(db, "enable 1", false,
-          commands) == QuitSuccess
+      togglePlugin(db = db, arguments = "enable 1", disable = false,
+          commands = commands) == QuitSuccess
     checkpoint "Enabling an enabled plugin"
     check:
-      togglePlugin(db, "enable 2", false,
-          commands) == QuitFailure
+      togglePlugin(db = db, arguments = "enable 2", disable = false,
+          commands = commands) == QuitFailure
 
   test "Uninstalling a plugin":
     checkpoint "Uninstalling an installed plugin"
     check:
-      removePlugin(db, "remove 1",
-          commands) == QuitSuccess
+      removePlugin(db = db, arguments = "remove 1",
+          commands = commands) == QuitSuccess
     checkpoint "Uninstalling a non-installed plugin"
     check:
-      removePlugin(db, "remove 1",
-          commands) == QuitFailure
+      removePlugin(db = db, arguments = "remove 1",
+          commands = commands) == QuitFailure
 
   test "Initializing an object of Plugin type":
     let newPlugin = newPlugin(path = "/".Path)
@@ -95,4 +98,4 @@ suite "Unit tests for plugins module":
       newPlugin.location == "/".Path
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
