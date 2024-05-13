@@ -33,7 +33,7 @@ include ../src/prompt
 suite "Unit tests for prompt module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test14.db")
+  let db: DbConn = initDb(dbName = "test14.db")
 
   test "Getting formated directory name":
     check:
