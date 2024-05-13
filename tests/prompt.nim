@@ -6,14 +6,15 @@ include ../src/prompt
 suite "Unit tests for prompt module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test14.db")
+  let db = initDb(dbName = "test14.db")
 
   test "Getting formated directory name":
     check:
       getFormattedDir().string.len > 0
 
   test "Showing the shell's prompt":
-    showPrompt(true, "ls -a", QuitSuccess.ResultCode, db)
+    showPrompt(promptEnabled = true, previousCommand = "ls -a",
+        resultCode = QuitSuccess.ResultCode, db = db)
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
