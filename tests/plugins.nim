@@ -1,7 +1,6 @@
 import utils/utils
 import ../src/db
 import unittest2
-{.warning[UnusedImport]:off.}
 include ../src/plugins
 
 suite "Unit tests for plugins module":
