@@ -33,11 +33,11 @@ include ../src/commands
 suite "Unit tests for commands module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test3.db")
+  let db: DbConn = initDb(dbName = "test3.db")
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
-  var myaliases = newOrderedTable[string, int]()
+  var myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
 
   test "Testing cd command":
     checkpoint "Entering an existing directory"
@@ -60,7 +60,7 @@ suite "Unit tests for commands module":
   test "Executing a command":
     var
       cursorPosition: Natural = 1
-      commands = newTable[string, CommandData]()
+      commands: ref Table[string, CommandData] = newTable[string, CommandData]()
     check:
       executeCommand(commands = commands, commandName = "ls",
           arguments = "-a .", inputString = "ls -a .", db = db,
