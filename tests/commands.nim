@@ -6,7 +6,7 @@ include ../src/commands
 suite "Unit tests for commands module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test3.db")
+  let db = initDb(dbName = "test3.db")
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
@@ -15,26 +15,30 @@ suite "Unit tests for commands module":
   test "Testing cd command":
     checkpoint "Entering an existing directory"
     check:
-      cdCommand("/".Path, myaliases, db) == QuitSuccess
+      cdCommand(newDirectory = "/".Path, aliases = myaliases, db = db) == QuitSuccess
     checkpoint "Trying to enter a non-existing directory"
     check:
-      cdCommand("/adfwerewtr".Path, myaliases, db) == QuitFailure
+      cdCommand(newDirectory = "/adfwerewtr".Path, aliases = myaliases,
+          db = db) == QuitFailure
 
   test "Testing changing the current directory of the shell":
     checkpoint "Changing the current directory"
     check:
-      changeDirectory("..".Path, myaliases, db) == QuitSuccess
+      changeDirectory(newDirectory = "..".Path, aliases = myaliases, db = db) == QuitSuccess
     checkpoint "Changing the current directory to non-existing directory"
     check:
-      changeDirectory("/adfwerewtr".Path, myaliases, db) == QuitFailure
+      changeDirectory(newDirectory = "/adfwerewtr".Path, aliases = myaliases,
+          db = db) == QuitFailure
 
   test "Executing a command":
     var
       cursorPosition: Natural = 1
       commands = newTable[string, CommandData]()
     check:
-      executeCommand(commands, "ls", "-a .", "ls -a .", db,
-          myaliases, cursorPosition) == QuitSuccess
+      executeCommand(commands = commands, commandName = "ls",
+          arguments = "-a .", inputString = "ls -a .", db = db,
+
+aliases = myaliases, cursorPosition = cursorPosition) == QuitSuccess
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
