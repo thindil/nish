@@ -7,78 +7,74 @@ include ../src/help
 suite "Unit tests for help module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test6.db")
+  let db = initDb(dbName = "test6.db")
   var commands = newTable[string, CommandData]()
 
   test "Initializing the help system":
-    initHelp(db, commands)
+    initHelp(db = db, commands = commands)
     check:
       commands.len == 2
 
   test "Adding a new help entry":
-    discard deleteHelpEntry("test", db)
+    discard deleteHelpEntry(topic = "test", db = db)
     checkpoint "Adding a non-existing help entry"
     check:
-      addHelpEntry("test",
-          "test topic",
-              "test", "test help", false, db) == QuitSuccess
+      addHelpEntry(topic = "test", usage = "test topic", plugin = "test",
+          content = "test help", isTemplate = false, db = db) == QuitSuccess
     checkpoint "Adding an existing help entry"
     check:
-      addHelpEntry("test",
-          "test topic",
-              "test", "test help", false, db) == QuitFailure
+      addHelpEntry(topic = "test", usage = "test topic", plugin = "test",
+          content = "test help", isTemplate = false, db = db) == QuitFailure
 
   test "Deleting a help entry":
-    discard deleteHelpEntry("test", db)
+    discard deleteHelpEntry(topic = "test", db = db)
     check:
-      addHelpEntry("test",
-          "test topic",
-              "test", "test help", false, db) == QuitSuccess
+      addHelpEntry(topic = "test", usage = "test topic", plugin = "test",
+          content = "test help", isTemplate = false, db = db) == QuitSuccess
     checkpoint "Deleting an existing help entry"
     check:
-      deleteHelpEntry("test", db) ==
+      deleteHelpEntry(topic = "test", db = db) ==
           QuitSuccess
     checkpoint "Deleting a non-existing help entry"
     check:
-      deleteHelpEntry("asdd", db) ==
+      deleteHelpEntry(topic = "asdd", db = db) ==
           QuitFailure
     checkpoint "Deleting a deleted help entry"
     check:
-      deleteHelpEntry("test", db) ==
+      deleteHelpEntry(topic = "test", db = db) ==
           QuitFailure
 
   test "Updating the help system":
     check:
-      updateHelp(db) == QuitSuccess
+      updateHelp(db = db) == QuitSuccess
 
   test "Loading the help content from a file":
-    db.exec(sql("DELETE FROM help"))
+    db.exec(query = "DELETE FROM help".sql)
     checkpoint "Loading the help content to the empty help system"
     check:
-      readHelpFromFile(db) == QuitSuccess
+      readHelpFromFile(db = db) == QuitSuccess
     checkpoint "Loading the help content to the full help system"
     check:
-      readHelpFromFile(db) == QuitFailure
+      readHelpFromFile(db = db) == QuitFailure
 
   test "Showing the help entry":
     checkpoint "Showing an existing help entry"
     check:
-      showHelp("alias", db) ==
+      showHelp(topic = "alias", db = db) ==
           QuitSuccess
     checkpoint "Showing a non-existing help entry"
     check:
-      showHelp("srewfdsfs", db) ==
+      showHelp(topic = "srewfdsfs", db = db) ==
           QuitFailure
 
   test "Showing list of help for a command":
     check:
-      showHelpList("alias", aliasesCommands, db = db) == QuitSuccess
+      showHelpList(command = "alias", subcommands = aliasesCommands, db = db) == QuitSuccess
 
   test "Showing the unknown help entry screen":
     check:
-      showUnknownHelp("command",
-          "subcommand",
-          "helptype", db = db) == QuitFailure
+      showUnknownHelp(subCommand = "command", command = "subcommand",
+          helpType = "helptype", db = db) == QuitFailure
 
   test "Updating a help entry":
     discard deleteHelpEntry("test", db)
