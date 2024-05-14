@@ -77,21 +77,18 @@ suite "Unit tests for help module":
           helpType = "helptype", db = db) == QuitFailure
 
   test "Updating a help entry":
-    discard deleteHelpEntry("test", db)
+    discard deleteHelpEntry(topic = "test", db = db)
     unittest2.require:
-      addHelpEntry("test",
-          "test topic",
-              "test", "test help", false, db) == QuitSuccess
+      addHelpEntry(topic = "test", usage = "test topic", plugin = "test",
+          content = "test help", isTemplate = false, db = db) == QuitSuccess
     checkpoint "Updating an existing help entry"
     check:
-      updateHelpEntry("test",
-          "test topic",
-              "test", "test help2", db, false) == QuitSuccess
+      updateHelpEntry(topic = "test", usage = "test topic", plugin = "test",
+          content = "test help2", db = db, isTemplate = false) == QuitSuccess
     checkpoint "Updating a non-existing help entry"
     check:
-      updateHelpEntry("asdd",
-          "test topic",
-              "test", "test help2", db, false) == QuitFailure
+      updateHelpEntry(topic = "asdd", usage = "test topic", plugin = "test",
+          content = "test help2", db = db, isTemplate = false) == QuitFailure
 
   test "Initializing an object of HelpEntry type":
     let newHelp = newHelpEntry(topic = "test")
@@ -99,4 +96,4 @@ suite "Unit tests for help module":
       newHelp.topic == "test"
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
