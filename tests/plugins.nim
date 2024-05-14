@@ -33,8 +33,8 @@ include ../src/plugins
 suite "Unit tests for plugins module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test13.db")
-  var commands = newTable[string, CommandData]()
+  let db: DbConn = initDb(dbName = "test13.db")
+  var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
 #  test "Initialization of plugins":
 #    initPlugins(db, commands)
@@ -120,7 +120,7 @@ suite "Unit tests for plugins module":
           commands = commands) == QuitFailure
 
   test "Initializing an object of Plugin type":
-    let newPlugin = newPlugin(path = "/".Path)
+    let newPlugin: Plugin = newPlugin(path = "/".Path)
     check:
       newPlugin.location == "/".Path
 
