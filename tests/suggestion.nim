@@ -32,10 +32,10 @@ include ../src/suggestion
 suite "Unit tests for suggestion module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test14.db")
+  let db: DbConn = initDb(dbName = "test14.db")
   var
-    myaliases = newOrderedTable[string, int]()
-    commands = newTable[string, CommandData]()
+    myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
+    commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
