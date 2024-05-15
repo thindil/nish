@@ -5,7 +5,7 @@ include ../src/suggestion
 suite "Unit tests for suggestion module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test14.db")
+  let db = initDb(dbName = "test14.db")
   var
     myaliases = newOrderedTable[string, int]()
     commands = newTable[string, CommandData]()
@@ -14,9 +14,9 @@ suite "Unit tests for suggestion module":
   db.addAliases
 
   test "Fill the suggestions list":
-    fillSuggestionsList(myaliases, commands)
+    fillSuggestionsList(aliases = myaliases, commands = commands)
 
   test "Get suggestion for a command":
     var start: Natural = 0
     check:
-      suggestCommand("la", start, db) in ["ln", "lc"]
+      suggestCommand(invalidName = "la", start = start, db = db) in ["ln", "lc"]
