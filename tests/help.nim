@@ -34,8 +34,8 @@ include ../src/help
 suite "Unit tests for help module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test6.db")
-  var commands = newTable[string, CommandData]()
+  let db: DbConn = initDb(dbName = "test6.db")
+  var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   test "Initializing the help system":
     initHelp(db = db, commands = commands)
@@ -118,7 +118,7 @@ suite "Unit tests for help module":
           content = "test help2", db = db, isTemplate = false) == QuitFailure
 
   test "Initializing an object of HelpEntry type":
-    let newHelp = newHelpEntry(topic = "test")
+    let newHelp: HelpEntry = newHelpEntry(topic = "test")
     check:
       newHelp.topic == "test"
 
