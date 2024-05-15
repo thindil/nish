@@ -9,7 +9,7 @@ suite "Unit tests for logger module":
     startLogging()
     when defined(debug):
       check:
-        fileExists("nish.log")
+        fileExists(filename = "nish.log")
 
   test "Writing a message to log":
-    logToFile("test message")
+    logToFile(message = "test message")
