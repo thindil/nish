@@ -35,7 +35,7 @@ include ../src/output
 suite "Unit tests for output module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test12.db")
+  let db: DbConn = initDb(dbName = "test12.db")
 
   test "Showing an error message":
     check:
