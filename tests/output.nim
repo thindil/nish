@@ -48,19 +48,19 @@ suite "Unit tests for output module":
     showOutput(message = "test output", db = db)
 
   test "Showing options to select":
-    when not defined(testInput):
-      skip()
-    else:
+    when defined(testInput):
       check:
         selectOption(options = {'a': "option1", 'b': "option2"}.toTable,
             default = 'a', prompt = "Option", db = db) == 'a'
+    else:
+      skip()
 
   test "Showing confirmation prompt":
-    when not defined(testInput):
-      skip()
-    else:
+    when defined(testInput):
       check:
         confirm(prompt = "Confirm", db = db)
+    else:
+      skip()
 
   test "Showing a form's prompt":
     showFormPrompt(prompt = "Form prompt", db = db)
