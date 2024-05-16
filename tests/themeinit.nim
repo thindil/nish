@@ -6,17 +6,17 @@ include ../src/themeinit
 suite "Unit tests for themeinit module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test17.db")
+  let db = initDb(dbName = "test17.db")
   var commands = newTable[string, CommandData]()
 
   test "Initializiation of the shell's theme":
-    initTheme(db, commands)
+    initTheme(db = db, commands = commands)
     check:
       commands.len > 0
 
   test "Showing the theme values":
     check:
-      showTheme(db) == QuitSuccess
+      showTheme(db = db) == QuitSuccess
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
