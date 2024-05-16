@@ -8,34 +8,35 @@ include ../src/output
 suite "Unit tests for output module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test12.db")
+  let db = initDb(dbName = "test12.db")
 
   test "Showing an error message":
     check:
-      showError("test error", db = db) == QuitFailure
+      showError(message = "test error", db = db) == QuitFailure
 
   test "Drawing a form's header":
     showFormHeader(message = "test header", db = db)
 
   test "Showing a normal output":
-    showOutput("test output", db = db)
+    showOutput(message = "test output", db = db)
 
   test "Showing options to select":
     when not defined(testInput):
       skip()
     else:
       check:
-        selectOption({'a': "option1", 'b': "option2"}.toTable, 'a', "Option", db) == 'a'
+        selectOption(options = {'a': "option1", 'b': "option2"}.toTable,
+            default = 'a', prompt = "Option", db = db) == 'a'
 
   test "Showing confirmation prompt":
     when not defined(testInput):
       skip()
     else:
       check:
-        confirm("Confirm", db)
+        confirm(prompt = "Confirm", db = db)
 
   test "Showing a form's prompt":
-    showFormPrompt("Form prompt", db)
+    showFormPrompt(prompt = "Form prompt", db = db)
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
