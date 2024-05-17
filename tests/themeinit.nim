@@ -33,8 +33,8 @@ include ../src/themeinit
 suite "Unit tests for themeinit module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test17.db")
-  var commands = newTable[string, CommandData]()
+  let db: DbConn = initDb(dbName = "test17.db")
+  var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   test "Initializiation of the shell's theme":
     initTheme(db = db, commands = commands)
