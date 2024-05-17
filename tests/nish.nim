@@ -9,7 +9,7 @@ suite "Unit tests for nish module":
 
   when defined(testInput):
     checkpoint "Initializing the tests"
-    let db = initDb("test10.db")
+    let db = initDb(dbName = "test10.db")
     var
       myaliases = newOrderedTable[LimitedString, int]()
       commands = newTable[string, CommandData]()
@@ -25,10 +25,11 @@ suite "Unit tests for nish module":
       skip()
     else:
       var
-        iString = initLimitedString(capacity = 100, text = "")
+        iString = ""
         cName = "ls"
         rCode = QuitSuccess.ResultCode
         hIndex: HistoryRange = 1
         cPosition: Natural = 1
-      readUserInput(iString, false, db, cName, rCode, hIndex, cPosition,
-          myaliases, commands)
+      readUserInput(inputString = iString, oneTimeCommand = false, db = db,
+          commandName = cName, returnCode = rCode, historyIndex = hIndex,
+          cursorPosition = cPosition, aliases = myaliases, commands = commands)
