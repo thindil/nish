@@ -33,8 +33,8 @@ include ../src/db
 suite "Unit tests for db module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test15.db")
-  var commands = newTable[string, CommandData]()
+  let db: DbConn = initDb(dbName = "test15.db")
+  var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   test "Initialization of the shell's database's commands":
     initDb(db = db, commands = commands)
