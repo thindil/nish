@@ -49,15 +49,15 @@ suite "Unit tests for nish module":
     showProgramVersion()
 
   test "Read the user's input":
-    when not defined(testInput):
-      skip()
-    else:
+    when defined(testInput):
       var
         iString: UserInput = ""
-        cName: string = "ls"
+        cName: CommandName = "ls"
         rCode: ResultCode = QuitSuccess.ResultCode
         hIndex: HistoryRange = 1
         cPosition: Natural = 1
       readUserInput(inputString = iString, oneTimeCommand = false, db = db,
           commandName = cName, returnCode = rCode, historyIndex = hIndex,
           cursorPosition = cPosition, aliases = myaliases, commands = commands)
+    else:
+      skip()
