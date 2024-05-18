@@ -1,7 +1,6 @@
 import utils/utils
 import ../src/db
 import unittest2
-{.warning[UnusedImport]:off.}
 include ../src/variables
 
 suite "Unit tests for variable modules":
