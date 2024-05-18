@@ -1,7 +1,7 @@
 when defined(testInput):
   import utils/utils
   import std/tables
-  import ../src/[commandslist, history, lstring, resultcode]
+  import ../src/[commandslist, history, types]
 import ../src/nish
 import unittest2
 
@@ -11,7 +11,7 @@ suite "Unit tests for nish module":
     checkpoint "Initializing the tests"
     let db = initDb(dbName = "test10.db")
     var
-      myaliases = newOrderedTable[LimitedString, int]()
+      myaliases = newOrderedTable[string, int]()
       commands = newTable[string, CommandData]()
 
   test "Showing the list of available options for the shell":
