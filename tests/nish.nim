@@ -29,6 +29,7 @@ when defined(testInput):
   import utils/utils
   import std/tables
   import ../src/[commandslist, history, types]
+  import norm/sqlite
 import ../src/nish
 import unittest2
 
@@ -36,8 +37,8 @@ suite "Unit tests for nish module":
 
   when defined(testInput):
     checkpoint "Initializing the tests"
-    let db: DbConn = initDb(dbName = "test10.db")
-    var
+    let
+      db: DbConn = initDb(dbName = "test10.db")
       myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
