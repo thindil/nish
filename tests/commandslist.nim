@@ -13,12 +13,14 @@ suite "Unit tests for commandslist module":
   var commands = newTable[string, CommandData]()
 
   proc testCommand(arguments: UserInput; db: DbConn;
-      list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      list: CommandLists): ResultCode {.gcsafe, raises: [], tags: [],
+      contractual.} =
     body:
       echo "test"
 
   proc testCommand2(arguments: UserInput; db: DbConn;
-      list: CommandLists): ResultCode {.gcsafe, raises: [], contractual.} =
+      list: CommandLists): ResultCode {.gcsafe, raises: [], tags: [],
+      contractual.} =
     body:
       echo "test2"
 
