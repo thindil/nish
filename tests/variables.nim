@@ -33,21 +33,21 @@ include ../src/variables
 suite "Unit tests for variable modules":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test.db")
-  var commands = newTable[string, CommandData]()
+  let db: DbConn = initDb(dbName = "test.db")
+  var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   initVariables(db = db, commands = commands)
   checkpoint "Adding testing variables if needed"
   if db.count(T = Variable) == 0:
-    var variable = newVariable(name = "TESTS", path = "/".Path, recursive = true,
+    var variable: Variable = newVariable(name = "TESTS", path = "/".Path, recursive = true,
           value = "test_variable", description = "Test variable.")
     db.insert(obj = variable)
-    var variable2 = newVariable(name = "TESTS2", path = "/".Path,
+    var variable2: Variable = newVariable(name = "TESTS2", path = "/".Path,
         recursive = false, value = "test_variable2",
         description = "Test variable 2.")
     db.insert(obj = variable2)
   if db.count(T = Variable) == 1:
-    var variable = newVariable(name = "TESTS2", path = "/".Path, recursive = false,
+    var variable: Variable = newVariable(name = "TESTS2", path = "/".Path, recursive = false,
         value = "test_variable2", description = "Test variable 2.")
     db.insert(obj = variable)
 
@@ -120,7 +120,7 @@ suite "Unit tests for variable modules":
           QuitSuccess
 
   test "Initializing an object of Variable type":
-    let newVariable = newVariable(name = "ala")
+    let newVariable: Variable = newVariable(name = "ala")
     check:
       newVariable.name == "ala"
 
