@@ -6,98 +6,90 @@ include ../src/variables
 suite "Unit tests for variable modules":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test.db")
+  let db = initDb(dbName = "test.db")
   var commands = newTable[string, CommandData]()
 
-  initVariables(db, commands)
+  initVariables(db = db, commands = commands)
   checkpoint "Adding testing variables if needed"
-  if db.count(Variable) == 0:
+  if db.count(T = Variable) == 0:
     var variable = newVariable(name = "TESTS", path = "/".Path, recursive = true,
           value = "test_variable", description = "Test variable.")
-    db.insert(variable)
+    db.insert(obj = variable)
     var variable2 = newVariable(name = "TESTS2", path = "/".Path,
         recursive = false, value = "test_variable2",
         description = "Test variable 2.")
-    db.insert(variable2)
-  if db.count(Variable) == 1:
+    db.insert(obj = variable2)
+  if db.count(T = Variable) == 1:
     var variable = newVariable(name = "TESTS2", path = "/".Path, recursive = false,
         value = "test_variable2", description = "Test variable 2.")
-    db.insert(variable)
+    db.insert(obj = variable)
 
   test "Building a SQL query":
     check:
-      buildQuery("/".Path, "name") ==
+      buildQuery(directory = "/".Path, fields = "name") ==
       "SELECT name FROM variables WHERE path='/' ORDER BY id ASC"
 
   test "Setting variables in the selected directory":
-    setVariables("/home".Path, db)
+    setVariables(newDirectory = "/home".Path, db = db)
 
   test "Getting an environment variable":
     check:
-      getEnv("TESTS") == "test_variable"
+      getEnv(key = "TESTS") == "test_variable"
 
   test "Checking do an environment variable exists":
     check:
-      not existsEnv("TESTS2")
+      not existsEnv(key = "TESTS2")
 
   test "Getting the environment variable ID":
     checkpoint "Getting ID of an existing variable"
     check:
-      getVariableId("delete 2",
-          db).int == 2
+      getVariableId(arguments = "delete 2", db = db).int == 2
     checkpoint "Getting ID of a non-existing variable"
     check:
-      getVariableId("delete 22",
-          db).int == 0
+      getVariableId(arguments = "delete 22", db = db).int == 0
 
   test "Showing environment variables":
     checkpoint "Showing available environment variables"
     check:
-      listVariables("list", db) ==
+      listVariables(arguments = "list", db = db) ==
           QuitSuccess
     checkpoint "Showing all environment variables"
     check:
-      listVariables("list all",
-          db) == QuitSuccess
+      listVariables(arguments = "list all", db = db) == QuitSuccess
     checkpoint "Showing environment variables with invalid subcommand"
     check:
-      listVariables("werwerew",
-          db) == QuitSuccess
+      listVariables(arguments = "werwerew", db = db) == QuitSuccess
 
   test "Deleting an environment variable":
     checkpoint "Deleting a non-existing environment variable"
     check:
-      deleteVariable("delete 123",
-          db) == QuitFailure
+      deleteVariable(arguments = "delete 123", db = db) == QuitFailure
     checkpoint "Deleting a non-existing environment variable with invalid index"
     check:
-      deleteVariable("delete sdf",
-          db) == QuitFailure
+      deleteVariable(arguments = "delete sdf", db = db) == QuitFailure
     checkpoint "Deleting an existing environment variable"
     check:
-      deleteVariable("delete 2",
-          db) == QuitSuccess
+      deleteVariable(arguments = "delete 2", db = db) == QuitSuccess
     checkpoint "Deleting a previously deleted environment variable"
     check:
-      deleteVariable("delete 2",
-          db) == QuitFailure
+      deleteVariable(arguments = "delete 2", db = db) == QuitFailure
 
   test "Setting an evironment variable":
     check:
-      setCommand("test=test_val",
+      setCommand(arguments = "test=test_val",
           db = db) ==
           QuitSuccess
-      getEnv("test") == "test_val"
+      getEnv(key = "test") == "test_val"
 
   test "Unsetting an environment variable":
     checkpoint "Unsetting an existing environment variable"
     check:
-      unsetCommand("test", db = db) ==
+      unsetCommand(arguments = "test", db = db) ==
           QuitSuccess
-      getEnv("test") == ""
+      getEnv(key = "test") == ""
     checkpoint "Unsetting an non-existing environment variable"
     check:
-      unsetCommand("test", db = db) ==
+      unsetCommand(arguments = "test", db = db) ==
           QuitSuccess
 
   test "Initializing an object of Variable type":
@@ -107,15 +99,15 @@ suite "Unit tests for variable modules":
 
   test "Getting the type of the database field for VariableValType":
     check:
-      dbType(VariableValType) == "TEXT"
+      dbType(T = VariableValType) == "TEXT"
 
   test "Converting dbValue to VariableValType":
     check:
-      dbValue(text).s == "text"
+      dbValue(val = text).s == "text"
 
   test "Converting VariableValType to dbValue":
     check:
-      to(text.dbValue, VariableValType) == text
+      to(dbVal = text.dbValue, T = VariableValType) == text
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
