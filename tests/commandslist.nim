@@ -43,12 +43,14 @@ suite "Unit tests for commandslist module":
   proc testCommand(arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.gcsafe, raises: [], tags: [],
       contractual.} =
+    ## Dummy command for tests
     body:
       echo "test"
 
   proc testCommand2(arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.gcsafe, raises: [], tags: [],
       contractual.} =
+    ## Dummy command for tests
     body:
       echo "test2"
   {.push ruleOn: "paramsUsed".}
