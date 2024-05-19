@@ -12,6 +12,7 @@ suite "Unit tests for commandslist module":
   db.addAliases
   var commands = newTable[string, CommandData]()
 
+  {.push ruleOff: "paramsUsed".}
   proc testCommand(arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.gcsafe, raises: [], tags: [],
       contractual.} =
@@ -23,6 +24,7 @@ suite "Unit tests for commandslist module":
       contractual.} =
     body:
       echo "test2"
+  {.push ruleOn: "paramsUsed".}
 
   test "Adding a new command":
     checkpoint "Adding a new command"
