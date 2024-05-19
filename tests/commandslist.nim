@@ -6,7 +6,7 @@ include ../src/commandslist
 suite "Unit tests for commandslist module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test4.db")
+  let db = initDb(dbName = "test4.db")
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
@@ -74,10 +74,12 @@ suite "Unit tests for commandslist module":
   test "Executing a command":
     checkpoint "Execute a command inside the system's default shell"
     check:
-      runCommand("ls", "-a .", true, db) == QuitSuccess
+      runCommand(commandName = "ls", arguments = "-a .", withShell = true,
+          db = db) == QuitSuccess
     checkpoint "Execute a command without the system's default shell"
     check:
-      runCommand("ls", "-a .", false, db) == QuitSuccess
+      runCommand(commandName = "ls", arguments = "-a .", withShell = false,
+          db = db) == QuitSuccess
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
