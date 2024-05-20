@@ -28,7 +28,6 @@
 import utils/utils
 import ../src/[aliases, db]
 import unittest2
-{.warning[UnusedImport]: off.}
 {.hint[XDeclaredButNotUsed]: off.}
 include ../src/completion
 
