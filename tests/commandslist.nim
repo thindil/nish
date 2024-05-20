@@ -33,11 +33,11 @@ include ../src/commandslist
 suite "Unit tests for commandslist module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test4.db")
+  let db: DbConn = initDb(dbName = "test4.db")
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
-  var commands = newTable[string, CommandData]()
+  var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   {.push ruleOff: "paramsUsed".}
   proc testCommand(arguments: UserInput; db: DbConn;
