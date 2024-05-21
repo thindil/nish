@@ -1,5 +1,5 @@
 import utils/utils
-import ../src/[db, types]
+import ../src/db
 import unittest2
 include ../src/title
 
