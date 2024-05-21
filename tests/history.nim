@@ -34,11 +34,11 @@ include ../src/history
 suite "Unit tests for history module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test8.db")
-  var commands = newTable[string, CommandData]()
+  let db: DbConn = initDb(dbName = "test8.db")
+  var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   checkpoint "Initializing the shell's history"
-  var amount = initHistory(db = db, commands = commands)
+  var amount: HistoryRange = initHistory(db = db, commands = commands)
   if amount == 0:
     discard updateHistory(commandToAdd = "alias delete", db = db)
 
