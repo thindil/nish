@@ -33,7 +33,7 @@ include ../src/title
 suite "Unit tests for title module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test9.db")
+  let db: DbConn = initDb(dbName = "test9.db")
 
   test "Set the terminal title":
     setTitle(title = "test title", db = db)
