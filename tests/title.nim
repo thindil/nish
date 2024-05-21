@@ -6,10 +6,10 @@ include ../src/title
 suite "Unit tests for title module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test9.db")
+  let db = initDb(dbName = "test9.db")
 
   test "Set the terminal title":
-    setTitle("test title", db)
+    setTitle(title = "test title", db = db)
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
