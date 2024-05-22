@@ -33,10 +33,10 @@ include ../src/theme
 suite "Unit tests for theme module":
 
   checkpoint "Initializing the tests"
-  let db = initDb(dbName = "test16.db")
+  let db: DbConn = initDb(dbName = "test16.db")
 
   test "Initializing an object of Color type":
-    let newColor = newColor(description = "test color")
+    let newColor: Color = newColor(description = "test color")
     check:
       newColor.description == "test color"
 
@@ -65,7 +65,8 @@ suite "Unit tests for theme module":
       to(dbVal = errors.dbValue, T = ThemeColor) == errors
 
   test "Showing a theme's error message":
-    var e = newException(exceptn = CatchableError, message = "Test error")
+    var e: ref CatchableError = newException(exceptn = CatchableError,
+        message = "Test error")
     showThemeError(message = "test error", e = e)
 
   test "Getting the selected color":
