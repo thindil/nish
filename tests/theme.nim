@@ -6,7 +6,7 @@ include ../src/theme
 suite "Unit tests for theme module":
 
   checkpoint "Initializing the tests"
-  let db = initDb("test16.db")
+  let db = initDb(dbName = "test16.db")
 
   test "Initializing an object of Color type":
     let newColor = newColor(description = "test color")
@@ -15,35 +15,35 @@ suite "Unit tests for theme module":
 
   test "Getting the type of the database field for ColorName":
     check:
-      dbType(ColorName) == "TEXT"
+      dbType(T = ColorName) == "TEXT"
 
   test "Converting dbValue to ColorName":
     check:
-      dbValue(black).s == "black"
+      dbValue(val = black).s == "black"
 
   test "Converting ColorName to dbValue":
     check:
-      to(black.dbValue, ColorName) == black
+      to(dbVal = black.dbValue, T = ColorName) == black
 
   test "Getting the type of the database field for ThemeColor":
     check:
-      dbType(ThemeColor) == "TEXT"
+      dbType(T = ThemeColor) == "TEXT"
 
   test "Converting dbValue to ThemeColor":
     check:
-      dbValue(errors).s == "errors"
+      dbValue(val = errors).s == "errors"
 
   test "Converting ThemeColor to dbValue":
     check:
-      to(errors.dbValue, ThemeColor) == errors
+      to(dbVal = errors.dbValue, T = ThemeColor) == errors
 
   test "Showing a theme's error message":
     var e = newException(exceptn = CatchableError, message = "Test error")
-    showThemeError("test error", e)
+    showThemeError(message = "test error", e = e)
 
   test "Getting the selected color":
     check:
-      getColor(db, default) == termClear
+      getColor(db = db, name = default) == termClear
 
   suiteTeardown:
-    closeDb(QuitSuccess.ResultCode, db)
+    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
