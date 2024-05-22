@@ -8,6 +8,7 @@ of the shell.
 
 ### Fixed
 - Returning to the first row from the last row in Tab completions' list.
+- Showing the shell's error's information
 
 ## [0.7.0] - 2024-02-11
 
