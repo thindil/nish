@@ -46,23 +46,24 @@ suite "Unit tests for aliases module":
     check:
       myaliases.len == 1
 
-  test "Getting the shell's alias ID":
-    checkpoint "Getting ID of an existing alias"
+  test "Getting ID of an existing alias":
     check:
       getAliasId(arguments = "delete 2", db = db).int == 2
-    checkpoint "Getting ID of a non-existing alias"
+
+  test "Getting ID of a non-existing alias":
     check:
       getAliasId(arguments = "delete 22", db = db).int == 0
 
-  test "Deleting the shell's alias":
-    checkpoint "Deleting an existing alias"
+  test "Deleting an existing alias":
     check:
       deleteAlias(arguments = "delete 2", aliases = myaliases, db = db) == QuitSuccess
       db.count(T = Alias) == 1
-    checkpoint "Deleting a non-existing alias"
+
+  test "Deleting a non-existing alias":
     check:
       deleteAlias(arguments = "delete 22", aliases = myaliases, db = db) == QuitFailure
-    checkpoint "Re-adding the test alias"
+
+  test "Re-adding the test alias":
     var testAlias2: Alias = newAlias(name = "tests2", path = "/".Path,
       recursive = false,
       commands = "ls -a", description = "Test alias 2.", output = "output")
@@ -70,26 +71,27 @@ suite "Unit tests for aliases module":
     unittest2.require:
       db.count(T = Alias) == 2
 
-  test "Setting the shell's aliases in the current directory":
+  test "Checking an existing alias":
     myaliases.setAliases(directory = paths.getCurrentDir(), db = db)
-    checkpoint "Checking an existing alias"
     check:
       execAlias(arguments = "", aliasId = "tests", aliases = myaliases,
           db = db) == QuitSuccess
-    checkpoint "Checking a non existing alias"
+
+  test "Checking a non existing alias":
     check:
       execAlias(arguments = "", aliasId = "tests2", aliases = myaliases,
           db = db) == QuitFailure
 
-  test "Listing the shell's aliases":
-    checkpoint "List the shell's aliases in the current directory"
+  test "List the shell's aliases in the current directory":
     check:
       db.count(T = Alias) == 2
       listAliases(arguments = "list", aliases = myaliases, db = db) == QuitSuccess
-    checkpoint "List all available the shell aliases"
+
+  test "List all available the shell aliases":
     check:
       listAliases(arguments = "list all", aliases = myaliases, db = db) == QuitSuccess
-    checkpoint "Check what happen when invalid argument passed to listAliases"
+
+  test "Check what happen when invalid argument passed to listAliases":
     expect PreConditionDefect:
       check:
         listAliases(arguments = "werwerew", aliases = myaliases, db = db) == QuitSuccess
