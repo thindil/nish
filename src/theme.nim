@@ -224,8 +224,8 @@ proc showThemeError*(message: string; e: ref Exception) {.sideEffect, raises: [
       stderr.styledWrite(fgRed, message)
       stderr.styledWriteLine(fgRed, $e.name)
       logToFile(message = $e.name)
-      stderr.styledWriteLine(fgRed, getCurrentExceptionMsg())
-      logToFile(message = getCurrentExceptionMsg())
+      stderr.styledWriteLine(fgRed, e.msg)
+      logToFile(message = e.msg)
       when defined(debug):
         stderr.styledWrite(fgRed, e.getStackTrace)
         logToFile(message = e.getStackTrace)
