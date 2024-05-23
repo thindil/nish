@@ -39,20 +39,20 @@ suite "Unit tests for commands module":
   db.addAliases
   var myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
 
-  test "Testing cd command":
-    checkpoint "Entering an existing directory"
+  test "Entering an existing directory":
     check:
       cdCommand(newDirectory = "/".Path, aliases = myaliases, db = db) == QuitSuccess
-    checkpoint "Trying to enter a non-existing directory"
+
+  test "Trying to enter a non-existing directory":
     check:
       cdCommand(newDirectory = "/adfwerewtr".Path, aliases = myaliases,
           db = db) == QuitFailure
 
-  test "Testing changing the current directory of the shell":
-    checkpoint "Changing the current directory"
+  test "Changing the current directory":
     check:
       changeDirectory(newDirectory = "..".Path, aliases = myaliases, db = db) == QuitSuccess
-    checkpoint "Changing the current directory to non-existing directory"
+
+  test "Changing the current directory to non-existing directory":
     check:
       changeDirectory(newDirectory = "/adfwerewtr".Path, aliases = myaliases,
           db = db) == QuitFailure
@@ -64,8 +64,7 @@ suite "Unit tests for commands module":
     check:
       executeCommand(commands = commands, commandName = "ls",
           arguments = "-a .", inputString = "ls -a .", db = db,
-
-aliases = myaliases, cursorPosition = cursorPosition) == QuitSuccess
+          aliases = myaliases, cursorPosition = cursorPosition) == QuitSuccess
 
   suiteTeardown:
     closeDb(returnCode = QuitSuccess.ResultCode, db = db)
