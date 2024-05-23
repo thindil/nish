@@ -56,35 +56,35 @@ suite "Unit tests for commandslist module":
   {.push ruleOn: "paramsUsed".}
 
   test "Adding a new command":
-    checkpoint "Adding a new command"
     addCommand(name = "test",
         command = testCommand, commands = commands)
     check:
       commands.len == 1
-    checkpoint "Readding the same command"
+
+  test "Readding the same command":
     expect CommandsListError:
       addCommand(name = "test",
           command = testCommand, commands = commands)
     check:
       commands.len == 1
-    checkpoint "Overwritting built-in command"
+
+  test "Overwritting built-in command":
     expect CommandsListError:
       addCommand(name = "exit",
           command = testCommand, commands = commands)
     check:
       commands.len == 1
 
-  test "Replacing a command":
-    checkpoint "Replacing an existing command"
+  test "Replacing an existing command":
     replaceCommand(name = "test",
         command = testCommand2, commands = commands, db = db)
-    checkpoint "Replacing a built-in command"
+
+  test "Replacing a built-in command":
     expect CommandsListError:
       replaceCommand(name = "exit",
           command = testCommand, commands = commands, db = db)
 
-  test "Deleting a command":
-    checkpoint "Deleting an exisiting command"
+  test "Deleting an exisiting command":
     deleteCommand(name = "test",
         commands = commands)
     check:
@@ -93,19 +93,20 @@ suite "Unit tests for commandslist module":
         command = testCommand, commands = commands)
     unittest2.require:
       commands.len == 1
-    checkpoint "Deleting a non-existing command"
+
+  test "Deleting a non-existing command":
     expect CommandsListError:
       deleteCommand(name = "test",
           commands = commands)
     check:
       commands.len == 1
 
-  test "Executing a command":
-    checkpoint "Execute a command inside the system's default shell"
+  test "Execute a command inside the system's default shell":
     check:
       runCommand(commandName = "ls", arguments = "-a .", withShell = true,
           db = db) == QuitSuccess
-    checkpoint "Execute a command without the system's default shell"
+
+  test "Execute a command without the system's default shell":
     check:
       runCommand(commandName = "ls", arguments = "-a .", withShell = false,
           db = db) == QuitSuccess
