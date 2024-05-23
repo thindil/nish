@@ -74,12 +74,12 @@ suite "Unit tests for completion module":
     check:
       completions[0] == "something"
 
-  test "Getting the shell's completion ID":
-    checkpoint "Getting ID of an existing completion"
+  test "Getting ID of an existing completion":
     check:
       getCompletionId(arguments = "delete 1",
           db = db).int == 1
-    checkpoint "Getting ID of a non-existing completion"
+
+  test "Getting ID of a non-existing completion":
     check:
       getCompletionId(arguments = "delete 22",
           db = db).int == 0
@@ -88,8 +88,7 @@ suite "Unit tests for completion module":
     check:
       listCompletion(arguments = "list", db = db) == QuitSuccess
 
-  test "Deleting a command's completion":
-    checkpoint "Deleting an existing completion"
+  test "Deleting an existing completion":
     check:
       deleteCompletion(arguments = "delete 1",
           db = db) == QuitSuccess
@@ -97,34 +96,35 @@ suite "Unit tests for completion module":
     var completion: Completion = newCompletion(command = "ala", cType = custom,
         cValues = "something")
     db.insert(obj = completion)
-    checkpoint "Deleting a non-existing completion"
+
+  test "Deleting a non-existing completion":
     check:
       deleteCompletion(arguments = "delete 2",
           db = db) == QuitFailure
       db.count(T = Completion) == 1
 
-  test "Show a command's completion":
-    checkpoint "Showing an existing completion"
+  test "Showing an existing completion":
     check:
       showCompletion(arguments = "show 1", db = db) == QuitSuccess
-    checkpoint "Showing a non-existing completion"
+
+  test "Showing a non-existing completion":
     check:
       showCompletion(arguments = "show 2", db = db) == QuitFailure
 
-  test "Exporting a command's completion":
-    checkpoint "Exporting an existing completion"
+  test "Exporting an existing completion":
     check:
       exportCompletion(arguments = "export 1 test.txt", db = db) == QuitSuccess
-    checkpoint "Exporting a non-existing completion"
+
+  test "Exporting a non-existing completion":
     check:
       exportCompletion(arguments = "export 2 test.txt", db = db) == QuitFailure
 
-  test "Importing a command's completion":
-    checkpoint "Importing a new completion"
+  test "Importing a new completion":
     discard deleteCompletion(arguments = "delete 1", db = db)
     check:
       importCompletion(arguments = "import test.txt", db = db) == QuitSuccess
-    checkpoint "Importing an existing completion"
+
+  test "Importing an existing completion":
     check:
       importCompletion(arguments = "import test.txt", db = db) == QuitFailure
 
