@@ -56,12 +56,12 @@ suite "Unit tests for history module":
      showHistory(db = db, arguments = "list") ==
       QuitSuccess
 
-  test "Finding text in the shell's history":
-    checkpoint "Finding an exising entry in the history"
+  test "Finding an exising entry in the history":
     check:
       findInHistory(db = db, arguments = "find te") ==
            QuitSuccess
-    checkpoint "Finding a non-exising entry in the history"
+
+  test "Finding a non-exising entry in the history":
     check:
       findInHistory(db = db, arguments = "find asd") == QuitFailure
 
