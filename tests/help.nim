@@ -42,31 +42,32 @@ suite "Unit tests for help module":
     check:
       commands.len == 2
 
-  test "Adding a new help entry":
+  test "Adding a non-existing help entry":
     discard deleteHelpEntry(topic = "test", db = db)
-    checkpoint "Adding a non-existing help entry"
     check:
       addHelpEntry(topic = "test", usage = "test topic", plugin = "test",
           content = "test help", isTemplate = false, db = db) == QuitSuccess
-    checkpoint "Adding an existing help entry"
+
+  test "Adding an existing help entry":
     check:
       addHelpEntry(topic = "test", usage = "test topic", plugin = "test",
           content = "test help", isTemplate = false, db = db) == QuitFailure
 
-  test "Deleting a help entry":
+  test "Deleting an existing help entry":
     discard deleteHelpEntry(topic = "test", db = db)
     check:
       addHelpEntry(topic = "test", usage = "test topic", plugin = "test",
           content = "test help", isTemplate = false, db = db) == QuitSuccess
-    checkpoint "Deleting an existing help entry"
     check:
       deleteHelpEntry(topic = "test", db = db) ==
           QuitSuccess
-    checkpoint "Deleting a non-existing help entry"
+
+  test "Deleting a non-existing help entry":
     check:
       deleteHelpEntry(topic = "asdd", db = db) ==
           QuitFailure
-    checkpoint "Deleting a deleted help entry"
+
+  test "Deleting a deleted help entry":
     check:
       deleteHelpEntry(topic = "test", db = db) ==
           QuitFailure
@@ -75,21 +76,21 @@ suite "Unit tests for help module":
     check:
       updateHelp(db = db) == QuitSuccess
 
-  test "Loading the help content from a file":
+  test "Loading the help content to the empty help system":
     db.exec(query = "DELETE FROM help".sql)
-    checkpoint "Loading the help content to the empty help system"
     check:
       readHelpFromFile(db = db) == QuitSuccess
-    checkpoint "Loading the help content to the full help system"
+
+  test "Loading the help content to the full help system":
     check:
       readHelpFromFile(db = db) == QuitFailure
 
-  test "Showing the help entry":
-    checkpoint "Showing an existing help entry"
+  test "Showing an existing help entry":
     check:
       showHelp(topic = "alias", db = db) ==
           QuitSuccess
-    checkpoint "Showing a non-existing help entry"
+
+  test "Showing a non-existing help entry":
     check:
       showHelp(topic = "srewfdsfs", db = db) ==
           QuitFailure
@@ -103,16 +104,16 @@ suite "Unit tests for help module":
       showUnknownHelp(subCommand = "command", command = "subcommand",
           helpType = "helptype", db = db) == QuitFailure
 
-  test "Updating a help entry":
+  test "Updating an existing help entry":
     discard deleteHelpEntry(topic = "test", db = db)
     unittest2.require:
       addHelpEntry(topic = "test", usage = "test topic", plugin = "test",
           content = "test help", isTemplate = false, db = db) == QuitSuccess
-    checkpoint "Updating an existing help entry"
     check:
       updateHelpEntry(topic = "test", usage = "test topic", plugin = "test",
           content = "test help2", db = db, isTemplate = false) == QuitSuccess
-    checkpoint "Updating a non-existing help entry"
+
+  test "Updating a non-existing help entry":
     check:
       updateHelpEntry(topic = "asdd", usage = "test topic", plugin = "test",
           content = "test help2", db = db, isTemplate = false) == QuitFailure
