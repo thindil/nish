@@ -42,11 +42,11 @@ suite "Unit tests for options module":
     check:
       commands.len > 0
 
-  test "Getting the value of an option":
-    checkpoint "Getting the value of an existing option"
+  test "Getting the value of an existing option":
     check:
       getOption(optionName = "historyLength", db = db).len > 0
-    checkpoint "Getting the value of a non-existing option"
+
+  test "Getting the value of a non-existing option":
     check:
       getOption(optionName = "werweewfwe", db = db).len == 0
 
