@@ -39,35 +39,36 @@ suite "Unit tests for plugins module":
 #  test "Initialization of plugins":
 #    initPlugins(db, commands)
 
-  test "Adding a new plugin":
+  test "Adding an existing, not added plugin":
     discard removePlugin(db = db, arguments = "remove 1", commands = commands)
-    checkpoint "Adding an existing, not added plugin"
     check:
       addPlugin(db = db,
           arguments = "add tools/testplugin.sh", commands = commands) == QuitSuccess
-    checkpoint "Adding an existing, previously added plugin"
+
+  test "Adding an existing, previously added plugin":
     check:
       addPlugin(db = db,
           arguments = "add tools/testplugin.sh", commands = commands) == QuitFailure
-    checkpoint "Adding a non-existing plugin"
+
+  test "Adding a non-existing plugin":
     check:
       addPlugin(db = db,
           arguments = "add tools/testplugin.223sh", commands = commands) == QuitFailure
 
-  test "Getting the plugin's ID":
-    checkpoint "Getting ID of an existing plugin"
+  test "Getting ID of an existing plugin":
     check:
       getPluginId(arguments = "remove 1", db = db).int == 1
-    checkpoint "Getting ID of a non-existing plugin"
+
+  test "Getting ID of a non-existing plugin":
     check:
       getPluginId(arguments = "remove 22", db = db).int == 0
 
-  test "Checking a plugin":
-    checkpoint "Checking an existing plugin"
+  test "Checking an existing plugin":
     check:
       checkPlugin(pluginPath = "tools/testplugin.sh".Path, db = db,
           commands = commands).path == "tools/testplugin.sh".Path
-    checkpoint "Cheking a non-existing plugin"
+
+  test "Cheking a non-existing plugin":
     check:
       checkPlugin(pluginPath = "sdfsdfds.df".Path, db = db,
           commands = commands).path.len == 0
@@ -95,26 +96,27 @@ suite "Unit tests for plugins module":
 #      listPlugins("list werwerew",
 #          db) == QuitSuccess
 
-  test "Enabling or disabling a plugin":
-    checkpoint "Disabling a plugin"
+  test "Disabling a plugin":
     check:
       togglePlugin(db = db, arguments = "disable 1", disable = true,
           commands = commands) == QuitSuccess
-    checkpoint "Enabling a plugin"
+
+  test "Enabling a plugin":
     check:
       togglePlugin(db = db, arguments = "enable 1", disable = false,
           commands = commands) == QuitSuccess
-    checkpoint "Enabling an enabled plugin"
+
+  test "Enabling an enabled plugin":
     check:
       togglePlugin(db = db, arguments = "enable 2", disable = false,
           commands = commands) == QuitFailure
 
-  test "Uninstalling a plugin":
-    checkpoint "Uninstalling an installed plugin"
+  test "Uninstalling an installed plugin":
     check:
       removePlugin(db = db, arguments = "remove 1",
           commands = commands) == QuitSuccess
-    checkpoint "Uninstalling a non-installed plugin"
+
+  test "Uninstalling a non-installed plugin":
     check:
       removePlugin(db = db, arguments = "remove 1",
           commands = commands) == QuitFailure
