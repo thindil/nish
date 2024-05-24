@@ -57,11 +57,11 @@ suite "Unit tests for input module":
     else:
       skip()
 
-  test "Reading a character from the user's input":
-    checkpoint "Reading a lowercase character"
+  test "Reading a lowercase character":
     check:
       readChar(inputChar = 'c', db = db) == "c"
-    checkpoint "Reading a uppercase character"
+
+  test "Reading a uppercase character":
     check:
       readChar(inputChar = 'H', db = db) == "H"
 
