@@ -131,6 +131,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[Completion
     # Completion disabled
     if completionAmount == 0:
       return
+    let localPrefix: CompletionPrefix = prefix.replace(sub = "~", by = getHomeDir())
     let caseSensitive: bool = try:
         parseBool(s = $getOption(optionName = "completionCheckCase", db = db,
           defaultValue = "false"))
@@ -138,7 +139,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[Completion
         true
     try:
       if caseSensitive:
-        for item in walkPattern(pattern = prefix & "*"):
+        for item in walkPattern(pattern = localPrefix & "*"):
           if completions.len >= completionAmount:
             return
           if (cType == files and not fileExists(filename = item)) or (cType ==
@@ -149,16 +150,16 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[Completion
           if completion notin completions:
             completions.add(y = completion)
       else:
-        let prefixInsensitive: CompletionPrefix = prefix.lastPathPart.toLowerAscii
-        var parentDir: Path = case prefix.parentDir
+        let prefixInsensitive: CompletionPrefix = localPrefix.lastPathPart.toLowerAscii
+        var parentDir: Path = case localPrefix.parentDir
           of ".":
             "".Path
           of "/":
             "/".Path
           else:
-            (prefix.parentDir & DirSep).Path
-        if prefix.endsWith(suffix = DirSep):
-          parentDir = prefix.Path
+            (localPrefix.parentDir & DirSep).Path
+        if localPrefix.endsWith(suffix = DirSep):
+          parentDir = localPrefix.Path
         for item in walkDir(dir = $parentDir.absolutePath, relative = true):
           if completions.len >= completionAmount:
             return
@@ -168,7 +169,7 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[Completion
           var completion: CompletionString = (if dirExists(dir = $parentDir &
               item.path): item.path & DirSep else: item.path)
           if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
-              prefix.endsWith(suffix = DirSep)) and completion notin completions:
+              localPrefix.endsWith(suffix = DirSep)) and completion notin completions:
             completions.add(y = $parentDir & completion)
     except ValueError, OSError:
       showError(message = "Can't get completion. Reason: ",
