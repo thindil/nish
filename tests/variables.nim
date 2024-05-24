@@ -67,37 +67,40 @@ suite "Unit tests for variable modules":
     check:
       not existsEnv(key = "TESTS2")
 
-  test "Getting the environment variable ID":
-    checkpoint "Getting ID of an existing variable"
+  test "Getting ID of an existing variable":
     check:
       getVariableId(arguments = "delete 2", db = db).int == 2
-    checkpoint "Getting ID of a non-existing variable"
+
+  test "Getting ID of a non-existing variable":
     check:
       getVariableId(arguments = "delete 22", db = db).int == 0
 
-  test "Showing environment variables":
-    checkpoint "Showing available environment variables"
+  test "Showing available environment variables":
     check:
       listVariables(arguments = "list", db = db) ==
           QuitSuccess
-    checkpoint "Showing all environment variables"
+
+  test "Showing all environment variables":
     check:
       listVariables(arguments = "list all", db = db) == QuitSuccess
-    checkpoint "Showing environment variables with invalid subcommand"
+
+  test "Showing environment variables with invalid subcommand":
     check:
       listVariables(arguments = "werwerew", db = db) == QuitSuccess
 
-  test "Deleting an environment variable":
-    checkpoint "Deleting a non-existing environment variable"
+  test "Deleting a non-existing environment variable":
     check:
       deleteVariable(arguments = "delete 123", db = db) == QuitFailure
-    checkpoint "Deleting a non-existing environment variable with invalid index"
+
+  test "Deleting a non-existing environment variable with invalid index":
     check:
       deleteVariable(arguments = "delete sdf", db = db) == QuitFailure
-    checkpoint "Deleting an existing environment variable"
+
+  test "Deleting an existing environment variable":
     check:
       deleteVariable(arguments = "delete 2", db = db) == QuitSuccess
-    checkpoint "Deleting a previously deleted environment variable"
+
+  test "Deleting a previously deleted environment variable":
     check:
       deleteVariable(arguments = "delete 2", db = db) == QuitFailure
 
@@ -108,13 +111,13 @@ suite "Unit tests for variable modules":
           QuitSuccess
       getEnv(key = "test") == "test_val"
 
-  test "Unsetting an environment variable":
-    checkpoint "Unsetting an existing environment variable"
+  test "Unsetting an existing environment variable":
     check:
       unsetCommand(arguments = "test", db = db) ==
           QuitSuccess
       getEnv(key = "test") == ""
-    checkpoint "Unsetting an non-existing environment variable"
+
+  test "Unsetting an non-existing environment variable":
     check:
       unsetCommand(arguments = "test", db = db) ==
           QuitSuccess
