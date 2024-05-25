@@ -228,7 +228,12 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[
       let fileName: CompletionString = (when defined(
           windows): file.extractFilename else: "." & DirSep &
           file.extractFilename)
-      if fileName notin completions:
+      let filePerms: set[FilePermission] = try:
+          getFilePermissions(filename = fileName)
+        except:
+          return
+      if fileName notin completions and (fpUserExec in filePerms or
+          fpGroupExec in filePerms or fpOthersExec in filePerms):
         completions.add(y = fileName)
     # Check for programs and commands in the system
     try:
@@ -238,6 +243,7 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[
             return
           let fileName: CompletionString = file.extractFilename
           if fileName notin completions:
+            echo fileName
             completions.add(y = fileName)
     except OSError:
       return
