@@ -243,7 +243,6 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[
             return
           let fileName: CompletionString = file.extractFilename
           if fileName notin completions:
-            echo fileName
             completions.add(y = fileName)
     except OSError:
       return
