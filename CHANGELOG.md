@@ -6,6 +6,10 @@ of the shell.
 
 ## [Unreleased]
 
+### Added
+- The commands' completion can now find also executables in the current
+  directory.
+
 ### Fixed
 - Returning to the first row from the last row in Tab completions' list.
 - Showing the shell's error's information
