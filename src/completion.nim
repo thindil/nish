@@ -103,10 +103,10 @@ proc newCompletion(command: string = ""; cType: CompletionType = none;
   body:
     Completion(command: command, cType: cType, cValues: cValues)
 
-proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[CompletionString]; db;
-    cType: DirCompletionType = all) {.sideEffect, raises: [], tags: [
-    ReadDirEffect, WriteIOEffect, ReadDbEffect, ReadEnvEffect, TimeEffect,
-    RootEffect], contractual.} =
+proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[
+    CompletionString]; db; cType: DirCompletionType = all) {.sideEffect,
+    raises: [], tags: [ReadDirEffect, WriteIOEffect, ReadDbEffect,
+    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Get the relative path of file or directory, based on the selected prefix
   ## in the current directory.
   ##
@@ -131,7 +131,8 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[Completion
     # Completion disabled
     if completionAmount == 0:
       return
-    let localPrefix: CompletionPrefix = prefix.replace(sub = "~", by = getHomeDir())
+    let localPrefix: CompletionPrefix = prefix.replace(sub = "~",
+        by = getHomeDir())
     let caseSensitive: bool = try:
         parseBool(s = $getOption(optionName = "completionCheckCase", db = db,
           defaultValue = "false"))
@@ -175,10 +176,11 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[Completion
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException(), db = db)
 
-proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[string];
-    aliases: ref AliasesList; commands: ref CommandsList; db) {.sideEffect,
-    raises: [], tags: [ReadEnvEffect, ReadDirEffect, ReadDbEffect,
-    ReadEnvEffect, TimeEffect, WriteIOEffect, RootEffect], contractual.} =
+proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[
+    string]; aliases: ref AliasesList; commands: ref CommandsList;
+    db) {.sideEffect, raises: [], tags: [ReadEnvEffect, ReadDirEffect,
+    ReadDbEffect, ReadEnvEffect, TimeEffect, WriteIOEffect, RootEffect],
+    contractual.} =
   ## Get the list of available commands which starts with the selected prefix
   ##
   ## * prefix      - the prefix which will be looking for in commands
@@ -219,6 +221,15 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[string
         return
       if alias.startsWith(prefix = prefix) and $alias notin completions:
         completions.add(y = $alias)
+    # Check for programs in the current directory
+    for file in walkFiles(pattern = $getCurrentDirectory() & DirSep & prefix & "*"):
+      if completions.len >= completionAmount:
+        return
+      let fileName: CompletionString = (when defined(
+          windows): file.extractFilename else: "." & DirSep &
+          file.extractFilename)
+      if fileName notin completions:
+        completions.add(y = fileName)
     # Check for programs and commands in the system
     try:
       for path in getEnv(key = "PATH").split(sep = PathSep):
@@ -231,10 +242,10 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[string
     except OSError:
       return
 
-proc getCompletion*(commandName, prefix: CompletionPrefix; completions: var seq[string];
-    aliases: ref AliasesList; commands: ref CommandsList; db) {.sideEffect,
-    raises: [], tags: [ReadDirEffect, WriteIOEffect, ReadDbEffect,
-    ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
+proc getCompletion*(commandName, prefix: CompletionPrefix; completions: var seq[
+    string]; aliases: ref AliasesList; commands: ref CommandsList;
+    db) {.sideEffect, raises: [], tags: [ReadDirEffect, WriteIOEffect,
+    ReadDbEffect, ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Get the completion for the selected command from the shell's completion
   ## database, based on the selected prefix
   ##
@@ -739,7 +750,8 @@ proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     try:
       let
         dict: Config = loadConfig(filename = $fileName)
-        command: CommandName = dict.getSectionValue(section = "", key = "Command")
+        command: CommandName = dict.getSectionValue(section = "",
+            key = "Command")
       if db.exists(T = Completion, cond = "command=?", params = command):
         return showError(message = "The completion for the command: " &
           command & " exists.", db = db)
