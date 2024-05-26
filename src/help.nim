@@ -236,8 +236,10 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         except ValueError, DbError, LoggingError:
           showError(message = "Can't get the shell's setting for amount of help list columns. Reason: ",
               e = getCurrentException(), db = db)
-        for key in keys:
-          row = row & key.value & "\t"
+        let color: ColorCode = getColor(db = db, name = ids)
+        for index, key in keys:
+          row = row & style(ss = "[" & $(index + 1) & "] ", style = color) &
+              key.value & "\t"
           i.inc
           if i == columnAmount + 1:
             try:
