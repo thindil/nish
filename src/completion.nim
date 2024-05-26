@@ -230,7 +230,7 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[
           file.extractFilename)
       let filePerms: set[FilePermission] = try:
           getFilePermissions(filename = fileName)
-        except:
+        except OSError:
           return
       if fileName notin completions and (fpUserExec in filePerms or
           fpGroupExec in filePerms or fpOthersExec in filePerms):
