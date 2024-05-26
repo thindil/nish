@@ -319,6 +319,14 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
         cursorPosition = 0
         commandName = "ctrl-c"
         break
+      # Ctrl-d pressed, quit from the shell
+      of 4:
+        completionMode = false
+        inputString = "exit"
+        returnCode = QuitSuccess.ResultCode
+        cursorPosition = 0
+        commandName = "ctrl-d"
+        break
       # Enter the currently selected completion into the user's input
       of 13:
         if not completionMode:
