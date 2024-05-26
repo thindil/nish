@@ -11,6 +11,9 @@ of the shell.
   directory.
 - Ability to quit from the shell with CTRL-D shortcut.
 
+### Changed
+- Updated the shell's help entries
+
 ### Fixed
 - Returning to the first row from the last row in Tab completions' list.
 - Showing the shell's error's information
