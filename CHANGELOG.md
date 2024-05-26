@@ -9,6 +9,7 @@ of the shell.
 ### Added
 - The commands' completion can now find also executables in the current
   directory.
+- Ability to quit from the shell with CTRL-D shortcut.
 
 ### Fixed
 - Returning to the first row from the last row in Tab completions' list.
