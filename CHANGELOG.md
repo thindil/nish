@@ -13,6 +13,7 @@ of the shell.
 
 ### Changed
 - Updated the shell's help entries
+- Updated contributing guide
 
 ### Fixed
 - Returning to the first row from the last row in Tab completions' list.
