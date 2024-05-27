@@ -19,6 +19,7 @@ of the shell.
 - Returning to the first row from the last row in Tab completions' list.
 - Showing the shell's error's information
 - Directories' completion doesn't work with `~` as home directory replacement.
+- Typo in the help topics list
 
 ## [0.7.0] - 2024-02-11
 
