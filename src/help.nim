@@ -263,27 +263,37 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             style(ss = "'help [topic]'", style = getColor(db = db,
             name = helpUsage)) & ", for example: " & style(ss = "`help " & keys[
             0].value & "`", style = getColor(db = db, name = helpCode)) &
+            " or use the topic's number, for example: " & style(ss = "`help 1`",
+            style = getColor(db = db, name = helpCode)) &
             ".\nInformation about usage of a command: if a parameter of a command is between " &
             style(ss = "[]", style = getColor(db = db, name = helpReqParam)) &
             " then the parameter is required. If a parameter of a command is between " &
             style(ss = "?", style = getColor(db = db, name = helpOptParam)) &
             " then the parameter is optional.", db = db)
 
-    # If no topic was selected by the user, show the list of the help's topics
-    if topic.len == 0:
-      var keys: seq[ShellOption] = @[ShellOption()]
+    let topicNumber: Natural = try:
+        topic.parseInt
+      except ValueError:
+        0
+    # Get the list of help topics
+    var keys: seq[ShellOption] = @[ShellOption()]
+    if topicNumber > 0 or topic.len == 0:
       try:
         db.rawSelect(qry = "SELECT topic FROM help", objs = keys)
       except ValueError, DbError, LoggingError:
         return showError(message = "Can't get help topics from database. Reason: ",
             e = getCurrentException(), db = db)
       keys.sort(cmp = system.cmp)
+    # If no topic was selected by the user, show the list of the help's topics
+    if topic.len == 0:
       showHelpList(keys = keys)
       return QuitSuccess.ResultCode
     # Try to get the selected help topic from the database
+    let localTopic: UserInput = (if topicNumber > 0: keys[
+        topicNumber - 1].value else: topic)
     type DbKey = string
     let
-      tokens: seq[string] = split(s = $topic)
+      tokens: seq[string] = split(s = $localTopic)
       args: UserInput = join(a = tokens[
               1 .. ^1], sep = " ")
       command: UserInput = tokens[0]
