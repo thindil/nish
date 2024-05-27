@@ -262,8 +262,8 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         showOutput(message = "\n\nTo see more information about the selected topic, type " &
             style(ss = "'help [topic]'", style = getColor(db = db,
             name = helpUsage)) & ", for example: " & style(ss = "`help " & keys[
-            0].value, style = getColor(db = db, name = helpCode)) &
-            "`.\nInformation about usage of a command: if a parameter of a command is between " &
+            0].value & "`", style = getColor(db = db, name = helpCode)) &
+            ".\nInformation about usage of a command: if a parameter of a command is between " &
             style(ss = "[]", style = getColor(db = db, name = helpReqParam)) &
             " then the parameter is required. If a parameter of a command is between " &
             style(ss = "?", style = getColor(db = db, name = helpOptParam)) &
