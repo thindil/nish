@@ -348,7 +348,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
             content: content))
         return QuitSuccess.ResultCode
       # There is a few topics which match the criteria, show the list of them
-      keys = @[ShellOption()]
+      keys = @[]
       for row in dbHelp:
         keys.add(y = ShellOption(value: row.topic))
       keys.sort(cmp = system.cmp)
