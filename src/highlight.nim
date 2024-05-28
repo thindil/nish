@@ -133,12 +133,13 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         quotes: set[char] = {'\'', '"'}
         quotePosition: ExtendedNatural = find(s = $commandArguments, chars = quotes)
         startPosition: Natural = 0
-      # No quotes, check if a variable
+      # No quotes, check if contains a variable
       if quotePosition == -1:
         quotePosition = find(s = $commandArguments, sub = '$')
-        ## Not a variable, print all
+        # Not a variable, print everything in the default color
         if quotePosition == -1:
           showOutput(message = $commandArguments, newLine = false, db = db)
+        # Color the variable name
         else:
           color = default
           while quotePosition > -1:
