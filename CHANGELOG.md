@@ -10,6 +10,9 @@ of the shell.
 - The commands' completion can now find also executables in the current
   directory.
 - Ability to quit from the shell with CTRL-D shortcut.
+- Ability to select a help topic from the list of them by using its number.
+  This option is available only for command `help` without entering any
+  topic's name.
 
 ### Changed
 - Updated the shell's help entries
