@@ -214,12 +214,14 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     type ShellOption = ref object
       value: string = ""
 
-    proc showHelpList(keys: seq[ShellOption]) {.sideEffect, raises: [],
-        tags: [WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect],
-            contractual.} =
+    proc showHelpList(keys: seq[ShellOption];
+        withNumbers: bool = true) {.sideEffect, raises: [], tags: [
+        WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect], contractual.} =
       ## Show the list of help topics
       ##
-      ## * keys - The list of help topics to show
+      ## * keys        - The list of help topics to show
+      ## * withNumbers - If true, show the numbers of topics, otherwise show
+      ##                 only the topics
       require:
         keys.len > 0
       body:
@@ -238,8 +240,8 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
               e = getCurrentException(), db = db)
         let color: ColorCode = getColor(db = db, name = ids)
         for index, key in keys:
-          row = row & style(ss = "[" & $(index + 1) & "] ", style = color) &
-              key.value & "\t"
+          row = row & (if withNumbers: style(ss = "[" & $(index + 1) & "] ",
+              style = color) else: "") & key.value & "\t"
           i.inc
           if i == columnAmount + 1:
             try:
@@ -262,14 +264,14 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         showOutput(message = "\n\nTo see more information about the selected topic, type " &
             style(ss = "'help [topic]'", style = getColor(db = db,
             name = helpUsage)) & ", for example: " & style(ss = "`help " & keys[
-            0].value & "`", style = getColor(db = db, name = helpCode)) &
-            " or use the topic's number, for example: " & style(ss = "`help 1`",
-            style = getColor(db = db, name = helpCode)) &
-            ".\nInformation about usage of a command: if a parameter of a command is between " &
-            style(ss = "[]", style = getColor(db = db, name = helpReqParam)) &
-            " then the parameter is required. If a parameter of a command is between " &
-            style(ss = "?", style = getColor(db = db, name = helpOptParam)) &
-            " then the parameter is optional.", db = db)
+            0].value & "`", style = getColor(db = db, name = helpCode)) & (if withNumbers:
+          " or use the topic's number, for example: " & style(ss = "`help 1`",
+          style = getColor(db = db, name = helpCode)) else: "") &
+          ".\nInformation about usage of a command: if a parameter of a command is between " &
+          style(ss = "[]", style = getColor(db = db, name = helpReqParam)) &
+          " then the parameter is required. If a parameter of a command is between " &
+          style(ss = "?", style = getColor(db = db, name = helpOptParam)) &
+          " then the parameter is optional.", db = db)
 
     let topicNumber: Natural = try:
         topic.parseInt
@@ -352,7 +354,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       for row in dbHelp:
         keys.add(y = ShellOption(value: row.topic))
       keys.sort(cmp = system.cmp)
-      showHelpList(keys = keys)
+      showHelpList(keys = keys, withNumbers = false)
       return QuitSuccess.ResultCode
     # The user selected uknown topic, show the uknown command help entry
     if args.len > 0:
