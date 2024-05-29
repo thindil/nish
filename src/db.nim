@@ -64,6 +64,80 @@ proc closeDb*(returnCode: ResultCode; db) {.sideEffect, raises: [],
       quit QuitFailure
     quit returnCode.int
 
+let shellOptions: array[12, Option] = [newOption(name = "dbVersion", value = "7",
+    description = "Version of the database schema (read only).",
+    valueType = OptionValType.natural, readOnly = true, defaultValue = "7"),
+    newOption(name = "promptCommand", value = "built-in",
+    description = "The command which output will be used as the prompt of shell.",
+    valueType = OptionValType.command, readOnly = false,
+    defaultValue = "built-in"), newOption(name = "setTitle", value = "true",
+    description = "Set a terminal title to currently running command.",
+    valueType = OptionValType.boolean, readOnly = false,
+    defaultValue = "true"),
+    newOption(name = "colorSyntax", value = "true",
+    description = "Color the user input with info about invalid commands, quotes, etc.",
+    valueType = OptionValType.boolean, readOnly = false,
+    defaultValue = "true"),
+    newOption(name = "completionAmount", value = "100",
+    description = "The amount of Tab completions to show.",
+    valueType = OptionValType.natural, readOnly = false,
+    defaultValue = "100"),
+    newOption(name = "outputHeaders", value = "unicode",
+    description = "How to present the headers of commands.",
+    valueType = OptionValType.header, readOnly = false,
+    defaultValue = "unicode"), newOption(name = "helpColumns", value = "5",
+    description = "The amount of columns for help list command.",
+    valueType = OptionValType.positive, readOnly = false,
+    defaultValue = "5"),
+    newOption(name = "completionColumns", value = "5",
+    description = "The amount of columns for Tab completion list.",
+    valueType = OptionValType.positive, readOnly = false,
+    defaultValue = "5"),
+    newOption(name = "completionCheckCase", value = "false",
+    description = "Tab completion for directories and files is case-sensitive.",
+    valueType = OptionValType.boolean, readOnly = false,
+    defaultValue = "false"),
+    newOption(name = "suggestionPrecision", value = "1",
+    description = "How precise is the commands' suggestion system.",
+    valueType = OptionValType.natural, readOnly = false,
+    defaultValue = "1"),
+    newOption(name = "titleWidth", value = "30",
+    description = "The maximum length of a terminal title which will be set.",
+    valueType = OptionValType.positive, readOnly = false,
+    defaultValue = "30"),
+    newOption(name = "execWithShell", value = "true",
+    description = "Execute all commands by using the system's default shell.",
+    valueType = OptionValType.boolean, readOnly = false,
+    defaultValue = "true")]
+
+proc createNewDb(db): bool =
+  try:
+    if db.createAliasesDb == QuitFailure:
+      return false
+    if db.createOptionsDb == QuitFailure:
+      return false
+    if db.createHistoryDb == QuitFailure:
+      return false
+    if db.createVariablesDb == QuitFailure:
+      return false
+    if db.createPluginsDb == QuitFailure:
+      return false
+    if db.createHelpDb == QuitFailure:
+      return false
+    if db.createCompletionDb == QuitFailure:
+      return false
+    if db.createThemeDb == QuitFailure:
+      return false
+    for option in shellOptions:
+      setOption(optionName = option.option, value = option.value,
+          description = option.description, valueType = option.valueType,
+          db = db, readOnly = (
+          if option.readOnly: 1 else: 0))
+    db.exec(query = sql(query = "PRAGMA journal_mode=WAL;"))
+    return true
+  except DbError:
+    return false
+
 proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
     TimeEffect, RootEffect], contractual.} =
@@ -90,74 +164,10 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
-    let options: array[12, Option] = [newOption(name = "dbVersion", value = "7",
-        description = "Version of the database schema (read only).",
-        valueType = OptionValType.natural, readOnly = true, defaultValue = "7"),
-        newOption(name = "promptCommand", value = "built-in",
-        description = "The command which output will be used as the prompt of shell.",
-        valueType = OptionValType.command, readOnly = false,
-        defaultValue = "built-in"), newOption(name = "setTitle", value = "true",
-        description = "Set a terminal title to currently running command.",
-        valueType = OptionValType.boolean, readOnly = false,
-        defaultValue = "true"),
-        newOption(name = "colorSyntax", value = "true",
-        description = "Color the user input with info about invalid commands, quotes, etc.",
-        valueType = OptionValType.boolean, readOnly = false,
-        defaultValue = "true"),
-        newOption(name = "completionAmount", value = "100",
-        description = "The amount of Tab completions to show.",
-        valueType = OptionValType.natural, readOnly = false,
-        defaultValue = "100"),
-        newOption(name = "outputHeaders", value = "unicode",
-        description = "How to present the headers of commands.",
-        valueType = OptionValType.header, readOnly = false,
-        defaultValue = "unicode"), newOption(name = "helpColumns", value = "5",
-        description = "The amount of columns for help list command.",
-        valueType = OptionValType.positive, readOnly = false,
-        defaultValue = "5"),
-        newOption(name = "completionColumns", value = "5",
-        description = "The amount of columns for Tab completion list.",
-        valueType = OptionValType.positive, readOnly = false,
-        defaultValue = "5"),
-        newOption(name = "completionCheckCase", value = "false",
-        description = "Tab completion for directories and files is case-sensitive.",
-        valueType = OptionValType.boolean, readOnly = false,
-        defaultValue = "false"),
-        newOption(name = "suggestionPrecision", value = "1",
-        description = "How precise is the commands' suggestion system.",
-        valueType = OptionValType.natural, readOnly = false,
-        defaultValue = "1"),
-        newOption(name = "titleWidth", value = "30",
-        description = "The maximum length of a terminal title which will be set.",
-        valueType = OptionValType.positive, readOnly = false,
-        defaultValue = "30"),
-        newOption(name = "execWithShell", value = "true",
-        description = "Execute all commands by using the system's default shell.",
-        valueType = OptionValType.boolean, readOnly = false,
-        defaultValue = "true")]
     # Create a new database if not exists
     if not dbExists:
-      if result.createAliasesDb == QuitFailure:
+      if not createNewDb(db = result):
         return nil
-      if result.createOptionsDb == QuitFailure:
-        return nil
-      if result.createHistoryDb == QuitFailure:
-        return nil
-      if result.createVariablesDb == QuitFailure:
-        return nil
-      if result.createPluginsDb == QuitFailure:
-        return nil
-      if result.createHelpDb == QuitFailure:
-        return nil
-      if result.createCompletionDb == QuitFailure:
-        return nil
-      if result.createThemeDb == QuitFailure:
-        return nil
-      for option in options:
-        setOption(optionName = option.option, value = option.value,
-            description = option.description, valueType = option.valueType,
-            db = result, readOnly = (
-            if option.readOnly: 1 else: 0))
     # If database version is different than the newest, update database
     try:
       let dbVersion: Natural = parseInt(s = $getOption(
@@ -182,7 +192,7 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.createThemeDb == QuitFailure:
           return nil
-        for option in options:
+        for option in shellOptions:
           setOption(optionName = option.option, value = option.value,
               description = option.description, valueType = option.valueType,
               db = result, readOnly = (
@@ -198,13 +208,13 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
           return nil
         if result.createThemeDb == QuitFailure:
           return nil
-        for i in options.low..options.high:
+        for i in shellOptions.low..shellOptions.high:
           if i == 1:
             continue
-          setOption(optionName = options[i].option, value = options[i].value,
-              description = options[i].description, valueType = options[i].valueType,
+          setOption(optionName = shellOptions[i].option, value = shellOptions[i].value,
+              description = shellOptions[i].description, valueType = shellOptions[i].valueType,
                   db = result, readOnly = (
-              if options[i].readOnly: 1 else: 0))
+              if shellOptions[i].readOnly: 1 else: 0))
       of 3:
         if result.updateOptionsDb(dbVersion = dbVersion) == QuitFailure:
           return nil
@@ -219,32 +229,32 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 8, 9, 10, 11]:
-          setOption(optionName = options[i].option, value = options[i].value,
-              description = options[i].description, valueType = options[i].valueType,
+          setOption(optionName = shellOptions[i].option, value = shellOptions[i].value,
+              description = shellOptions[i].description, valueType = shellOptions[i].valueType,
                   db = result, readOnly = (
-              if options[i].readOnly: 1 else: 0))
+              if shellOptions[i].readOnly: 1 else: 0))
       of 4:
         if result.createCompletionDb == QuitFailure:
           return nil
         for i in [0, 10, 11]:
-          setOption(optionName = options[i].option, value = options[i].value,
-              description = options[i].description, valueType = options[i].valueType,
+          setOption(optionName = shellOptions[i].option, value = shellOptions[i].value,
+              description = shellOptions[i].description, valueType = shellOptions[i].valueType,
                   db = result, readOnly = (
-              if options[i].readOnly: 1 else: 0))
+              if shellOptions[i].readOnly: 1 else: 0))
       of 5:
         if result.updateVariablesDb == QuitFailure:
           return nil
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 11]:
-          setOption(optionName = options[i].option, value = options[i].value,
-              description = options[i].description, valueType = options[i].valueType,
+          setOption(optionName = shellOptions[i].option, value = shellOptions[i].value,
+              description = shellOptions[i].description, valueType = shellOptions[i].valueType,
                   db = result, readOnly = (
-              if options[i].readOnly: 1 else: 0))
+              if shellOptions[i].readOnly: 1 else: 0))
       of 6:
-        setOption(optionName = options[0].option, value = options[0].value,
-            description = options[0].description, valueType = options[0].valueType,
-                db = result, readOnly = (if options[0].readOnly: 1 else: 0))
+        setOption(optionName = shellOptions[0].option, value = shellOptions[0].value,
+            description = shellOptions[0].description, valueType = shellOptions[0].valueType,
+                db = result, readOnly = (if shellOptions[0].readOnly: 1 else: 0))
       of 7:
         discard
       else:
