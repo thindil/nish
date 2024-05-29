@@ -90,9 +90,9 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
-    let options: array[12, Option] = [newOption(name = "dbVersion", value = "6",
+    let options: array[12, Option] = [newOption(name = "dbVersion", value = "7",
         description = "Version of the database schema (read only).",
-        valueType = OptionValType.natural, readOnly = true, defaultValue = "6"),
+        valueType = OptionValType.natural, readOnly = true, defaultValue = "7"),
         newOption(name = "promptCommand", value = "built-in",
         description = "The command which output will be used as the prompt of shell.",
         valueType = OptionValType.command, readOnly = false,
@@ -162,6 +162,8 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
     try:
       let dbVersion: Natural = parseInt(s = $getOption(
           optionName = "dbVersion", db = result, defaultValue = "0"))
+      if dbVersion < 7:
+        result.exec(query = sql(query = "PRAGMA journal_mode=WAL;"))
       case dbVersion
       of 0 .. 1:
         if result.updateOptionsDb(dbVersion = dbVersion) == QuitFailure:
@@ -240,11 +242,15 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
                   db = result, readOnly = (
               if options[i].readOnly: 1 else: 0))
       of 6:
+        setOption(optionName = options[0].option, value = options[0].value,
+            description = options[0].description, valueType = options[0].valueType,
+                db = result, readOnly = (if options[0].readOnly: 1 else: 0))
+      of 7:
         discard
       else:
         showError(message = "Invalid version of database.", db = nil)
         return nil
-    except ValueError:
+    except ValueError, DbError:
       showError(message = "Can't update database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
