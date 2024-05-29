@@ -64,8 +64,8 @@ proc closeDb*(returnCode: ResultCode; db) {.sideEffect, raises: [],
       quit QuitFailure
     quit returnCode.int
 
-let shellOptions: array[12, Option] = [newOption(name = "dbVersion", value = "7",
-    description = "Version of the database schema (read only).",
+let shellOptions: array[12, Option] = [newOption(name = "dbVersion",
+    value = "7", description = "Version of the database schema (read only).",
     valueType = OptionValType.natural, readOnly = true, defaultValue = "7"),
     newOption(name = "promptCommand", value = "built-in",
     description = "The command which output will be used as the prompt of shell.",
@@ -110,33 +110,41 @@ let shellOptions: array[12, Option] = [newOption(name = "dbVersion", value = "7"
     valueType = OptionValType.boolean, readOnly = false,
     defaultValue = "true")]
 
-proc createNewDb(db): bool =
-  try:
-    if db.createAliasesDb == QuitFailure:
+proc createNewDb(db): bool {.sideEffect, raises: [], tags: [ReadIOEffect,
+    TimeEffect, WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
+    contractual.} =
+  ## Create a new database for the shell
+  ##
+  ## * db - the connection to the newly created database
+  require:
+    db != nil
+  body:
+    try:
+      if db.createAliasesDb == QuitFailure:
+        return false
+      if db.createOptionsDb == QuitFailure:
+        return false
+      if db.createHistoryDb == QuitFailure:
+        return false
+      if db.createVariablesDb == QuitFailure:
+        return false
+      if db.createPluginsDb == QuitFailure:
+        return false
+      if db.createHelpDb == QuitFailure:
+        return false
+      if db.createCompletionDb == QuitFailure:
+        return false
+      if db.createThemeDb == QuitFailure:
+        return false
+      for option in shellOptions:
+        setOption(optionName = option.option, value = option.value,
+            description = option.description, valueType = option.valueType,
+            db = db, readOnly = (
+            if option.readOnly: 1 else: 0))
+      db.exec(query = sql(query = "PRAGMA journal_mode=WAL;"))
+      return true
+    except DbError:
       return false
-    if db.createOptionsDb == QuitFailure:
-      return false
-    if db.createHistoryDb == QuitFailure:
-      return false
-    if db.createVariablesDb == QuitFailure:
-      return false
-    if db.createPluginsDb == QuitFailure:
-      return false
-    if db.createHelpDb == QuitFailure:
-      return false
-    if db.createCompletionDb == QuitFailure:
-      return false
-    if db.createThemeDb == QuitFailure:
-      return false
-    for option in shellOptions:
-      setOption(optionName = option.option, value = option.value,
-          description = option.description, valueType = option.valueType,
-          db = db, readOnly = (
-          if option.readOnly: 1 else: 0))
-    db.exec(query = sql(query = "PRAGMA journal_mode=WAL;"))
-    return true
-  except DbError:
-    return false
 
 proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteDirEffect, DbEffect, WriteIOEffect, ReadEnvEffect,
@@ -211,9 +219,9 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
         for i in shellOptions.low..shellOptions.high:
           if i == 1:
             continue
-          setOption(optionName = shellOptions[i].option, value = shellOptions[i].value,
-              description = shellOptions[i].description, valueType = shellOptions[i].valueType,
-                  db = result, readOnly = (
+          setOption(optionName = shellOptions[i].option, value = shellOptions[
+              i].value, description = shellOptions[i].description,
+                  valueType = shellOptions[i].valueType, db = result, readOnly = (
               if shellOptions[i].readOnly: 1 else: 0))
       of 3:
         if result.updateOptionsDb(dbVersion = dbVersion) == QuitFailure:
@@ -229,17 +237,17 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 8, 9, 10, 11]:
-          setOption(optionName = shellOptions[i].option, value = shellOptions[i].value,
-              description = shellOptions[i].description, valueType = shellOptions[i].valueType,
-                  db = result, readOnly = (
+          setOption(optionName = shellOptions[i].option, value = shellOptions[
+              i].value, description = shellOptions[i].description,
+                  valueType = shellOptions[i].valueType, db = result, readOnly = (
               if shellOptions[i].readOnly: 1 else: 0))
       of 4:
         if result.createCompletionDb == QuitFailure:
           return nil
         for i in [0, 10, 11]:
-          setOption(optionName = shellOptions[i].option, value = shellOptions[i].value,
-              description = shellOptions[i].description, valueType = shellOptions[i].valueType,
-                  db = result, readOnly = (
+          setOption(optionName = shellOptions[i].option, value = shellOptions[
+              i].value, description = shellOptions[i].description,
+                  valueType = shellOptions[i].valueType, db = result, readOnly = (
               if shellOptions[i].readOnly: 1 else: 0))
       of 5:
         if result.updateVariablesDb == QuitFailure:
@@ -247,14 +255,15 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
         if result.createThemeDb == QuitFailure:
           return nil
         for i in [0, 11]:
-          setOption(optionName = shellOptions[i].option, value = shellOptions[i].value,
-              description = shellOptions[i].description, valueType = shellOptions[i].valueType,
-                  db = result, readOnly = (
+          setOption(optionName = shellOptions[i].option, value = shellOptions[
+              i].value, description = shellOptions[i].description,
+                  valueType = shellOptions[i].valueType, db = result, readOnly = (
               if shellOptions[i].readOnly: 1 else: 0))
       of 6:
-        setOption(optionName = shellOptions[0].option, value = shellOptions[0].value,
-            description = shellOptions[0].description, valueType = shellOptions[0].valueType,
-                db = result, readOnly = (if shellOptions[0].readOnly: 1 else: 0))
+        setOption(optionName = shellOptions[0].option, value = shellOptions[
+            0].value, description = shellOptions[0].description,
+                valueType = shellOptions[0].valueType, db = result, readOnly = (
+                    if shellOptions[0].readOnly: 1 else: 0))
       of 7:
         discard
       else:
