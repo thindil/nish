@@ -13,6 +13,8 @@ of the shell.
 - Ability to select a help topic from the list of them by using its number.
   This option is available only for command `help` without entering any
   topic's name.
+- Ability to color environment variables in the user's input when they names
+  starts with `$`.
 
 ### Changed
 - Updated the shell's help entries
