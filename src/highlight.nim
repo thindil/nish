@@ -128,53 +128,23 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
         elif command.len > 0 and command[0] == '$':
           color = highlightVariable
       showOutput(message = $command, newLine = false, color = color, db = db)
-      # Check if command's arguments contains quotes
-      var
-        quotes: set[char] = {'\'', '"'}
-        quotePosition: ExtendedNatural = find(s = $commandArguments, chars = quotes)
-        startPosition: Natural = 0
-      # No quotes, check if contains a variable
-      if quotePosition == -1:
-        quotePosition = find(s = $commandArguments, sub = '$')
-        # Not a variable, print everything in the default color
-        if quotePosition == -1:
-          showOutput(message = $commandArguments, newLine = false, db = db)
-        # Color the variable name
-        else:
-          color = default
-          while quotePosition > -1:
-            showOutput(message = $commandArguments[startPosition..quotePosition -
-                1], newLine = false, color = color, db = db)
-            showOutput(message = $commandArguments[quotePosition],
-                newLine = false, color = highlightVariable, db = db)
-            startPosition = quotePosition + 1
-            if color == default:
-              color = highlightVariable
-            else:
-              color = default
-            quotePosition = find(s = $commandArguments, chars = {'$', ' '},
-                start = startPosition)
-          showOutput(message = $commandArguments[startPosition..^1],
-              newLine = false, color = color, db = db)
-      # Color the text inside the quotes
-      else:
-        color = default
-        while quotePosition > -1:
-          showOutput(message = $commandArguments[startPosition..quotePosition -
-              1], newLine = false, color = color, db = db)
-          showOutput(message = $commandArguments[quotePosition],
-              newLine = false, color = highlightText, db = db)
-          startPosition = quotePosition + 1
-          if color == default:
-            color = highlightText
-            quotes = {commandArguments[quotePosition]}
+      # Show the command's arguments, color them if they are in quotes or variables
+      var firstQuote: bool = false
+      for ch in commandArguments:
+        if ch in {'\'', '"'}:
+          if not firstQuote:
+            stdout.write(s = getColor(db = db, name = highlightText))
+            firstQuote = true
           else:
-            color = default
-            quotes = {'\'', '"'}
-          quotePosition = find(s = $commandArguments, chars = quotes,
-              start = startPosition)
-        showOutput(message = $commandArguments[startPosition..^1],
-            newLine = false, color = color, db = db)
+            firstQuote = false
+        elif ch == '$':
+          stdout.write(s = getColor(db = db, name = highlightVariable))
+        elif ch == ' ' and not firstQuote:
+          stdout.write(s = getColor(db = db, name = default))
+        stdout.write(s = $ch)
+        if ch in {'\'', '"'} and not firstQuote:
+          stdout.write(s = getColor(db = db, name = default))
+      stdout.write(s = getColor(db = db, name = default))
       if cursorPosition < runeLen(s = $input) - 1:
         stdout.cursorBackward(count = runeLen(s = $input) - cursorPosition)
       inputString = input
