@@ -132,11 +132,11 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
       var firstQuote: bool = false
       for ch in commandArguments:
         if ch in {'\'', '"'}:
-          if not firstQuote:
+          if firstQuote:
+            firstQuote = false
+          else:
             stdout.write(s = getColor(db = db, name = highlightText))
             firstQuote = true
-          else:
-            firstQuote = false
         elif ch == '$':
           stdout.write(s = getColor(db = db, name = highlightVariable))
         elif ch == ' ' and not firstQuote:
