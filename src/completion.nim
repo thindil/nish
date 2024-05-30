@@ -222,19 +222,22 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[
       if alias.startsWith(prefix = prefix) and $alias notin completions:
         completions.add(y = $alias)
     # Check for programs in the current directory
-    for file in walkFiles(pattern = $getCurrentDirectory() & DirSep & prefix & "*"):
-      if completions.len >= completionAmount:
-        return
-      let fileName: CompletionString = (when defined(
-          windows): file.extractFilename else: "." & DirSep &
-          file.extractFilename)
-      let filePerms: set[FilePermission] = try:
-          getFilePermissions(filename = fileName)
-        except OSError:
+    try:
+      for file in walkFiles(pattern = $getCurrentDirectory() & DirSep & prefix & "*"):
+        if completions.len >= completionAmount:
           return
-      if fileName notin completions and (fpUserExec in filePerms or
-          fpGroupExec in filePerms or fpOthersExec in filePerms):
-        completions.add(y = fileName)
+        let fileName: CompletionString = (when defined(
+            windows): file.extractFilename else: "." & DirSep &
+            file.extractFilename)
+        let filePerms: set[FilePermission] = try:
+            getFilePermissions(filename = fileName)
+          except OSError:
+            return
+        if fileName notin completions and (fpUserExec in filePerms or
+            fpGroupExec in filePerms or fpOthersExec in filePerms):
+          completions.add(y = fileName)
+    except OSError:
+      return
     # Check for programs and commands in the system
     try:
       for path in getEnv(key = "PATH").split(sep = PathSep):
