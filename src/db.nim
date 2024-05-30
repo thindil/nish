@@ -108,7 +108,7 @@ let shellOptions: array[12, Option] = [newOption(name = "dbVersion",
     newOption(name = "execWithShell", value = "true",
     description = "Execute all commands by using the system's default shell.",
     valueType = OptionValType.boolean, readOnly = false,
-    defaultValue = "true")]
+    defaultValue = "true")] ## The shell's options
 
 proc createNewDb(db): bool {.sideEffect, raises: [], tags: [ReadIOEffect,
     TimeEffect, WriteDbEffect, ReadDbEffect, WriteIOEffect, RootEffect],
