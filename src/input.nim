@@ -230,7 +230,7 @@ proc readInput*(maxLength: MaxInputLength = maxInputLength;
             else:
               moveCursor(inputChar = inputChar, cursorPosition = cursorPosition,
                   inputString = resultString, db = db)
-          except EOFError, IOError, ValueError:
+          except EOFError, IOError, ValueError, OSError:
             showError(message = "Can't get the next character after Escape. Reason: ",
                 e = getCurrentException(), db = db)
             return exitString
