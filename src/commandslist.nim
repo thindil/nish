@@ -220,7 +220,11 @@ proc runCommand*(commandName: CommandName; arguments: UserInput;
     # Execute the external command inside the shell
     if withShell:
       if output.len == 0:
-        return execCmd(command = commandToExecute).ResultCode
+        try:
+          return execCmd(command = commandToExecute).ResultCode
+        except OSError:
+          return showError(message = "Can't execute the command inside the shell. Reason: ",
+              e = getCurrentException(), db = db)
       else:
         let outputFile: File = try:
             if output == "stderr":
