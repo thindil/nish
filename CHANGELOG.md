@@ -8,13 +8,13 @@ of the shell.
 
 ### Added
 - The commands' completion can now find also executables in the current
-  directory.
-- Ability to quit from the shell with CTRL-D shortcut.
-- Ability to select a help topic from the list of them by using its number.
+  directory
+- Ability to quit from the shell with CTRL-D shortcut
+- Ability to select a help topic from the list of them by using its number
   This option is available only for command `help` without entering any
-  topic's name.
+  topic's name
 - Ability to color environment variables in the user's input when they names
-  starts with `$`.
+  starts with `$`
 
 ### Changed
 - Updated the shell's help entries
@@ -23,8 +23,9 @@ of the shell.
 ### Fixed
 - Returning to the first row from the last row in Tab completions' list.
 - Showing the shell's error's information
-- Directories' completion doesn't work with `~` as home directory replacement.
+- Directories' completion doesn't work with `~` as home directory replacement
 - Typo in the help topics list
+- Crash due to locked the shell's database
 
 ## [0.7.0] - 2024-02-11
 
