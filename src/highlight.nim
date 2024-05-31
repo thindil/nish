@@ -129,7 +129,9 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           color = highlightVariable
       showOutput(message = $command, newLine = false, color = color, db = db)
       # Show the command's arguments, color them if they are in quotes or variables
-      var firstQuote: bool = false
+      var
+        firstQuote: bool = false
+        lastChar: char = ' '
       for ch in commandArguments:
         if ch in {'\'', '"'}:
           if firstQuote:
@@ -137,11 +139,12 @@ proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
           else:
             stdout.write(s = getColor(db = db, name = highlightText))
             firstQuote = true
-        elif ch == '$':
+        elif ch == '$' and not firstQuote and lastChar != '\\':
           stdout.write(s = getColor(db = db, name = highlightVariable))
         elif ch == ' ' and not firstQuote:
           stdout.write(s = getColor(db = db, name = default))
         stdout.write(s = $ch)
+        lastChar = ch
         if ch in {'\'', '"'} and not firstQuote:
           stdout.write(s = getColor(db = db, name = default))
       stdout.write(s = getColor(db = db, name = default))
