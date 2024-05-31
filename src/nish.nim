@@ -371,7 +371,7 @@ proc readUserInput*(inputString: var UserInput; oneTimeCommand: bool;
           if cursorPosition > terminalWidth() and
               cursorPosition mod terminalWidth() == 0:
             stdout.writeLine(x = "")
-        except IOError:
+        except IOError, OSError:
           discard
         except ValueError:
           showError(message = "Invalid value for terminal width.",
