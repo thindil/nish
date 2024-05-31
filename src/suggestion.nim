@@ -61,10 +61,13 @@ proc fillSuggestionsList*(aliases: ref AliasesList;
       suggestions.add(y = command)
     type FilePath = string
     for path in getEnv(key = "PATH").split(sep = PathSep):
-      for file in walkFiles(pattern = path & DirSep & "*"):
-        let fileName: FilePath = file.extractFilename
-        if fileName notin suggestions:
-          suggestions.add(y = fileName)
+      try:
+        for file in walkFiles(pattern = path & DirSep & "*"):
+          let fileName: FilePath = file.extractFilename
+          if fileName notin suggestions:
+            suggestions.add(y = fileName)
+      except OSError:
+        continue
 
 proc suggestCommand*(invalidName: string; start: var Natural;
     db: DbConn): string {.raises: [], tags: [ReadDbEffect, WriteIOEffect,
