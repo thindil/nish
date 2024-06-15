@@ -42,7 +42,7 @@ const
     ## The list of the shell's built-in commands
   maxInputLength*: Positive = 4096
     ## The maximum length of the user input
-  version*: OutputMessage = "0.8.0"
+  version*: OutputMessage = "0.8.1"
     ## The version of the shell
 
 proc getCurrentDirectory*(): Path {.raises: [], tags: [ReadIOEffect],
