@@ -543,7 +543,7 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
   require:
     db != nil
   body:
-    {.ruleOff: "paramsUsed".}
+    {.ruleOff: "params".}
     proc helpCommand(arguments: UserInput; db;
         list: CommandLists): ResultCode {.raises: [], tags: [WriteIOEffect,
         WriteDbEffect, TimeEffect, ReadIOEffect, ReadDbEffect, ReadEnvEffect,
@@ -578,7 +578,7 @@ proc initHelp*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
         db != nil
       body:
         return updateHelp(db = db)
-    {.ruleOn: "paramsUsed".}
+    {.ruleOn: "params".}
 
     try:
       addCommand(name = "help",

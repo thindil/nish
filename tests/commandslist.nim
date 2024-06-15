@@ -39,7 +39,7 @@ suite "Unit tests for commandslist module":
   db.addAliases
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
-  {.push ruleOff: "paramsUsed".}
+  {.push ruleOff: "params".}
   proc testCommand(arguments: UserInput; db: DbConn;
       list: CommandLists): ResultCode {.gcsafe, raises: [], tags: [],
       contractual.} =
@@ -53,7 +53,7 @@ suite "Unit tests for commandslist module":
     ## Dummy command for tests
     body:
       echo "test2"
-  {.push ruleOn: "paramsUsed".}
+  {.push ruleOn: "params".}
 
   test "Adding a new command":
     addCommand(name = "test",

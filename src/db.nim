@@ -380,7 +380,7 @@ proc initDb*(db; commands: ref CommandsList) {.sideEffect, raises: [], tags: [
     # Add commands related to the shell's database
     proc dbCommand(arguments; db; list: CommandLists): ResultCode {.raises: [],
         tags: [WriteIOEffect, WriteDbEffect, TimeEffect, ReadDbEffect,
-        ReadIOEffect, ReadEnvEffect, RootEffect], ruleOff: "paramsUsed",
+        ReadIOEffect, ReadEnvEffect, RootEffect], ruleOff: "params",
         contractual.} =
       ## The code of the shell's command "nishdb" and its subcommands
       ##
