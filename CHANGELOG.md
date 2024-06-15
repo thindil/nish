@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 Tag **BREAKING** means the change break compatibility with a previous version
 of the shell.
 
+## [Unreleased]
+
+### Fixed
+- Highlightning the user's input when there are nested quotes
+
 ## [0.8.0] - 2024-05-31
 
 ### Added
