@@ -126,5 +126,10 @@ suite "Unit tests for plugins module":
     check:
       newPlugin.location == "/".Path
 
+  test "Initializing an object of PluginData type":
+    let newPluginData: PluginData = newPluginData(path = "/".Path, api = @[])
+    check:
+      newPluginData.path == "/".Path
+
   suiteTeardown:
     closeDb(returnCode = QuitSuccess.ResultCode, db = db)
