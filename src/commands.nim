@@ -126,9 +126,8 @@ proc executeCommand*(commands: ref Table[string, CommandData];
               db = db, commands = commands)
           return returnValues.code
         # Build-in shell's command
-        else:
-          return commands[commandName].command(arguments = arguments, db = db,
-              list = initCommandLists(aliases = aliases, commands = commands))
+        return commands[commandName].command(arguments = arguments, db = db,
+            list = initCommandLists(aliases = aliases, commands = commands))
       except KeyError:
         showError(message = "Can't execute command '" & commandName &
             "'. Reason: ", e = getCurrentException(), db = db)
