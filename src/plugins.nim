@@ -58,7 +58,7 @@ using
   arguments: UserInput # The string with arguments entered by the user for the command
   commands: ref CommandsList # The list of the shell's commands
 
-proc newPluginData(path: Path; api: seq[string]): PluginData {.raises: [],
+proc initPluginData(path: Path; api: seq[string]): PluginData {.raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for information about the shell's plugin.
   ##
@@ -452,7 +452,7 @@ proc checkPlugin(pluginPath: Path; db; commands): PluginData {.sideEffect,
         return
     except ValueError:
       return
-    result = newPluginData(path = pluginPath, api = split(s = pluginInfo[3], sep = ","))
+    result = initPluginData(path = pluginPath, api = split(s = pluginInfo[3], sep = ","))
 
 proc addPlugin(db; arguments; commands): ResultCode {.sideEffect,
     raises: [], tags: [WriteIOEffect, ReadDirEffect, ReadDbEffect, ExecIOEffect,
