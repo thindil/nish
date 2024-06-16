@@ -122,12 +122,12 @@ suite "Unit tests for plugins module":
           commands = commands) == QuitFailure
 
   test "Initializing an object of Plugin type":
-    let newPlugin: Plugin = newPlugin(path = "/".Path)
+    let newPlugin: Plugin = initPlugin(path = "/".Path)
     check:
       newPlugin.location == "/".Path
 
   test "Initializing an object of PluginData type":
-    let newPluginData: PluginData = newPluginData(path = "/".Path, api = @[])
+    let newPluginData: PluginData = initPluginData(path = "/".Path, api = @[])
     check:
       newPluginData.path == "/".Path
 
