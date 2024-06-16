@@ -539,11 +539,28 @@ proc getPluginId(arguments; db): Natural {.sideEffect, raises: [],
     type Check = object
       prefix: UserInput
       actionName: OutputMessage
-    const checks: array[5, Check] = [Check(prefix: "remove",
-        actionName: "Removing"), Check(prefix: "show", actionName: "Showing"),
-        Check(prefix: "edit", actionName: "Editing"), Check(prefix: "enable",
-        actionName: "Enabling"), Check(prefix: "disable",
-        actionName: "Disabling")]
+
+    proc initCheck(prefix: UserInput; actionName: OutputMessage): Check {.raises: [],
+        tags: [], contractual.} =
+      ## Initialize a new instance of Check object.
+      ##
+      ## * prefix     - the type of action performed on the plugin
+      ## * actionName - the human readable name of the action performed on the
+      ##                plugin
+      ##
+      ## Returns the new instance of Check object
+      require:
+        prefix.len > 0
+        actionName.len > 0
+      body:
+        Check(prefix: prefix, actionName: actionName)
+
+    const checks: array[5, Check] = [initCheck(prefix = "remove",
+        actionName = "Removing"), initCheck(prefix = "show",
+        actionName = "Showing"), initCheck(prefix = "edit",
+        actionName = "Editing"), initCheck(prefix = "enable",
+        actionName = "Enabling"), initCheck(prefix = "disable",
+        actionName = "Disabling")]
     for index, check in checks:
       if arguments.startsWith(prefix = check.prefix):
         actionName = check.actionName
