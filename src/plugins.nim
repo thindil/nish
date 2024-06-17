@@ -68,7 +68,7 @@ proc initPluginData(path: Path; api: seq[string]): PluginData {.raises: [],
   ## Returns the new data structure for the selected shell's plugin's data.
   PluginData(path: path, api: api)
 
-proc initPlugin*(path: Path = "".Path; enabled: bool = false;
+proc newPlugin*(path: Path = "".Path; enabled: bool = false;
     preCommand: bool = false; postCommand: bool = false): Plugin {.raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's plugin.
@@ -95,7 +95,7 @@ proc createPluginsDb*(db): ResultCode {.sideEffect, raises: [], tags: [
     db != nil
   body:
     try:
-      db.createTables(obj = initPlugin())
+      db.createTables(obj = newPlugin())
     except ValueError, DbError:
       return showError(message = "Can't create 'plugins' table. Reason: ",
           e = getCurrentException(), db = db)
@@ -490,7 +490,7 @@ proc addPlugin(db; arguments; commands): ResultCode {.sideEffect,
         return showError(message = "Can't add file '" & $pluginPath &
             "' as the shell's plugins because either it isn't plugin or its API is incompatible with the shell's API.", db = db)
       # Add the plugin to the shell database
-      var plugin: Plugin = initPlugin(path = pluginPath, enabled = true,
+      var plugin: Plugin = newPlugin(path = pluginPath, enabled = true,
           preCommand = "preCommand" in newPlugin.api,
           postCommand = "postCommand" in newPlugin.api)
       db.insert(obj = plugin)
@@ -533,7 +533,7 @@ proc getPluginId(arguments; db): Natural {.sideEffect, raises: [],
   body:
     result = 0
     var
-      plugin: Plugin = initPlugin()
+      plugin: Plugin = newPlugin()
       actionName: OutputMessage = ""
       argumentsLen: Positive = 1
     type Check = object
@@ -606,7 +606,7 @@ proc removePlugin(db; arguments; commands): ResultCode {.sideEffect,
     if id == 0:
       return QuitFailure.ResultCode
     try:
-      var plugin: Plugin = initPlugin()
+      var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $id)
       # Execute the disabling code of the plugin first
       if execPlugin(pluginPath = plugin.location, arguments = ["disable"],
@@ -651,7 +651,7 @@ proc togglePlugin(db; arguments; disable: bool = true;
     if id == 0:
       return QuitFailure.ResultCode
     try:
-      var plugin: Plugin = initPlugin()
+      var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $id)
       # Check if plugin can be enabled due to version of API
       let newPlugin: PluginData = checkPlugin(pluginPath = plugin.location,
@@ -709,7 +709,7 @@ proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Can't show all plugins list. Reason: ",
             e = getCurrentException(), db = db)
       try:
-        var plugins: seq[Plugin] = @[initPlugin()]
+        var plugins: seq[Plugin] = @[newPlugin()]
         db.selectAll(objs = plugins)
         if plugins.len == 0:
           showOutput(message = "There are no available shell's plugins.", db = db)
@@ -737,7 +737,7 @@ proc listPlugins(arguments; db): ResultCode {.sideEffect, raises: [],
         return showError(message = "Can't show plugins list. Reason: ",
             e = getCurrentException(), db = db)
       try:
-        var plugins: seq[Plugin] = @[initPlugin()]
+        var plugins: seq[Plugin] = @[newPlugin()]
         db.select(objs = plugins, cond = "enabled=1")
         if plugins.len == 0:
           showOutput(message = "There are no enabled shell's plugins.", db = db)
@@ -783,7 +783,7 @@ proc showPlugin(arguments; db; commands): ResultCode {.sideEffect, raises: [],
     if id == 0:
       return QuitFailure.ResultCode
     try:
-      var plugin: Plugin = initPlugin()
+      var plugin: Plugin = newPlugin()
       db.select(obj = plugin, cond = "id=?", params = $id)
       var table: TerminalTable = TerminalTable()
       let
@@ -888,7 +888,7 @@ proc initPlugins*(db; commands) {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
     # Load all enabled plugins and execute the initialization code of the plugin
     try:
-      var plugins: seq[Plugin] = @[initPlugin()]
+      var plugins: seq[Plugin] = @[newPlugin()]
       db.select(objs = plugins, cond = "1 = 1 ORDER BY id ASC")
       for plugin in plugins.mitems:
         if plugin.enabled:
