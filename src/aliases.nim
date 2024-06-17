@@ -169,9 +169,10 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     return QuitSuccess.ResultCode
 
-proc newAlias*(name: string = ""; path: Path = "".Path; commands: string = "";
-    description: string = ""; recursive: bool = true;
-    output: string = "output"): Alias {.raises: [], tags: [], contractual.} =
+proc newAlias*(name: AliasName = ""; path: Path = "".Path;
+    commands: CommandName = ""; description: OutputMessage = "";
+    recursive: bool = true; output: FilePath = "output"): Alias {.raises: [],
+    tags: [], contractual.} =
   ## Create a new data structure for the shell's alias.
   ##
   ## * name        - the name of the alias. Must be unique
@@ -604,7 +605,7 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         color = success, db = db)
     return QuitSuccess.ResultCode
 
-proc execAlias*(arguments; aliasId: string; aliases;
+proc execAlias*(arguments; aliasId: UserInput; aliases;
     db): ResultCode {.sideEffect, raises: [], tags: [ReadEnvEffect,
     ReadIOEffect, ReadDbEffect, WriteIOEffect, ExecIOEffect, RootEffect],
     contractual.} =
