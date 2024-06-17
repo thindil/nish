@@ -148,6 +148,8 @@ type
     ## Used to store some text related to database
   OutputMessage* = string
     ## Used to store message to show to the user
+  FilePath* = string
+    ## Used to store path to a file
 
 # Procedures related to Path type
 

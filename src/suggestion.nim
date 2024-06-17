@@ -59,7 +59,6 @@ proc fillSuggestionsList*(aliases: ref AliasesList;
     # Add built-in shell's commands to the suggestions list
     for command in builtinCommands:
       suggestions.add(y = command)
-    type FilePath = string
     for path in getEnv(key = "PATH").split(sep = PathSep):
       try:
         for file in walkFiles(pattern = path & DirSep & "*"):
