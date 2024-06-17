@@ -117,7 +117,7 @@ proc subcommands*(commd: CommandData): seq[string] {.sideEffect, raises: [],
   commd.subcommands
 
 proc addCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = ""; subCommands: seq[
+    commands: ref CommandsList; plugin: FilePath = ""; subCommands: seq[
     string] = @[]) {.sideEffect, raises: [CommandsListError], tags: [
     WriteIOEffect, RootEffect], contractual.} =
   ## Add a new command to the shell's commands' list. If command argument is
@@ -164,7 +164,7 @@ proc deleteCommand*(name: UserInput; commands: ref CommandsList) {.sideEffect,
     commands.del(key = $name)
 
 proc replaceCommand*(name: UserInput; command: CommandProc;
-    commands: ref CommandsList; plugin: string = ""; db: DbConn) {.sideEffect,
+    commands: ref CommandsList; plugin: FilePath = ""; db: DbConn) {.sideEffect,
     raises: [CommandsListError], tags: [RootEffect], contractual.} =
   ## Replace the code of the selected command with the new procedure. If
   ## command argument is different than nil, it will be used as the command
@@ -195,7 +195,7 @@ proc replaceCommand*(name: UserInput; command: CommandProc;
           e = getCurrentException(), db = db)
 
 proc runCommand*(commandName: CommandName; arguments: UserInput;
-    withShell: bool; db: DbConn; output: string = ""): ResultCode {.sideEffect,
+    withShell: bool; db: DbConn; output: FilePath = ""): ResultCode {.sideEffect,
     raises: [], tags: [WriteIOEffect, ReadIOEffect, ExecIOEffect, RootEffect],
     contractual.} =
   ## Excecute the selected command with or witout using the system's default
