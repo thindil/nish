@@ -115,9 +115,10 @@ proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.s
     if result == "":
       result = defaultValue
 
-proc newOption*(name: string = ""; value: string = ""; description: string = "";
-    valueType: OptionValType = none; defaultValue: string = "";
-    readOnly: bool = false): Option {.raises: [], tags: [], contractual.} =
+proc newOption*(name: OptionName = ""; value: OptionValue = "";
+    description: OutputMessage = ""; valueType: OptionValType = none;
+    defaultValue: OptionValue = ""; readOnly: bool = false): Option {.raises: [],
+    tags: [], contractual.} =
   ## Create a new data structure for the shell's option.
   ##
   ## * name         - the name of the option
@@ -133,7 +134,7 @@ proc newOption*(name: string = ""; value: string = ""; description: string = "";
         valueType: valueType, defaultValue: defaultValue, readOnly: readOnly)
 
 proc setOption*(optionName; value: OptionValue = "";
-    description: string = ""; valueType: OptionValType = none; db;
+    description: OutputMessage = ""; valueType: OptionValType = none; db;
     readOnly: BooleanInt = 0) {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect, RootEffect],
     contractual.} =
@@ -215,7 +216,8 @@ proc showOptions(db): ResultCode {.sideEffect, raises: [], tags: [
         table.add(parts = [style(ss = option.option, style = getColor(db = db,
             name = ids)), style(ss = value & suffix, style = getColor(db = db,
             name = values)), style(ss = option.description, style = color)])
-    except ValueError, DbError, LoggingError, UnknownEscapeError, FinalByteError, InsufficientInputError:
+    except ValueError, DbError, LoggingError, UnknownEscapeError,
+        FinalByteError, InsufficientInputError:
       return showError(message = "Can't show the shell's options. Reason: ",
           e = getCurrentException(), db = db)
     try:
