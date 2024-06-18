@@ -289,7 +289,7 @@ proc getArguments*(userInput: var OptParser;
       userInput = initOptParser(cmdline = @[""])
     result = strutils.strip(s = result)
 
-proc askForName*[T](db; action: OutputMessage; namesType: string;
+proc askForName*[T](db; action: OutputMessage; namesType: OutputMessage;
     name: var T) {.sideEffect, raises: [], tags: [ReadDbEffect, TimeEffect,
     ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Ask the user for the name of the type and returns its value
