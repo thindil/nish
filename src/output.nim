@@ -139,7 +139,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
       let color: ColorCode = getColor(db = db, name = headers)
 
       proc echoTableSeps(table: TerminalTable; seps = defaultSeps;
-          color: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
+          color: ColorCode) {.sideEffect, raises: [], tags: [WriteIOEffect,
               RootEffect], contractual.} =
         ## Draw a form's header with selected color and separators as its frame,
         ## overwrites echoTableSeps from nancy module
@@ -190,7 +190,7 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
           e = getCurrentException(), db = db)
 
 proc selectOption*(options: Table[char, string];
-    default: char; prompt: string; db): char {.sideEffect, raises: [], tags: [ReadIOEffect,
+    default: char; prompt: OutputMessage; db): char {.sideEffect, raises: [], tags: [ReadIOEffect,
     WriteIOEffect, RootEffect], contractual.} =
   ## Show the list of options from which the user can select one value
   ##
@@ -221,7 +221,7 @@ proc selectOption*(options: Table[char, string];
       except IOError:
         default
 
-proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
+proc confirm*(prompt: OutputMessage; db): bool {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Ask the user for confirmation of something, waiting until the user press
   ## key 'y' or 'n'
@@ -250,7 +250,7 @@ proc confirm*(prompt: string; db): bool {.sideEffect, raises: [], tags: [
       discard
     return inputChar in {'y', 'Y'}
 
-proc showFormPrompt*(prompt: string; db) {.sideEffect, raises: [], tags: [
+proc showFormPrompt*(prompt: OutputMessage; db) {.sideEffect, raises: [], tags: [
     ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Show the prompt in the shell's forms
   ##
