@@ -37,8 +37,8 @@ import commandslist, helpcontent, output, theme, types
 
 using db: DbConn # Connection to the shell's database
 
-proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
-    plugin: string = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
+proc newHelpEntry(topic: UserInput = ""; usage: UserInput = ""; content: OutputMessage = "";
+    plugin: FilePath = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's help's entry.
   ##
@@ -53,7 +53,7 @@ proc newHelpEntry(topic: string = ""; usage: string = ""; content: string = "";
     HelpEntry(topic: topic, usage: usage, content: content, plugin: plugin,
         `template`: templ)
 
-proc updateHelpEntry*(topic, usage, plugin: UserInput; content: string; db;
+proc updateHelpEntry*(topic, usage, plugin: UserInput; content: OutputMessage; db;
     isTemplate: bool): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Update the help entry in the help table in the shell's database
@@ -366,7 +366,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     return showError(message = "Unknown help topic: `" & topic &
         "`. For the list of available help topics, type `help`.", db = db)
 
-proc showHelpList*(command: string; subcommands: seq[
+proc showHelpList*(command: OutputMessage; subcommands: seq[
     string]; db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, ReadIOEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
     RootEffect], contractual.} =
@@ -394,7 +394,7 @@ proc showHelpList*(command: string; subcommands: seq[
         name = helpCode)) & ".", db = db)
     return QuitSuccess.ResultCode
 
-proc addHelpEntry*(topic, usage, plugin: UserInput; content: string;
+proc addHelpEntry*(topic, usage, plugin: UserInput; content: OutputMessage;
     isTemplate: bool; db): ResultCode {.sideEffect, raises: [], tags: [
     ReadDbEffect, WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Add a new help entry to the help table in the shell's database
