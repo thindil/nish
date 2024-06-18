@@ -28,6 +28,8 @@
 
 # External modules imports
 import contracts
+# Internal imports
+import types
 
 when defined(debug):
 # Standard library imports
@@ -42,7 +44,7 @@ when defined(debug):
   var logger: FileLogger = nil
 {.pop ruleOff: "varUplevel".}
 
-proc logToFile*(message: string) {.sideEffect, raises: [], tags: [WriteIOEffect,
+proc logToFile*(message: OutputMessage) {.sideEffect, raises: [], tags: [WriteIOEffect,
     RootEffect], contractual.} =
   ## Log the selected message into a file. This procedure works only when
   ## the shell is compiled in debug mode.
