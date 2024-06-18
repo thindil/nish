@@ -29,7 +29,7 @@
 import std/[paths, tables]
 # External modules imports
 import norm/[model, pragmas, sqlite]
-import contracts
+import contracts, nimalyzer
 
 type
   HelpEntry* {.tableName: "help".} = ref object of Model
@@ -206,7 +206,7 @@ proc to*(dbVal: DbValue, T: typedesc[Path]): T {.raises: [], tags: [
 
 # Procedures related to ResultCode type
 
-proc `==`*(x: ResultCode; y: int): bool {.borrow.}
+proc `==`*(x: ResultCode; y: int): bool {.borrow, ruleOff: "params".}
   ## Used to compare ResultCode with int. Borrowed from int type.
   ##
   ## * x - The ResultCode to compare
@@ -214,7 +214,7 @@ proc `==`*(x: ResultCode; y: int): bool {.borrow.}
   ##
   ## Returns true if both ResultCode and int are the same, otherwise false.
 
-proc `$`*(x: ResultCode): string {.borrow.}
+proc `$`*(x: ResultCode): string {.borrow, ruleOn: "params".}
   ## Get string representation of ResultCode. Borrowed from int type.
   ##
   ## * x - The ResultCode which will be converted to string
