@@ -89,8 +89,9 @@ proc to(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [
     except ValueError:
       text
 
-proc buildQuery(directory: Path; fields: string = "";
-    where: string = ""): string {.sideEffect, raises: [], tags: [ReadDbEffect],
+proc buildQuery(directory: Path; fields: DbString = "";
+    where: DbString = ""): string {.sideEffect, raises: [], tags: [
+        ReadDbEffect],
     contractual.} =
   ## Build database query for get environment variables for the selected
   ## directory and its parents
@@ -120,10 +121,10 @@ proc buildQuery(directory: Path; fields: string = "";
 
     result.add(y = " ORDER BY id ASC")
 
-proc newVariable(name: string = ""; path: Path = "".Path;
-    recursive: bool = false; value: string = "";
-        description: string = ""): Variable {.raises: [],
-    tags: [], contractual.} =
+proc newVariable(name: VariableName = ""; path: Path = "".Path;
+    recursive: bool = false; value: VariableValue = "";
+    description: OutputMessage = ""): Variable {.raises: [], tags: [],
+    contractual.} =
   ## Create a new data structure for the shell's environment variable.
   ##
   ## * name        - the name of the variable. Must be unique
@@ -194,7 +195,8 @@ proc setVariables*(newDirectory: Path; db;
             variableEnd.inc
           if variableEnd > value.len:
             variableEnd = value.len
-          let variableName: VariableName = value[variableIndex + 1..variableEnd - 1]
+          let variableName: VariableName = value[variableIndex +
+              1..variableEnd - 1]
           value[variableIndex..variableEnd - 1] = getEnv(key = variableName)
           variableIndex = value.find(sub = '$', start = variableEnd)
         putEnv(key = variable.name, val = value)
