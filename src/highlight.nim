@@ -35,7 +35,7 @@ import commandslist, output, prompt, theme, types
 
 proc highlightOutput*(promptLength: Natural; inputString: var UserInput;
     commands: ref Table[string, CommandData]; aliases: ref AliasesList;
-    oneTimeCommand: bool; commandName: string; returnCode: ResultCode;
+    oneTimeCommand: bool; commandName: CommandName; returnCode: ResultCode;
     db: DbConn; cursorPosition: Natural; enabled: bool) {.sideEffect, raises: [],
     tags: [WriteIOEffect, ReadIOEffect, ReadDbEffect, TimeEffect, RootEffect],
     contractual.} =
