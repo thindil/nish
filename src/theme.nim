@@ -138,7 +138,7 @@ proc to(dbVal: DbValue, T: typedesc[ThemeColor]): T {.raises: [], tags: [],
       errors
 
 proc newColor*(name: ThemeColor = errors; cValue: ColorName = default;
-    description: string = ""; bold: bool = false; underline: bool = false;
+    description: OutputMessage = ""; bold: bool = false; underline: bool = false;
     italic: bool = false): Color {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's theme's color.
   ##
@@ -206,7 +206,7 @@ let colors*: array[26, Color] = [newColor(name = errors, cValue = red,
     description = "Used to show Tab completion's suggestions")]
   ## The list of available the shell's theme's colors
 
-proc showThemeError*(message: string; e: ref Exception) {.sideEffect, raises: [
+proc showThemeError*(message: OutputMessage; e: ref Exception) {.sideEffect, raises: [
     ], tags: [WriteIOEffect, RootEffect], contractual.} =
   ## Show the information about the error related to the theme. The theme's
   ## module uses the separated code, to avoid circular dependencies and eternal
