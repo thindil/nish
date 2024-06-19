@@ -90,8 +90,8 @@ proc to(dbVal: DbValue, T: typedesc[CompletionType]): T {.raises: [], tags: [],
   body:
     dbVal.i.CompletionType
 
-proc newCompletion(command: string = ""; cType: CompletionType = none;
-    cValues: string = ""): Completion {.raises: [], tags: [], contractual.} =
+proc newCompletion(command: CommandName = ""; cType: CompletionType = none;
+    cValues: CompletionString = ""): Completion {.raises: [], tags: [], contractual.} =
   ## Create a new data structure for the shell's completion option.
   ##
   ## * command - the name of the command for which the completion is
