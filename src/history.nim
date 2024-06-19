@@ -77,10 +77,9 @@ proc historyLength*(db): HistoryRange {.sideEffect, raises: [], tags: [
           e = getCurrentException(), db = db)
       return HistoryRange.low
 
-proc newHistoryEntry(command: string = ""; lastUsed: DateTime = now();
+proc newHistoryEntry(command: CommandName = ""; lastUsed: DateTime = now();
     amount: Positive = 1; path: Path = "".Path): HistoryEntry {.raises: [],
-        tags: [],
-    contractual.} =
+    tags: [], contractual.} =
   ## Create a new data structure for the shell's commands' history entry.
   ##
   ## * command  - the command executed by the user
@@ -92,7 +91,7 @@ proc newHistoryEntry(command: string = ""; lastUsed: DateTime = now();
   body:
     return HistoryEntry(command: command, lastUsed: lastUsed, amount: amount, path: path)
 
-proc updateHistory*(commandToAdd: string; db;
+proc updateHistory*(commandToAdd: CommandName; db;
     returnCode: ResultCode = QuitSuccess.ResultCode): HistoryRange {.sideEffect,
     raises: [], tags: [ReadDbEffect, WriteDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
