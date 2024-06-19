@@ -53,7 +53,7 @@ proc getFormattedDir*(): Path {.sideEffect, raises: [], tags: [
       return ("~/" & ($result)[homeIndex +
           homeDirectory.len..^1]).Path
 
-proc showPrompt*(promptEnabled: bool; previousCommand: string;
+proc showPrompt*(promptEnabled: bool; previousCommand: CommandName;
     resultCode: ResultCode; db: DbConn): Natural {.sideEffect, raises: [],
     tags: [ReadIOEffect, WriteIOEffect, ReadDbEffect, TimeEffect, RootEffect],
     discardable, contractual.} =
