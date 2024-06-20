@@ -31,7 +31,7 @@ import ../../src/[aliases, db, types]
 import norm/sqlite
 import unittest2, contracts
 
-proc initDb*(dbName: string): DbConn {.raises: [], tags: [RootEffect],
+proc initDb*(dbName: Path): DbConn {.raises: [], tags: [RootEffect],
     contractual.} =
   ## Initialize the shell's database
   ##
@@ -39,7 +39,7 @@ proc initDb*(dbName: string): DbConn {.raises: [], tags: [RootEffect],
   ##
   ## Returns the connection to the database or nil if there was an error.
   body:
-    result = startDb(dbPath = dbName.Path)
+    result = startDb(dbPath = dbName)
     unittest2.require:
       result != nil
 
