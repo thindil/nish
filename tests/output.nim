@@ -25,6 +25,7 @@
 
 ## Provides unit tests for output module
 
+import std/paths
 when defined(testInput):
   import std/tables
 import utils/utils
@@ -35,7 +36,7 @@ include ../src/output
 suite "Unit tests for output module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test12.db")
+  let db: DbConn = initDb(dbName = "test12.db".Path)
 
   test "Showing an error message":
     check:

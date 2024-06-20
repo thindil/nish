@@ -25,6 +25,7 @@
 
 ## Provides unit tests for help module
 
+import std/paths
 import utils/utils
 import unittest2
 include ../src/suggestion
@@ -32,7 +33,7 @@ include ../src/suggestion
 suite "Unit tests for suggestion module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test14.db")
+  let db: DbConn = initDb(dbName = "test14.db".Path)
   var
     myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
     commands: ref Table[string, CommandData] = newTable[string, CommandData]()

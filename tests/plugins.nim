@@ -33,7 +33,7 @@ include ../src/plugins
 suite "Unit tests for plugins module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test13.db")
+  let db: DbConn = initDb(dbName = "test13.db".Path)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
 #  test "Initialization of plugins":

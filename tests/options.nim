@@ -25,6 +25,7 @@
 
 ## Provides unit tests for options module
 
+import std/paths
 import utils/utils
 import ../src/[db, history]
 import unittest2
@@ -33,7 +34,7 @@ include ../src/options
 suite "Unit tests for options module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test11.db")
+  let db: DbConn = initDb(dbName = "test11.db".Path)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
   discard initHistory(db = db, commands = commands)
 
