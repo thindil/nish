@@ -33,7 +33,7 @@ include ../src/commands
 suite "Unit tests for commands module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test3.db")
+  let db: DbConn = initDb(dbName = "test3.db".Path)
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
