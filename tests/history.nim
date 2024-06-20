@@ -34,7 +34,7 @@ include ../src/history
 suite "Unit tests for history module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test8.db")
+  let db: DbConn = initDb(dbName = "test8.db".Path)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   checkpoint "Initializing the shell's history"

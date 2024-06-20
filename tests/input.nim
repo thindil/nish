@@ -35,7 +35,7 @@ when defined(testInput):
 suite "Unit tests for input module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test8.db")
+  let db: DbConn = initDb(dbName = "test8.db".Path)
 
   test "Getting the command's arguments":
     {.ruleOff: "varUplevel".}

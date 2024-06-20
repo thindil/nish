@@ -33,7 +33,7 @@ include ../src/highlight
 suite "Unit tests for highlight module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test7.db")
+  let db: DbConn = initDb(dbName = "test7.db".Path)
   var
     myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
     commands: ref Table[string, CommandData] = newTable[string, CommandData]()
