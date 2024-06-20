@@ -68,8 +68,8 @@ proc fillSuggestionsList*(aliases: ref AliasesList;
       except OSError:
         continue
 
-proc suggestCommand*(invalidName: string; start: var Natural;
-    db: DbConn): string {.raises: [], tags: [ReadDbEffect, WriteIOEffect,
+proc suggestCommand*(invalidName: CommandName; start: var Natural;
+    db: DbConn): CommandName {.raises: [], tags: [ReadDbEffect, WriteIOEffect,
     ReadEnvEffect, TimeEffect, RootEffect], contractual.} =
   ## Get the command suggestion, based on Levenshtein distance algorithm
   ##
