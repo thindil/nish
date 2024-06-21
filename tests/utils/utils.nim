@@ -69,13 +69,10 @@ proc removeDb*(dbName: Path; db: DbConn) {.raises: [], tags: [DbEffect,
     dbName.len > 0
     db != nil
   ensure:
-    db == nil
     not dbName.fileExists
   body:
     try:
       db.close
       dbName.removeFile
-      quit QuitSuccess
     except:
       echo getCurrentExceptionMsg()
-      quit QuitFailure
