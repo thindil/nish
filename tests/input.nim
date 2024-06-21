@@ -25,6 +25,7 @@
 
 ## Provides unit tests for input module
 
+import std/paths
 import utils/utils
 import unittest2, nimalyzer
 include ../src/input

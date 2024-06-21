@@ -25,6 +25,7 @@
 
 ## Provides unit tests for highlight module
 
+import std/paths
 import utils/utils
 import ../src/db
 import unittest2
