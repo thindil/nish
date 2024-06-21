@@ -29,7 +29,7 @@
 import std/[files, paths]
 import ../../src/[aliases, db, types]
 import norm/sqlite
-import unittest2, contracts
+import contracts
 
 proc initDb*(dbName: Path): DbConn {.raises: [], tags: [RootEffect],
     contractual.} =
@@ -38,10 +38,12 @@ proc initDb*(dbName: Path): DbConn {.raises: [], tags: [RootEffect],
   ## * dbName - the path to the database's file
   ##
   ## Returns the connection to the database or nil if there was an error.
+  require:
+    dbName.len > 0
+  ensure:
+    result != nil
   body:
     result = startDb(dbPath = dbName)
-    unittest2.require:
-      result != nil
 
 proc addAliases*(db: DbConn) {.raises: [DbError, ValueError], tags: [
     ReadDbEffect, WriteDbEffect], contractual.} =
@@ -58,7 +60,7 @@ proc addAliases*(db: DbConn) {.raises: [DbError, ValueError], tags: [
     db.insert(obj = testAlias2)
 
 proc removeDb*(dbName: Path; db: DbConn) {.raises: [], tags: [DbEffect,
-    WriteDirEffect], contractual.} =
+    WriteDirEffect, ReadDirEffect], contractual.} =
   ## Close the shell's database and remove its file
   ##
   ## * dbName - the path to the database's file
@@ -66,6 +68,9 @@ proc removeDb*(dbName: Path; db: DbConn) {.raises: [], tags: [DbEffect,
   require:
     dbName.len > 0
     db != nil
+  ensure:
+    db == nil
+    not dbName.fileExists
   body:
     try:
       db.close
