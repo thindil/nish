@@ -26,7 +26,7 @@
 ## Various code used in the program's tests, like initialization of database,
 ## adding testing alias, etc
 
-import std/paths
+import std/[files, paths]
 import ../../src/[aliases, db, types]
 import norm/sqlite
 import unittest2, contracts
@@ -56,3 +56,21 @@ proc addAliases*(db: DbConn) {.raises: [DbError, ValueError], tags: [
         recursive = false, commands = "ls -a", description = "Test alias 2.",
             output = "output")
     db.insert(obj = testAlias2)
+
+proc removeDb*(dbName: Path; db: DbConn) {.raises: [], tags: [DbEffect,
+    WriteDirEffect], contractual.} =
+  ## Close the shell's database and remove its file
+  ##
+  ## * dbName - the path to the database's file
+  ## * db     - the connection to the database
+  require:
+    dbName.len > 0
+    db != nil
+  body:
+    try:
+      db.close
+      dbName.removeFile
+      quit QuitSuccess
+    except:
+      echo getCurrentExceptionMsg()
+      quit QuitFailure
