@@ -25,15 +25,16 @@
 
 ## Provides unit tests for aliases module
 
+import std/files
 import utils/utils
 import unittest2
-import ../src/db
 include ../src/aliases
 
 suite "Unit tests for aliases module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test2.db".Path)
+  const dbName: Path = "test2.db".Path
+  let db: DbConn = initDb(dbName = dbName)
   var
     myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
     commands: ref Table[string, CommandData] = newTable[string, CommandData]()
@@ -81,6 +82,7 @@ suite "Unit tests for aliases module":
     check:
       execAlias(arguments = "", aliasId = "tests2", aliases = myaliases,
           db = db) == QuitFailure
+    removeFile(file = "output".Path)
 
   test "List the shell's aliases in the current directory":
     check:
@@ -102,4 +104,4 @@ suite "Unit tests for aliases module":
       newAlias.name == "ala"
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)

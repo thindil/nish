@@ -27,13 +27,13 @@
 
 import utils/utils
 import unittest2
-import ../src/db
 include ../src/commands
 
 suite "Unit tests for commands module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test3.db".Path)
+  const dbName: Path = "test3.db".Path
+  let db: DbConn = initDb(dbName = dbName)
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
@@ -67,4 +67,4 @@ suite "Unit tests for commands module":
           aliases = myaliases, cursorPosition = cursorPosition) == QuitSuccess
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)

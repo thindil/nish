@@ -74,5 +74,5 @@ proc removeDb*(dbName: Path; db: DbConn) {.raises: [], tags: [DbEffect,
     try:
       db.close
       dbName.removeFile
-    except:
+    except DbError, OSError:
       echo getCurrentExceptionMsg()
