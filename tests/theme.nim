@@ -25,6 +25,7 @@
 
 ## Provides unit tests for theme module
 
+import std/paths
 import utils/utils
 import unittest2
 import ../src/db
@@ -33,7 +34,7 @@ include ../src/theme
 suite "Unit tests for theme module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test16.db")
+  let db: DbConn = initDb(dbName = "test16.db".Path)
 
   test "Initializing an object of Color type":
     let newColor: Color = newColor(description = "test color")

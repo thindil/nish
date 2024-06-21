@@ -33,7 +33,7 @@ include ../src/variables
 suite "Unit tests for variable modules":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test.db")
+  let db: DbConn = initDb(dbName = "test.db".Path)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   initVariables(db = db, commands = commands)
