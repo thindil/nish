@@ -26,14 +26,14 @@
 ## Provides unit tests for plugins module
 
 import utils/utils
-import ../src/db
 import unittest2
 include ../src/plugins
 
 suite "Unit tests for plugins module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test13.db".Path)
+  const dbName: Path = "test13.db".Path
+  let db: DbConn = initDb(dbName = dbName)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
 #  test "Initialization of plugins":
@@ -132,4 +132,4 @@ suite "Unit tests for plugins module":
       newPluginData.path == "/".Path
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)

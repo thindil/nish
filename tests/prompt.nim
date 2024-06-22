@@ -26,14 +26,14 @@
 ## Provides unit tests for prompt module
 
 import utils/utils
-import ../src/db
 import unittest2
 include ../src/prompt
 
 suite "Unit tests for prompt module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test14.db".Path)
+  const dbName: Path = "test14.db".Path
+  let db: DbConn = initDb(dbName = dbName)
 
   test "Getting formated directory name":
     check:
@@ -44,4 +44,4 @@ suite "Unit tests for prompt module":
         resultCode = QuitSuccess.ResultCode, db = db)
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)
