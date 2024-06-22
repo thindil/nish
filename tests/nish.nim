@@ -27,7 +27,7 @@
 
 when defined(testInput):
   import utils/utils
-  import std/tables
+  import std/[paths, tables]
   import ../src/[commandslist, history, types]
   import norm/sqlite
 import ../src/nish
@@ -37,8 +37,9 @@ suite "Unit tests for nish module":
 
   when defined(testInput):
     checkpoint "Initializing the tests"
+    const dbName: Path = "test10.db".Path
     let
-      db: DbConn = initDb(dbName = "test10.db".Path)
+      db: DbConn = initDb(dbName = dbName)
       myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
@@ -61,3 +62,7 @@ suite "Unit tests for nish module":
           cursorPosition = cPosition, aliases = myaliases, commands = commands)
     else:
       skip()
+
+  when defined(testInput):
+    suiteTeardown:
+      removeDb(dbName = dbName, db = db)
