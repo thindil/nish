@@ -27,14 +27,15 @@
 
 import std/paths
 import utils/utils
-import ../src/[db, history]
+import ../src/history
 import unittest2
 include ../src/options
 
 suite "Unit tests for options module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test11.db".Path)
+  const dbName: Path = "test11.db".Path
+  let db: DbConn = initDb(dbName = dbName)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
   discard initHistory(db = db, commands = commands)
 
@@ -97,4 +98,4 @@ suite "Unit tests for options module":
       to(dbVal = text.dbValue, T = OptionValType) == text
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)

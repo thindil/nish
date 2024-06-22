@@ -29,14 +29,14 @@ import std/paths
 when defined(testInput):
   import std/tables
 import utils/utils
-import ../src/db
 import unittest2
 include ../src/output
 
 suite "Unit tests for output module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test12.db".Path)
+  const dbName: Path = "test12.db".Path
+  let db: DbConn = initDb(dbName = dbName)
 
   test "Showing an error message":
     check:
@@ -67,4 +67,4 @@ suite "Unit tests for output module":
     showFormPrompt(prompt = "Form prompt", db = db)
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)
