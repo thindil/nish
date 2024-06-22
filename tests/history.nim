@@ -27,14 +27,14 @@
 
 import std/tables
 import utils/utils
-import ../src/db
 import unittest2
 include ../src/history
 
 suite "Unit tests for history module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test8.db".Path)
+  const dbName: Path = "test7.db".Path
+  let db: DbConn = initDb(dbName = dbName)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   checkpoint "Initializing the shell's history"
@@ -75,4 +75,4 @@ suite "Unit tests for history module":
       newHistoryEntry(command = "newCom").command == "newCom"
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)
