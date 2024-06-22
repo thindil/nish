@@ -27,14 +27,14 @@
 
 import std/paths
 import utils/utils
-import ../src/db
 import unittest2
 include ../src/commandslist
 
 suite "Unit tests for commandslist module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test4.db".Path)
+  const dbName: Path = "test4.db".Path
+  let db: DbConn = initDb(dbName = dbName)
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
@@ -113,4 +113,4 @@ suite "Unit tests for commandslist module":
           db = db) == QuitSuccess
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)

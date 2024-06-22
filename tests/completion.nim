@@ -26,7 +26,7 @@
 ## Provides unit tests for completion module
 
 import utils/utils
-import ../src/[aliases, db]
+import ../src/aliases
 import unittest2
 {.hint[XDeclaredButNotUsed]: off.}
 include ../src/completion
@@ -34,7 +34,8 @@ include ../src/completion
 suite "Unit tests for completion module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test5.db".Path)
+  const dbName: Path = "test5.db".Path
+  let db: DbConn = initDb(dbName = dbName)
   var
     myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
     commands: ref Table[string, CommandData] = newTable[string, CommandData]()
@@ -129,4 +130,5 @@ suite "Unit tests for completion module":
       importCompletion(arguments = "import test.txt", db = db) == QuitFailure
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)
+    removeFile(file = "test.txt")
