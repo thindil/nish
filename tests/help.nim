@@ -27,14 +27,15 @@
 
 import std/[paths, tables]
 import utils/utils
-import ../src/[aliases, db]
+import ../src/aliases
 import unittest2
 include ../src/help
 
 suite "Unit tests for help module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test6.db".Path)
+  const dbName: Path = "test6.db".Path
+  let db: DbConn = initDb(dbName = dbName)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   test "Initializing the help system":
@@ -124,4 +125,4 @@ suite "Unit tests for help module":
       newHelp.topic == "test"
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)
