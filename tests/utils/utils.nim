@@ -31,8 +31,8 @@ import ../../src/[aliases, db, types]
 import norm/sqlite
 import contracts
 
-proc initDb*(dbName: Path): DbConn {.raises: [], tags: [RootEffect],
-    contractual.} =
+proc initDb*(dbName: Path = "test.db".Path): DbConn {.raises: [], tags: [
+    RootEffect], contractual.} =
   ## Initialize the shell's database
   ##
   ## * dbName - the path to the database's file
@@ -59,8 +59,8 @@ proc addAliases*(db: DbConn) {.raises: [DbError, ValueError], tags: [
             output = "output")
     db.insert(obj = testAlias2)
 
-proc removeDb*(dbName: Path; db: DbConn) {.raises: [], tags: [DbEffect,
-    WriteDirEffect, ReadDirEffect], contractual.} =
+proc removeDb*(dbName: Path = "test.db".Path; db: DbConn) {.raises: [], tags: [
+    DbEffect, WriteDirEffect, ReadDirEffect], contractual.} =
   ## Close the shell's database and remove its file
   ##
   ## * dbName - the path to the database's file
