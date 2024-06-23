@@ -33,8 +33,7 @@ include ../src/db
 suite "Unit tests for db module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test15.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   test "Initialization of the shell's database's commands":
@@ -58,5 +57,5 @@ suite "Unit tests for db module":
       importDb(arguments = "import test.txt", db = db) == QuitSuccess
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)
     removeFile(file = "test.txt")

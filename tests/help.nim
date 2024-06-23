@@ -25,7 +25,7 @@
 
 ## Provides unit tests for help module
 
-import std/[paths, tables]
+import std/tables
 import utils/utils
 import ../src/aliases
 import unittest2
@@ -34,8 +34,7 @@ include ../src/help
 suite "Unit tests for help module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test6.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   test "Initializing the help system":
@@ -125,4 +124,4 @@ suite "Unit tests for help module":
       newHelp.topic == "test"
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)
