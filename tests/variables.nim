@@ -26,14 +26,14 @@
 ## Provides unit tests for variables module
 
 import utils/utils
-import ../src/db
 import unittest2
 include ../src/variables
 
 suite "Unit tests for variable modules":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test.db".Path)
+  const dbName: Path = "test9.db".Path
+  let db: DbConn = initDb(dbName = dbName)
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   initVariables(db = db, commands = commands)
@@ -140,4 +140,4 @@ suite "Unit tests for variable modules":
       to(dbVal = text.dbValue, T = VariableValType) == text
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)
