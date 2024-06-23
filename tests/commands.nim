@@ -32,10 +32,9 @@ include ../src/commands
 suite "Unit tests for commands module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test3.db".Path
   let
     curDir: Path = paths.getCurrentDir()
-    db: DbConn = initDb(dbName = dbName)
+    db: DbConn = initDb()
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
@@ -69,4 +68,4 @@ suite "Unit tests for commands module":
           aliases = myaliases, cursorPosition = cursorPosition) == QuitSuccess
 
   suiteTeardown:
-    removeDb(dbName = ($curDir & DirSep & $dbName).Path, db = db)
+    removeDb(dbName = ($curDir & DirSep & "test.db").Path, db = db)
