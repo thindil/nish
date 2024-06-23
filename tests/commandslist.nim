@@ -25,7 +25,6 @@
 
 ## Provides unit tests for commandslist module
 
-import std/paths
 import utils/utils
 import unittest2
 include ../src/commandslist
@@ -33,8 +32,7 @@ include ../src/commandslist
 suite "Unit tests for commandslist module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test4.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
 
   checkpoint "Adding testing aliases if needed"
   db.addAliases
@@ -113,4 +111,4 @@ suite "Unit tests for commandslist module":
           db = db) == QuitSuccess
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)
