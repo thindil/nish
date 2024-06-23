@@ -28,13 +28,13 @@
 import std/paths
 import utils/utils
 import unittest2
-import ../src/db
 include ../src/theme
 
 suite "Unit tests for theme module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test16.db".Path)
+  const dbName: Path = "test16.db".Path
+  let db: DbConn = initDb(dbName = dbName)
 
   test "Initializing an object of Color type":
     let newColor: Color = newColor(description = "test color")
@@ -75,4 +75,4 @@ suite "Unit tests for theme module":
       getColor(db = db, name = default) == termClear
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)
