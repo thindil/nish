@@ -27,17 +27,17 @@
 
 import std/paths
 import utils/utils
-import ../src/db
 import unittest2
 include ../src/title
 
 suite "Unit tests for title module":
 
   checkpoint "Initializing the tests"
-  let db: DbConn = initDb(dbName = "test9.db".Path)
+  const dbName: Path = "test9.db".Path
+  let db: DbConn = initDb(dbName = dbName)
 
   test "Set the terminal title":
     setTitle(title = "test title", db = db)
 
   suiteTeardown:
-    closeDb(returnCode = QuitSuccess.ResultCode, db = db)
+    removeDb(dbName = dbName, db = db)
