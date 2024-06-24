@@ -32,8 +32,7 @@ include ../src/plugins
 suite "Unit tests for plugins module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test13.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
 #  test "Initialization of plugins":
@@ -132,4 +131,4 @@ suite "Unit tests for plugins module":
       newPluginData.path == "/".Path
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)

@@ -32,8 +32,7 @@ include ../src/prompt
 suite "Unit tests for prompt module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test14.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
 
   test "Getting formated directory name":
     check:
@@ -44,4 +43,4 @@ suite "Unit tests for prompt module":
         resultCode = QuitSuccess.ResultCode, db = db)
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)
