@@ -25,7 +25,6 @@
 
 ## Provides unit tests for title module
 
-import std/paths
 import utils/utils
 import unittest2
 include ../src/title
@@ -33,11 +32,10 @@ include ../src/title
 suite "Unit tests for title module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test9.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
 
   test "Set the terminal title":
     setTitle(title = "test title", db = db)
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)

@@ -25,7 +25,6 @@
 
 ## Provides unit tests for themeinit module
 
-import std/paths
 import utils/utils
 import unittest2
 include ../src/themeinit
@@ -33,8 +32,7 @@ include ../src/themeinit
 suite "Unit tests for themeinit module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test16.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   test "Initializiation of the shell's theme":
@@ -47,4 +45,4 @@ suite "Unit tests for themeinit module":
       showTheme(db = db) == QuitSuccess
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)
