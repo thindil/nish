@@ -25,7 +25,6 @@
 
 ## Provides unit tests for highlight module
 
-import std/paths
 import utils/utils
 import unittest2
 include ../src/highlight
@@ -33,8 +32,7 @@ include ../src/highlight
 suite "Unit tests for highlight module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test7.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
   var
     myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
     commands: ref Table[string, CommandData] = newTable[string, CommandData]()
@@ -47,4 +45,4 @@ suite "Unit tests for highlight module":
         cursorPosition = 0, enabled = true)
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)

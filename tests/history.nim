@@ -33,8 +33,7 @@ include ../src/history
 suite "Unit tests for history module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test7.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   checkpoint "Initializing the shell's history"
@@ -75,4 +74,4 @@ suite "Unit tests for history module":
       newHistoryEntry(command = "newCom").command == "newCom"
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)
