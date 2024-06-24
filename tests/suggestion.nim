@@ -33,8 +33,7 @@ include ../src/suggestion
 suite "Unit tests for suggestion module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test14.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
   var
     myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
     commands: ref Table[string, CommandData] = newTable[string, CommandData]()
@@ -51,4 +50,4 @@ suite "Unit tests for suggestion module":
       suggestCommand(invalidName = "la", start = start, db = db) in ["ln", "lc"]
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)
