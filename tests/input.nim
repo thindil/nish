@@ -36,8 +36,7 @@ when defined(testInput):
 suite "Unit tests for input module":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test7.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
 
   test "Getting the command's arguments":
     {.ruleOff: "varUplevel".}
@@ -105,4 +104,4 @@ suite "Unit tests for input module":
       skip()
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)

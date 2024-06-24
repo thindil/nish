@@ -37,9 +37,8 @@ suite "Unit tests for nish module":
 
   when defined(testInput):
     checkpoint "Initializing the tests"
-    const dbName: Path = "test10.db".Path
     let
-      db: DbConn = initDb(dbName = dbName)
+      db: DbConn = initDb()
       myaliases: ref OrderedTable[string, int] = newOrderedTable[string, int]()
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
@@ -65,4 +64,4 @@ suite "Unit tests for nish module":
 
   when defined(testInput):
     suiteTeardown:
-      removeDb(dbName = dbName, db = db)
+      removeDb(db = db)
