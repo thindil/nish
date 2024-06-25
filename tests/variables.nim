@@ -32,8 +32,7 @@ include ../src/variables
 suite "Unit tests for variable modules":
 
   checkpoint "Initializing the tests"
-  const dbName: Path = "test9.db".Path
-  let db: DbConn = initDb(dbName = dbName)
+  let db: DbConn = initDb()
   var commands: ref Table[string, CommandData] = newTable[string, CommandData]()
 
   initVariables(db = db, commands = commands)
@@ -140,4 +139,4 @@ suite "Unit tests for variable modules":
       to(dbVal = text.dbValue, T = VariableValType) == text
 
   suiteTeardown:
-    removeDb(dbName = dbName, db = db)
+    removeDb(db = db)
