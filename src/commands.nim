@@ -57,16 +57,16 @@ proc changeDirectory(newDirectory; aliases; db): ResultCode {.sideEffect,
   body:
     try:
       var path: Path = try:
-          absolutePath(path = expandTilde(path = $newDirectory)).Path
+          absolutePath(path = expandTilde(path = newDirectory.string)).Path
         except ValueError:
           return showError(message = "Can't get absolute path to the new directory.", db = db)
-      if not dirExists(dir = $path):
-        return showError(message = "Directory '" & $path &
+      if not dirExists(dir = path.string):
+        return showError(message = "Directory '" & path.string &
             "' doesn't exist.", db = db)
-      path = expandFilename(filename = $path).Path
+      path = expandFilename(filename = path.string).Path
       setVariables(newDirectory = path, db = db,
           oldDirectory = getCurrentDirectory())
-      setCurrentDir(newDir = $path)
+      setCurrentDir(newDir = path.string)
       aliases.setAliases(directory = path, db = db)
       return QuitSuccess.ResultCode
     except OSError:

@@ -160,14 +160,14 @@ proc startDb*(dbPath: Path): DbConn {.sideEffect, raises: [], tags: [
     dbPath.len > 0
   body:
     try:
-      discard existsOrCreateDir(dir = $parentDir(path = dbPath))
+      discard existsOrCreateDir(dir = parentDir(path = dbPath).string)
     except OSError, IOError:
       showError(message = "Can't create directory for the shell's database. Reason: ",
           e = getCurrentException(), db = nil)
       return nil
-    let dbExists: bool = fileExists(filename = $dbPath)
+    let dbExists: bool = fileExists(filename = dbPath.string)
     try:
-      result = open(connection = $dbPath, user = "", password = "", database = "")
+      result = open(connection = dbPath.string, user = "", password = "", database = "")
     except DbError:
       showError(message = "Can't open the shell's database. Reason: ",
           e = getCurrentException(), db = nil)
@@ -324,7 +324,7 @@ proc exportDb(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           return showError(message = "Unknown type of the shell's data to backup. Available types are: " &
               tablesNames.join(sep = ", "), db = db)
     try:
-      args[1].writeFile(content = execCmdEx(command = "sqlite3 " & $dbFile &
+      args[1].writeFile(content = execCmdEx(command = "sqlite3 " & dbFile.string &
           " '.dump " & (if args.len > 2: args[2 .. ^1].join(
           sep = " ") else: "") & "'").output)
       showOutput(message = "The backup file: '" & $args[1] & "' created.",
@@ -353,7 +353,7 @@ proc importDb(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
       return showError(message = "Enter the name of the file from which the data will be imported to the database.", db = db)
     try:
       let res: tuple[output: string; exitCode: int] = execCmdEx(
-          command = "sqlite3 " & $dbFile & " '.read " & args[1] & "'")
+          command = "sqlite3 " & dbFile.string & " '.read " & args[1] & "'")
       if res.exitCode == 0:
         showOutput(message = "The data from the file: '" & $args[1] &
             "' was imported to the database.", color = success, db = db)

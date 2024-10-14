@@ -91,8 +91,7 @@ proc to(dbVal: DbValue, T: typedesc[VariableValType]): T {.raises: [], tags: [
 
 proc buildQuery(directory: Path; fields: DbString = "";
     where: DbString = ""): string {.sideEffect, raises: [], tags: [
-        ReadDbEffect],
-    contractual.} =
+    ReadDbEffect], contractual.} =
   ## Build database query for get environment variables for the selected
   ## directory and its parents
   ##
@@ -106,13 +105,13 @@ proc buildQuery(directory: Path; fields: DbString = "";
     directory.len > 0
   body:
     result = (if fields.len > 0: "SELECT " & fields &
-        " FROM variables WHERE " else: "") & "path='" & $directory & "'"
+        " FROM variables WHERE " else: "") & "path='" & directory.string & "'"
     var remainingDirectory: Path = parentDir(path = directory)
 
     # Construct SQL querry, search for variables also defined in parent directories
     # if they are recursive
-    while $remainingDirectory != "":
-      result.add(y = " OR (path='" & $remainingDirectory & "' AND recursive=1)")
+    while remainingDirectory.string != "":
+      result.add(y = " OR (path='" & remainingDirectory.string & "' AND recursive=1)")
       remainingDirectory = parentDir(path = remainingDirectory)
 
     # If optional arguments entered, add them to the query
@@ -468,12 +467,12 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
       path = ($readInput(db = db)).Path
       if path.len == 0:
         showError(message = "Please enter a path for the alias.", db = db)
-      elif not dirExists(dir = $path) and $path != "exit":
+      elif not dirExists(dir = path.string) and path.string != "exit":
         path = "".Path
         showError(message = "Please enter a path to the existing directory", db = db)
       if path.len == 0:
         showFormPrompt(prompt = "Path", db = db)
-    if $path == "exit":
+    if path.string == "exit":
       return showError(message = "Adding a new variable cancelled.", db = db)
     variable.path = path
     # Set the recursiveness for the variable
@@ -495,7 +494,7 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
         default = 't', prompt = "Type", db = db)
     case inputChar
     of 'p':
-      variable.varType = path
+      variable.varType = VariableValType.path
     of 't':
       variable.varType = text
     of 'n':
@@ -533,7 +532,8 @@ proc addVariable(db): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     # Check if variable with the same parameters exists in the database
     try:
       if db.exists(T = Variable, cond = "name=? AND path=? AND recursive=? AND value=?",
-          params = [($name).dbValue, ($path).dbValue, ($recursive).dbValue, (
+          params = [($name).dbValue, (path.string).dbValue, (
+              $recursive).dbValue, (
           $value).dbValue]):
         return showError(message = "There is a variable with the same name, path and value in the database.", db = db)
     except ValueError, DbError:
@@ -617,20 +617,20 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
     # Set the working directory for the variable
     showFormHeader(message = "(3/6) Working directory", db = db)
     showOutput(message = "The full path to the directory in which the variable will be available. If you want to have a global variable, set it to '/'. Current value: '" &
-        style(ss = variable.path, style = valueColor) &
-            "'. Must be a path to the existing directory.:", db = db)
+        style(ss = variable.path.string, style = valueColor) &
+        "'. Must be a path to the existing directory.:", db = db)
     showOutput(message = "Path: ", newLine = false, db = db)
     var path: Path = "exit".Path
     while path.len > 0:
       path = ($readInput(db = db)).Path
-      if path.len > 0 and not dirExists(dir = $path) and $path != "exit":
+      if path.len > 0 and not dirExists(dir = path.string) and path.string != "exit":
         showError(message = "Please enter a path to the existing directory", db = db)
         showOutput(message = "Path: ", newLine = false, db = db)
       else:
         break
-    if $path == "exit":
+    if path.string == "exit":
       return showError(message = "Editing the variable cancelled.", db = db)
-    elif $path == "":
+    elif path.string == "":
       path = variable.path
     variable.path = path
     # Set the recursiveness for the variable
@@ -653,7 +653,7 @@ proc editVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
         default = 't', prompt = "Type", db = db)
     case inputChar
     of 'p':
-      variable.varType = path
+      variable.varType = VariableValType.path
     of 't':
       variable.varType = text
     of 'n':
@@ -745,8 +745,8 @@ proc showVariable(arguments; db): ResultCode {.sideEffect, raises: [], tags: [
           if variable.description.len > 0: variable.description else: "(none)"),
           style = color2)])
       table.add(parts = [style(ss = "Path:", style = color), style(
-          ss = $variable.path & (if variable.recursive: " (recursive)" else: ""),
-              style = color2)])
+          ss = variable.path.string & (
+          if variable.recursive: " (recursive)" else: ""), style = color2)])
       table.echoTable
     except IOError, UnknownEscapeError, InsufficientInputError, FinalByteError, Exception:
       return showError(message = "Can't show variable. Reason: ",

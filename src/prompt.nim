@@ -46,11 +46,11 @@ proc getFormattedDir*(): Path {.sideEffect, raises: [], tags: [
     except OSError:
       "[unknown dir]".Path
     let homeDirectory: Path = getHomeDir().Path
-    if endsWith(s = $result & "/", suffix = homeDirectory.string):
+    if endsWith(s = result.string & "/", suffix = homeDirectory.string):
       return "~".Path
     let homeIndex: ExtendedNatural = result.string.find(sub = homeDirectory.string)
     if homeIndex > -1:
-      return ("~/" & ($result)[homeIndex +
+      return ("~/" & (result.string)[homeIndex +
           homeDirectory.len..^1]).Path
 
 proc showPrompt*(promptEnabled: bool; previousCommand: CommandName;
@@ -104,11 +104,11 @@ proc showPrompt*(promptEnabled: bool; previousCommand: CommandName;
       result = 3 + resultString.len
     let currentDirectory: Path = getFormattedDir()
     try:
-      stdout.write(s = style(ss = $currentDirectory, style = getColor(db = db,
+      stdout.write(s = style(ss = currentDirectory.string, style = getColor(db = db,
           name = promptColor)))
     except ValueError, IOError:
       try:
-        stdout.write(s = $currentDirectory)
+        stdout.write(s = currentDirectory.string)
       except IOError:
         discard
     result += currentDirectory.len

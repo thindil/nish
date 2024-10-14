@@ -348,7 +348,7 @@ proc askForName*[T](db; action: OutputMessage; namesType: OutputMessage;
         elif names is seq[Completion]:
           itemName = name.command
         elif names is seq[Plugin]:
-          itemName = $name.location
+          itemName = name.location.string
         elif names is seq[Variable]:
           itemName = name.name
         row[rowIndex] = style(ss = "[" & $(index + 1) & "] ", style = getColor(

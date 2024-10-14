@@ -161,17 +161,17 @@ proc getDirCompletion*(prefix: CompletionPrefix; completions: var seq[
             (localPrefix.parentDir & DirSep).Path
         if localPrefix.endsWith(suffix = DirSep):
           parentDir = localPrefix.Path
-        for item in walkDir(dir = $parentDir.absolutePath, relative = true):
+        for item in walkDir(dir = parentDir.absolutePath.string, relative = true):
           if completions.len >= completionAmount:
             return
-          if (cType == files and not fileExists(filename = $parentDir &
-              item.path)) or (cType == dirs and not dirExists(dir = $parentDir & item.path)):
+          if (cType == files and not fileExists(filename = parentDir.string &
+              item.path)) or (cType == dirs and not dirExists(dir = parentDir.string & item.path)):
             continue
-          var completion: CompletionString = (if dirExists(dir = $parentDir &
+          var completion: CompletionString = (if dirExists(dir = parentDir.string &
               item.path): item.path & DirSep else: item.path)
           if (completion.toLowerAscii.startsWith(prefix = prefixInsensitive) or
               localPrefix.endsWith(suffix = DirSep)) and completion notin completions:
-            completions.add(y = $parentDir & completion)
+            completions.add(y = parentDir.string & completion)
     except ValueError, OSError:
       showError(message = "Can't get completion. Reason: ",
           e = getCurrentException(), db = db)
@@ -223,7 +223,7 @@ proc getCommandCompletion*(prefix: CompletionPrefix; completions: var seq[
         completions.add(y = $alias)
     # Check for programs in the current directory
     try:
-      for file in walkFiles(pattern = $getCurrentDirectory() & DirSep & prefix & "*"):
+      for file in walkFiles(pattern = getCurrentDirectory().string & DirSep & prefix & "*"):
         if completions.len >= completionAmount:
           return
         let fileName: CompletionString = (when defined(
@@ -302,7 +302,7 @@ proc getCompletion*(commandName, prefix: CompletionPrefix; completions: var seq[
       getDirCompletion(prefix = prefix, completions = completions, db = db, cType = files)
     of dirsfiles:
       getDirCompletion(prefix = prefix, completions = completions, db = db)
-    of commands:
+    of CompletionType.commands:
       getCommandCompletion(prefix = prefix, completions = completions,
           aliases = aliases, commands = commands, db = db)
     of custom:
@@ -728,12 +728,12 @@ proc exportCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
       if completion.cValues.len > 0:
         dict.setSectionKey(section = "", key = "Values",
             value = completion.cValues)
-      dict.writeConfig(filename = $fileName)
+      dict.writeConfig(filename = fileName.string)
     except KeyError, IOError, OSError:
       return showError(message = "Can't create the completion export file. Reason: ",
           e = getCurrentException(), db = db)
     showOutput(message = "Exported the completion with Id: " & $id &
-        " to file: " & $fileName, color = success, db = db)
+        " to file: " & fileName.string, color = success, db = db)
     return QuitSuccess.ResultCode
 
 proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
@@ -757,7 +757,7 @@ proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     let fileName: Path = ($arguments[7 .. ^1]).Path
     try:
       let
-        dict: Config = loadConfig(filename = $fileName)
+        dict: Config = loadConfig(filename = fileName.string)
         command: CommandName = dict.getSectionValue(section = "",
             key = "Command")
       if db.exists(T = Completion, cond = "command=?", params = command):
@@ -771,7 +771,7 @@ proc importCompletion(arguments; db): ResultCode {.sideEffect, raises: [],
     except KeyError, ValueError, DbError, IOError, OSError, Exception:
       return showError(message = "Can't import the completion from the file. Reason: ",
           e = getCurrentException(), db = db)
-    showOutput(message = "Imported the completion from file : " & $fileName,
+    showOutput(message = "Imported the completion from file : " & fileName.string,
         color = success, db = db)
     return QuitSuccess.ResultCode
 
