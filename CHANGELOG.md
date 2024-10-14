@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 Tag **BREAKING** means the change break compatibility with a previous version
 of the shell.
 
+## [Unreleased]
+
+### Fixed
+- Compilation with Nim 2.2.0
+
 ## [0.8.1] - 2024-06-25
 
 ### Fixed
