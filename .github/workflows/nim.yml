@@ -7,7 +7,7 @@ on:
 jobs:
 
   tests:
-
+    timeout-minutes: 30
     runs-on: ubuntu-latest
 
     steps:
@@ -15,7 +15,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup Nim
-      uses: jiro4989/setup-nim-action@v1
+      uses: jiro4989/setup-nim-action@v2
       with:
         nim-version: 'stable'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -30,7 +30,9 @@ jobs:
       run: nimble install -y nimalyzer
 
     - name: Check with Nimalyzer
-      run: nimalyzer tools/nimalyzer.cfg
+      run: |
+        sudo apt-get install -y libpcre3
+        nimalyzer tools/nimalyzer.cfg
 
     - name: Upload the log
       uses: actions/upload-artifact@v4
