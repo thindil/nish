@@ -43,10 +43,12 @@ const
       'e': "standard error", 'f': "file", 'q': "quit"}.toTable
     ## The list of available options when setting the output of an alias
 
+{.push ruleOff: "objects".}
 using
   db: DbConn # Connection to the shell's database
   aliases: ref AliasesList # The list of aliases available in the selected directory
   arguments: UserInput # The string with arguments entered by the user for the command
+{.pop ruleOn: "objects".}
 
 proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
     ], tags: [ReadDbEffect, WriteIOEffect, ReadEnvEffect, TimeEffect,
@@ -77,7 +79,7 @@ proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
     # Set the aliases
     type LocalAlias = ref object
       id: Positive = 1
-      name: string
+      name: AliasName
     var dbAliases: seq[LocalAlias] = @[LocalAlias()]
     try:
       db.rawSelect(qry = dbQuery, objs = dbAliases)
@@ -112,8 +114,8 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     type LocalAlias = ref object
       id: Positive = 1
-      name: string
-      description: string
+      name: AliasName
+      description: AliasDescription
     var dbAliases: seq[LocalAlias] = @[LocalAlias()]
     # Show all available aliases declared in the shell
     if arguments == "list all":
@@ -632,8 +634,8 @@ proc execAlias*(arguments; aliasId: UserInput; aliases;
         return showError(message = "Can't get current directory. Reason: ",
             e = getCurrentException(), db = db)
     type LocalAlias = ref object
-      output: string
-      commands: string
+      output: AliasOutput
+      commands: AliasCommands
     var alias: LocalAlias = LocalAlias()
     try:
       db.rawSelect(qry = "SELECT output, commands FROM aliases WHERE id=?",
