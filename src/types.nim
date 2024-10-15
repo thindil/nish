@@ -79,6 +79,12 @@ type
     ## Used to store aliases names in tables and database.
   AliasesList* = OrderedTable[AliasName, int]
     ## Used to store the available aliases in the selected directory
+  AliasCommands* = string
+    ## Used to store an alias' commands in tables and database.
+  AliasOutput* = string
+    ## Used to store the location of alias' output in tables and database.
+  AliasDescription* = string
+    ## Use to store an alias' description in tables and database.
   Alias* {.tableName: "aliases".} = ref object of Model
     ## Data structure for the shell's alias
     ##
@@ -89,12 +95,12 @@ type
     ## * description - the description of the alias, showed on the list of aliases
     ##                 or in the alias information
     ## * output      - where to redirect the output of the alias' commands
-    name* {.unique.}: string
+    name* {.unique.}: AliasName
     path*: Path
     recursive*: bool
-    commands*: string
-    description*: string
-    output*: string
+    commands*: AliasCommands
+    description*: AliasDescription
+    output*: AliasOutput
   ColumnAmount* = distinct Natural
     ## Used to store length or amount of terminal's characters columns
   CompletionType* = enum
