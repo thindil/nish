@@ -80,7 +80,17 @@ proc setAliases*(aliases; directory: Path; db) {.sideEffect, raises: [
     type LocalAlias = ref object
       id: Positive = 1
       name: AliasName
-    var dbAliases: seq[LocalAlias] = @[LocalAlias()]
+    proc initLocalAlias(id: Positive = 1;
+        name: AliasName = ""): LocalAlias {.raises: [], tags: [],
+        contractual.} =
+      ## Initialize a new instance of LocalAlias object
+      ##
+      ## * id   - the id of the alias. Default value is 1
+      ## * name - the name of the alias. Default value is empty string
+      ##
+      ## Returns the new instance of LocalAlias object
+      result = LocalAlias(id: id, name: name)
+    var dbAliases: seq[LocalAlias] = @[initLocalAlias()]
     try:
       db.rawSelect(qry = dbQuery, objs = dbAliases)
       for dbResult in dbAliases:
@@ -116,7 +126,19 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       id: Positive = 1
       name: AliasName
       description: AliasDescription
-    var dbAliases: seq[LocalAlias] = @[LocalAlias()]
+    proc initLocalAlias(id: Positive = 1; name: AliasName = "";
+        description: AliasDescription = ""): LocalAlias {.raises: [], tags: [],
+        contractual.} =
+      ## Initialize a new instance of LocalAlias object
+      ##
+      ## * id          - the id of the alias. Default value is 1
+      ## * name        - the name of the alias. Default value is empty string
+      ## * description - the description of the alias. Default value is empty
+      ##                 string.
+      ##
+      ## Returns the new instance of LocalAlias object
+      result = LocalAlias(id: id, name: name, description: description)
+    var dbAliases: seq[LocalAlias] = @[initLocalAlias()]
     # Show all available aliases declared in the shell
     if arguments == "list all":
       try:
@@ -133,7 +155,7 @@ proc listAliases(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
       var index: Natural = 0
       for alias in aliases.values:
         try:
-          var dbAlias: LocalAlias = LocalAlias()
+          var dbAlias: LocalAlias = initLocalAlias()
           db.rawSelect(qry = "SELECT id, name, description FROM aliases WHERE id=?",
               obj = dbAlias, params = alias)
           if index == 0 and dbAlias.name.len > 0:
@@ -528,7 +550,8 @@ proc editAlias(arguments; aliases; db): ResultCode {.sideEffect, raises: [],
         "'. Must be a path to the existing directory.", db = db)
     showFormPrompt(prompt = "Path", db = db)
     var path: Path = ($readInput(db = db)).Path
-    while path.len > 0 and (path.string != "exit" and not dirExists(dir = path.string)):
+    while path.len > 0 and (path.string != "exit" and not dirExists(
+        dir = path.string)):
       showError(message = "Please enter a path to the existing directory", db = db)
       path = ($readInput(db = db)).Path
     if path.string == "exit":
@@ -636,7 +659,19 @@ proc execAlias*(arguments; aliasId: UserInput; aliases;
     type LocalAlias = ref object
       output: AliasOutput
       commands: AliasCommands
-    var alias: LocalAlias = LocalAlias()
+    proc initLocalAlias(output: AliasOutput = "";
+        commands: AliasCommands = ""): LocalAlias {.raises: [], tags: [],
+        contractual.} =
+      ## Initialize a new instance of LocalAlias object
+      ##
+      ## * output   - the place where the output of the alias will be redirected.
+      ##              Default value is empty.
+      ## * commands - the list of commands which will be executed. Default value
+      ##              is empty.
+      ##
+      ## Returns the new instance of LocalAlias object
+      result = LocalAlias(output: output, commands: commands)
+    var alias: LocalAlias = initLocalAlias()
     try:
       db.rawSelect(qry = "SELECT output, commands FROM aliases WHERE id=?",
           obj = alias, params = aliases[aliasIndex])
