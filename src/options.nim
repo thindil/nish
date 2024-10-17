@@ -41,8 +41,6 @@ const optionsCommands: seq[string] = @["list", "set", "reset"]
 type
   OptionName* = string
     ## Used to store options names in the database.
-  OptionValue* = string
-    ## Used to set or get the option's values
 using
   db: DbConn # Connection to the shell's database
   optionName: OptionName # The name of option to get or set

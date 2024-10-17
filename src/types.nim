@@ -47,6 +47,8 @@ type
     content*: string
     plugin*: string
     `template`*: bool
+  OptionValue* = string
+    ## Used to set or get the option's values
   OptionValType* = enum
     ## Used to set the type of option's value
     integer, float, boolean, none, historysort, natural, text, command, header, positive
