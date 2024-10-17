@@ -212,7 +212,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         showOutput(message = "\n", newLine = false, db = db)
 
     type ShellOption = ref object
-      value: string = ""
+      value: OptionValue = ""
 
     proc showHelpList(keys: seq[ShellOption];
         withNumbers: bool = true) {.sideEffect, raises: [], tags: [
