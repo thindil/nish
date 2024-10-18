@@ -37,8 +37,9 @@ import commandslist, helpcontent, output, theme, types
 
 using db: DbConn # Connection to the shell's database
 
-proc newHelpEntry(topic: UserInput = ""; usage: UserInput = ""; content: OutputMessage = "";
-    plugin: FilePath = ""; templ: bool = false): HelpEntry {.sideEffect, raises: [],
+proc newHelpEntry(topic: UserInput = ""; usage: UserInput = "";
+    content: OutputMessage = "";plugin: FilePath = ""; templ: bool = false): HelpEntry {.sideEffect,
+        raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's help's entry.
   ##
@@ -53,8 +54,8 @@ proc newHelpEntry(topic: UserInput = ""; usage: UserInput = ""; content: OutputM
     HelpEntry(topic: topic, usage: usage, content: content, plugin: plugin,
         `template`: templ)
 
-proc updateHelpEntry*(topic, usage, plugin: UserInput; content: OutputMessage; db;
-    isTemplate: bool): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
+proc updateHelpEntry*(topic, usage, plugin: UserInput; content: OutputMessage;
+    db;isTemplate: bool): ResultCode {.sideEffect, raises: [], tags: [ReadDbEffect,
     WriteDbEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Update the help entry in the help table in the shell's database
   ##
@@ -214,6 +215,15 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
     type ShellOption = ref object
       value: OptionValue = ""
 
+    proc initShellOption(value: OptionValue = ""): ShellOption {.raises: [],
+        tags: [], contractual.} =
+      ## Initialize a new instance of ShellOption object
+      ##
+      ## * value - the value of the option. Default value is empty string
+      ##
+      ## Returns the new instance of ShellOption object
+      result = ShellOption(value: value)
+
     proc showHelpList(keys: seq[ShellOption];
         withNumbers: bool = true) {.sideEffect, raises: [], tags: [
         WriteIOEffect, ReadEnvEffect, ReadIOEffect, RootEffect], contractual.} =
@@ -229,7 +239,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
           i: Positive = 1
           row: OutputMessage = ""
           table: TerminalTable = TerminalTable()
-          option: ShellOption = ShellOption()
+          option: ShellOption = initShellOption()
           columnAmount: Positive = 4
         try:
           db.rawSelect(qry = "SELECT value FROM options WHERE option='helpColumns'",
@@ -278,7 +288,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       except ValueError:
         0
     # Get the list of help topics
-    var keys: seq[ShellOption] = @[ShellOption()]
+    var keys: seq[ShellOption] = @[initShellOption()]
     if topicNumber > 0 or topic.len == 0:
       try:
         db.rawSelect(qry = "SELECT topic FROM help", objs = keys)
@@ -316,7 +326,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
         # variables in it to the proper values. At this moment only history list
         # need that conversion.
         if dbHelp[0].`template`:
-          var historyOption: ShellOption = ShellOption()
+          var historyOption: ShellOption = initShellOption()
           try:
             db.rawSelect(qry = "SELECT value FROM options WHERE option='historySort'",
                 obj = historyOption)
@@ -352,7 +362,7 @@ proc showHelp(topic: UserInput; db): ResultCode {.sideEffect, raises: [
       # There is a few topics which match the criteria, show the list of them
       keys = @[]
       for row in dbHelp:
-        keys.add(y = ShellOption(value: row.topic))
+        keys.add(y = initShellOption(value = row.topic))
       keys.sort(cmp = system.cmp)
       showHelpList(keys = keys, withNumbers = false)
       return QuitSuccess.ResultCode
