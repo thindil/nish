@@ -53,10 +53,12 @@ type
   PluginResult* = tuple [code: ResultCode,
       answer: string] ## Store the result of the plugin's API command
 
+{.push ruleOff: "objects".}
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
   commands: ref CommandsList # The list of the shell's commands
+{.pop ruleOn: "objects".}
 
 proc initPluginData(path: Path; api: seq[string]): PluginData {.raises: [],
     tags: [], contractual.} =
