@@ -32,6 +32,14 @@ import norm/[model, pragmas, sqlite]
 import contracts, nimalyzer
 
 type
+  HelpTopic* = string
+    ## Used to store the help entry's topic
+  HelpUsage* = string
+    ## Used to store the help entry's usage information
+  HelpContent* = string
+    ## Used to store the help entry's content
+  HelpPlugin* = string
+    ## Used to store the help entry's plugin's name
   HelpEntry* {.tableName: "help".} = ref object of Model
     ## Data structure for the help's entries
     ##
@@ -42,16 +50,22 @@ type
     ## * template - if true, the entry is a template and treated differently. It
     ##              has some variables in own content which will be replaced by
     ##              proper values when show to the user.
-    topic* {.unique.}: string
-    usage*: string
-    content*: string
-    plugin*: string
+    topic* {.unique.}: HelpTopic
+    usage*: HelpUsage
+    content*: HelpContent
+    plugin*: HelpPlugin
     `template`*: bool
   OptionValue* = string
     ## Used to set or get the option's values
   OptionValType* = enum
     ## Used to set the type of option's value
     integer, float, boolean, none, historysort, natural, text, command, header, positive
+  OptionName* = string
+    ## Used to store the option's name
+  OptionDescription* = string
+    ## Used to store the option's description
+  OptionDefaultValue* = string
+    ## Used to store the options' default value
   Option* {.tableName: "options".} = ref object of Model
     ## Data structure for the shell's option
     ##
@@ -61,11 +75,11 @@ type
     ## * valueType    - the type of the option's value
     ## * defaultValue - the default value for the option
     ## * readOnly     - if true, the option can be only read by the user, not set
-    option*: string
-    value*: string
-    description*: string
+    option*: OptionName
+    value*: OptionValue
+    description*: OptionDescription
     valueType*: OptionValType
-    defaultValue*: string
+    defaultValue*: OptionDefaultValue
     readOnly*: bool
   UserInput* = string
     ## Used to store text entered by the user
