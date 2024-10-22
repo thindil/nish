@@ -152,6 +152,12 @@ type
   VariableValType* = enum
     ## Used to set the type of variable's value
     path, text, number
+  VariableName* = string
+    ## Used to store variables names in the database
+  VariableValue* = string
+    ## Used to store variables' values
+  VariableDescription* = string
+    ## Used to store variables' descriptions
   Variable* {.tableName: "variables".} = ref object of Model
     ## Data structure for the shell's environment variable
     ##
@@ -160,12 +166,12 @@ type
     ## * recursive   - if true, the variable is available also in subdirectories
     ## * value       - the value of the variable
     ## * description - the description of the variable
-    name*: string
+    name*: VariableName
     path*: Path
     recursive*: bool
-    value*: string
+    value*: VariableValue
     varType*: VariableValType
-    description*: string
+    description*: VariableDescription
   ResultCode* = distinct Natural
     ## Used to store result code from commands entered by the user
   CommandName* = string

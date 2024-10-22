@@ -45,12 +45,6 @@ const
       'n': "number", 'q': "quit"}.toTable
     ## The list of available options when setting the type of a variable's value
 
-type
-  VariableName = string
-    ## Used to store variables names in the database.
-  VariableValue = string
-    ## Used to store variables' values
-
 using
   db: DbConn # Connection to the shell's database
   arguments: UserInput # The string with arguments entered by the user for the command
