@@ -40,7 +40,7 @@ type
     ## Used to store the help entry's content
   HelpPlugin* = string
     ## Used to store the help entry's plugin's name
-  HelpEntry* {.tableName: "help".} = ref object of Model
+  HelpEntry* {.tableName: "help", ruleOff: "objects".} = ref object of Model
     ## Data structure for the help's entries
     ##
     ## * topic    - the help's entry topic, show on the list of help's entries
