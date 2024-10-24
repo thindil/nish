@@ -49,10 +49,19 @@ type
     ## * lastUsed - the time when the command was recently excute
     ## * amount   - how many times the user executed the command
     ## * path     - the full path in which the command was executed
-    command*: string
+    command: CommandName
     lastUsed: DateTime
-    amount: int
+    amount: int32
     path: Path
+
+proc command*(entry: HistoryEntry): CommandName {.sideEffect, raises: [], tags: [],
+    contractual.} =
+  ## The getter of a field of HistoryEntry type
+  ##
+  ## * entry - the HistoryEntry object which field will be get
+  ##
+  ## Returns the value of the selected field
+  entry.command
 
 using
   db: DbConn # Connection to the shell's database
@@ -78,7 +87,7 @@ proc historyLength*(db): HistoryRange {.sideEffect, raises: [], tags: [
       return HistoryRange.low
 
 proc newHistoryEntry(command: CommandName = ""; lastUsed: DateTime = now();
-    amount: Positive = 1; path: Path = "".Path): HistoryEntry {.raises: [],
+    amount: int32 = 1; path: Path = "".Path): HistoryEntry {.raises: [],
     tags: [], contractual.} =
   ## Create a new data structure for the shell's commands' history entry.
   ##
@@ -182,7 +191,7 @@ proc getHistory*(historyIndex: HistoryRange; db;
   body:
     try:
       type LocalEntry = ref object
-        command: string
+        command: CommandName
       var entry: LocalEntry = LocalEntry()
       # Get the command based on the historyIndex parameter
       if searchFor.len == 0:
@@ -294,9 +303,9 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
           e = getCurrentException(), db = db)
     try:
       type LocalEntry = ref object
-        command: string
+        command: CommandName
         lastUsed: DateTime
-        amount: int
+        amount: int32
       var entries: seq[LocalEntry] = @[LocalEntry()]
       db.rawSelect(qry = "SELECT command, lastused, amount FROM history ORDER BY " &
           historyOrder & " LIMIT 0, ?", objs = entries, params = amount)
@@ -347,7 +356,7 @@ proc findInHistory(db; arguments): ResultCode {.raises: [], tags: [
           db = db)).parseInt
       var currentRow: Natural = 0
       type LocalEntry = ref object
-        command: string
+        command: CommandName
       var entries: seq[LocalEntry] = @[LocalEntry()]
       db.rawSelect(qry = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC",
           objs = entries, params = "%" & searchFor & "%")

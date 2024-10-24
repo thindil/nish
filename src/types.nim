@@ -124,10 +124,10 @@ type
     dirs = "Directories only", files = "Files only",
     dirsfiles = "Directories and files", commands = "Commands",
     custom = "Custom", none = "Completion for the selected command should be disabled"
-  CompletionCommand* = string
-    ## Used to store the command to which completion will be added
   CompletionValues* = string
     ## Used to store the values of the selected completion
+  CommandName* = string
+    ## Used to store the name of a command
   Completion* {.tableName: "completions".} = ref object of Model
     ## Data structure for the shell's commands' completion
     ##
@@ -135,7 +135,7 @@ type
     ## * cType   - the type of completion for the command
     ## * values  - the proper values of completion if the completion's type is
     ##             set to the custom type
-    command* {.unique.}: CompletionCommand
+    command* {.unique.}: CommandName
     cType*: CompletionType
     cValues*: CompletionValues
   Plugin* {.tableName: "plugins".} = ref object of Model
@@ -174,8 +174,6 @@ type
     description*: VariableDescription
   ResultCode* = distinct Natural
     ## Used to store result code from commands entered by the user
-  CommandName* = string
-    ## Used to store the name of the user's command
   DbString* = string
     ## Used to store some text related to database
   OutputMessage* = string
