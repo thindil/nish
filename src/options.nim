@@ -98,11 +98,19 @@ proc getOption*(optionName; db; defaultValue: OptionValue = ""): OptionValue {.s
     db != nil
   body:
     type LocalOption = ref object
-      value: string
+      value: OptionValue
+    proc initLocalOption(value: OptionValue = ""): LocalOption {.raises: [],
+        tags: [], contractual.} =
+      ## Initialize a new instance of LocalOption object
+      ##
+      ## * value - the value of the option. Default value is an empty string
+      ##
+      ## Returns the new instance of LocalOption object
+      result = LocalOption(value: value)
     try:
       if not db.exists(T = Option, cond = "option=?", params = $optionName):
         return defaultValue
-      var option: LocalOption = LocalOption()
+      var option: LocalOption = initLocalOption()
       db.rawSelect(qry = "SELECT value FROM options WHERE option=?",
           obj = option, params = $optionName)
       result = option.value
