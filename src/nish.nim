@@ -31,7 +31,7 @@ import std/[os, osproc, paths, parseopt, strutils, tables, terminal, unicode]
 when compileOption(option = "profiler"):
   import nimprof
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/sqlite
 # Internal imports
 import aliases, commands, commandslist, completion, constants, db, help,
@@ -396,6 +396,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
   ## The main procedure of the shell
   body:
     startLogging()
+    {.ruleOff: "objects".}
     var
       userInput: OptParser = initOptParser()
       commandName, lastCommand: CommandName = ""
@@ -411,6 +412,7 @@ proc main() {.sideEffect, raises: [], tags: [ReadIOEffect, WriteIOEffect,
           DirSep & "nish.db").Path
       cursorPosition: Natural = 0
       commands: ref Table[string, CommandData] = newTable[string, CommandData]()
+    {.ruleOn: "objects".}
 
     # On Unix systems, load various users' configurations for shells
     when not defined(windows):
