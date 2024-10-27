@@ -54,8 +54,8 @@ type
     amount: int32
     path: Path
 
-proc command*(entry: HistoryEntry): CommandName {.sideEffect, raises: [], tags: [],
-    contractual.} =
+proc command*(entry: HistoryEntry): CommandName {.sideEffect, raises: [],
+    tags: [], contractual.} =
   ## The getter of a field of HistoryEntry type
   ##
   ## * entry - the HistoryEntry object which field will be get
@@ -192,7 +192,14 @@ proc getHistory*(historyIndex: HistoryRange; db;
     try:
       type LocalEntry = ref object
         command: CommandName
-      var entry: LocalEntry = LocalEntry()
+      proc initLocalEntry(command: CommandName = ""): LocalEntry {.raises: [],
+          tags: [], contractual.} =
+        ## Initialize a new instance of LocalEntry object
+        ## * command - the name of the command executed by the user
+        ##
+        ## Returns the new instance of LocalEntry object
+        result = LocalEntry(command: command)
+      var entry: LocalEntry = initLocalEntry()
       # Get the command based on the historyIndex parameter
       if searchFor.len == 0:
         if db.exists(T = HistoryEntry, cond = "path=?",
@@ -306,7 +313,18 @@ proc showHistory(db; arguments): ResultCode {.sideEffect, raises: [],
         command: CommandName
         lastUsed: DateTime
         amount: int32
-      var entries: seq[LocalEntry] = @[LocalEntry()]
+      proc initLocalEntry(command: CommandName = "";
+          lastUsed: DateTime = DateTime();
+          amount: int32 = 0): LocalEntry {.raises: [], tags: [], contractual.} =
+        ## Initialize a new instance of LocalEntry object
+        ## * command  - the name of the command executed by the user
+        ## * lastUsed - the time when the command was last executed by the user
+        ## * amount   - how many times the command was executed by the user
+        ##
+        ## Returns the new instance of LocalEntry object
+        result = LocalEntry(command: command, lastUsed: lastUsed,
+            amount: amount)
+      var entries: seq[LocalEntry] = @[initLocalEntry()]
       db.rawSelect(qry = "SELECT command, lastused, amount FROM history ORDER BY " &
           historyOrder & " LIMIT 0, ?", objs = entries, params = amount)
       let color: ColorCode = getColor(db = db, name = default)
@@ -357,7 +375,14 @@ proc findInHistory(db; arguments): ResultCode {.raises: [], tags: [
       var currentRow: Natural = 0
       type LocalEntry = ref object
         command: CommandName
-      var entries: seq[LocalEntry] = @[LocalEntry()]
+      proc initLocalEntry(command: CommandName = ""): LocalEntry {.raises: [],
+          tags: [], contractual.} =
+        ## Initialize a new instance of LocalEntry object
+        ## * command - the name of the command executed by the user
+        ##
+        ## Returns the new instance of LocalEntry object
+        result = LocalEntry(command: command)
+      var entries: seq[LocalEntry] = @[initLocalEntry()]
       db.rawSelect(qry = "SELECT command FROM history WHERE command LIKE ? ORDER BY lastused DESC, amount DESC",
           objs = entries, params = "%" & searchFor & "%")
       for entry in entries:
