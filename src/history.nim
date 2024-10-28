@@ -30,7 +30,7 @@
 # Standard library imports
 import std/[os, paths, strutils, times]
 # External modules imports
-import ansiparse, contracts, nancy, termstyle
+import ansiparse, contracts, nancy, nimalyzer, termstyle
 import norm/[model, pragmas, sqlite]
 import norm/private/log
 # Internal imports
@@ -42,7 +42,7 @@ const historyCommands: seq[string] = @["clear", "list", "find"]
 type
   HistoryRange* = ExtendedNatural
     ## Used to store the amount of commands in the shell's history
-  HistoryEntry* {.tableName: "history".} = ref object of Model
+  HistoryEntry* {.tableName: "history", ruleOff: "objects".} = ref object of Model
     ## Data structure for the shell's commands' history entry
     ##
     ## * command  - the command executed by the user
