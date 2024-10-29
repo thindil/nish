@@ -29,15 +29,17 @@
 # Standard library imports
 import std/[os, paths, tables, unicode]
 # External modules imports
-import contracts
+import contracts, nimalyzer
 import norm/sqlite
 # Internal imports
 import aliases, constants, commandslist, output, plugins, types, variables
 
+{.push ruleOff: "objects".}
 using
   db: DbConn # Connection to the shell's database
   aliases: ref AliasesList # The list of aliases available in the selected directory
   newDirectory: Path # The directory to which the current directory will be changed
+{.pop ruleOn: "objects".}
 
 proc changeDirectory(newDirectory; aliases; db): ResultCode {.sideEffect,
     raises: [], tags: [ReadEnvEffect, ReadIOEffect, ReadDbEffect, WriteIOEffect,
