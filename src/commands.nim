@@ -29,7 +29,7 @@
 # Standard library imports
 import std/[os, paths, tables, unicode]
 # External modules imports
-import contracts, nimalyzer
+import contracts
 import norm/sqlite
 # Internal imports
 import aliases, constants, commandslist, output, plugins, types, variables
