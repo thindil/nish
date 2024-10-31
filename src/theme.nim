@@ -46,6 +46,7 @@ type
       helpCode, highlightValid, highlightInvalid, highlightVariable,
       highlightText, suggestInvalid, suggestCommand, suggestYes, suggestNext,
       suggestAbort, promptColor, promptError, completionList
+  ColorDescription = string
   Color* {.tableName: "theme".} = ref object of Model
     ## Data structure for the shell's color
     ##
@@ -55,12 +56,12 @@ type
     ## * bold        - if true, set the color with a bold font
     ## * underline   - if true, add underline to the color
     ## * italic      - if true, set the color with an italic font
-    name* {.unique.}: ThemeColor
-    cValue*: ColorName
-    description*: string
-    bold*: bool
-    underline*: bool
-    italic*: bool
+    name {.unique.}: ThemeColor
+    cValue: ColorName
+    description: ColorDescription
+    bold: bool
+    underline: bool
+    italic: bool
   ColorCode* = string
     ## Used to get the terminal code for a color
 
@@ -68,6 +69,36 @@ using db: DbConn # Connection to the shell's database
 
 const themeCommands*: seq[string] = @["list", "edit", "reset"]
   ## The list of available subcommands for command theme
+
+template colorGetterSetter(name: untyped; typ: typedesc) =
+  ## Set the getter for a field of Color type
+  ##
+  ## * name - the name of the field for which the getter will be set
+  ## * typ  - the type of the value of the field
+  proc `name`*(col: Color): `typ` {.sideEffect, raises: [], tags: [],
+      contractual.} =
+    ## The getter of a field of Color type
+    ##
+    ## * col - the shell's color
+    ##
+    ## Returns the value of the selected field
+    col.`name`
+  proc `name=`*(col: var Color; value: `typ`) {.sideEffect, raises: [],
+      tags: [], contractual.} =
+    ## The setter of a field of Color type
+    ##
+    ## * col   - the shell's color
+    ## * value - the new value for the selected field
+    ##
+    ## Returns modified field of the color
+    col.`name` = value
+
+colorGetterSetter(name = name, typ = ThemeColor)
+colorGetterSetter(name = cValue, typ = ColorName)
+colorGetterSetter(name = description, typ = ColorDescription)
+colorGetterSetter(name = bold, typ = bool)
+colorGetterSetter(name = underline, typ = bool)
+colorGetterSetter(name = italic, typ = bool)
 
 proc dbType(T: typedesc[ColorName]): string {.raises: [], tags: [],
     contractual.} =
