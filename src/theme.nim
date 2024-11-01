@@ -47,7 +47,7 @@ type
       highlightText, suggestInvalid, suggestCommand, suggestYes, suggestNext,
       suggestAbort, promptColor, promptError, completionList
   ColorDescription = string
-  Color* {.tableName: "theme".} = ref object of Model
+  Color* {.tableName: "theme", ruleOff: "objects".} = ref object of Model
     ## Data structure for the shell's color
     ##
     ## * name        - the name of the color in the shell's theme
