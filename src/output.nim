@@ -129,9 +129,17 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
     db != nil
   body:
     type LocalOption = ref object
-      value: string
+      value: OptionValue
+    proc initLocalOption(value: OptionValue = ""): LocalOption {.raises: [],
+        tags: [], contractual.} =
+      ## Initialize a new instance of LocalOptions object
+      ##
+      ## * value - the value of the option. Can be empty. Default value is empty
+      ##
+      ## Returns the new instance of LocalOption object
+      result = LocalOption(value: value)
     try:
-      var option: LocalOption = LocalOption()
+      var option: LocalOption = initLocalOption()
       db.rawSelect(qry = "SELECT value FROM options WHERE option='outputHeaders'", obj = option)
       let headerType: DbString = option.value
       if headerType == "hidden":
@@ -190,7 +198,8 @@ proc showFormHeader*(message; width: ColumnAmount = (try: terminalWidth(
           e = getCurrentException(), db = db)
 
 proc selectOption*(options: Table[char, string];
-    default: char; prompt: OutputMessage; db): char {.sideEffect, raises: [], tags: [ReadIOEffect,
+    default: char; prompt: OutputMessage; db): char {.sideEffect, raises: [],
+        tags: [ReadIOEffect,
     WriteIOEffect, RootEffect], contractual.} =
   ## Show the list of options from which the user can select one value
   ##
@@ -250,8 +259,8 @@ proc confirm*(prompt: OutputMessage; db): bool {.sideEffect, raises: [], tags: [
       discard
     return inputChar in {'y', 'Y'}
 
-proc showFormPrompt*(prompt: OutputMessage; db) {.sideEffect, raises: [], tags: [
-    ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
+proc showFormPrompt*(prompt: OutputMessage; db) {.sideEffect, raises: [],
+    tags: [ReadIOEffect, WriteIOEffect, RootEffect], contractual.} =
   ## Show the prompt in the shell's forms
   ##
   ## * prompt - the text displayed as a form's prompt
