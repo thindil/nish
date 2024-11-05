@@ -191,7 +191,7 @@ proc len*(path: Path): Natural {.sideEffect, raises: [], tags: [],
   ##
   ## The lenght of the parameter path
   body:
-    return ($path).len
+    return path.string.len
 
 proc dbType*(T: typedesc[Path]): string {.raises: [], tags: [],
     contractual.} =
@@ -211,7 +211,7 @@ proc dbValue*(val: Path): DbValue {.raises: [], tags: [],
   ##
   ## Returns the converted val parameter
   body:
-    dbValue(v = $val)
+    dbValue(v = val.string)
 
 proc to*(dbVal: DbValue, T: typedesc[Path]): T {.raises: [], tags: [
     ], contractual.} =
